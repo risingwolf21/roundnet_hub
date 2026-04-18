@@ -37,6 +37,7 @@ export const AuthLayout = lazyWithRetry(() => import('@/components/layout/AuthLa
 export const MainLayout = lazyWithRetry(() => import('@/components/layout/MainLayout'));
 export const DialogsProvider = lazyWithRetry(() => import('@/contexts/DialogsProvider'));
 export const AdminAnalytics = lazyWithRetry(() => import('@/features/admin/AdminAnalytics'));
+export const AdminAnalyticsShadcn = lazyWithRetry(() => import('@/features/admin/AdminAnalytics.shadcn'));
 export const AdminUserList = lazyWithRetry(() => import('@/features/admin/AdminUserList.shadcn'));
 export const AuthLayoutShadcn = lazyWithRetry(() => import('@/features/auth/AuthLayout.shadcn'));
 export const ForgotPasswordShadcn = lazyWithRetry(() => import('@/features/auth/ForgotPassword.shadcn'));

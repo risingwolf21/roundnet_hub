@@ -323,7 +323,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'analytics',
-                  element: <Pages.AdminAnalytics />
+                  element: isShadcnUi ? <Pages.AdminAnalyticsShadcn /> : <Pages.AdminAnalytics />
                 },
                 {
                   path: 'grants',
