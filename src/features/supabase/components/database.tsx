@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertTriangle, Table, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { z, type ZodTypeAny } from 'zod'
 
@@ -9,13 +9,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AppBar } from '@/components/ui/appbar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
 import { useGrants } from '@/features/auth/GrantsContext'
-import { supabase } from '@/lib/supabase'
 import { groupBy, SUPABASE_PROJECT_REF } from '@/utils'
-import { useLocalStorageState } from '@toolpad/core/useLocalStorageState'
-import React from 'react'
 import { useRunQuery } from '../hooks/use-run-query'
+import { useListTables } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
 import { ResultsTable } from './results-table'
 
@@ -236,7 +235,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
       <DialogContent variant={"fullscreen"} showCloseButton={false}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className={"flex-1"}>
-            {table.schema + "." + table.name}
+            {table}
           </DialogTitle>
           <DialogClose render={
             <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
@@ -252,43 +251,10 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
   )
 }
 
-export type Table = { name: string; schema: string };
-
 const DatabaseManager = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const [error, setError] = useState<string | null>(null)
-  const [tables = [], setTables] = useLocalStorageState<Table[]>('supabase_tables', [], {
-    codec: {
-      stringify: (data: Table[]) => JSON.stringify(data),
-      parse: (raw: string): Table[] => {
-        try {
-          const parsed = JSON.parse(raw);
-          if (
-            Array.isArray(parsed) &&
-            parsed.every((item) => typeof item.name === 'string' && typeof item.schema === 'string')
-          ) {
-            return parsed as Table[];
-          }
-        } catch {
-          // ignore
-        }
-        return [];
-      },
-    },
-  });
-
-  React.useEffect(() => {
-    (async () => {
-      const result = await supabase.schema('util').rpc('get_public_table_names').select('*');
-      const data = result.data ?? [];
-      setTables(
-        data.map((x: { table_name: string; table_schema: string }) => ({ name: x.table_name, schema: x.table_schema }))
-      );
-
-    })().catch((e) => setError(String(e)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: tables, isLoading, isError } = useListTables(['public', 'games', 'notifications'])
 
   const handleTableClick = (table: any) => {
     dialogs.open(TableRecordsView, { table })
@@ -304,17 +270,21 @@ const DatabaseManager = () => {
       <main className='flex-1 size-full pb-safe-bottom'>
         <div className="p-6 pt-4 lg:p-8 lg:pt-8">
 
-          {error && (
+          {isError && (
             <Alert variant="destructive" className="mt-8">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Error loading tables</AlertTitle>
-              <AlertDescription>
-                There was a problem loading your database tables.
-                <div>
-                  {error}
-                </div>
-              </AlertDescription>
+              <AlertDescription>There was a problem loading your database tables.</AlertDescription>
             </Alert>
+          )}
+
+          {isLoading && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
           )}
 
           {tables && tables.length > 0 ? (
@@ -326,20 +296,23 @@ const DatabaseManager = () => {
                     {
                       groupedTables.map(table => <Button
                         variant="outline"
-                        key={table.schema + table.name}
+                        key={table.id}
                         size="lg"
                         className="flex-row justify-between text-left"
                         onClick={() => handleTableClick(table)}
                       >
                         <Table className="h-4 w-4 text-muted-foreground" />
                         <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
+                        <div className="text-sm text-muted-foreground font-mono shrink-0">
+                          {table.live_rows_estimate} rows
+                        </div>
                       </Button>)
                     }
                   </div>
                 </div>
               ))}
             </div>
-          ) : !error && (!tables || tables.length === 0) ? (
+          ) : !isLoading && (!tables || tables.length === 0) ? (
             <Alert className="mt-8">
               <Table className="h-4 w-4" />
               <AlertTitle>No database tables</AlertTitle>

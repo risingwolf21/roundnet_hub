@@ -10,22 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { SidebarTrigger } from "./sidebar";
 
 interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
-  /** Der Titel der aktuellen Seite */
   title?: string;
-  /** Soll die Suchleiste angezeigt werden? */
   showSearch?: boolean;
-  /** Platzhaltertext für die Suche */
   searchPlaceholder?: string;
-  /** Wert der Suche (Controlled Input) */
   searchValue?: string;
-  /** Event, wenn sich die Suche ändert */
   onSearchChange?: (value: string) => void;
-  /** Elemente auf der rechten Seite (z.B. Avatar, Buttons) */
   actions?: React.ReactNode;
   primaryAction?: React.ReactNode | "back" | "default";
-  /** Soll die Leiste beim Scrollen einen Schatten bekommen? */
   withScrollEffect?: boolean;
-  user?: User
+  user?: User; // Ersetze User durch deinen echten Typen
 }
 
 export function AppBar({
@@ -55,30 +48,32 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "pt-safe-top sticky top-0 z-50 w-full bg-background/95 supports-[backdrop-filter]:bg-background transition-shadow",
-        scrolled ? "border-b shadow-sm" : "",
+        "pt-safe-top sticky top-0 z-50 w-full transition-all duration-200 text-foreground",
+        // OPTIMIERT: Der Blur-Effekt funktioniert jetzt in beiden Themes perfekt
+        "bg-header/80 text-header-foreground backdrop-blur-md",
+        // OPTIMIERT: border-border greift automatisch auf deine global.css zurück
+        scrolled ? "border-b border-border shadow-sm" : "border-b border-transparent",
         className
       )}
       {...props}
     >
       <div className="flex h-14 w-full items-center gap-4 px-4 md:px-4">
         <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
-          {
-            primaryAction === "default" && <SidebarTrigger className={"-ml-1 md:hidden"} />
-          }
-          {
-            primaryAction === "back" && <Button
+          {primaryAction === "default" && (
+            // GEFIXT: bg-foreground/50 entfernt. Der Trigger hat meist ein eigenes sauberes Hover-Styling
+            <SidebarTrigger className="-ml-1 md:hidden" />
+          )}
+          {primaryAction === "back" && (
+            <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="shrink-0 rounded-full -ml-1"
+              className="shrink-0 rounded-full -ml-1 text-foreground"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-          }
-          {
-            React.isValidElement(primaryAction) && primaryAction
-          }
+          )}
+          {React.isValidElement(primaryAction) && primaryAction}
           {title && (
             <div className="font-semibold tracking-tight sm:block text-lg">
               {title}
@@ -95,7 +90,8 @@ export function AppBar({
                 placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={(e) => onSearchChange?.(e.target.value)}
-                className="w-full rounded-full bg-muted/50 pl-9 focus-visible:bg-background"
+                // OPTIMIERT: Nutzt die definierten Muted- und Background-Farben
+                className="w-full rounded-full bg-muted/50 pl-9 text-foreground focus-visible:bg-background border-transparent focus-visible:border-ring"
               />
             </div>
           )}
@@ -103,27 +99,36 @@ export function AppBar({
 
         <div className="flex items-center justify-end gap-2 lg:w-1/3">
           {actions}
-          {
-            user && <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1" onClick={() => navigate("/user")}>
-              <Avatar className="h-8 w-8">
-                {
-                  user.avatarUrl
-                    ? <AvatarImage src={user.avatarUrl} alt={user.name ?? "User Avatar"} />
-                    : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(user.name ?? "User")}</AvatarFallback>
-                }
+          {user && (
+            <Button
+              variant="ghost"
+              className="relative h-8 w-8 rounded-full ml-1"
+              onClick={() => navigate("/user")}
+            >
+              <Avatar className="h-8 w-8 border border-border/50 shadow-sm">
+                {user.avatarUrl ? (
+                  <AvatarImage src={user.avatarUrl} alt={user.name ?? "User Avatar"} />
+                ) : (
+                  // Nutzt perfekt deine --primary und --primary-foreground Farben
+                  <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                    {getInitials(user.name ?? "U")}
+                  </AvatarFallback>
+                )}
               </Avatar>
             </Button>
-          }
+          )}
         </div>
       </div>
-      {
-        isOffline && <div className="w-full bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground shadow-sm">
+
+      {/* Offline Banner nutzt exakt deine --warning und --warning-foreground Variablen */}
+      {isOffline && (
+        <div className="w-full bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground shadow-sm">
           <WifiOff className="size-4 shrink-0" />
           <span className="text-xs font-medium">
             Du bist offline. Es werden gespeicherte Daten angezeigt.
           </span>
         </div>
-      }
+      )}
     </header>
   );
 }
