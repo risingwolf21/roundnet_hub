@@ -335,6 +335,10 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                     </Has>
                   ),
                 },
+                {
+                  path: 'merge_accounts',
+                  element: <Pages.UserPlayerMappingShadcn />
+                }
               ],
             },
             {

@@ -4,7 +4,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ChartArea, Database, Euro, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ChartArea, Database, Euro, GitMerge, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -217,6 +217,14 @@ export function AppSidebar() {
         any: true
       },
       children: [
+        {
+          title: t('browse.merge_accounts'),
+          icon: <GitMerge />,
+          path: 'admin/merge_accounts',
+          permission: {
+            perm: 'games.admin.merge_accounts'
+          }
+        },
         {
           title: t('browse.analytics'),
           icon: <ChartArea />,

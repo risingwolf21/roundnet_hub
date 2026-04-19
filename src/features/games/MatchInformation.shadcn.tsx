@@ -18,7 +18,7 @@ import { useGrants } from '../auth/GrantsContext';
 import { ReportSetsDialogShadcn } from './dialogs/ReportSetsDialog.shadcn';
 
 
-const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: any, p2: any, fallback1: any, fallback2: any }) => (
+const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => (
   <div className="flex flex-1 flex-col gap-4 min-w-0">
     <div className='flex flex-1 flex-row gap-4 min-w-0'>
       {[p1, p2].map((player, idx) => (
@@ -41,7 +41,7 @@ const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: any, p2: any, fallbac
   </div>
 );
 
-const IndexRow = ({ player, fallback, history }: { player: any, fallback: any, history: any }) => (
+const IndexRow = ({ player, fallback, history }: { player: User | null, fallback: Player | null, history: any }) => (
   <Item className='p-0'>
     <ItemMedia>
       <Avatar className={"mr-2"}>
@@ -103,20 +103,20 @@ const MatchInformationShadcn = () => {
   const setsBWon = match.sets.filter((x: any) => x.team_a_score < x.team_b_score).length ?? 0;
 
   const matchMember = [
-    match.team_a.player_1.linked_user_id,
-    match.team_b.player_1.linked_user_id,
-    match.team_a.player_2.linked_user_id,
-    match.team_b.player_2.linked_user_id
+    match.player_1a?.player?.linked_user_id,
+    match.player_1b?.player?.linked_user_id,
+    match.player_2a?.player?.linked_user_id,
+    match.player_2b?.player?.linked_user_id
   ].includes(user.id);
 
 
-  const getHistory = (playerId: string) => match.elo_history.find((x: any) => x.user === playerId);
+  const getHistory = (playerId?: string) => match.elo_history.find((x: any) => x.user === playerId);
 
   const playersData = [
-    { p: match.player_1a, f: match.team_a.player_1, h: getHistory(match.team_a.player_1.player) },
-    { p: match.player_2a, f: match.team_a.player_2, h: getHistory(match.team_a.player_2.player) },
-    { p: match.player_1b, f: match.team_b.player_1, h: getHistory(match.team_b.player_1.player) },
-    { p: match.player_2b, f: match.team_b.player_2, h: getHistory(match.team_b.player_2.player) },
+    { p: match.player_1a, f: match.player_1a.player, h: getHistory(match.player_1a.player?.player) },
+    { p: match.player_2a, f: match.player_2a.player, h: getHistory(match.player_2a.player?.player) },
+    { p: match.player_1b, f: match.player_1b.player, h: getHistory(match.player_1b.player?.player) },
+    { p: match.player_2b, f: match.player_2b.player, h: getHistory(match.player_2b.player?.player) },
   ];
 
   // 4. HAUPT RENDER
@@ -150,7 +150,7 @@ const MatchInformationShadcn = () => {
             {/* MATCH HEADER (Teams & Score) */}
             <div>
               <div className='flex flex-row justify-between items-center gap-4'>
-                <TeamBlock p1={match.player_1a} p2={match.player_2a} fallback1={match.team_a.player_1} fallback2={match.team_a.player_2} />
+                <TeamBlock p1={match.player_1a.user} p2={match.player_2a.user} fallback1={match.player_1a.player} fallback2={match.player_2a.player} />
 
                 <div className='flex flex-col shrink-0 items-center justify-center px-2 sm:px-4'>
                   <div className='flex flex-row gap-2'>
@@ -164,7 +164,7 @@ const MatchInformationShadcn = () => {
                   </div>
                 </div>
 
-                <TeamBlock p1={match.player_1b} p2={match.player_2b} fallback1={match.team_b.player_1} fallback2={match.team_b.player_2} />
+                <TeamBlock p1={match.player_1b.user} p2={match.player_2b.user} fallback1={match.player_1b.player} fallback2={match.player_2b.player} />
               </div>
             </div>
 
@@ -178,8 +178,8 @@ const MatchInformationShadcn = () => {
                     <Button variant={"ghost"} size={"icon"} onClick={() => {
                       dialogs.open(ReportSetsDialogShadcn, {
                         matchId: match.id,
-                        team_a_name: match.team_a.name,
-                        team_b_name: match.team_b.name,
+                        team_a_name: match.team_a_name ?? '',
+                        team_b_name: match.team_b_name ?? '',
                         sets: match.sets
                       })
                     }}>
@@ -190,8 +190,8 @@ const MatchInformationShadcn = () => {
                 <div className='flex flex-col gap-2'>
                   <div className='flex flex-row justify-between items-center'>
                     <div className='flex flex-col gap-1'>
-                      <div className={cn('text-md', { "font-bold": setsAWon > setsBWon })}>{match.team_a.name}</div>
-                      <div className={cn('text-md', { "font-bold": setsAWon < setsBWon })}>{match.team_b.name}</div>
+                      <div className={cn('text-md', { "font-bold": setsAWon > setsBWon })}>{match.team_a_name}</div>
+                      <div className={cn('text-md', { "font-bold": setsAWon < setsBWon })}>{match.team_b_name}</div>
                     </div>
 
                     <div className='flex flex-row gap-4'>
@@ -216,7 +216,7 @@ const MatchInformationShadcn = () => {
                 <div className='flex flex-col gap-2'>
                   {playersData.map((data, index) => (
                     <React.Fragment key={index}>
-                      <IndexRow player={data.p} fallback={data.f} history={data.h} />
+                      <IndexRow player={data.p.user} fallback={data.f} history={data.h} />
                       {index < playersData.length - 1 && <Separator />}
                     </React.Fragment>
                   ))}
@@ -256,13 +256,13 @@ const MatchInformationShadcn = () => {
 
                     {match.elo_history.map((elo) => {
                       const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
-                        (x) => x?.id === elo.user
+                        (x) => x?.player?.linked_user_id === elo.user
                       );
                       return (
                         <div key={elo.id}>
                           <div className='flex flex-row gap-2 w-full'>
                             <div className='flex-1'>
-                              <div className='font-semibold'>{player?.name ?? player?.displayName}</div>
+                              <div className='font-semibold'>{player?.player?.display_name ?? player?.user?.name ?? player?.user?.displayName}</div>
                               <div>Spieler</div>
                             </div>
                             <div className='flex-1'>

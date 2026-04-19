@@ -54,7 +54,8 @@
     "sentryIssues": "Sentry issues",
     "group_features": "Group Features",
     "helpAndInformation": "Help and information",
-    "appRefresh": "Refresh Application"
+    "appRefresh": "Refresh Application",
+    "merge_accounts": "Account-Merge"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

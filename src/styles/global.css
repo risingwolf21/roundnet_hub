@@ -3,11 +3,14 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
  
+@custom-variant dark (&:is(.dark *));
+
 html, body {
   overscroll-behavior: none;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 }
+
 
 @theme inline {
   --font-heading: var(--font-sans);

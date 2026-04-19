@@ -12,7 +12,6 @@ export const gamesKeys = {
   match: (matchId?: string) => [...gamesKeys.matches(), matchId] as const,
   players: () => [...gamesKeys.all, 'players'] as const,
   playerMatches: (player_id: string) => [...gamesKeys.players(), player_id, 'matches'] as const,
-  teams: () => [...gamesKeys.all, 'teams'] as const,
   Leaderboard: (minMatches: number) => [...gamesKeys.all, 'leaderboard', minMatches] as const,
 };
 
@@ -38,30 +37,56 @@ export const useMatch = (matchId?: string) =>
     queryKey: gamesKeys.match(matchId),
     queryFn: async () => {
       if (!matchId) return null;
-      const result = await supabase
+
+      const { data: match, error } = await supabase
         .schema('games')
         .from('match')
-        .select(
-          '*, team_a: teams!team_a(*, player_1: players!player_1(*), player_2: players!player_2(*)), team_b: teams!team_b(*, player_1: players!player_1(*), player_2: players!player_2(*)), sets: sets(*), elo_calc_log: elo_calc_log(*), elo_history: elo_history!elo_history_match_fkey(*)'
-        )
+        .select(`
+          *,
+          sets(*),
+          elo_calc_log(*),
+          elo_history!elo_history_match_fkey(*)
+        `)
         .eq('id', matchId)
         .maybeSingle();
 
-      if (!result.data) return null;
+      if (error || !match) return null;
 
-      const p1a = result.data.team_a.player_1.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.linked_user_id).maybeSingle() : null;
-      const p1b = result.data.team_b.player_1.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.linked_user_id ?? '').maybeSingle() : null;
-      const p2a = result.data.team_a.player_2.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.linked_user_id ?? '').maybeSingle() : null;
-      const p2b = result.data.team_b.player_2.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.linked_user_id ?? '').maybeSingle() : null;
+      const playerIds = [match.a_player_1, match.a_player_2, match.b_player_1, match.b_player_2].filter(Boolean);
+
+      // 3. Zuerst die linked_user_id aus games.players holen
+      const { data: players } = await supabase
+        .schema('games')
+        .from('players')
+        .select('*')
+        .in('player', playerIds);
+
+      const userIds = players?.map(p => p.linked_user_id).filter(x => x !== null) || [];
+
+      // 4. Alle User-Profile in EINEM Request aus public.user laden
+      const { data: users } = await supabase
+        .from('user') // Standard-Schema ist public
+        .select('*')
+        .in('id', userIds);
+
+      // 5. Mapping-Funktion
+      const getUser = (playerId: string) => {
+        const player = players?.find(p => p.player === playerId) ?? null;
+
+        const user = users?.find(u => u.id === player?.linked_user_id) ?? null;
+
+        return { player, user };
+      };
 
       return {
-        ...result.data,
-        player_1a: p1a?.data ?? null,
-        player_1b: p1b?.data ?? null,
-        player_2a: p2a?.data ?? null,
-        player_2b: p2b?.data ?? null,
+        ...match,
+        player_1a: getUser(match.a_player_1),
+        player_2a: getUser(match.a_player_2),
+        player_1b: getUser(match.b_player_1),
+        player_2b: getUser(match.b_player_2),
       };
     },
+    enabled: !!matchId,
   });
 
 export const useMatches = () =>
@@ -101,16 +126,6 @@ export const usePlayers = (user: UserWithGroups | null) =>
         me: me && 'id' in me ? me as PlayerWithSimpleUser : null,
       }
     }
-  });
-
-export const useTeams = () =>
-  useQuery<GamesTable<'teams'>[]>({
-    queryKey: gamesKeys.teams(),
-    queryFn: async () => {
-      const result = await supabase.schema('games').from('teams').select('*');
-
-      return result.data ?? [];
-    },
   });
 
 export const useCreateMatch = () =>
@@ -158,8 +173,6 @@ export const useCreateMatch = () =>
           player_1b_rating: team_b.player_1_rating,
           player_2b: team_b.player_2,
           player_2b_rating: team_b.player_2_rating,
-          team_a: team_a.name,
-          team_b: team_b.name,
           event: event,
           rated: rating_enabled,
           is_public: is_public,

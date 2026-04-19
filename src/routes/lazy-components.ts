@@ -57,3 +57,4 @@ export const LogsManager = lazyWithRetry(() => import('@/features/supabase/compo
 export const GrantsManagerShadcn = lazyWithRetry(() => import('@/features/grants/GrantsManager.shadcn'));
 export const AdminHistoryScreenShadcn = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen.shadcn'));
 export const PaymentsPendingAdminShadcn = lazyWithRetry(() => import('@/features/admin/PaymentsPendingAdmin.shadcn'));
+export const UserPlayerMappingShadcn = lazyWithRetry(() => import("@/features/admin/UserPlayerMapping.shadcn"));

@@ -33,10 +33,12 @@ type Props = {
   expected?: number;
   eff_team?: number;
   cat_team?: string;
+  p1_delta?: number | null;
+  p2_delta?: number | null;
   p1_eff?: number | null;
   p2_eff?: number | null;
-  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null, delta?: number, effectiveChange: number } | null;
-  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null, delta?: number, effectiveChange: number } | null;
+  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
+  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
   rated: boolean;
 };
 
@@ -107,6 +109,8 @@ const TeamCard = ({
   cat_team,
   p1_eff,
   p2_eff,
+  p1_delta,
+  p2_delta,
   p1,
   p2,
   rated,
@@ -154,7 +158,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p1_eff?.toFixed(0)}</Typography>
-                {deltaChip(p1?.effectiveChange)}
+                {deltaChip(p1_delta)}
               </Stack>
             )
           }
@@ -177,7 +181,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p2_eff?.toFixed(0)}</Typography>
-                {deltaChip(p2?.effectiveChange)}
+                {deltaChip(p2_delta)}
               </Stack>
             )
           }
@@ -208,10 +212,21 @@ const MatchInformation = () => {
   const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
   const useDeleteMatchMutation = useDeleteMatch(matchId);
 
-  const player1a_history = match?.elo_history.find((x) => x.user === match.team_a.player_1.player);
-  const player2a_history = match?.elo_history.find((x) => x.user === match.team_a.player_2.player);
-  const player1b_history = match?.elo_history.find((x) => x.user === match.team_b.player_1.player);
-  const player2b_history = match?.elo_history.find((x) => x.user === match.team_b.player_2.player);
+  const player1a_history = match?.elo_history.find((x) => x.user === match.a_player_1);
+  const player2a_history = match?.elo_history.find((x) => x.user === match.a_player_2);
+  const player1b_history = match?.elo_history.find((x) => x.user === match.b_player_1);
+  const player2b_history = match?.elo_history.find((x) => x.user === match.b_player_2);
+
+  const getName = (player: { player: Player | null, user: User | null } | null) => player?.player?.display_name ?? player?.user?.displayName ?? player?.user?.name ?? '';
+
+  const getTeamUser = (player: { player: Player | null, user: User | null } | null) => ({
+    displayName: getName(player),
+    avatarUrl: player?.user?.avatarUrl ?? player?.player?.rg_avatar_url ?? null,
+    isGuest: player?.player?.linked_user_id === null,
+    userId: player?.user?.id ?? null,
+    playerId: player?.player?.player ?? null,
+    delta: player1a_history?.delta,
+  })
 
   useEffect(() => {
     if (error)
@@ -244,27 +259,13 @@ const MatchInformation = () => {
           expected={match.elo_calc_log?.expected_a}
           eff_team={match.elo_calc_log?.eff_team_a}
           cat_team={match.elo_calc_log?.category_a}
+          p1_delta={player1a_history?.delta}
+          p2_delta={player2a_history?.delta}
           p1_eff={player1a_history?.eff_old_rating}
           p2_eff={player2a_history?.eff_old_rating}
-          p1={({
-            displayName: match.team_a.player_1.display_name ?? match.player_1a?.name ?? '',
-            avatarUrl: match.player_1a?.avatarUrl ?? null,
-            isGuest: match.team_a.player_1.linked_user_id === null,
-            userId: match.team_a.player_1.linked_user_id,
-            playerId: match.team_a.player_1.player,
-            delta: player1a_history?.delta,
-            effectiveChange: (player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0),
-          })}
-          p2={({
-            displayName: match.team_a.player_2.display_name ?? match.player_2a?.name ?? '',
-            avatarUrl: match.player_2a?.avatarUrl ?? null,
-            isGuest: match.team_a.player_2.linked_user_id === null,
-            userId: match.team_a.player_2.linked_user_id,
-            playerId: match.team_a.player_2.player,
-            delta: player2a_history?.delta,
-            effectiveChange: (player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0),
-          })}
-          rated={match.rated}
+          p1={getTeamUser(match.player_1a)}
+          p2={getTeamUser(match.player_2a)}
+          rated={match.rated ?? true}
         />
 
         <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1, pb: 0 }}>
@@ -298,27 +299,13 @@ const MatchInformation = () => {
           expected={match.elo_calc_log?.expected_b}
           eff_team={match.elo_calc_log?.eff_team_b}
           cat_team={match.elo_calc_log?.category_b}
+          p1_delta={player1b_history?.delta}
+          p2_delta={player2b_history?.delta}
           p1_eff={player1b_history?.eff_old_rating}
           p2_eff={player2b_history?.eff_old_rating}
-          p1={({
-            displayName: match.team_b.player_1.display_name ?? match.player_1b?.name ?? '',
-            avatarUrl: match.player_1b?.avatarUrl ?? null,
-            isGuest: match.team_b.player_1.linked_user_id === null,
-            playerId: match.team_b.player_1.player,
-            userId: match.team_b.player_1.linked_user_id,
-            delta: player1b_history?.delta,
-            effectiveChange: (player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0),
-          })}
-          p2={({
-            displayName: match.team_b.player_2.display_name ?? match.player_2b?.name ?? '',
-            avatarUrl: match.player_2b?.avatarUrl ?? null,
-            isGuest: match.team_b.player_2.linked_user_id === null,
-            playerId: match.team_b.player_2.player,
-            userId: match.team_b.player_2.linked_user_id,
-            delta: player2b_history?.delta,
-            effectiveChange: (player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0),
-          })}
-          rated={match.rated}
+          p1={getTeamUser(match.player_1b)}
+          p2={getTeamUser(match.player_2b)}
+          rated={match.rated ?? true}
         />
 
         <Has perm={'games.update.score'}>
@@ -330,7 +317,7 @@ const MatchInformation = () => {
             mb: '16px',
           }}
             onClick={() => {
-              dialogs.open(ReportSetsDialog, { matchId: match.id, team_a_name: match.team_a.name, team_b_name: match.team_b.name, sets: match.sets });
+              dialogs.open(ReportSetsDialog, { matchId: match.id, team_a_name: match.team_a_name ?? '', team_b_name: match.team_b_name ?? '', sets: match.sets });
             }}>
             <Edit />
           </Fab>
@@ -437,7 +424,7 @@ const MatchInformation = () => {
               <Divider />
               {match.elo_history.map((elo) => {
                 const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
-                  (x) => x?.id === elo.user
+                  (x) => x?.player?.player === elo.user
                 );
                 return (
                   <Stack key={elo.id}>
@@ -445,7 +432,7 @@ const MatchInformation = () => {
                       <Stack direction={'row'} spacing={2} width={'100%'}>
                         <ListItemText
                           sx={{ width: '50%' }}
-                          primary={player?.name ?? 'not found'}
+                          primary={player?.user?.name ?? player?.player?.display_name ?? 'not found'}
                           secondary={'Spieler'}
                           primaryTypographyProps={{ fontWeight: 'bold' }}
                         />

@@ -5,14 +5,11 @@ SET
   LOCAL TIME ZONE 'UTC';
 
 SELECT
-  plan (11);
+  plan (9);
 
 -- Wichtige Tabellen vorhanden?
 SELECT
   has_table ('games', 'players', 'games.players exists');
-
-SELECT
-  has_table ('games', 'teams', 'games.teams exists');
 
 SELECT
   has_table ('games', 'match', 'games.match exists');
@@ -57,18 +54,6 @@ SELECT
     'ix_elo_history_match',
     'ix_elo_history_match index exists'
   );
-
-
-SELECT ok(
-  EXISTS (
-    SELECT 1
-    FROM pg_constraint c
-    WHERE c.conrelid = 'games.teams'::regclass
-      AND c.contype = 'f'
-      AND pg_get_constraintdef(c.oid) ILIKE '%(player_1)%REFERENCES games.players%'
-  ),
-  'teams.player_1 hat FK auf games.players'
-);
 
 -- Trigger Users→Players
 SELECT

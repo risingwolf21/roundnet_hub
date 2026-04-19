@@ -3,7 +3,7 @@ import { useCreateMatch, usePlayers } from '@/tanstack/games';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid, v4 } from 'uuid';
 import { useApplication } from '../auth/ApplicationContext';
 
 import NumberField from '@/components/mui/NumberField';
@@ -21,7 +21,6 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -42,7 +41,7 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import { t } from 'i18next';
 
 type Props = {
-  options: PlayerWithSimpleUser[];
+  options: (Player | PlayerWithSimpleUser)[];
   selected: PlayerWithSimpleUser[];
   loading: boolean;
   label: string;
@@ -54,22 +53,33 @@ type Props = {
 const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSelect, onRemove }: Props) => {
   const dialogs = useDialogs();
 
-  const displayName = value && 'isPending' in value ? value.name : value?.name;
-  const avatarUrl = value && 'isPending' in value ? undefined : value?.avatarUrl ?? value?.rg_avatar_url ?? '';
-  const isGuest = value && 'isPending' in value;
+  const displayName = value && 'name' in value ? value.name : value?.display_name ?? 'Unknown';
+  const avatarUrl = value && 'avatarUrl' in value ? value?.avatarUrl ?? value?.rg_avatar_url ?? '' : '';
+  const isGuest = value && value.linked_user_id === null;
 
   return (
-    <Card sx={{ borderRadius: 1, p: 0 }}>
-      <CardActionArea sx={{ p: 1 }} disabled={disabled} onClick={async () => {
-        const result = await dialogs.open(SelectPlayerDialog, {
-          options: options,
-          selectedPlayers: selected,
-        });
-        if (result) {
-          onSelect(result);
-        }
-      }}>
-        <ListItem disablePadding>
+    <Card sx={{ borderRadius: 1, p: 0, '.MuiListItemSecondaryAction-root': { right: "8px" } }}>
+      <ListItem
+        disablePadding
+        sx={{ p: 1 }}
+        secondaryAction={onRemove && <IconButton sx={{ mr: 0 }} edge="end" onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}>
+          <Close />
+        </IconButton>}>
+        <ListItemButton
+          disabled={disabled}
+          sx={{ p: 0 }}
+          onClick={async () => {
+            const result = await dialogs.open(SelectPlayerDialog, {
+              options: options,
+              selectedPlayers: selected,
+            });
+            if (result) {
+              onSelect(result);
+            }
+          }}>
           <ListItemAvatar sx={(theme) => ({
             [theme.breakpoints.down('xs')]: {
               display: 'none',
@@ -83,38 +93,29 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
               )}
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={loading ? "Wird geladen..." : displayName ?? 'Nicht gewählt'} secondary={isGuest ? 'Gastspieler' : value?.rg_id ?? label} slotProps={{
-            primary: {
-              whiteSpace: 'nowrap',
-              overflow: 'clip',
-              textOverflow: 'ellipsis',
-            },
-            secondary: {
-              whiteSpace: 'nowrap',
-              overflow: 'clip',
-              textOverflow: 'ellipsis',
-            },
-          }} />
-          {onRemove && <IconButton sx={{ mr: 0 }} edge="end" onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}>
-            <Close />
-          </IconButton>}
-        </ListItem>
-      </CardActionArea>
+          <ListItemText
+            primary={loading ? "Wird geladen..." : displayName ?? 'Nicht gewählt'}
+            secondary={isGuest ? 'Gastspieler' : value?.rg_id ?? label} slotProps={{
+              primary: {
+                whiteSpace: 'nowrap',
+                overflow: 'clip',
+                textOverflow: 'ellipsis',
+              },
+              secondary: {
+                whiteSpace: 'nowrap',
+                overflow: 'clip',
+                textOverflow: 'ellipsis',
+              },
+            }} />
+
+        </ListItemButton>
+      </ListItem>
     </Card>
   );
 };
 
-type PendingGuest = {
-  isPending: true;
-  index: number;
-  name: string;
-};
-
 // Unser State akzeptiert nun beides
-type PlayerSelection = PlayerWithSimpleUser | PendingGuest | null;
+type PlayerSelection = PlayerWithSimpleUser | Player | null;
 
 const ReportScore = () => {
   const [sets, setSets] = useState<MatchSet[]>([
@@ -181,25 +182,33 @@ const ReportScore = () => {
         return;
       }
     }
-    const [name1a, ...surname1a] = player1a.name.split(' ');
-    const [name2a, ...surname2a] = player2a.name.split(' ');
-    const [name1b, ...surname1b] = player1b.name.split(' ');
-    const [name2b, ...surname2b] = player2b.name.split(' ');
-    const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
-    const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
-
-    const resolveInfo = (p: PendingGuest | PlayerWithSimpleUser) => {
-      if ('isPending' in p) {
-        const newId = uuid();
-        return { id: newId, name: p.name, rating: p.index };
+    const resolveInfo = (p: Player | PlayerWithSimpleUser) => {
+      if ('name' in p) {
+        return {
+          id: p.id,
+          name: p.name,
+          rating: p.ka_index
+        };
       }
-      return { id: p.id, name: p.name, rating: p.ka_index };
+      return {
+        id: p.player,
+        name: p.display_name || 'Unbekannt',
+        rating: p.ka_index
+      };
     };
 
     const p1a = resolveInfo(player1a);
     const p2a = resolveInfo(player2a);
     const p1b = resolveInfo(player1b);
     const p2b = resolveInfo(player2b);
+
+    const getLastName = (fullName: string) => {
+      const parts = fullName.trim().split(' ');
+      return parts.pop() || fullName;
+    };
+
+    const team_a_name = `${getLastName(p1a.name)}/${getLastName(p2a.name)}`;
+    const team_b_name = `${getLastName(p1b.name)}/${getLastName(p2b.name)}`;
 
     const playerNamesMapping: { [key: string]: string } = {};
     [p1a, p2a, p1b, p2b].forEach(p => {
@@ -404,7 +413,7 @@ const ReportScore = () => {
 export default ReportScore;
 
 
-const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: PlayerWithSimpleUser[], selectedPlayers: PlayerWithSimpleUser[] }, PlayerSelection>) => {
+const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (Player | PlayerWithSimpleUser)[], selectedPlayers: PlayerWithSimpleUser[] }, PlayerSelection>) => {
 
   const [searchString, setSearchString] = useState('');
   const dialogs = useDialogs();
@@ -441,23 +450,26 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
         <List sx={{ width: '100%' }}>
           {payload.options
             .filter(
-              (x: PlayerWithSimpleUser) =>
-                searchString === '' || (x.name ?? '').toLowerCase().includes(searchString.toLowerCase())
+              (x: Player | PlayerWithSimpleUser) =>
+                searchString === '' || (('name' in x) ? x.name : x.display_name ?? '').toLowerCase().includes(searchString.toLowerCase())
             )
-            .map((user: PlayerWithSimpleUser) => (
-              <ListItemButton key={user.id} onClick={() => onClose(user)} disabled={payload.selectedPlayers.some((x) => x.id === user.id)}>
+            .map((user: Player | PlayerWithSimpleUser) => {
+
+              const displayName = 'name' in user ? user.name : user?.display_name ?? 'Unknown';
+              const avatarUrl = 'avatarUrl' in user ? user?.avatarUrl ?? user?.rg_avatar_url ?? '' : '';
+              return <ListItemButton key={user.player} onClick={() => onClose(user)} disabled={payload.selectedPlayers.some((x) => x.id === user.player)}>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2 }}>
-                    {user.avatarUrl || user.rg_avatar_url ? (
-                      <img src={user.avatarUrl ?? user.rg_avatar_url ?? ''} alt="logo" width={'100%'} height={'100%'} />
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="logo" width={'100%'} height={'100%'} />
                     ) : (
                       <AccountBox />
                     )}
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={user.name} secondary={t('userName')} />
+                <ListItemText primary={displayName} secondary={t('userName')} />
               </ListItemButton>
-            ))}
+            })}
         </List>
         <Has perm={"games.create.guest-player"}>
           <Fab
@@ -481,9 +493,30 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
   )
 };
 
-const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGuest | null>) => {
+const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, Player | null>) => {
   const [name, setName] = useState('');
   const [index, setIndex] = useState(1000);
+
+  const submit = () => {
+
+    onClose({
+      created_at: formatDateToDatabase(new Date()),
+      gender: 'm',
+      rg_avatar_url: null,
+      rg_link: null,
+      rg_id: null,
+      rg_index: null,
+      hide_rating: false,
+      effective_rating_cached: index,
+      matches_played: 0,
+      player: v4(),
+      pro_status: false,
+      display_name: name,
+      ka_index: index,
+      linked_user_id: null
+    })
+  }
+
   return (
     <Dialog open={open} onClose={() => onClose(null)} fullScreen>
       <Box
@@ -502,7 +535,7 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGue
             <Typography variant="h6" component="div">
               Spieler erstellen
             </Typography>
-            <Button color="inherit" sx={{ marginLeft: 'auto' }} onClick={() => onClose({ isPending: true, index, name })}>
+            <Button color="inherit" sx={{ marginLeft: 'auto' }} onClick={submit}>
               Speichern
             </Button>
           </Toolbar>

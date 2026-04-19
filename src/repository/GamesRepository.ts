@@ -96,8 +96,6 @@ export const GamesRepository = {
         player_1b_rating: team_b.player_1_rating,
         player_2b: team_b.player_2,
         player_2b_rating: team_b.player_2_rating,
-        team_a: team_a.name,
-        team_b: team_b.name,
         event,
         created_by,
         is_public,

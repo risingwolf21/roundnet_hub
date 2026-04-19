@@ -20,8 +20,19 @@ export const adminKeys = {
   },
   simpleUsers: () => [...adminKeys.all, 'simpleUsers'] as const,
   logs: (pageKey: string, filterKey: string, sortKey: string) => [...adminKeys.all, 'logs', pageKey, filterKey, sortKey] as const,
-  analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to]
+  analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to],
+  unlinkedPlayers: () => [...adminKeys.all, 'unlinkedPlayers']
 };
+
+export const useUnlinkedPlayers = () =>
+  useQuery({
+    queryKey: adminKeys.unlinkedPlayers(),
+    queryFn: async () => {
+      const result = await supabase.schema("games").from("players").select("*").is("linked_user_id", null);
+
+      return result.data ?? [];
+    },
+  })
 
 export const useUsers = () =>
   useQuery({
