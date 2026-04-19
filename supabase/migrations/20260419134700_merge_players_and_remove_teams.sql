@@ -64,6 +64,8 @@ drop function if exists "games"."add_match_with_sets"(team_a text, player_1a uui
 
 drop function if exists "games"."is_member_of_teams"(uuid, uuid);
 
+drop function if exists "games"."predict_elo_for_match";
+
 drop view if exists "games"."leaderboard";
 
 drop view if exists "games"."user_matches";
