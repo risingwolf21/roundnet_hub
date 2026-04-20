@@ -257,7 +257,7 @@ const EventInformationTab = ({ event, selectedEventPlace }: { event: EventsUserV
       <CardContent className="text-sm space-y-4 text-foreground/90">
         <div>
           <h4 className="font-semibold mb-1 text-foreground">Beschreibung</h4>
-          <p className="whitespace-pre-line leading-relaxed text-muted-foreground">
+          <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
             {event.description || "Keine Beschreibung angegeben."}
           </p>
         </div>
@@ -812,16 +812,21 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
             </Has>
 
             <Has perm={'event.cancel'}>
-              <DropdownMenuItem className={"text-base"} onClick={() => {
-                cancelTrainingMutation.mutate(
-                  { event, isCancelled: !event.isCancelled },
-                  {
-                    onError: (error) => {
-                      captureException(error);
-                      toast.error(error.message);
-                    },
-                  }
-                );
+              <DropdownMenuItem className={"text-base"} onClick={async () => {
+                const result = await dialogs.confirm(`Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`, {
+                  title: `Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`,
+                  message: `Möchtest du das Training wirklich ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`
+                })
+                if (result)
+                  cancelTrainingMutation.mutate(
+                    { event, isCancelled: !event.isCancelled },
+                    {
+                      onError: (error) => {
+                        captureException(error);
+                        toast.error(error.message);
+                      },
+                    }
+                  );
               }}>
                 {
                   event.isCancelled ? <CircleCheck /> : <Ban />

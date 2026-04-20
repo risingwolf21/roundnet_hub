@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { TimePickerShadcn } from '@/components/ui/time-picker';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
@@ -205,7 +206,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
 
             <Field className='gap-1'>
               <FieldLabel htmlFor='event-description'>Event-Beschreibung</FieldLabel>
-              <Input
+              <Textarea
                 id="event-description"
                 name="event-description"
                 placeholder="Beschreibung"
