@@ -10,9 +10,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Has } from "@/hooks/useGrants";
-import { useAddCommentMutation, useAttendance, useComments, useEvent, useUpdateAttendanceMutation } from "@/tanstack/events";
+import { useAddCommentMutation, useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, eventInThePast, EventsUserView, FullAttendance, FullComment, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase, getInitials } from "@/utils";
 import { Separator } from '@base-ui/react/separator';
@@ -21,7 +27,8 @@ import { t } from "i18next";
 import { toNumber } from "lodash";
 import {
   Activity,
-  Calendar, Check, CheckCircle2, CircleAlert, Clock,
+  Ban,
+  Calendar, Check, CheckCircle2, CircleAlert, CircleCheck, Clock,
   Cloud,
   CloudFog,
   CloudLightning,
@@ -29,12 +36,18 @@ import {
   CloudRain,
   CloudSnow,
   CloudSun,
+  EllipsisVertical,
   Hourglass, InfoIcon,
+  Lock,
   LucideIcon,
   MapPin, Megaphone, MessageSquare,
   Moon,
+  Pencil,
+  Plus,
   SquareArrowRightExit,
   Sun,
+  Trash2,
+  Volleyball,
   XCircle
 } from "lucide-react";
 import { TFunction } from 'node_modules/i18next/typescript/t';
@@ -293,7 +306,7 @@ const EventInformationTab = ({ event, selectedEventPlace }: { event: EventsUserV
                   </div>
                 </div>
                 <MapContainer
-                  style={{ width: '100%', height: '100%', borderRadius: '16px' }}
+                  style={{ width: '100%', height: '100%', borderRadius: '16px', zIndex: 10 }}
                   center={[selectedEventPlace.lat, selectedEventPlace.lon]}
                   zoom={15}
                   dragging={false}
@@ -448,6 +461,98 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
       </CardContent>
     </Card>
   </TabsContent>
+}
+
+const EventMatchesTab = ({ event, matches }: { event: EventsUserView, matches: FullMatch[] }) => {
+
+  const dialogs = useDialogs();
+  const navigate = useNavigate();
+
+  return <TabsContent value="matches" className="m-0">
+    <Card className="pt-0 gap-0">
+      <CardHeader className="border-b !py-2">
+        <div className="flex justify-between items-center !p-0">
+          <CardTitle className="text-lg flex items-center">
+            Spiele
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-2">
+        {matches.length > 0 ? (
+          matches.map(x => {
+            const sets = (x.sets?.filter(x => x) ?? []).map(x => {
+              const { team_a_score, team_b_score } = x;
+              const teamAWon = Number(team_a_score) > Number(team_b_score);
+              return {
+                teamAWon,
+                team_a_score,
+                team_b_score
+              }
+            });
+            const teamASetWins = sets.reduce((acc, curr) => acc + (curr.teamAWon ? 1 : -1), 0);
+
+            return <Item key={x.id} variant={"outline"} className='p-1 pl-2' onClick={() => navigate(`/matches/${x.id}`)}>
+              <div key={x.id} className={cn("w-full flex flex-row justify-between relative gap-4 pl-4 p-2 rounded-md after:absolute after:inset-y-2 after:left-0 after:w-1 after:rounded-full", {
+                'after:hidden': x.sets.length !== 0,
+              })
+              }>
+                <div className='flex-1 min-w-0 ml-2 flex flex-row justify-between'>
+                  <div className='flex flex-row gap-4'>
+                    <div>
+                      <div>
+                        <div className={cn('text-md', {
+                          "font-bold": teamASetWins > 0
+                        })}>
+                          {x.team_a_name}
+                        </div>
+                        <div className={cn('text-md', {
+                          "font-bold": teamASetWins < 0
+                        })}>
+                          {x.team_b_name}
+                        </div>
+                      </div>
+                    </div>
+                    <div className='flex justify-center flex-col'>
+                      {!x.rated && (
+                        <Badge variant={"outline"}>Ungewertet</Badge>
+                      )}
+                      {!x.is_public && (
+                        <Badge variant={"outline"}><Lock className="mr-1 size-3" />Privat</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className='flex flex-row h-full items-center gap-2'>
+                    {
+                      sets.map((x: any) => <div key={v4()}>
+                        <div className={cn('text-md', {
+                          "font-bold": x.teamAWon
+                        })}>{x.team_a_score}</div>
+                        <div className={cn('text-md', {
+                          "font-bold": !x.teamAWon
+                        })}>{x.team_b_score}</div>
+                      </div>)
+                    }
+                  </div>
+                </div>
+
+              </div>
+            </Item>
+          })
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-muted-foreground">
+            <MessageSquare className="h-10 w-10 opacity-20" />
+            <p>Noch keine Spiele.<br />Sei der Erste!</p>
+            <Button onClick={async () => {
+              dialogs.open(ReportScoreShadcn, { eventId: event.id })
+            }}>
+              <Plus />
+              Spiel hinzufügen
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </TabsContent >
 }
 
 const EventCommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
@@ -628,9 +733,16 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
 
 const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+  const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
+  const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
   const { user } = useGrants();
+  const navigate = useNavigate();
+  const dialogs = useDialogs();
   const { data: comments = [], refetch: refetchComments } = useComments(event.id);
   const { data: attendance = [], isLoading, refetch: refetchAttendance } = useAttendance(event.id);
+  const { data: matches = [] } = useEventMatches(event.id);
+  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
+
 
   const { refetch: refetchEvent } = useEvent(event.id);
 
@@ -665,6 +777,83 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
       title={"Eventdetails"}
       primaryAction="back"
       user={user}
+      actions={
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size={"icon-lg"} >
+            <EllipsisVertical />
+          </Button>} />
+          <DropdownMenuContent className={"w-full"}>
+            <Has perm={'event.edit'}>
+              <DropdownMenuItem className={"text-base"} onClick={async () => {
+                const result = await dialogs.open(EditEventOptionsDialogShadcn);
+                if (result) {
+                  await dialogs.open(CreateOrUpdateEventDialogShadcn, {
+                    event: {
+                      ...event,
+                      items_enabled: false,
+                      group: event.group?.id ?? null,
+                    } as EventTable,
+                    eventGroup: event.group,
+                    option: result,
+                    items: allItems,
+                  });
+                }
+              }}>
+                <Pencil />
+                {t('events.editEvent')}
+              </DropdownMenuItem>
+            </Has>
+
+            <Has perm={'event.transform'}>
+              <DropdownMenuItem disabled className={"text-base"}>
+                <Pencil />
+                {t('events.transformEventSeries')}
+              </DropdownMenuItem>
+            </Has>
+
+            <Has perm={'event.cancel'}>
+              <DropdownMenuItem className={"text-base"} onClick={() => {
+                cancelTrainingMutation.mutate(
+                  { event, isCancelled: !event.isCancelled },
+                  {
+                    onError: (error) => {
+                      captureException(error);
+                      toast.error(error.message);
+                    },
+                  }
+                );
+              }}>
+                {
+                  event.isCancelled ? <CircleCheck /> : <Ban />
+                }
+                {event.isCancelled ? 'Stattfinden' : 'Absagen'}
+              </DropdownMenuItem>
+            </Has>
+
+            <Has perm={'event.delete'}>
+              <DropdownMenuItem className={"text-base"} onClick={async () => {
+                const result = await dialogs.open(DeleteEventDialog);
+                if (result)
+                  deleteTrainingMutation.mutate(
+                    { event, type: result, currentUser: user },
+                    {
+                      onSuccess: () => {
+                        navigate('/training/list', { replace: true });
+                      },
+                      onError: (error) => {
+                        captureException(error);
+                        toast.error(error.message);
+                      },
+                    }
+                  );
+              }}>
+                <Trash2 />
+                Löschen
+              </DropdownMenuItem>
+            </Has>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
     />
     <main className='flex-1 size-full pb-safe-bottom'>
       <PullToRefresh onRefresh={() => refetch()}>
@@ -680,11 +869,6 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
                   <CardTitle className="text-xl sm:text-2xl font-semibold leading-tight">
                     {event.title}
                   </CardTitle>
-                  {event.isCancelled && (
-                    <Badge variant="destructive" className="mt-2 text-sm uppercase font-bold tracking-wider">
-                      Fällt aus
-                    </Badge>
-                  )}
                 </div>
               </div>
             </CardHeader>
@@ -739,19 +923,60 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
                 </Alert>
               )}
               <EventInformationAttendanceState event={event} fetchMode={fetchMode} />
+
+
+
+              <Has perm={"event.create.constellations"}>
+                <Button className={"w-full"} onClick={async () => {
+                  dialogs.open(ConstellationCreationDialogShadcn, {
+                    users: attendance.filter(x => x.state === "Attending").map(x => x.user),
+                    event
+                  })
+                }}>
+                  <Volleyball />
+                  Konstellationen erstellen
+                </Button>
+              </Has>
             </CardContent>
           </Card>
 
           <Tabs defaultValue={"information"} className="w-full mt-6">
-            <TabsList className="grid w-full grid-cols-3 bg-white border !h-12 shadow-sm">
-              <TabsTrigger value="information" className="h-10 data-[state=active]:bg-primary/5">Information</TabsTrigger>
-              <TabsTrigger value="attendance" className="h-10 data-[state=active]:bg-primary/5">Teilnehmer ({attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length})</TabsTrigger>
-              <TabsTrigger value="comments" className="h-10 data-[state=active]:bg-primary/5">Kommentare ({comments.length})</TabsTrigger>
+            <TabsList className="flex w-full justify-start overflow-x-auto bg-white border !h-12 shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <TabsTrigger
+                value="information"
+                className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
+              >
+                Information
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="attendance"
+                className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
+              >
+                Teilnehmer ({attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length})
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="comments"
+                className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
+              >
+                Kommentare ({comments.length})
+              </TabsTrigger>
+
+              <Has feat={"games"}>
+                <TabsTrigger
+                  value="matches"
+                  className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
+                >
+                  Spiele ({matches.length})
+                </TabsTrigger>
+              </Has>
             </TabsList>
             <div className="pt-4">
               <EventInformationTab event={event} selectedEventPlace={selectedEventPlace} />
               <EventAttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} />
               <EventCommentsTab event={event} user={user} comments={comments} />
+              <EventMatchesTab matches={matches} event={event} />
             </div>
           </Tabs>
         </div>
@@ -761,9 +986,19 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
 };
 
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Item } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { useDialogs } from "@/contexts/DialogsProvider";
+import { cn } from "@/lib/utils";
+import { captureException } from "@sentry/react";
 import { useNavigate } from "react-router";
+import { v4 } from "uuid";
+import ReportScoreShadcn from "../games/ReportScore.shadcn";
+import { ConstellationCreationDialogShadcn } from "./dialogs/ConstellationsCreationDialog.shadcn";
+import { CreateOrUpdateEventDialogShadcn } from "./dialogs/CreateOrUpdateEventDialog.shadcn";
+import { DeleteEventDialog } from "./dialogs/DeleteEventDialog.shadcn";
+import { EditEventOptionsDialogShadcn } from "./dialogs/EditEventOptionsDialog.shadcn";
 
 export const EventInformationSkeleton = () => {
   return (

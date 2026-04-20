@@ -9,7 +9,6 @@ import {
   useUpdateChallengeMutation
 } from '@/tanstack/challenge';
 import { captureException, withProfiler } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import { useCallback } from 'react';
 import { useGrants } from '../auth/GrantsContext';
@@ -17,6 +16,7 @@ import { useGrants } from '../auth/GrantsContext';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChallengeActivityListShadcn } from './ChallengeActivityList.shadcn';

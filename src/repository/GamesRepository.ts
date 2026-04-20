@@ -5,25 +5,11 @@ import { fetchSimpleUser } from './UserRepository';
 
 export const fetchMatch = () =>
   supabase.schema('games').from('match').select(`
-     *,
-      team_a: teams!match_team_a_fkey (
-        name,
-        player1: players!player_1 (
-          *
-        ),
-        player2: players!player_2 (
-          *
-        )
-      ),
-      team_b: teams!match_team_b_fkey (
-        name,
-        player1: players!player_1 (
-          *
-        ),
-        player2: players!player_2 (
-          *
-        )
-      ),
+      *,
+      a_player_1: players!a_player_1(*),
+      a_player_2: players!a_player_2(*),
+      b_player_1: players!b_player_1(*),
+      b_player_2: players!b_player_2(*),
       sets(*)
   `);
 

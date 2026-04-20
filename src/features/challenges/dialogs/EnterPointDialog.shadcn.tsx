@@ -1,12 +1,11 @@
 
 import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
-import { DialogProps } from '@toolpad/core';
 import Compressor from 'compressorjs';
 import { format, isAfter, isBefore, isSameDay, isSameWeek } from 'date-fns';
 import React, { useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,8 +13,8 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DialogProps } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
-import AlertTitle from '@mui/material/AlertTitle';
 import { BadgeCheck, Minus, Plus, Trash, TriangleAlert, UploadCloud } from 'lucide-react';
 import { CalendarDay, Modifiers } from 'react-day-picker';
 

@@ -21,6 +21,7 @@ export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
 };
 
 declare global {
+  type EventTable = Tables<'events'>;
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
   type ChallengeStatsMeta = Tables<'challenge_stats_meta'>;
@@ -42,7 +43,6 @@ declare global {
   type LeaderboardEntry = GamesTable<'leaderboard'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
-  type Team = GamesTable<'teams'>;
   type PlayerWithSimpleUser = Player & { name: string; id: string; avatarUrl: string | null };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;

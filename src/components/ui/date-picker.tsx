@@ -2,7 +2,6 @@
 
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
-import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -11,26 +10,40 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { de } from "date-fns/locale"
 
-export function DatePickerDemo() {
-  const [date, setDate] = React.useState<Date>()
+type Props = {
+  id?: string;
+  name?: string;
+  value: Date | undefined;
+  onValueChange: (date: Date | undefined) => void;
+  placeholder?: string;
+  dateFormat?: string;
+  className?: string;
+}
+
+export const DatePickerShadcn = ({ value, onValueChange, placeholder, dateFormat, id, name, className }: Props) => {
 
   return (
     <Popover>
       <PopoverTrigger
         render={
           <Button
+            id={id}
             variant="outline"
-            data-empty={!date}
-            className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+            data-empty={!value}
+            className={cn("justify-start text-left font-normal",
+              !value && "text-muted-foreground",
+              className)}
           />
         }
       >
         <CalendarIcon />
-        {date ? format(date, "PPP") : <span>Pick a date</span>}
+        {value ? format(value, dateFormat ?? "PPP", { locale: de }) : <span>{placeholder ?? 'Pick a date'}</span>}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} />
+        <Calendar id={id} mode="single" selected={value} onSelect={(date) => onValueChange(date)} />
       </PopoverContent>
     </Popover>
   )

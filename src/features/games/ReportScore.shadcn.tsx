@@ -88,7 +88,7 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
 
 type PlayerSelection = PlayerWithSimpleUser | Player | null;
 
-const ReportScoreShadcn = ({ open, onClose }: DialogProps) => {
+const ReportScoreShadcn = ({ open, onClose, payload: { eventId } }: DialogProps<{ eventId?: string }>) => {
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
@@ -195,6 +195,7 @@ const ReportScoreShadcn = ({ open, onClose }: DialogProps) => {
         is_public: is_public,
         created_by: user?.id,
         playerNamesMapping,
+        event: eventId
       },
       {
         onSuccess: () => onClose(),

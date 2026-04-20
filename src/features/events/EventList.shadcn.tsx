@@ -2,13 +2,13 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import AddIcon from '@mui/icons-material/Add';
 import { withProfiler } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { EventItemShadcn } from './components/EventItem';
-import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
+import { CreateOrUpdateEventDialogShadcn } from './dialogs/CreateOrUpdateEventDialog.shadcn';
 
 const EventScreen = () => {
   const { user } = useGrants();
@@ -47,7 +47,7 @@ const EventScreen = () => {
         title="Events Übersicht"
         user={user}
         actions={
-          <Button variant={"ghost"} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
+          <Button variant={"ghost"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
             <AddIcon />
           </Button>
         }
