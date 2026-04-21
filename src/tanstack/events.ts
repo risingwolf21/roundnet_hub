@@ -48,6 +48,20 @@ export const useRecurringEvents = () =>
     queryFn: () => SupabaseEventRepository.fetchRecurringEvents(),
   });
 
+export const useCreateNextOccurences = () => useMutation({
+  mutationFn: async () => {
+    const result = await supabase.rpc("create_next_occurrences", {
+      p_horizon: '30 days',
+      p_run_at: formatDateToDatabase(new Date())
+    }).throwOnError();
+
+    return result.data ?? [];
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: eventKeys.list("upcoming") });
+  }
+})
+
 export const useEventMatches = (eventId: string) =>
   useQuery<FullMatch[]>({
     queryKey: eventKeys.eventMatches(eventId),

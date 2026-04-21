@@ -3,12 +3,15 @@ import { format, isAfter, parse } from 'date-fns';
 import { eventInThePast, EventWithGroup } from '../../types/supabaseTypes';
 
 import { AppBar } from '@/components/ui/appbar';
-import { Item } from '@/components/ui/item';
+import { Button } from '@/components/ui/button';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import { useRecurringEvents } from '@/tanstack/events';
+import { useCreateNextOccurences, useRecurringEvents } from '@/tanstack/events';
 import groupBy from 'lodash.groupby';
 import { Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { formatDateRange } from './components/EventItem';
 import { PlaceType } from './types';
@@ -18,6 +21,7 @@ const RecurringEventsShadcn = () => {
 
   const navigate = useNavigate();
   const { data: recurringEvents = [], isLoading, refetch } = useRecurringEvents();
+  const createNextEvents = useCreateNextOccurences();
 
   return (
     <div>
@@ -30,6 +34,37 @@ const RecurringEventsShadcn = () => {
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
           <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
+
+            <Item variant={"outline"}>
+              <ItemContent>
+                <ItemTitle>Wiederkehrende Events</ItemTitle>
+                <ItemDescription>Hier kannst du wiederkehrende Events für die nächsten 30 Tage erstellen lassen</ItemDescription>
+                {
+                  (createNextEvents.data ?? []).length > 0 && <ol className='list-decimal pl-6 pt-2'>
+                    {
+                      createNextEvents.data?.map(x => (
+                        <li key={x.id} className='text-sm text-muted-foreground'>
+                          {`Event "${x.title}" am ${format(new Date(x.startingDateTime!), 'dd.MM.yyyy, HH:mm')} wurde erstellt.`}
+                        </li>
+                      ))
+                    }
+                  </ol>
+                }
+              </ItemContent>
+              <ItemActions>
+                <Button variant={"outline"} disabled={createNextEvents.isPending} onClick={() => {
+                  createNextEvents.mutate(undefined, {
+                    onSuccess: (data) => toast.success(`Es wurden erfolgreich ${data.length} Events erstellt!`),
+                    onError: () => toast.error("Es ist ein Fehler aufgetreten beim Erstellen der Events!")
+                  });
+                }}>
+                  {
+                    createNextEvents.isPending ? <Spinner /> : "Erstellen"
+                  }
+                </Button>
+              </ItemActions>
+            </Item>
+
             {Object.entries(groupBy(recurringEvents, (x) => format(x.startingDateTime!, 'EEEE')))
               .sort((a, b) =>
                 isAfter(
@@ -44,7 +79,7 @@ const RecurringEventsShadcn = () => {
                   <div className="text-sm font-semibold ml-2">
                     {key}
                   </div>
-                  <div>
+                  <div className='flex flex-col gap-2'>
                     {value.map((event: EventWithGroup) => {
                       const place = event.place ? JSON.parse(event.place) as PlaceType : null;
                       return <Item key={event.id} onClick={() => navigate(`/training/event/${event.id}`)} variant={"outline"}>
