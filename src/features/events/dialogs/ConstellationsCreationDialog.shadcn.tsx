@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { cn } from '@/lib/utils';
 import { captureException } from '@sentry/react';
 import { ChevronDownIcon, Plus, RefreshCcw, Save, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -749,7 +750,56 @@ export const ConstellationCreationDialogShadcn = ({
                         <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Spiele ({x.game.matches.length})
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          {
+                            x.game.matches.map((matchData, matchIndex) => (
+                              <Item key={matchIndex} className="w-full" variant={"outline"}>
+                                <ItemContent className=''>
+                                  <div className='flex flex-col overflow-hidden w-full'>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {matchData[0].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
+                                    </div>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {matchData[1].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
+                                    </div>
+                                  </div>
+                                </ItemContent>
+                                <ItemActions>
+                                  <Switch
+                                    checked={x.options.fixedMatches?.includes(matchData) ?? false}
+                                    onCheckedChange={(val) => {
+                                      if (val) {
+                                        updateRoundOption(index, { fixedMatches: [...(x.options.fixedMatches ?? []), matchData] });
+                                      } else {
+                                        updateRoundOption(index, { fixedMatches: x.options.fixedMatches?.filter((m) => m !== matchData) });
+                                      }
+                                    }}
+                                  />
+                                </ItemActions>
+                              </Item>
+                            ))
+                          }
 
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Collapsible className={cn(x.game.bench.length < 1 && "hidden")}>
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
+                          Aussetzer ({x.game.bench.length})
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          {
+                            x.game.bench.map((benchData, benchIndex) => (
+                              <Item key={benchIndex} className="w-full" variant={"outline"}>
+                                <ItemContent className=''>
+                                  <div className='flex flex-col overflow-hidden w-full'>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {benchData.name?.split(' ')[0] ?? benchData.rg_id}
+                                    </div>
+                                  </div>
+                                </ItemContent>
+                              </Item>
+                            ))
+                          }
 
                         </CollapsibleContent>
                       </Collapsible>
@@ -758,90 +808,6 @@ export const ConstellationCreationDialogShadcn = ({
                   </Collapsible>
                 </CardContent>
               </Card>
-
-              //     {x.game.matches.map((matchData, matchIndex) => (
-              //       <Accordion disableGutters key={matchIndex}>
-              //         <AccordionSummary expandIcon={<ArrowDropDown />}>
-              //           <ListItem disableGutters disablePadding sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-              //             <ListItemAvatar>
-              //               <Checkbox
-              //                 checked={x.options.fixedMatches?.includes(matchData) ?? false}
-              //                 onChange={(e) => {
-              //                   e.stopPropagation();
-              //                   if (e.target.checked) {
-              //                     updateRoundOption(index, { fixedMatches: [...(x.options.fixedMatches ?? []), matchData] });
-              //                   } else {
-              //                     updateRoundOption(index, { fixedMatches: x.options.fixedMatches?.filter((m) => m !== matchData) });
-              //                   }
-              //                 }}
-              //               />
-              //             </ListItemAvatar>
-              //             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-              //               <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-              //                 <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                   {matchData[0].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
-              //                 </Typography>
-              //                 <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                   {matchData[1].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
-              //                 </Typography>
-              //               </Box>
-              //             </Box>
-              //           </ListItem>
-              //         </AccordionSummary>
-              //         <AccordionDetails>
-              //           <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
-              //             <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                 {`${matchData[0].players[0].name} (${matchData[0].players[0].rg_id})`}
-              //               </Typography>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                 {`${matchData[0].players[1].name} (${matchData[0].players[1].rg_id})`}
-              //               </Typography>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
-              //                 Team Index: {matchData[0].strength}
-              //               </Typography>
-              //             </Stack>
-              //             <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                 {`${matchData[1].players[0].name} (${matchData[1].players[0].rg_id})`}
-              //               </Typography>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              //                 {`${matchData[1].players[1].name} (${matchData[1].players[1].rg_id})`}
-              //               </Typography>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
-              //                 Team Index: {matchData[1].strength}
-              //               </Typography>
-              //             </Stack>
-              //           </Stack>
-              //         </AccordionDetails>
-              //       </Accordion>
-              //     ))}
-
-              //     {x.game.bench.length > 0 && (
-              //       <Accordion disableGutters>
-              //         <AccordionSummary expandIcon={<ArrowDropDown />}>
-              //           <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-              //             <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', color: 'error.main' }}>
-              //                 Aussetzer ({x.game.bench.length})
-              //               </Typography>
-              //               <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary' }}>
-              //                 {x.game.bench.map((p) => p.name?.split(' ')[0]).join(', ')}
-              //               </Typography>
-              //             </Box>
-              //           </Box>
-              //         </AccordionSummary>
-              //         <AccordionDetails>
-              //           {x.game.bench.map((p) => (
-              //             <ListItem key={p.player} dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-              //               <ListItemText primary={p.name} secondary={`Index: ${p.rg_index}`} />
-              //             </ListItem>
-              //           ))}
-              //         </AccordionDetails>
-              //       </Accordion>
-              //     )}
-              //   </AccordionDetails>
-              // </Accordion>
             ))
             }
 
@@ -857,8 +823,8 @@ export const ConstellationCreationDialogShadcn = ({
                 players,
               };
               // Optionale Autogenerierung beim Erstellen der Runde:
-              // const result = generateMatches(options); 
-              setRounds([...rounds, { game: { matches: [], bench: [] }, options }]);
+              const result = generateMatches(options);
+              setRounds([...rounds, { game: result, options }]);
             }}>
               Neue Runde hinzufügen
             </Button>
