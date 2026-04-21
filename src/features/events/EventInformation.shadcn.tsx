@@ -717,7 +717,7 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
 
   if (!weatherData) return null;
 
-  return <div className="flex items-start gap-3 text-sm text-foreground">
+  return <div className="flex items-start gap-3 text-sm text-foreground truncate">
     {
       iconMap[weatherData.icon] && (() => {
         const IconComponent = iconMap[weatherData.icon];
@@ -725,8 +725,8 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
       })()
     }
     <div>
-      <p className="font-medium">{`${weatherData.temperature}°C · ${weatherData.wind_speed}km/h`}</p>
-      <p className="text-muted-foreground text-xs mt-0.5">{weatherData.description}</p>
+      <p className="font-medium truncate">{`${weatherData.temperature}°C · ${weatherData.wind_speed}km/h`}</p>
+      <p className="text-muted-foreground text-xs mt-0.5 truncate">{weatherData.description}</p>
     </div>
   </div>
 }
@@ -878,12 +878,12 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 max-[375px]:grid-cols-1 gap-4">
                 <div className="flex items-start gap-3 text-sm text-foreground">
                   <Calendar className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-medium">{format(event.startingDateTime, "dd.MM.yyyy HH:mm")}</p>
-                    <p className="text-muted-foreground text-xs mt-0.5">bis {format(event.endDateTime, "dd.MM.yyyy HH:mm")}</p>
+                    <p className="font-medium truncate">{format(event.startingDateTime, "dd.MM.yyyy HH:mm")}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5 truncate ">bis {format(event.endDateTime, "dd.MM.yyyy HH:mm")}</p>
                   </div>
                 </div>
 
@@ -897,7 +897,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
                   <div className="flex items-start gap-3 text-sm text-foreground">
                     <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium">{selectedEventPlace?.name || event.place}</p>
+                      <p className="font-medium truncate">{selectedEventPlace?.name || event.place}</p>
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.place)}`}
                         target="_blank"
@@ -946,7 +946,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
           </Card>
 
           <Tabs defaultValue={"information"} className="w-full mt-6">
-            <TabsList className="flex w-full justify-start overflow-x-auto bg-white border !h-12 shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <TabsList className="flex w-full justify-start overscroll-y-none overflow-x-auto bg-white border !h-12 shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <TabsTrigger
                 value="information"
                 className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"

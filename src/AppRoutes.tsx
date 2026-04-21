@@ -239,7 +239,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'recurringEvents',
-                  element: <Pages.RecurringEvents />,
+                  element: isShadcnUi ? <Pages.RecurringEventsShadcn /> : <Pages.RecurringEvents />,
                 },
                 {
                   path: 'event/:selectedEventId',

@@ -49,7 +49,7 @@ export function answerDeadlineExpired(x: EventsUserView) {
   return isBefore(x.answerDeadline, Date.now());
 }
 
-export function eventInThePast(x: EventsUserView) {
+export function eventInThePast(x: EventsUserView | EventWithGroup) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 

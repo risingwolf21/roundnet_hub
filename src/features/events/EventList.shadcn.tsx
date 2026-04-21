@@ -6,6 +6,7 @@ import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
+import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
@@ -14,7 +15,7 @@ import { withProfiler } from '@sentry/react';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
-import { CalendarArrowDown, CalendarArrowUp, CalendarX, Filter } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -50,15 +51,22 @@ const EventScreen = () => {
         user={user}
         actions={
           <>
-            <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
-              <AddIcon />
-            </Button>
+            <Has perm={"event.edit"}>
+              <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
+                <AddIcon />
+              </Button>
+            </Has>
             <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
               const result = await dialogs.open(SelectFetchMode, fetchMode);
               if (result) setFetchMode(result)
             }}>
               <Filter />
             </Button>
+            <Has perm={"event.edit"}>
+              <Button variant={"ghost"} size={"icon-lg"} onClick={() => navigate("/training/recurringEvents")}>
+                <CalendarSync />
+              </Button>
+            </Has>
           </>
         }
       />

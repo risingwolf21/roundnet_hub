@@ -58,3 +58,4 @@ export const GrantsManagerShadcn = lazyWithRetry(() => import('@/features/grants
 export const AdminHistoryScreenShadcn = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen.shadcn'));
 export const PaymentsPendingAdminShadcn = lazyWithRetry(() => import('@/features/admin/PaymentsPendingAdmin.shadcn'));
 export const UserPlayerMappingShadcn = lazyWithRetry(() => import("@/features/admin/UserPlayerMapping.shadcn"));
+export const RecurringEventsShadcn = lazyWithRetry(() => import('@/features/events/RecurringEvents.shadcn'));

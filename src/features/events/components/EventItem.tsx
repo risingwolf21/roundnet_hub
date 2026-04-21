@@ -171,7 +171,7 @@ const EventItemSecondaryActionsShadcn = ({
   );
 };
 
-const formatDateRange = (start: Date, end: Date) => {
+export const formatDateRange = (start: Date, end: Date) => {
   const sameDay = start.toDateString() === end.toDateString();
   const sameTime = start.getHours() === end.getHours() && start.getMinutes() === end.getMinutes();
 
