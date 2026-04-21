@@ -1,8 +1,10 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useDialogs } from '@/contexts/DialogsProvider';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
@@ -12,7 +14,7 @@ import { withProfiler } from '@sentry/react';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
-import { CalendarX } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, CalendarX, Filter } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -47,9 +49,17 @@ const EventScreen = () => {
         title="Events Übersicht"
         user={user}
         actions={
-          <Button variant={"ghost"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
-            <AddIcon />
-          </Button>
+          <>
+            <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
+              <AddIcon />
+            </Button>
+            <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+              const result = await dialogs.open(SelectFetchMode, fetchMode);
+              if (result) setFetchMode(result)
+            }}>
+              <Filter />
+            </Button>
+          </>
         }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
@@ -134,5 +144,36 @@ const EventScreen = () => {
     </div>
   );
 };
+
+const SelectFetchMode = ({ open, onClose, payload }: DialogProps<'past' | 'upcoming', 'past' | 'upcoming' | null>) => (
+  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"drawer"}>
+      <div className={"p-8 flex flex-col gap-4"}>
+        <Item
+          variant={"outline"}
+          className={payload === "past" ? "border-primary bg-primary/10 text-primary" : ""}
+          onClick={() => onClose('past')}>
+          <ItemContent>
+            <ItemTitle>
+              <CalendarArrowDown />
+              Vergangene Events
+            </ItemTitle>
+          </ItemContent>
+        </Item>
+        <Item
+          variant={"outline"}
+          className={payload === "upcoming" ? "border-primary bg-primary/10 text-primary" : ""}
+          onClick={() => onClose('upcoming')}>
+          <ItemContent>
+            <ItemTitle>
+              <CalendarArrowUp />
+              Kommende Events
+            </ItemTitle>
+          </ItemContent>
+        </Item>
+      </div>
+    </DialogContent >
+  </Dialog >
+)
 
 export default withProfiler(EventScreen);
