@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
-import { Sheet, SheetContent, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
@@ -138,6 +139,25 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
     }
   };
 
+  const setPlaceFromSearchResult = (res: any) => {
+
+    const street =
+      res.raw.address?.road && res.raw.address?.house_number ? `${res.raw.address.road} ${res.raw.address.house_number}` : null;
+
+    const address =
+      res.raw.address?.road && res.raw.address?.city && res.raw.address?.house_number && res.raw.address?.postcode
+        ? `${street}, ${res.raw.address?.postcode} ${res.raw.address?.city}`
+        : '';
+    const name = res.raw.name ?? street ?? address ?? 'Unbenannter Ort';
+
+    setSelectedPlace({
+      x: res.x,
+      y: res.y,
+      name: name,
+      description: address || null,
+    });
+  };
+
   const setPlaceFromLatLon = (lat: number, lon: number) => {
     setLoading(true);
     fetch(
@@ -152,7 +172,7 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
           res.address.road && res.address.city && res.address.house_number && res.address.postcode
             ? `${street}, ${res.address.postcode} ${res.address.city}`
             : '';
-        const name = res.name ? res.name : street ? street : 'Unbenannter Ort';
+        const name = res.name ?? street ?? address ?? 'Unbenannter Ort';
 
         setSelectedPlace({
           x: res.lon,
@@ -188,27 +208,31 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
                 Suche einen Ort...
               </button>} />
             <SheetContent side="top" className={"gap-0 pt-safe-top"}
+              showCloseButton={false}
               onFocus={(e) => {
                 e.preventDefault();
                 inputRef.current?.focus();
               }}>
               <SheetHeader>
-                <Input
-                  ref={inputRef}
-                  type="search"
-                  value={value}
-                  placeholder='Suche einen Ort...'
+                <div className="flex items-center justify-between w-full gap-2">
+                  <Input
+                    ref={inputRef}
+                    type="search"
+                    value={value}
+                    placeholder='Suche einen Ort...'
 
-                  onChange={(e: { target: { value: React.SetStateAction<string> } }) => setValue(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
-                  className="w-full bg-muted/50 text-foreground focus-visible:bg-background focus"
-                />
+                    onChange={(e: { target: { value: React.SetStateAction<string> } }) => setValue(e.target.value)}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
+                    className="w-full flex-1 bg-muted/50 text-foreground focus-visible:bg-background focus"
+                  />
+                  <SheetClose render={<Button variant={"ghost"}><X /></Button>} />
+                </div>
               </SheetHeader>
               <div className='p-2 flex flex-col gap-2'>
                 {
                   (results ?? []).map(x => (
                     <Item key={x.x + '-' + x.y} variant={"outline"} onClick={() => {
-                      setPlaceFromLatLon(Number(x.y), Number(x.x));
+                      setPlaceFromSearchResult(x);
                       setSheetOpen(false);
                     }}>
                       <ItemContent>
@@ -239,26 +263,32 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         </MapContainer>
       </DialogBody>
-      <DialogFooter variant={"fullscreen"} className='flex flex-row'>
-        <Button variant={"outline"} className={"flex-1"} onClick={() => onClose(null)}>
-          Abbrechen
-        </Button>
-        {
-          selectedPlace && <Button className={"flex-1"} onClick={() =>
-            onClose({
-              description: selectedPlace.description,
-              name: selectedPlace.name,
-              lat: selectedPlace.y,
-              lon: selectedPlace.x,
-            })
-          }>
-            Speichern
+      <DialogFooter variant={"fullscreen"} className='flex flex-col'>
+        <div>
+          <h3 className='text-lg font-semibold'>{selectedPlace ? selectedPlace.name : 'Kein Ort ausgewählt'}</h3>
+          <p className='text-sm text-muted-foreground'>{selectedPlace?.description}</p>
+        </div>
+        <div className='flex flex-row gap-2 w-full mt-4'>
+          <Button variant={"outline"} className={"flex-1"} onClick={() => onClose(null)}>
+            Abbrechen
           </Button>
-        }
+          {
+            selectedPlace && <Button className={"flex-1"} onClick={() =>
+              onClose({
+                description: selectedPlace.description,
+                name: selectedPlace.name,
+                lat: selectedPlace.y,
+                lon: selectedPlace.x,
+              })
+            }>
+              Speichern
+            </Button>
+          }
+        </div>
       </DialogFooter>
 
     </DialogContent>
-  </Dialog>
+  </Dialog >
 
   // return (
   //   <Dialog fullScreen open={open} onClose={handleClose}>
