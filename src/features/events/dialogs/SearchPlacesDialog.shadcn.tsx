@@ -187,7 +187,7 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
               >
                 Suche einen Ort...
               </button>} />
-            <SheetContent side="top" className={"pt-8 gap-0"}
+            <SheetContent side="top" className={"gap-0 pt-safe-top"}
               onFocus={(e) => {
                 e.preventDefault();
                 inputRef.current?.focus();
