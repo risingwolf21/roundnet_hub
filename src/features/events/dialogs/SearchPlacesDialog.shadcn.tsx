@@ -32,7 +32,7 @@ function MapFlyTo({ target }: { target: { lat: number; lng: number } | null }) {
   useEffect(() => {
     if (target) {
       // flyTo macht eine schöne weiche Kamerafahrt zur neuen Position
-      map.flyTo([target.lat, target.lng], 16, { duration: 1.5 });
+      map.flyTo([target.lat, target.lng], 16);
     }
   }, [target, map]);
 
