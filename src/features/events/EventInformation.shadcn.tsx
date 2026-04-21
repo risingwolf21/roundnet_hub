@@ -778,86 +778,88 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
       primaryAction="back"
       user={user}
       actions={
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size={"icon-lg"} >
-            <EllipsisVertical />
-          </Button>} />
-          <DropdownMenuContent className={"w-full"}>
-            <Has perm={'event.edit'}>
-              <DropdownMenuItem className={"text-base"} onClick={async () => {
-                const result = await dialogs.open(EditEventOptionsDialogShadcn);
-                if (result) {
-                  await dialogs.open(CreateOrUpdateEventDialogShadcn, {
-                    event: {
-                      ...event,
-                      items_enabled: false,
-                      group: event.group?.id ?? null,
-                    } as EventTable,
-                    eventGroup: event.group,
-                    option: result,
-                    items: allItems,
-                  });
-                }
-              }}>
-                <Pencil />
-                {t('events.editEvent')}
-              </DropdownMenuItem>
-            </Has>
+        <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="ghost" size={"icon-lg"} >
+              <EllipsisVertical />
+            </Button>} />
+            <DropdownMenuContent className={"w-full"}>
+              <Has perm={'event.edit'}>
+                <DropdownMenuItem className={"text-base"} onClick={async () => {
+                  const result = await dialogs.open(EditEventOptionsDialogShadcn);
+                  if (result) {
+                    await dialogs.open(CreateOrUpdateEventDialogShadcn, {
+                      event: {
+                        ...event,
+                        items_enabled: false,
+                        group: event.group?.id ?? null,
+                      } as EventTable,
+                      eventGroup: event.group,
+                      option: result,
+                      items: allItems,
+                    });
+                  }
+                }}>
+                  <Pencil />
+                  {t('events.editEvent')}
+                </DropdownMenuItem>
+              </Has>
 
-            <Has perm={'event.transform'}>
-              <DropdownMenuItem disabled className={"text-base"}>
-                <Pencil />
-                {t('events.transformEventSeries')}
-              </DropdownMenuItem>
-            </Has>
+              <Has perm={'event.transform'}>
+                <DropdownMenuItem disabled className={"text-base"}>
+                  <Pencil />
+                  {t('events.transformEventSeries')}
+                </DropdownMenuItem>
+              </Has>
 
-            <Has perm={'event.cancel'}>
-              <DropdownMenuItem className={"text-base"} onClick={async () => {
-                const result = await dialogs.confirm(`Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`, {
-                  title: `Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`,
-                  message: `Möchtest du das Training wirklich ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`
-                })
-                if (result)
-                  cancelTrainingMutation.mutate(
-                    { event, isCancelled: !event.isCancelled },
-                    {
-                      onError: (error) => {
-                        captureException(error);
-                        toast.error(error.message);
-                      },
-                    }
-                  );
-              }}>
-                {
-                  event.isCancelled ? <CircleCheck /> : <Ban />
-                }
-                {event.isCancelled ? 'Stattfinden' : 'Absagen'}
-              </DropdownMenuItem>
-            </Has>
+              <Has perm={'event.cancel'}>
+                <DropdownMenuItem className={"text-base"} onClick={async () => {
+                  const result = await dialogs.confirm(`Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`, {
+                    title: `Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`,
+                    message: `Möchtest du das Training wirklich ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`
+                  })
+                  if (result)
+                    cancelTrainingMutation.mutate(
+                      { event, isCancelled: !event.isCancelled },
+                      {
+                        onError: (error) => {
+                          captureException(error);
+                          toast.error(error.message);
+                        },
+                      }
+                    );
+                }}>
+                  {
+                    event.isCancelled ? <CircleCheck /> : <Ban />
+                  }
+                  {event.isCancelled ? 'Stattfinden' : 'Absagen'}
+                </DropdownMenuItem>
+              </Has>
 
-            <Has perm={'event.delete'}>
-              <DropdownMenuItem className={"text-base"} onClick={async () => {
-                const result = await dialogs.open(DeleteEventDialog);
-                if (result)
-                  deleteTrainingMutation.mutate(
-                    { event, type: result, currentUser: user },
-                    {
-                      onSuccess: () => {
-                        navigate('/training/list', { replace: true });
-                      },
-                      onError: (error) => {
-                        captureException(error);
-                        toast.error(error.message);
-                      },
-                    }
-                  );
-              }}>
-                <Trash2 />
-                Löschen
-              </DropdownMenuItem>
-            </Has>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <Has perm={'event.delete'}>
+                <DropdownMenuItem className={"text-base"} onClick={async () => {
+                  const result = await dialogs.open(DeleteEventDialog);
+                  if (result)
+                    deleteTrainingMutation.mutate(
+                      { event, type: result, currentUser: user },
+                      {
+                        onSuccess: () => {
+                          navigate('/training/list', { replace: true });
+                        },
+                        onError: (error) => {
+                          captureException(error);
+                          toast.error(error.message);
+                        },
+                      }
+                    );
+                }}>
+                  <Trash2 />
+                  Löschen
+                </DropdownMenuItem>
+              </Has>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </Has>
       }
     />
     <main className='flex-1 size-full pb-safe-bottom'>

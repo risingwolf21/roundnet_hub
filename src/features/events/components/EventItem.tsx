@@ -180,10 +180,10 @@ export const formatDateRange = (start: Date, end: Date) => {
   }
 
   if (sameDay) {
-    return `${format(start, "dd.MM.yyyy, HH:mm")} - ${format(end, "HH:mm")}`;
+    return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "HH:mm")}`;
   }
 
-  return `${format(start, "dd.MM.yyyy, HH:mm")} - ${format(end, "dd.MM.yyyy, HH:mm")}`;
+  return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "ccc dd.MM, HH:mm")}`;
 }
 
 export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
