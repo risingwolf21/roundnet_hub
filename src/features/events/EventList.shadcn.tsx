@@ -1,10 +1,8 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
@@ -57,7 +55,10 @@ const EventScreen = () => {
               </Button>
             </Has>
             <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-              const result = await dialogs.open(SelectFetchMode, fetchMode);
+              const result = await dialogs.selectSingleOption<'past' | 'upcoming'>([
+                { value: 'past', label: 'Vergangene Events', icon: <CalendarArrowDown /> },
+                { value: 'upcoming', label: 'Kommende Events', icon: <CalendarArrowUp /> }
+              ], fetchMode);
               if (result) setFetchMode(result)
             }}>
               <Filter />
@@ -152,36 +153,5 @@ const EventScreen = () => {
     </div>
   );
 };
-
-const SelectFetchMode = ({ open, onClose, payload }: DialogProps<'past' | 'upcoming', 'past' | 'upcoming' | null>) => (
-  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"drawer"}>
-      <div className={"p-8 flex flex-col gap-4"}>
-        <Item
-          variant={"outline"}
-          className={payload === "past" ? "border-primary bg-primary/10 text-primary" : ""}
-          onClick={() => onClose('past')}>
-          <ItemContent>
-            <ItemTitle>
-              <CalendarArrowDown />
-              Vergangene Events
-            </ItemTitle>
-          </ItemContent>
-        </Item>
-        <Item
-          variant={"outline"}
-          className={payload === "upcoming" ? "border-primary bg-primary/10 text-primary" : ""}
-          onClick={() => onClose('upcoming')}>
-          <ItemContent>
-            <ItemTitle>
-              <CalendarArrowUp />
-              Kommende Events
-            </ItemTitle>
-          </ItemContent>
-        </Item>
-      </div>
-    </DialogContent >
-  </Dialog >
-)
 
 export default withProfiler(EventScreen);

@@ -933,17 +933,19 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
 
 
 
-              <Has perm={"event.create.constellations"}>
-                <Button className={"w-full"} onClick={async () => {
-                  dialogs.open(ConstellationCreationDialogShadcn, {
-                    users: attendance.filter(x => x.state === "Attending").map(x => x.user),
-                    event
-                  })
-                }}>
-                  <Volleyball />
-                  Konstellationen erstellen
-                </Button>
-              </Has>
+              {
+                event.constellations_enabled && <Has perm={"event.create.constellations"}>
+                  <Button className={"w-full"} onClick={async () => {
+                    dialogs.open(ConstellationCreationDialogShadcn, {
+                      users: attendance.filter(x => x.state === "Attending").map(x => x.user),
+                      event
+                    })
+                  }}>
+                    <Volleyball />
+                    Konstellationen erstellen
+                  </Button>
+                </Has>
+              }
             </CardContent>
           </Card>
 
