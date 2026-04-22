@@ -464,7 +464,12 @@ export const CreateOrUpdateEventDialogShadcn = ({
                   }
                 </FieldContent>
                 <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                  const result = await dialogs.open(SelectRecurrenceDialog);
+                  const result = await dialogs.selectSingleOption<EventRecurrence>([
+                    { value: 'None', label: 'Keine Wiederholung' },
+                    { value: 'Weekly', label: 'Wöchentlich' },
+                    { value: 'Fortnightly', label: 'Alle 2 Wochen' },
+                    { value: 'Monthly', label: 'Monatlich' },
+                  ], editedEvent.recurrence);
                   if (result) {
                     setEditedEvent({ ...editedEvent, recurrence: result, ...(result === "None" && { recurrenceEnd: null }) })
                   }
