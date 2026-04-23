@@ -1,11 +1,11 @@
 import { usePlayerMatches } from "@/tanstack/games";
 import CircularProgress from "@mui/material/CircularProgress";
-import { DialogProps } from "@toolpad/core";
 import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Item } from "@/components/ui/item";
+import { DialogProps } from "@/contexts/DialogsProvider";
 import { cn } from "@/lib/utils";
 
 type GameHistoryDialogProps = {

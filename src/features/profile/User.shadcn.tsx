@@ -1,7 +1,9 @@
 import CropImageDialog from "@/components/CropImageDialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Button } from "@/components/ui/button";
-import { CardContent, CardTitle } from "@/components/ui/card";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,18 +18,20 @@ import { useNotificationTags, useNotificationTopics, useUpdateNotificationPrefer
 import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from "@/tanstack/player_data";
 import { useUpdateUserProfile } from "@/tanstack/user";
 import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
-import { readFile } from "@/utils";
+import { iOS, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
 import { useDialogs } from "@toolpad/core";
-import { addDays, isAfter } from "date-fns";
-import { Bell, Calendar, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User, Volleyball } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { addDays, isAfter, isSameDay } from "date-fns";
+import { Bell, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User, Volleyball } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Day } from "react-day-picker";
 import { toast } from "sonner";
 
 
 type UserScreenProps = {
   user: UserWithGroups;
   handleSignOut: () => void;
+  userAttendance: Date[];
 };
 
 const tabs = {
@@ -45,7 +49,7 @@ const tabs = {
   },
   calendar: {
     title: "Kalender",
-    icon: <Calendar />
+    icon: <CalendarIcon />
   },
   notifications: {
     title: "Notifications",
@@ -59,10 +63,80 @@ const tabs = {
 
 type Tab = keyof typeof tabs
 
-const CalendarCard = () => {
+const CalendarCard = ({ userAttendance, user }: { userAttendance: Date[]; user: UserWithGroups }) => {
+
+  const hasEntry = useCallback((date: Date) => userAttendance
+    .some((activeDate) => isSameDay(activeDate, date)), [userAttendance]);
+
+
+  const syncCalendar = () => {
+    if (iOS) {
+      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
+    } else {
+      window.location.href = `https://calendar.google.com/calendar/render?cid=webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
+    }
+  };
+
   return <>
     <CardContent>
-      <p className="mb-4">Abonniere deinen persönlichen Kalender, um immer über anstehende Turniere informiert zu sein.</p>
+
+      <div className="flex flex-col gap-4 ">
+        <Alert variant={"info"}>
+          <AlertTitle>Kalender</AlertTitle>
+          <AlertDescription>
+            Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.
+          </AlertDescription>
+        </Alert>
+        <Card className="w-full max-w-md mx-auto">
+          <CardContent className="w-full">
+            <Calendar
+              mode="single"
+              weekStartsOn={1}
+              month={new Date()}
+              className="w-full"
+              classNames={{
+                root: "w-full", // Überschreibt das standardmäßige w-fit
+                months: "w-full",
+                month_grid: "w-full",
+                month: "w-full",
+                table: "w-full",
+                weekdays: "flex w-full",
+                weekday: "flex-1 text-center", // Wochentage gleichmäßig verteilen
+                week: "flex w-full mt-2",
+                day: "flex-1 aspect-square p-0", // Jeder Tag wird zur flexiblen, quadratischen Spalte
+              }}
+              components={{
+                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+                Nav: () => <></>,
+
+                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+                MonthCaption: () => <></>,
+                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+                Day: ({ ...props }) => {
+                  return <Day {...props} className='w-full' />
+                },
+                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+                DayButton: ({ children, modifiers, day, ...props }) => {
+                  const isActive = hasEntry(day.date);
+                  return <CalendarDayButton day={day} modifiers={modifiers} {...props} disabled
+                    className="!opacity-100 !h-auto !w-full aspect-square">
+                    {
+                      isActive ? <Volleyball className="size-full max-w-6 max-h-6 text-success" /> : children
+                    }
+                  </CalendarDayButton>
+                }
+              }}
+            />
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button variant={"outline"} onClick={syncCalendar}>
+              <CalendarSync />
+              Kalender synchronisieren
+            </Button>
+          </CardFooter>
+        </Card>
+
+      </div>
     </CardContent>
   </>
 }
@@ -575,9 +649,7 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
   </>
 };
 
-export const UserShadcn = ({ user, handleSignOut }: UserScreenProps) => {
-
-  const [tab, setTab] = useState<Tab>("account")
+export const UserShadcn = ({ user, handleSignOut, userAttendance }: UserScreenProps) => {
 
   return <div>
     <AppBar
@@ -587,30 +659,14 @@ export const UserShadcn = ({ user, handleSignOut }: UserScreenProps) => {
       <div className="flex flex-col px-4">
         <Tabs defaultValue="overview" className="gap-4">
           <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
-            <TabsTrigger value="account">
-              <User />
-              Account
-            </TabsTrigger>
-            {/* <TabsTrigger value="changePassword">
-              <RectangleEllipsis />
-              Passwort ändern
-            </TabsTrigger> */}
-            <TabsTrigger value="playerzone">
-              <Volleyball />
-              Playerzone Profil
-            </TabsTrigger>
-            <TabsTrigger value="calendar">
-              <Calendar />
-              Kalender
-            </TabsTrigger>
-            <TabsTrigger value="notifications">
-              <Bell />
-              Benachrichtigungen
-            </TabsTrigger>
-            <TabsTrigger value="testlab">
-              <FlaskConical />
-              Test-Labor
-            </TabsTrigger>
+            {
+              tabs && Object.entries(tabs).map(([key, { title, icon }]) => (
+                <TabsTrigger key={key} value={key as Tab} className="flex items-center gap-2">
+                  {icon}
+                  {title}
+                </TabsTrigger>
+              ))
+            }
           </TabsList>
           <TabsContent value="account">
             <Account user={user} handleSignOut={handleSignOut} />
@@ -622,7 +678,7 @@ export const UserShadcn = ({ user, handleSignOut }: UserScreenProps) => {
             <Playerzone user={user} />
           </TabsContent>
           <TabsContent value="calendar">
-            <CalendarCard />
+            <CalendarCard {...{ user, userAttendance }} />
           </TabsContent>
           <TabsContent value="notifications">
             <Notifications user={user} />

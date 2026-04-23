@@ -6,7 +6,7 @@ import { SupabaseEventRepository } from '@/repository/EventRepository';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
-import { durationToPostgresInterval, formatDateToDatabase } from '@/utils';
+import { durationToPostgresInterval, formatDateFromDatabaseNotNull, formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Duration, format, isAfter, isBefore } from 'date-fns';
@@ -19,6 +19,7 @@ export const eventKeys = {
   eventBringOverview: (id?: string) => [...eventKeys.event(id), 'bringOverview'] as const,
   eventBringPledges: (id?: string) => [...eventKeys.event(id), 'bringPledges'] as const,
   eventAttendance: (id?: string) => [...eventKeys.event(id), 'attendance'] as const,
+  eventUserAttendanceInMonth: (userId: string, month: number) => [...eventKeys.all, 'userAttendance', userId, "month", month] as const,
   eventMatches: (id?: string) => [...eventKeys.event(id), 'matches'] as const,
   recurring: () => [...eventKeys.all, 'recurring'] as const,
   eventTranformation: (eventKey: string) => [...eventKeys.all, 'transformation', eventKey] as const,
@@ -121,6 +122,22 @@ export const useBringPledges = (eventId: string) =>
       const result = await fetchFullEventPledges(eventId);
 
       return result.data ?? [];
+    },
+  });
+
+export const useUserAttendanceInMonth = (userId: string, month: number) =>
+  useQuery({
+    queryKey: eventKeys.eventUserAttendanceInMonth(userId, month),
+    queryFn: async () => {
+      const result = await supabase
+        .from('event_attendance_user_mapping')
+        .select('*, eventTime: events!inner(startingDateTime)')
+        .eq('user', userId)
+        .gte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month - 1, 1)))
+        .lte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month, 0, 23, 59, 59)))
+        .throwOnError();
+
+      return result.data.map(x => formatDateFromDatabaseNotNull(x.eventTime.startingDateTime));
     },
   });
 

@@ -9,7 +9,6 @@ import Downloading from '@mui/icons-material/Downloading';
 import Logout from '@mui/icons-material/Logout';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
-import { useNotifications } from '@toolpad/core';
 import { useNavigate } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -27,7 +26,6 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
 
 type UserScreenProps = {
   user: UserWithGroups;
@@ -35,23 +33,17 @@ type UserScreenProps = {
 };
 
 export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
-  const notifications = useNotifications();
   const navigate = useNavigate();
   const notificationSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const [isShadcn] = useState(() => hasFeature("enableShadcnUI"));
+  const isShadcn = hasFeature("enableShadcnUI");
 
-  const copyIcalURLToClipboard = () => {
+  const syncCalendar = () => {
     if (iOS) {
-      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.id}`;
+      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
     } else {
-      navigator.clipboard.writeText(
-        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.id}`
-      );
-      notifications.show('URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL', {
-        severity: 'info',
-      });
+      window.location.href = `https://calendar.google.com/calendar/render?cid=webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
     }
   };
 
@@ -146,12 +138,7 @@ export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
             <CardActionArea
               sx={{ px: 1 }}
-              onClick={() => {
-                copyIcalURLToClipboard();
-                notifications.show('URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL', {
-                  severity: 'info',
-                });
-              }}
+              onClick={syncCalendar}
             >
               <ListItem>
                 <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>

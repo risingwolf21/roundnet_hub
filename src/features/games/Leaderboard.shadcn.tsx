@@ -1,8 +1,8 @@
-import { useCustomDialogs } from "@/components/dialogs/useShadcnDialogs";
 import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useDialogs } from "@/contexts/DialogsProvider";
 import { useLeaderboard } from "@/tanstack/games";
 import { useTranslation } from "react-i18next";
 import { useGrants } from "../auth/GrantsContext";
@@ -13,7 +13,7 @@ const LeaderboardShadcn = () => {
   const { user } = useGrants();
   const { data: leaderboard = [], isLoading, isFetching, refetch } = useLeaderboard(0);
 
-  const dialogs = useCustomDialogs();
+  const dialogs = useDialogs();
 
   return (
     <div>

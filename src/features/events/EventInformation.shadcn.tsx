@@ -866,7 +866,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
       <PullToRefresh onRefresh={() => refetch()}>
         <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
           <Card className="border-t-4 border-t-[color:var(--group-color)]"
-            style={{ "--group-color": event.group?.color ?? '#000000' } as React.CSSProperties}>
+            style={{ "--group-color": event.group?.color ?? 'primary' } as React.CSSProperties}>
             <CardHeader className="pb-4">
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-1.5">

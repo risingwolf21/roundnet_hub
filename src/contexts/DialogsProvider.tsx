@@ -22,9 +22,9 @@ interface ActiveDialog<P = any, R = any> {
 }
 
 export interface ConfirmOptions {
-  title: string;
+  title?: string;
   message?: React.ReactNode;
-  confirmText?: string;
+  okText?: string;
   cancelText?: string;
 }
 
@@ -85,7 +85,7 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     const DEFAULT_CONFIRM_OPTIONS: ConfirmOptions = {
       title: "Sind Sie sich sicher?",
       cancelText: "Abbrechen",
-      confirmText: "Bestätigen",
+      okText: "Bestätigen",
       message: null,
     }
     return open(ConfirmDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, title }).then((res) => res ?? false);
@@ -161,7 +161,7 @@ const ConfirmDialogBase = ({ open, onClose, payload }: DialogProps<ConfirmOption
           {payload.cancelText ?? 'Abbrechen'}
         </Button>
         <Button onClick={() => onClose(true)}>
-          {payload.confirmText ?? 'Bestätigen'}
+          {payload.okText ?? 'Bestätigen'}
         </Button>
       </DialogFooter>
     </DialogContent>

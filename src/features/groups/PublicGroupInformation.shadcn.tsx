@@ -1,4 +1,3 @@
-import { useCustomDialogs } from "@/components/dialogs/useShadcnDialogs";
 import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
 import { Alert, AlertAction, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
@@ -10,6 +9,7 @@ import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toggle } from "@/components/ui/toggle";
+import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
@@ -40,7 +40,7 @@ export const PublicGroupInformationShadcn = () => {
 
   const { groupId } = useParams();
   const { user } = useGrants();
-  const dialogs = useCustomDialogs();
+  const dialogs = useDialogs();
   const navigate = useNavigate();
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
@@ -261,8 +261,8 @@ export const PublicGroupInformationShadcn = () => {
             {usersLoading ? (
               <div className="space-y-4 mt-6">
                 <Skeleton className="h-5 w-32" />
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-md border p-2">
+                {Array.from({ length: 3 }).map((_, i) => i).map((k) => (
+                  <div key={k} className="flex items-center justify-between rounded-md border p-2">
                     <div className="flex items-center gap-2">
                       <Skeleton className="size-10 rounded-full" />
                       <div className="space-y-1.5">
@@ -360,7 +360,7 @@ export const PublicGroupInformationShadcn = () => {
               className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
               onClick={() => {
                 dialogs
-                  .selectMultipleUsers(group_users.map((x) => x.user.id))
+                  .selectMultipleUser(group_users.map((x) => x.user.id))
                   .then((result) => {
                     if (result) handleUsersAdded(result);
                   });
@@ -377,7 +377,7 @@ export const PublicGroupInformationShadcn = () => {
 
 const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
   const changeUserRoleMutation = useChangeUserRoleMutation();
-  const dialogs = useCustomDialogs();
+  const dialogs = useDialogs();
   return <Button variant={"ghost"} size={"icon-sm"} onClick={() => {
     dialogs.confirm("Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?", {
       okText: "Akzeptieren",
@@ -405,7 +405,7 @@ const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
 const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User }) => {
   const declineJoinMutation = useDeclineRequestMutation(group);
   const changeUserRoleMutation = useChangeUserRoleMutation();
-  const dialogs = useCustomDialogs();
+  const dialogs = useDialogs();
 
   return <DropdownMenu >
     <DropdownMenuTrigger render={<Button variant={"outline"} size="sm">Bearbeiten</Button>} />
