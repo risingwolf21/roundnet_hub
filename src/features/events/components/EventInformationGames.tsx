@@ -54,7 +54,7 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {x.team_a.name}
+                  {x.team_a_name}
                 </Typography>
                 <Typography
                   sx={{
@@ -66,21 +66,21 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {x.team_b.name}
+                  {x.team_b_name}
                 </Typography>
               </Box>
               {x.sets.length === 0 &&
-                (x.team_a.player1.player === user.id ||
-                  x.team_a.player2.player === user.id ||
-                  x.team_b.player1.player === user.id ||
-                  x.team_b.player2.player === user.id) && (
+                (x.a_player_1.player === user.id ||
+                  x.a_player_2.player === user.id ||
+                  x.b_player_1.player === user.id ||
+                  x.b_player_2.player === user.id) && (
                   <Button
                     startIcon={<Warning color="warning" />}
                     onClick={async () => {
                       const result = await dialogs.open(ReportSetsDialog, {
                         matchId: x.id,
-                        team_a_name: x.team_a.name,
-                        team_b_name: x.team_b.name,
+                        team_a_name: x.team_a_name ?? '',
+                        team_b_name: x.team_b_name ?? '',
                         sets: null,
                       });
                       if (result) {

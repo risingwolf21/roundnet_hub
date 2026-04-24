@@ -25,8 +25,8 @@ const ChallengeList = ({
   error,
 }: {
   user: UserWithGroups;
-  challenges: ChallengeWithFullGroup[];
-  archived_challenges?: InfiniteData<{ data: ChallengeWithFullGroup[]; nextPage?: number }>;
+  challenges: Challenge[];
+  archived_challenges?: InfiniteData<{ data: Challenge[]; nextPage?: number }>;
   isLoading: boolean;
   error: Error | null;
 }) => {
@@ -70,7 +70,7 @@ const ChallengeList = ({
             </ListSubheader>
           }
         >
-          {challenges.map((entry: ChallengeWithFullGroup) => (
+          {challenges.map((entry: Challenge) => (
             <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
               <ListItemText primary={entry.name} secondary={entry.description} />
             </ListItem>
@@ -95,7 +95,7 @@ const ChallengeList = ({
         >
           {archived_challenges.pages
             .flatMap((x) => x.data)
-            .map((entry: ChallengeWithFullGroup) => (
+            .map((entry: Challenge) => (
               <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
                 <ListItemText primary={entry.name} secondary={entry.description} />
               </ListItem>

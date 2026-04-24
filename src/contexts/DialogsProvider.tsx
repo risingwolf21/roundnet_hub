@@ -1,6 +1,7 @@
 import SearchAndSelectGroupDialogShadcn from '@/components/dialogs/SearchAndSelectGroupDialog.shadcn';
 import SearchAndSelectUserDialogShadcn from '@/components/dialogs/SearchAndSelectUsersDialog.shadcn';
 import { SelectSingleOptionDialog } from '@/components/dialogs/SelectSingleOptionDialog.shadcn';
+import { ProfileDialogShadcn } from '@/components/ProfileDialog.shadcn';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import React, { createContext, use, useCallback, useState } from 'react';
@@ -51,6 +52,7 @@ interface DialogsContextType {
   selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
   selectGroup: (groupsToFilter?: string[]) => Promise<Group | null>;
   selectSingleOption: <T>(options: { value: T, label: string, icon?: React.ReactNode }[], selectedOption?: T) => Promise<T | null>;
+  userProfile: (userId: string) => Promise<void>;
 }
 
 const DialogsContext = createContext<DialogsContextType | null>(null);
@@ -124,8 +126,12 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return result as T | null;
   }, [open]);
 
+  const userProfile = useCallback(async (userId: string) => {
+    await open(ProfileDialogShadcn, { userId });
+  }, [open]);
+
   return (
-    <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser, selectGroup, selectSingleOption }}>
+    <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser, selectGroup, selectSingleOption, userProfile }}>
       {children}
       {dialogs.map(({ id, Component, payload, open, resolve }) => (
         <Component

@@ -329,6 +329,8 @@ const EventInformationTab = ({ event, selectedEventPlace }: { event: EventsUserV
 
 const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: EventsUserView; attendance: FullAttendance[]; changeAttendance: ({ user, event, newState }: { user: User; event: EventsUserView; newState: EventAttendance }) => void }) => {
 
+  const dialogs = useDialogs();
+
   const attending = useMemo(
     () => attendance.filter((x) => x.state === 'Attending' || x.state === 'AttendingAsTrainer' || x.state === 'AttendingAsTrial').sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? -1 : 1),
     [attendance]
@@ -355,7 +357,7 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
           {attending.length > 0 ? (
             <div className="space-y-3">
               {attending.map((attendance) => (
-                <div key={attendance.user.id} className="flex items-center gap-3">
+                <Item key={attendance.user.id} className="flex items-center gap-3 p-0 border-b" onClick={() => dialogs.userProfile(attendance.user.id)}>
                   <Avatar>
                     <AvatarImage
                       src={attendance.user.avatarUrl || ""} />
@@ -368,7 +370,7 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
                       {attendance.state === "AttendingAsTrial" && "Probetraining"}
                     </p>
                   </div>
-                </div>
+                </Item>
               ))}
             </div>
           ) : (
@@ -557,6 +559,7 @@ const EventMatchesTab = ({ event, matches }: { event: EventsUserView, matches: F
 
 const EventCommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
 
+  const dialogs = useDialogs();
   const addCommentMutation = useAddCommentMutation(user);
   const { hasPerm } = useGrants();
 
@@ -590,48 +593,56 @@ const EventCommentsTab = ({ event, user, comments }: { event: EventsUserView; us
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-2">
         {comments.length > 0 ? (
           comments.map(comment => (
-            <div key={comment.id} className="flex flex-row items-center gap-3 border-b last:border-0 pb-2">
-              <Avatar>
-                <AvatarImage
-                  src={comment.user.avatarUrl || ""} />
-                <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(comment.user.name ?? "User")}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">{comment.displayName}</p>
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(comment.created_at), "dd.MM HH:mm")}
-                  </span>
-                </div>
-                <p className="text-sm text-foreground/90 ">{comment.comment}</p>
-
-                {/* Nested Replies */}
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-3 space-y-3 pl-4 border-l-2">
-                    {comment.replies.map(reply => (
-                      <div key={reply.id} className="flex gap-2">
-                        <Avatar>
-                          <AvatarImage
-                            src={reply.user.avatarUrl || ""} />
-                          <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(reply.user.name ?? "User")}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold">{reply.displayName}</p>
-                            <span className="text-[10px] text-muted-foreground">
-                              {format(new Date(reply.created_at), "HH:mm")}
-                            </span>
-                          </div>
-                          <div className="text-xs text-foreground/90 mt-0.5">
-                            {reply.comment}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+            <Item key={comment.id} className="flex flex-row items-center gap-3 border-b last:border-0 p-0">
+              <ItemMedia onClick={() => dialogs.userProfile(comment.user.id)}>
+                <Avatar>
+                  <AvatarImage
+                    src={comment.user.avatarUrl || ""} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(comment.user.name ?? "User")}</AvatarFallback>
+                </Avatar>
+              </ItemMedia>
+              <ItemContent>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">{comment.displayName}</p>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(comment.created_at), "dd.MM HH:mm")}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
+                  <p className="text-sm text-foreground/90 ">{comment.comment}</p>
+
+                  {/* Nested Replies */}
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="mt-3 space-y-3 pl-4 border-l-2">
+                      {comment.replies.map(reply => (
+                        <Item key={reply.id} className="flex gap-2" >
+                          <ItemMedia onClick={() => dialogs.userProfile(reply.user.id)}>
+                            <Avatar>
+                              <AvatarImage
+                                src={reply.user.avatarUrl || ""} />
+                              <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(reply.user.name ?? "User")}</AvatarFallback>
+                            </Avatar>
+                          </ItemMedia>
+                          <ItemContent>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold">{reply.displayName}</p>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {format(new Date(reply.created_at), "HH:mm")}
+                                </span>
+                              </div>
+                              <div className="text-xs text-foreground/90 mt-0.5">
+                                {reply.comment}
+                              </div>
+                            </div>
+                          </ItemContent>
+                        </Item>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </ItemContent>
+            </Item>
           ))
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-muted-foreground">
@@ -995,7 +1006,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
 };
 
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Item } from "@/components/ui/item";
+import { Item, ItemContent, ItemMedia } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { useDialogs } from "@/contexts/DialogsProvider";

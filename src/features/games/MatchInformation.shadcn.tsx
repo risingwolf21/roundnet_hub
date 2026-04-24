@@ -18,12 +18,13 @@ import { useGrants } from '../auth/GrantsContext';
 import { ReportSetsDialogShadcn } from './dialogs/ReportSetsDialog.shadcn';
 
 
-const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => (
-  <div className="flex flex-1 flex-col gap-4 min-w-0">
+const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => {
+  const dialogs = useDialogs();
+  return <div className="flex flex-1 flex-col gap-4 min-w-0">
     <div className='flex flex-1 flex-row gap-4 min-w-0'>
       {[p1, p2].map((player, idx) => (
         <div key={idx} className='flex flex-1 flex-col items-center gap-2 min-w-0'>
-          <Avatar className="w-full max-w-32 h-auto aspect-square shadow-sm">
+          <Avatar className="w-full max-w-32 h-auto aspect-square shadow-sm" onClick={() => player && dialogs.userProfile(player.id)}>
             <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
             <AvatarFallback>{player?.name ? player.name[0] : 'U'}</AvatarFallback>
           </Avatar>
@@ -39,10 +40,11 @@ const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User
       </div>
     </div>
   </div>
-);
+}
 
-const IndexRow = ({ player, fallback, history }: { player: User | null, fallback: Player | null, history: any }) => (
-  <Item className='p-0'>
+const IndexRow = ({ player, fallback, history }: { player: User | null, fallback: Player | null, history: any }) => {
+  const dialogs = useDialogs();
+  return <Item className='p-0' onClick={() => player && dialogs.userProfile(player.id)}>
     <ItemMedia>
       <Avatar className={"mr-2"}>
         <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
@@ -59,7 +61,7 @@ const IndexRow = ({ player, fallback, history }: { player: User | null, fallback
       </Badge>
     </ItemActions>
   </Item>
-);
+};
 
 const MatchInformationShadcn = () => {
   const { matchId } = useParams();

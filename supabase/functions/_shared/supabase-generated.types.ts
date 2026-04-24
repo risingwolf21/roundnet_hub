@@ -787,6 +787,7 @@ export type Database = {
         Args: {
           created_by?: string
           event?: string
+          is_public?: boolean
           match_sets: Json
           player_1a: string
           player_1a_rating: number
@@ -858,10 +859,6 @@ export type Database = {
       merge_guest_player: {
         Args: { guest_player_id: string; target_user_id: string }
         Returns: undefined
-      }
-      predict_elo_for_match: {
-        Args: { p_match_id: string; p_simulated_outcome?: number }
-        Returns: Json
       }
       recompute_all_elo_from_scratch: {
         Args: Record<PropertyKey, never>
@@ -1477,6 +1474,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "challenge"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_stats_challenge_fkey"
+            columns: ["challenge"]
+            isOneToOne: false
+            referencedRelation: "challenge_podium"
+            referencedColumns: ["challenge_id"]
           },
           {
             foreignKeyName: "challenge_stats_challenge_fkey"
@@ -2561,6 +2565,15 @@ export type Database = {
       }
     }
     Views: {
+      challenge_podium: {
+        Row: {
+          challenge_id: string | null
+          challenge_name: string | null
+          end_date: string | null
+          podium: Json | null
+        }
+        Relationships: []
+      }
       challenge_user_points: {
         Row: {
           avatarUrl: string | null

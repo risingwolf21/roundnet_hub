@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
 import { dataURLtoFile, formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
@@ -67,16 +66,34 @@ export const useChallenge = (challengeId: string) =>
   });
 
 export const useChallenges = () =>
-  useQuery<ChallengeWithFullGroup[]>({
+  useQuery({
     queryKey: challengeKeys.list(),
     queryFn: async () => {
-      const { data } = await fetchChallengeWithGroup()
+      const { data } = await supabase
+        .from('challenge')
+        .select('*')
         .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
         .order('name')
-        .throwOnError()
-        .returns<ChallengeWithFullGroup[]>();
+        .throwOnError();
 
       return data ?? [];
+    },
+  });
+
+export const useChallengePodiums = () =>
+  useQuery({
+    queryKey: [...challengeKeys.all, 'podiums'] as const,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('challenge_podium')
+        .select('*')
+        .order('end_date', { ascending: false })
+        .throwOnError();
+
+      return (data ?? []).map((podium) => ({
+        ...podium,
+        podium: podium.podium as unknown as { user_id: string; name: string; score: number; rank: number; image_url: string; }[],
+      }));
     },
   });
 
@@ -84,12 +101,14 @@ export const useArchivedChallenges = () =>
   useInfiniteQuery({
     queryKey: challengeKeys.archivedList(),
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const { data } = await fetchChallengeWithGroup()
+      const { data } = await supabase
+        .from('challenge')
+        .select('*')
         .not('end_date', 'is', null)
         .lt('end_date', formatDateToDatabase(new Date()))
         .order('end_date', { ascending: false })
-        .throwOnError()
-        .returns<ChallengeWithFullGroup[]>();
+        .range(pageParam * 20, pageParam * 20 + 19)
+        .throwOnError();
 
       const hasMore = (data?.length ?? 0) === 20;
 

@@ -22,13 +22,12 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 type ProfilePayload = {
-  userId?: string | null;
-  playerId?: string | null;
+  userId: string;
 };
 
-const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
+const Content = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
 
-  const { data: profile } = useProfile(payload);
+  const { data: profile } = useProfile(userId);
 
   return (
     <>
