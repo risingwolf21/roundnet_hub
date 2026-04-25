@@ -1,6 +1,6 @@
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { PlaceType } from '../types';
 
@@ -10,9 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { useUserLocation } from '@/hooks/useUserLocation';
 import L from 'leaflet';
-import { X } from 'lucide-react';
-import { toast } from 'sonner';
+import { RawResult } from 'leaflet-geosearch/dist/providers/openStreetMapProvider.js';
+import { MapPin, X } from 'lucide-react';
+
+import '@/styles/user-location.css';
 
 type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
   name: string;
@@ -32,176 +35,70 @@ function MapFlyTo({ target }: { target: { lat: number; lng: number } | null }) {
 
   useEffect(() => {
     if (target) {
-      // flyTo macht eine schöne weiche Kamerafahrt zur neuen Position
-      map.flyTo([target.lat, target.lng], 16);
+      map.flyTo([target.lat, target.lng], 18, { duration: 0.5 });
     }
   }, [target, map]);
 
   return null;
 }
 
-const MapContainerChild = ({ setUserLocation }: { setUserLocation: React.Dispatch<React.SetStateAction<{ latitude: number; longitude: number } | null>> }) => {
+const parseAddress = (raw: any) => {
+  const addr = raw.address || raw;
+  const street = addr.road && addr.house_number ? `${addr.road} ${addr.house_number}` : addr.road || null;
+  const cityInfo = addr.postcode && addr.city ? `${addr.postcode} ${addr.city}` : addr.city || '';
 
-  const map = useMap();
+  const address = street && cityInfo ? `${street}, ${cityInfo}` : street || cityInfo || '';
+  const name = raw.name || street || address || 'Unbenannter Ort';
 
-  const getUserLocation = useCallback(() => {
-    if (navigator.geolocation) {
-
-      function getCurrentPosition() {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setUserLocation({ latitude, longitude });
-
-            L.marker({ lat: latitude, lng: longitude }).addTo(map)
-              .bindPopup("You are within " + position.coords.accuracy + " meters from this point").openPopup();
-
-            L.circle({ lat: latitude, lng: longitude }, position.coords.accuracy).addTo(map);
-          },
-          (error) => {
-            toast.error(`Error getting user location: \n ${error.message}`);
-          }
-        );
-      }
-
-      // Check if navigator.permissions.query is supported and working
-      // iOS Safari has inconsistent support for this API
-      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
-        try {
-          navigator.permissions
-            .query({ name: 'geolocation' } as PermissionDescriptor)
-            .then((permissionStatus) => {
-              if (permissionStatus.state === 'denied') {
-                // Only redirect to app settings if we're in a native app context
-                if (window.location.href.startsWith('app-settings:')) {
-                  window.location.href = 'app-settings:location';
-                }
-              } else {
-                getCurrentPosition();
-              }
-            })
-            .catch(() => {
-              // If permissions query fails (iOS Safari), just try to get location directly
-              getCurrentPosition();
-            });
-        } catch (error) {
-          // If permissions API throws synchronously (some iOS Safari versions), fallback to direct geolocation
-          getCurrentPosition();
-        }
-      } else {
-        // Permissions API not supported, directly request location
-        getCurrentPosition();
-      }
-    } else {
-      toast.error(`Geolocation is not supported by this browser.`);
-    }
-  }, [setUserLocation, map]);
-
-  useEffect(() => {
-    getUserLocation();
-  }, [getUserLocation]);
-
-  return null;
-}
+  return { name, description: address || null };
+};
 
 const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType | null>) => {
 
   const [value, setValue] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>();
+  const [results, setResults] = useState<SearchResult<RawResult>[]>([]);
   const [loading, setLoading] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(defaultLocation);
   const [selectedPlace, setSelectedPlace] = useState<MySearchResult | null>(null);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const userLocation = useUserLocation();
 
-  const provider = new OpenStreetMapProvider({ params: { addressdetails: 1, 'accept-language': 'de' } });
+  const provider = useMemo(() => new OpenStreetMapProvider({
+    params: { addressdetails: 1, 'accept-language': 'de' }
+  }), []);
 
-  const search = () => {
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query) return;
     setLoading(true);
-    provider
-      .search({ query: value })
-      .then(function (results) {
-        setResults(results);
-      })
-      .finally(() => setLoading(false));
-  };
-
-  const keyPress = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (e.key === 'Enter') {
-      search();
+    try {
+      const searchResults = await provider.search({ query });
+      setResults(searchResults);
+    } catch (error) {
+      console.error("Search failed", error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [provider]);
 
-  const setPlaceFromSearchResult = (res: any) => {
-
-    const street =
-      res.raw.address?.road && res.raw.address?.house_number ? `${res.raw.address.road} ${res.raw.address.house_number}` : null;
-
-    const address =
-      res.raw.address?.road && res.raw.address?.city && res.raw.address?.house_number && res.raw.address?.postcode
-        ? `${street}, ${res.raw.address?.postcode} ${res.raw.address?.city}`
-        : '';
-    const name = res.raw.name ?? street ?? address ?? 'Unbenannter Ort';
-
-    setSelectedPlace({
-      x: res.x,
-      y: res.y,
-      name: name,
-      description: address || null,
-    });
-  };
-
-  const setPlaceFromLatLon = (lat: number, lon: number) => {
+  const setPlaceFromLatLon = useCallback(async (lat: number, lon: number) => {
     setLoading(true);
-    fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=de`
-    )
-      .then((res) => res.json())
-      .then((res) => {
-        const street =
-          res.address.road && res.address.house_number ? `${res.address.road} ${res.address.house_number}` : null;
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=de`
+      );
+      const data = await response.json();
+      const { name, description } = parseAddress(data);
 
-        const address =
-          res.address.road && res.address.city && res.address.house_number && res.address.postcode
-            ? `${street}, ${res.address.postcode} ${res.address.city}`
-            : '';
-        const name = res.name ?? street ?? address ?? 'Unbenannter Ort';
+      setSelectedPlace({ x: lon, y: lat, name, description });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        setSelectedPlace({
-          x: lon,
-          y: lat,
-          name: name,
-          description: address || null,
-        });
-      })
-      .finally(() => setLoading(false));
-  };
-
-  function UserLocationMarker() {
-    const map = useMap();
-
-    useEffect(() => {
-      map.locate().on("locationfound", function (e) {
-        L.circle(e.latlng, e.accuracy).addTo(map);
-        L.marker(e.latlng).addTo(map);
-        map.flyTo(e.latlng, map.getZoom());
-        const radius = e.accuracy;
-        const circle = L.circle(e.latlng, radius);
-        circle.addTo(map);
-      });
-    }, [map]);
-
-    return null;
-  }
-
-  function ClickableMapComponent() {
-    const map = useMapEvents({
-      click: (event) => {
-        if (loading) return;
-        map.locate();
-        setPlaceFromLatLon(event.latlng.lat, event.latlng.lng);
-        map.setView([event.latlng.lat, event.latlng.lng], map.getZoom());
+  function MapEvents() {
+    useMapEvents({
+      click: (e) => {
+        if (!loading) setPlaceFromLatLon(e.latlng.lat, e.latlng.lng);
       },
     });
     return null;
@@ -219,21 +116,17 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
                 Suche einen Ort...
               </button>} />
             <SheetContent side="top" className={"gap-0 pt-safe-top"}
-              showCloseButton={false}
-              onFocus={(e) => {
-                e.preventDefault();
-                inputRef.current?.focus();
-              }}>
+              showCloseButton={false}>
               <SheetHeader>
                 <div className="flex items-center justify-between w-full gap-2">
                   <Input
-                    ref={inputRef}
+                    autoFocus
                     type="search"
                     value={value}
                     placeholder='Suche einen Ort...'
 
                     onChange={(e: { target: { value: React.SetStateAction<string> } }) => setValue(e.target.value)}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch(value)}
                     className="w-full flex-1 bg-muted/50 text-foreground focus-visible:bg-background focus"
                   />
                   <SheetClose render={<Button variant={"ghost"}><X /></Button>} />
@@ -241,13 +134,17 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
               </SheetHeader>
               <div className='p-2 flex flex-col gap-2'>
                 {
-                  (results ?? []).map(x => (
-                    <Item key={x.x + '-' + x.y} variant={"outline"} onClick={() => {
-                      setPlaceFromSearchResult(x);
-                      setSheetOpen(false);
-                    }}>
+                  results.map((res) => (
+                    <Item
+                      key={`${res.x}-${res.y}`}
+                      onClick={() => {
+                        const { name, description } = parseAddress(res.raw);
+                        setSelectedPlace({ x: res.x, y: res.y, name, description });
+                        setSheetOpen(false);
+                      }}
+                    >
                       <ItemContent>
-                        <ItemTitle>{x.label}</ItemTitle>
+                        <ItemTitle>{res.label}</ItemTitle>
                       </ItemContent>
                     </Item>
                   ))
@@ -260,13 +157,11 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
       <DialogBody className='p-0'>
         <MapContainer
           className='size-full'
-          center={userLocation ? [userLocation?.latitude, userLocation?.longitude] : undefined}
+          center={userLocation ? [userLocation?.latitude, userLocation?.longitude] : [defaultLocation.latitude, defaultLocation.longitude]}
           zoom={16}
         >
 
-          <MapContainerChild setUserLocation={setUserLocation} />
-
-          <ClickableMapComponent />
+          <MapEvents />
 
           <MapFlyTo
             target={selectedPlace ? { lat: selectedPlace.y, lng: selectedPlace.x } : null}
@@ -274,10 +169,39 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
 
           {selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />}
 
-          <UserLocationMarker />
+          {
+            userLocation && (
+              <Marker
+                position={[userLocation.latitude, userLocation.longitude]}
+                icon={L.divIcon({
+                  className: 'user-location-marker', // Deine Hauptklasse
+                  html: `<div class="pulse-marker"></div>`, // Das Element für das CSS
+                  iconSize: [20, 20],
+                  iconAnchor: [10, 10], // Zentriert den Marker auf den Koordinaten
+                })}
+                zIndexOffset={1000} // Sorgt dafür, dass der Punkt immer über anderen Markern liegt
+              />
+            )
+          }
 
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         </MapContainer>
+
+        {
+          userLocation && <Button
+            className="absolute bottom-24 right-4 z-[1000] rounded-full size-12"
+            variant="secondary"
+            onClick={() => setSelectedPlace({
+              x: userLocation.longitude,
+              y: userLocation.latitude,
+              name: 'Mein Standort',
+              description: 'Aktuelle GPS-Position'
+            })}
+          >
+            <MapPin />
+          </Button>
+
+        }
       </DialogBody>
       <DialogFooter variant={"fullscreen"} className='flex flex-col w-full max-w-lg mx-auto p-4'>
         <div>
