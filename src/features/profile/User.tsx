@@ -37,7 +37,7 @@ export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const notificationSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const isShadcn = hasFeature("enableShadcnUI");
+  const isShadcn = hasFeature("shadcnUI");
 
   const syncCalendar = () => {
     if (iOS) {
@@ -125,7 +125,7 @@ export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
                 <ListItem secondaryAction={
                   <Switch
                     checked={isShadcn}
-                    onChange={() => toggleFeature("enableShadcnUI")} />
+                    onChange={() => toggleFeature("shadcnUI")} />
                 }>
                   <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                     <BuildIcon />

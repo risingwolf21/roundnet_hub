@@ -7,12 +7,11 @@ import { UserShadcn } from "./User.shadcn";
 
 const UserScreenProvider = () => {
   const { user, signOut } = useGrants();
-  const isShadcn = useFeature("enableShadcnUI");
+  const isShadcn = useFeature("shadcnUI");
 
   const now = getMonth(new Date()) + 1; // getMonth() returns 0-11, we need 1-12 for the query
 
   const { data: userAttendance = [] } = useUserAttendanceInMonth(user.id, now);
-
 
   if (isShadcn) {
     return <UserShadcn user={user} handleSignOut={signOut} userAttendance={userAttendance} />

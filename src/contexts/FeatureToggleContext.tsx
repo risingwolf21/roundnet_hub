@@ -1,10 +1,10 @@
 import React, { createContext, use, useEffect, useState } from 'react';
 
 export type FeatureKey =
-  | 'enableShadcnUI';
+  | 'shadcnUI';
 
 const defaultFeatures: Record<FeatureKey, boolean> = {
-  enableShadcnUI: false
+  shadcnUI: false
 };
 
 interface FeatureToggleContextType {

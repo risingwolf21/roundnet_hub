@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import L from 'leaflet';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -39,19 +40,30 @@ function MapFlyTo({ target }: { target: { lat: number; lng: number } | null }) {
   return null;
 }
 
-const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType | null>) => {
+const MapContainerChild = ({ setUserLocation }: { setUserLocation: React.Dispatch<React.SetStateAction<{ latitude: number; longitude: number } | null>> }) => {
 
-  const [value, setValue] = useState('');
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [results, setResults] = useState<SearchResult[]>();
-  const [loading, setLoading] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(defaultLocation);
-  const [selectedPlace, setSelectedPlace] = useState<MySearchResult | null>(null);
-
-  const inputRef = useRef<HTMLInputElement>(null);
+  const map = useMap();
 
   const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
+
+      function getCurrentPosition() {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ latitude, longitude });
+
+            L.marker({ lat: latitude, lng: longitude }).addTo(map)
+              .bindPopup("You are within " + position.coords.accuracy + " meters from this point").openPopup();
+
+            L.circle({ lat: latitude, lng: longitude }, position.coords.accuracy).addTo(map);
+          },
+          (error) => {
+            toast.error(`Error getting user location: \n ${error.message}`);
+          }
+        );
+      }
+
       // Check if navigator.permissions.query is supported and working
       // iOS Safari has inconsistent support for this API
       if (navigator.permissions && typeof navigator.permissions.query === 'function') {
@@ -65,61 +77,43 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
                   window.location.href = 'app-settings:location';
                 }
               } else {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setUserLocation({ latitude, longitude });
-                  },
-                  (error) => {
-                    toast.error(`Error getting user location: \n ${error.message}`);
-                  }
-                );
+                getCurrentPosition();
               }
             })
             .catch(() => {
               // If permissions query fails (iOS Safari), just try to get location directly
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  const { latitude, longitude } = position.coords;
-                  setUserLocation({ latitude, longitude });
-                },
-                (error) => {
-                  toast.error(`Error getting user location: \n ${error.message}`);
-                }
-              );
+              getCurrentPosition();
             });
         } catch (error) {
           // If permissions API throws synchronously (some iOS Safari versions), fallback to direct geolocation
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              setUserLocation({ latitude, longitude });
-            },
-            (error) => {
-              toast.error(`Error getting user location: \n ${error.message}`);
-            }
-          );
+          getCurrentPosition();
         }
       } else {
         // Permissions API not supported, directly request location
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setUserLocation({ latitude, longitude });
-          },
-          (error) => {
-            toast.error(`Error getting user location: \n ${error.message}`);
-          }
-        );
+        getCurrentPosition();
       }
     } else {
       toast.error(`Geolocation is not supported by this browser.`);
     }
-  }, []);
+  }, [setUserLocation, map]);
 
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
+
+  return null;
+}
+
+const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType | null>) => {
+
+  const [value, setValue] = useState('');
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [results, setResults] = useState<SearchResult[]>();
+  const [loading, setLoading] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(defaultLocation);
+  const [selectedPlace, setSelectedPlace] = useState<MySearchResult | null>(null);
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const provider = new OpenStreetMapProvider({ params: { addressdetails: 1, 'accept-language': 'de' } });
 
@@ -175,8 +169,8 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
         const name = res.name ?? street ?? address ?? 'Unbenannter Ort';
 
         setSelectedPlace({
-          x: res.lon,
-          y: res.lat,
+          x: lon,
+          y: lat,
           name: name,
           description: address || null,
         });
@@ -184,7 +178,24 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
       .finally(() => setLoading(false));
   };
 
-  function MyComponent() {
+  function UserLocationMarker() {
+    const map = useMap();
+
+    useEffect(() => {
+      map.locate().on("locationfound", function (e) {
+        L.circle(e.latlng, e.accuracy).addTo(map);
+        L.marker(e.latlng).addTo(map);
+        map.flyTo(e.latlng, map.getZoom());
+        const radius = e.accuracy;
+        const circle = L.circle(e.latlng, radius);
+        circle.addTo(map);
+      });
+    }, [map]);
+
+    return null;
+  }
+
+  function ClickableMapComponent() {
     const map = useMapEvents({
       click: (event) => {
         if (loading) return;
@@ -252,7 +263,10 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
           center={userLocation ? [userLocation?.latitude, userLocation?.longitude] : undefined}
           zoom={16}
         >
-          <MyComponent />
+
+          <MapContainerChild setUserLocation={setUserLocation} />
+
+          <ClickableMapComponent />
 
           <MapFlyTo
             target={selectedPlace ? { lat: selectedPlace.y, lng: selectedPlace.x } : null}
@@ -260,10 +274,12 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
 
           {selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />}
 
+          <UserLocationMarker />
+
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         </MapContainer>
       </DialogBody>
-      <DialogFooter variant={"fullscreen"} className='flex flex-col'>
+      <DialogFooter variant={"fullscreen"} className='flex flex-col w-full max-w-lg mx-auto p-4'>
         <div>
           <h3 className='text-lg font-semibold'>{selectedPlace ? selectedPlace.name : 'Kein Ort ausgewählt'}</h3>
           <p className='text-sm text-muted-foreground'>{selectedPlace?.description}</p>

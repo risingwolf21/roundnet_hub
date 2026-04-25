@@ -594,7 +594,7 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
 const TestLabContent = () => {
 
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const isShadcn = hasFeature("enableShadcnUI");
+  const isShadcn = hasFeature("shadcnUI");
 
   return <>
     <CardContent className="px-0">
@@ -605,7 +605,7 @@ const TestLabContent = () => {
             Enable the new shadcn user interface for the whole application
           </FieldDescription>
         </FieldContent>
-        <Switch id="switch-share" checked={isShadcn} onCheckedChange={() => toggleFeature("enableShadcnUI")} />
+        <Switch id="switch-share" checked={isShadcn} onCheckedChange={() => toggleFeature("shadcnUI")} />
       </Field>
     </CardContent>
   </>
