@@ -1,10 +1,10 @@
 import { usePlayerMatches } from "@/tanstack/games";
-import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Item } from "@/components/ui/item";
+import { Spinner } from "@/components/ui/spinner";
 import { DialogProps } from "@/contexts/DialogsProvider";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
       </DialogHeader>
       <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-4 ">
         {
-          (isLoading || isFetching) && <CircularProgress />
+          (isLoading || isFetching) && <Spinner />
         }
         {
           games.map((match) => {
