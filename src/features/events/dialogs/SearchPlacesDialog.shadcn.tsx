@@ -63,6 +63,12 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
 
   const userLocation = useUserLocation();
 
+  const initialMapCenter = useMemo<L.LatLngExpression>(() => {
+    if (userLocation) return [userLocation.latitude, userLocation.longitude];
+    return [defaultLocation.latitude, defaultLocation.longitude];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const provider = useMemo(() => new OpenStreetMapProvider({
     params: { addressdetails: 1, 'accept-language': 'de' }
   }), []);
@@ -157,15 +163,15 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
       <DialogBody className='p-0'>
         <MapContainer
           className='size-full'
-          center={userLocation ? [userLocation?.latitude, userLocation?.longitude] : [defaultLocation.latitude, defaultLocation.longitude]}
+          center={initialMapCenter}
           zoom={16}
         >
 
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
           <MapEvents />
 
-          <MapFlyTo
-            target={selectedPlace ? { lat: selectedPlace.y, lng: selectedPlace.x } : null}
-          />
+          <MapFlyTo target={selectedPlace ? { lat: selectedPlace.y, lng: selectedPlace.x } : null} />
 
           {selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />}
 
@@ -184,13 +190,12 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
             )
           }
 
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         </MapContainer>
 
         {
           userLocation && <Button
-            className="absolute bottom-24 right-4 z-[1000] rounded-full size-12"
-            variant="secondary"
+            className="absolute bottom-42 right-4 z-[1000] rounded-full size-12"
+            variant="default"
             onClick={() => setSelectedPlace({
               x: userLocation.longitude,
               y: userLocation.latitude,
@@ -204,26 +209,47 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
         }
       </DialogBody>
       <DialogFooter variant={"fullscreen"} className='flex flex-col w-full max-w-lg mx-auto p-4'>
-        <div>
-          <h3 className='text-lg font-semibold'>{selectedPlace ? selectedPlace.name : 'Kein Ort ausgewählt'}</h3>
-          <p className='text-sm text-muted-foreground'>{selectedPlace?.description}</p>
-        </div>
-        <div className='flex flex-row gap-2 w-full mt-4'>
-          <Button variant={"outline"} className={"flex-1"} onClick={() => onClose(null)}>
-            Abbrechen
-          </Button>
-          {
-            selectedPlace && <Button className={"flex-1"} onClick={() =>
-              onClose({
-                description: selectedPlace.description,
-                name: selectedPlace.name,
-                lat: selectedPlace.y,
-                lon: selectedPlace.x,
-              })
-            }>
-              Speichern
+        <div className='w-full max-w-lg'>
+          <div>
+            {
+              selectedPlace ? (
+                <div className='flex flex-col gap-2'>
+                  <Input
+                    placeholder='Name'
+                    value={selectedPlace.name}
+                    onChange={(e) => setSelectedPlace({ ...selectedPlace, name: e.target.value })}
+                    className='text-base font-semibold'
+                  />
+
+                  <Input
+                    placeholder='Beschreibung'
+                    value={selectedPlace.description ?? ''}
+                    onChange={(e) => setSelectedPlace({ ...selectedPlace, description: e.target.value })}
+                    className='text-base text-muted-foreground'
+                  />
+                </div>
+              ) : (
+                <p className='text-center text-muted-foreground'>Klicke auf die Karte, um einen Ort auszuwählen.</p>
+              )
+            }
+          </div>
+          <div className='flex flex-row gap-2 w-full mt-4'>
+            <Button variant={"outline"} className={"flex-1"} onClick={() => onClose(null)}>
+              Abbrechen
             </Button>
-          }
+            {
+              selectedPlace && <Button className={"flex-1"} onClick={() =>
+                onClose({
+                  description: selectedPlace.description,
+                  name: selectedPlace.name,
+                  lat: selectedPlace.y,
+                  lon: selectedPlace.x,
+                })
+              }>
+                Speichern
+              </Button>
+            }
+          </div>
         </div>
       </DialogFooter>
 

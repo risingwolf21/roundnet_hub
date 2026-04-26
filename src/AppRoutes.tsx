@@ -19,7 +19,7 @@ import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
   const { user } = useApplication();
-  const isShadcnUi = useFeature("enableShadcnUI");
+  const isShadcnUi = useFeature("shadcnUI");
 
   const router = useMemo(() => createRouter(user, isShadcnUi), [user, isShadcnUi]);
 
