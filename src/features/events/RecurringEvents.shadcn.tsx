@@ -1,4 +1,4 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { format, isAfter, parse } from 'date-fns';
 import { eventInThePast, EventWithGroup } from '../../types/supabaseTypes';
 

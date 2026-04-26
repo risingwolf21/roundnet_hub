@@ -1,7 +1,6 @@
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import CircularProgress from '@mui/material/CircularProgress';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { Spinner } from './ui/spinner';
 
 type Props = {
   children: ReactNode;
@@ -96,9 +95,9 @@ export const PullToRefresh = ({ onRefresh, children = null, indicatorSize = 80, 
           flexShrink: 0
         }}
       >
-        {busy && <CircularProgress thickness={5} size={30} variant="indeterminate" sx={{ transition: 'none' }} />}
-        {drag < maxDrag * 0.9 && drag > 50 && !busy && <ArrowDownwardIcon />}
-        {drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />}
+        {busy && <Spinner className='size-7' />}
+        {drag < maxDrag * 0.9 && drag > 50 && !busy && <ArrowDown />}
+        {drag >= maxDrag * 0.9 && !busy && <ArrowUp />}
       </div>
 
       <div className="flex-1 overscroll-none relative size-full min-h-0">

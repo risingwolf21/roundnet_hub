@@ -1,4 +1,4 @@
-import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,7 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
   );
 }
 
-export const PublicGroupListShadcn = () => {
+const PublicGroupListShadcn = () => {
 
   const { user } = useGrants();
   const navigate = useNavigate();
@@ -170,3 +170,5 @@ export const PublicGroupListShadcn = () => {
     </main>
   </div>
 }
+
+export default PublicGroupListShadcn;

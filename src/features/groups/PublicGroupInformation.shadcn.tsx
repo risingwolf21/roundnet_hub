@@ -1,4 +1,4 @@
-import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Alert, AlertAction, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,7 +36,7 @@ const roleWeights: Record<string, number> = {
   'user': 4
 };
 
-export const PublicGroupInformationShadcn = () => {
+const PublicGroupInformationShadcn = () => {
 
   const { groupId } = useParams();
   const { user } = useGrants();
@@ -488,3 +488,5 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
     </DropdownMenuContent>
   </DropdownMenu>
 }
+
+export default PublicGroupInformationShadcn;

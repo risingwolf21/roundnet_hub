@@ -5,9 +5,8 @@ import { groupBy, nameOfProductType } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useEffect, useState } from 'react';
 import { useGrants } from '../auth/GrantsContext';
-import VoucherCard from './components/Voucher';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -163,7 +162,7 @@ const DrinkListScreenShadcn = () => {
           onRefresh={() => {
             refetch();
           }}>
-          <VoucherCard />
+
           <div className='p-2'>
 
             {isLoading && (

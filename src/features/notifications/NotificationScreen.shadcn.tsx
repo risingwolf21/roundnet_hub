@@ -1,6 +1,5 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { useAllNotifications, useDismissNotification, useMarkNotificationsAsRead } from '@/tanstack/notifications';
-import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
 import { AppBar } from '@/components/ui/appbar';
@@ -10,18 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Json } from '@/types/supabase-generated.types';
 import { ChevronRight, Mail, MailOpen, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { NotificationScreen } from './NotificationScreen';
-
-const NotificationsPage = ({ isShadcn }: { isShadcn: boolean }) => {
-  if (isShadcn) {
-    return <NotificationScreenShadcn />
-  }
-  return (
-    <Layout>
-      <NotificationScreen />
-    </Layout>
-  );
-};
 
 function hasStringUrl(value: Json): value is { url: string } {
   return typeof value === 'object' && value !== null && !Array.isArray(value) && 'url' in value && typeof value.url === 'string';
@@ -119,4 +106,4 @@ const NotificationScreenShadcn = () => {
   );
 };
 
-export default NotificationsPage;
+export default NotificationScreenShadcn;

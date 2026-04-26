@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

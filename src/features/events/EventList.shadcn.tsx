@@ -1,4 +1,4 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,12 +8,11 @@ import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
-import AddIcon from '@mui/icons-material/Add';
 import { withProfiler } from '@sentry/react';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
-import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter } from 'lucide-react';
+import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter, Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -51,7 +50,7 @@ const EventScreen = () => {
           <>
             <Has perm={"event.edit"}>
               <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
-                <AddIcon />
+                <Plus />
               </Button>
             </Has>
             <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {

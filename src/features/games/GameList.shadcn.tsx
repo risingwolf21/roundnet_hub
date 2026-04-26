@@ -1,4 +1,4 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
 import { format, intlFormatDistance, isAfter } from 'date-fns';
 import { useNavigate } from 'react-router';

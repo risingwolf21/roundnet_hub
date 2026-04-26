@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { groupBy } from '../../utils';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';

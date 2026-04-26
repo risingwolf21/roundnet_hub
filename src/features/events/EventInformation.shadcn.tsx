@@ -1,4 +1,4 @@
-import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import {
   Alert,
   AlertAction,

@@ -13,7 +13,7 @@ import { TFunction } from 'i18next';
 import { useCallback } from 'react';
 import { useGrants } from '../auth/GrantsContext';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

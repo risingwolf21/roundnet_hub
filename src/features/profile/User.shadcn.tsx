@@ -1,4 +1,4 @@
-import CropImageDialog from "@/components/CropImageDialog";
+import CropImageDialog from "@/components/CropImageDialog.shadcn";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Button } from "@/components/ui/button";
@@ -12,20 +12,22 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDialogs } from "@/contexts/DialogsProvider";
 import { useFeatureFlags } from "@/contexts/FeatureToggleContext";
 import { supabase } from "@/lib/supabase";
+import { useUserAttendanceInMonth } from "@/tanstack/events";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
 import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from "@/tanstack/player_data";
 import { useUpdateUserProfile } from "@/tanstack/user";
 import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
 import { iOS, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
-import { useDialogs } from "@toolpad/core";
-import { addDays, isAfter, isSameDay } from "date-fns";
+import { addDays, getMonth, isAfter, isSameDay } from "date-fns";
 import { Bell, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User, Volleyball } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Day } from "react-day-picker";
 import { toast } from "sonner";
+import { useGrants } from "../auth/GrantsContext";
 
 
 type UserScreenProps = {
@@ -141,22 +143,12 @@ const CalendarCard = ({ userAttendance, user }: { userAttendance: Date[]; user: 
   </>
 }
 
-const Playerzone = ({ user }: { user: UserWithGroups }) => {
-  const { data: player_data } = usePlayer(user);
+const Playerzone = ({ user, player_data }: { user: UserWithGroups; player_data: PlayerPublic | null }) => {
   const { data: elo_history } = useEloHistory(user);
 
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
   const [gender, setGender] = useState(player_data?.gender ?? '');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (player_data) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setRgLink(player_data.rg_link ?? '');
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setGender(player_data.gender ?? '');
-    }
-  }, [player_data]);
 
   const updateHideRatingMutation = useUpdateIndexHidden(user);
   const updatePlayer = useUpdatePlayer(user);
@@ -469,7 +461,7 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
     e.target.files = null;
     e.target.value = '';
 
-    const result = await dialogs.open(CropImageDialog, { selectedImage: imageDataUrl as string, isShadcn: true });
+    const result = await dialogs.open(CropImageDialog, { imageUrl: imageDataUrl as string });
     setCroppedImage(result);
   }
 
@@ -649,7 +641,15 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
   </>
 };
 
-export const UserShadcn = ({ user, handleSignOut, userAttendance }: UserScreenProps) => {
+const UserShadcn = () => {
+
+  const { user, signOut } = useGrants();
+  const { data: player_data = null } = usePlayer(user);
+
+  const now = getMonth(new Date()) + 1;
+
+  const { data: userAttendance = [] } = useUserAttendanceInMonth(user.id, now);
+
 
   return <div>
     <AppBar
@@ -669,13 +669,13 @@ export const UserShadcn = ({ user, handleSignOut, userAttendance }: UserScreenPr
             }
           </TabsList>
           <TabsContent value="account">
-            <Account user={user} handleSignOut={handleSignOut} />
+            <Account user={user} handleSignOut={signOut} />
           </TabsContent>
           <TabsContent value="changePassword">
             <ChangePassword />
           </TabsContent>
           <TabsContent value="playerzone">
-            <Playerzone user={user} />
+            <Playerzone user={user} player_data={player_data} />
           </TabsContent>
           <TabsContent value="calendar">
             <CalendarCard {...{ user, userAttendance }} />
@@ -691,3 +691,5 @@ export const UserShadcn = ({ user, handleSignOut, userAttendance }: UserScreenPr
     </main >
   </div >
 }
+
+export default UserShadcn;

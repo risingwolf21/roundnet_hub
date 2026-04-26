@@ -1,4 +1,4 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { useDialogs } from '@toolpad/core';
 import { useState } from 'react';
 import { History } from 'types/supabase';

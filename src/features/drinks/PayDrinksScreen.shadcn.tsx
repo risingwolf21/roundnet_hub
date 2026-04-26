@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';

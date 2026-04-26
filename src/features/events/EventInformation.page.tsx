@@ -1,59 +1,23 @@
-import Layout from '@/components/layout/Layout';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import EventInformationLoading from '@/features/events/components/EventInformationLoading';
-import { CancelTrainingDialog } from '@/features/events/dialogs/CancelTrainingDialog';
-import { CreateOrUpdateEventDialog } from '@/features/events/dialogs/CreateOrUpdateEventDialog';
-import { DeleteEventDialog } from '@/features/events/dialogs/DeleteEventDialog';
-import { EditEventOptionsDialog } from '@/features/events/dialogs/EditEventOptionsDialog';
 import { useFetchMode } from '@/hooks/useFetchMode';
-import { Has } from '@/hooks/useGrants';
-import { queryClient } from '@/lib/queryClient';
 import {
-  eventKeys,
-  useBringItems,
-  useCancelTrainingMutation,
-  useDeleteTrainingMutation,
-  useEvent,
+  useEvent
 } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { captureException } from '@sentry/react';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
-import { EventTable } from 'types/supabase';
-import EventInformation from './EventInformation';
+import { useParams } from 'react-router';
 import { PlaceType } from './types';
 
-import Delete from '@mui/icons-material/Delete';
-import DoNotDisturb from '@mui/icons-material/DoNotDisturb';
-import DoNotDisturbOff from '@mui/icons-material/DoNotDisturbOff';
-import Edit from '@mui/icons-material/Edit';
-import MoreVert from '@mui/icons-material/MoreVert';
-import IconButton from '@mui/material/IconButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { useGrants } from '../auth/GrantsContext';
-import { TransformEventDialog } from './dialogs/TransformEventDialog';
-import EventAdminInformation from './EventAdminInformation';
 import EventInformationShadcn, { EventInformationError, EventInformationSkeleton } from './EventInformation.shadcn';
 
-const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) => {
+const EventInformation = () => {
   const { selectedEventId } = useParams();
-  const { user } = useGrants();
-  const navigate = useNavigate();
-  const notifications = useNotifications();
-  const dialogs = useDialogs();
+
   const { t } = useTranslation();
-  const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
   const [fetchMode] = useFetchMode();
 
-  const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
-  const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
   const { data: event, isLoading, refetch } = useEvent(selectedEventId);
-  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
   const { data: keyHolders = [], isLoading: keyHoldersLoading } = useAllItems();
 
   const selectedEventPlace = useMemo<PlaceType | null>(() => {
@@ -81,176 +45,22 @@ const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) 
     }
   }, [event]);
 
-  if (isLoading || bringItemsLoading || keyHoldersLoading) {
-    if (isShadcn) {
-      return <EventInformationSkeleton />
-    }
-    return (
-      <Layout
-        appBarConfig={{
-          navigateBackPath: '/training/list',
-          title: '',
-          showProfile: false,
-        }}
-      >
-        <EventInformationLoading />
-      </Layout>
-    );
+  if (isLoading || keyHoldersLoading) {
+    return <EventInformationSkeleton />
   }
 
   if (!event) {
-    if (isShadcn) {
-      return <EventInformationError />
-    }
-    return null;
+    return <EventInformationError />
   }
 
-  if (isShadcn) {
-    return <EventInformationShadcn
-      event={event}
-      selectedEventPlace={selectedEventPlace}
-      t={t}
-      keyHolders={keyHolders}
-      fetchMode={fetchMode}
-    />
-  }
+  return <EventInformationShadcn
+    event={event}
+    selectedEventPlace={selectedEventPlace}
+    t={t}
+    keyHolders={keyHolders}
+    fetchMode={fetchMode}
+  />
 
-  return (
-    <Layout
-      appBarConfig={{
-        navigateBackPath: '/training/list',
-        title: event.title!,
-        showProfile: false,
-      }}
-      appBarActions={
-        <Has perm={['event.edit', 'event.cancel', 'event.delete', 'event.transform']} any>
-          <>
-            <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id="simple-menu"
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              <Has perm={'event.edit'}>
-                <MenuItem
-                  onClick={async () => {
-                    setAnchorEl(null);
-                    const result = await dialogs.open(EditEventOptionsDialog);
-                    if (result) {
-                      await dialogs.open(CreateOrUpdateEventDialog, {
-                        event: {
-                          ...event,
-                          items_enabled: false,
-                          group: event.group?.id ?? null,
-                        } as EventTable,
-                        eventGroup: event.group,
-                        option: result,
-                        items: allItems,
-                      });
-                    }
-                  }}
-                >
-                  <ListItemIcon>
-                    <Edit />
-                  </ListItemIcon>
-                  <ListItemText primary={t('events.editEvent')} />
-                </MenuItem>
-              </Has>
-              <Has perm={'event.transform'}>
-                <MenuItem
-                  onClick={async () => {
-                    setAnchorEl(null);
-                    await dialogs.open(TransformEventDialog, {
-                      user,
-                      event,
-                    });
-                  }}
-                >
-                  <ListItemIcon>
-                    <Edit />
-                  </ListItemIcon>
-                  <ListItemText primary={t('events.transformEventSeries')} />
-                </MenuItem>
-              </Has>
-              <Has perm={'event.cancel'}>
-                <MenuItem
-                  onClick={async () => {
-                    setAnchorEl(null);
-                    const result = await dialogs.open(CancelTrainingDialog, event);
-                    if (result) {
-                      cancelTrainingMutation.mutate(
-                        { event, isCancelled: !event.isCancelled },
-                        {
-                          onError: (error) => {
-                            captureException(error);
-                            notifications.show(error.message, { severity: 'error' });
-                          },
-                        }
-                      );
-                    }
-                  }}
-                >
-                  <ListItemIcon>{event.isCancelled ? <DoNotDisturbOff /> : <DoNotDisturb />}</ListItemIcon>
-                  <ListItemText primary={event.isCancelled ? 'Stattfinden' : 'Absagen'} />
-                </MenuItem>
-              </Has>
-              <Has perm={'event.delete'}>
-                <MenuItem
-                  onClick={async () => {
-                    setAnchorEl(null);
-                    const result = await dialogs.open(DeleteEventDialog, event);
-                    if (result) {
-                      deleteTrainingMutation.mutate(
-                        { event, type: result, currentUser: user },
-                        {
-                          onSuccess: () => {
-                            navigate('/training/list', { replace: true });
-                          },
-                          onError: (error) => {
-                            captureException(error);
-                            notifications.show(error.message, { severity: 'error' });
-                          },
-                        }
-                      );
-                    }
-                  }}
-                >
-                  <ListItemIcon>
-                    <Delete />
-                  </ListItemIcon>
-                  <ListItemText primary={t('events.deleteEvent')} />
-                </MenuItem>
-              </Has>
-            </Menu>
-          </>
-        </Has>
-      }
-    >
-      <PullToRefresh
-        onRefresh={() => {
-          refetch();
-          queryClient.invalidateQueries({ queryKey: eventKeys.eventComments(selectedEventId) });
-          queryClient.invalidateQueries({ queryKey: eventKeys.event(selectedEventId) });
-          queryClient.invalidateQueries({ queryKey: eventKeys.eventAttendance(selectedEventId) });
-        }}
-      >
-        <EventInformation
-          t={t}
-          keyHolders={keyHolders}
-          event={event}
-          selectedEventPlace={selectedEventPlace}
-          fetchMode={fetchMode}
-        />
-        <Has perm={'event.admin.view'}>
-          <EventAdminInformation event={event} />
-        </Has>
-      </PullToRefresh>
-    </Layout>
-  );
 };
 
-export default EventInformationProvider;
+export default EventInformation;

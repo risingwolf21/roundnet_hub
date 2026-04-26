@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';

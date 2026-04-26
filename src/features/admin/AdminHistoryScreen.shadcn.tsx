@@ -1,14 +1,10 @@
 import { format } from 'date-fns';
 import { useEffect, useRef } from 'react';
-import Layout from '../../components/layout/Layout';
-import { AdminHistoryItem } from './components/AdminHistoryItem';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
 import { useInfiniteDrinkHistory } from '@/tanstack/admin';
-import LinearProgress from '@mui/material/LinearProgress';
-import List from '@mui/material/List';
 import groupBy from 'lodash.groupby';
 import { useGrants } from '../auth/GrantsContext';
 
@@ -75,23 +71,6 @@ const AdminHistoryScreenShadcn = () => {
       </PullToRefresh>
     </main>
   </div>
-
-  return (
-    <Layout>
-      {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
-      <List>
-        {Object.entries(
-          groupBy(history?.pages.flatMap((x) => x.data) ?? [], (x: FullHistory) =>
-            format(x.created_at ?? '', 'dd MMMM yyyy')
-          )
-        ).map(([key, value]) => (
-          <AdminHistoryItem key={key} items={value} header={key} />
-        ))}
-      </List>
-      {isFetchingNextPage && <p style={{ padding: '12px' }}>Lade mehr...</p>}
-      <div ref={loadMoreRef} style={{ height: 40 }} />
-    </Layout>
-  );
 };
 
 export default AdminHistoryScreenShadcn;
