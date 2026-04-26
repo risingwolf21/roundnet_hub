@@ -33,3 +33,5 @@ export const PaymentsPendingAdminShadcn = lazyWithRetry(() => import('@/features
 export const UserPlayerMappingShadcn = lazyWithRetry(() => import("@/features/admin/UserPlayerMapping.shadcn"));
 export const RecurringEventsShadcn = lazyWithRetry(() => import('@/features/events/RecurringEvents.shadcn'));
 export const User = lazyWithRetry(() => import('@/features/profile/User.shadcn'));
+export const FeatureLockedRouteElement = lazyWithRetry(() => import('@/components/FeatureLockedRouteElement'));
+export const UnauthorizedRouteElement = lazyWithRetry(() => import('@/components/UnauthorizedRouteElement'));

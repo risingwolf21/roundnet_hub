@@ -1,11 +1,11 @@
 import { PullToRefresh } from '@/components/PullToRefresh';
-import { useDialogs } from '@toolpad/core';
 import { useState } from 'react';
 import { History } from 'types/supabase';
 
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { useAllPayments, useConfirmPaymentMutation } from '@/tanstack/admin';
 import { useGrants } from '../auth/GrantsContext';
 import { ConfirmPaymentDialogShadcn } from './dialogs/ConfirmPaymentDialog.shadcn';

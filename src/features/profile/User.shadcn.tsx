@@ -29,13 +29,6 @@ import { Day } from "react-day-picker";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 
-
-type UserScreenProps = {
-  user: UserWithGroups;
-  handleSignOut: () => void;
-  userAttendance: Date[];
-};
-
 const tabs = {
   account: {
     title: "Account",

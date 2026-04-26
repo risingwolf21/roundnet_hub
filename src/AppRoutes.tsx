@@ -1,18 +1,12 @@
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
-import ErrorRouteElement from './components/ErrorRouteElement';
 import { useApplication } from './features/auth/ApplicationContext';
-import ForgotPasswordShadcn from './features/auth/ForgotPassword.shadcn';
-import { GrantsProvider } from './features/auth/GrantsContext';
-import LoginFormShadcn from './features/auth/LoginForm.shadcn';
-import SignUpFormShadcn from './features/auth/SignUpForm.shadcn';
+
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
-import FeatureLockedRouteElement from './components/FeatureLockedRouteElement';
-import UnauthorizedRouteElement from './components/UnauthorizedRouteElement';
+import { GrantsProvider } from './features/auth/GrantsContext';
 import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
@@ -26,27 +20,14 @@ export const AppRoutes = () => {
 const PrivateRoute = () => {
   const { user } = useApplication();
   const location = useLocation();
-  if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
-  const privateRoute = <DialogsProvider>
-    <Pages.DialogsProvider>
-      <NotificationsProvider
-        slotProps={{
-          snackbar: {
-            sx: {
-              bottom: 'calc(8px + env(safe-area-inset-bottom))',
-            },
-          },
-        }}
-      >
-        <Outlet />
-      </NotificationsProvider>
-    </Pages.DialogsProvider>
-  </DialogsProvider>
+  if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
   return <GrantsProvider user={user}>
     <Pages.MainLayout>
-      {privateRoute}
+      <Pages.DialogsProvider>
+        <Outlet />
+      </Pages.DialogsProvider>
     </Pages.MainLayout>
   </GrantsProvider>
 };
@@ -59,29 +40,29 @@ const createRouter = (user: UserWithGroups | null) =>
       children: [
         {
           path: 'login',
-          element: <LoginFormShadcn />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.LoginFormShadcn />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: <SignUpFormShadcn />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.SignUpFormShadcn />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: <ForgotPasswordShadcn />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.ForgotPasswordShadcn />,
+          errorElement: <Pages.ErrorRouteElement />,
         }
       ],
     },
     {
       path: '/',
       element: <PrivateRoute />,
-      errorElement: <ErrorRouteElement />,
+      errorElement: <Pages.ErrorRouteElement />,
       children: [
         {
           path: '',
-          errorElement: <ErrorRouteElement />,
+          errorElement: <Pages.ErrorRouteElement />,
           children: [
             {
               index: true,
@@ -114,7 +95,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/user',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -125,11 +106,11 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/drinks',
               element: (
-                <Has feat={'drinks'} fallback={<FeatureLockedRouteElement />}>
+                <Has feat={'drinks'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -152,11 +133,11 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/challenges',
               element: (
-                <Has feat={'challenges'} fallback={<FeatureLockedRouteElement />}>
+                <Has feat={'challenges'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -175,7 +156,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/groups',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -194,11 +175,11 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/training',
               element: (
-                <Has feat={'events'} fallback={<FeatureLockedRouteElement />}>
+                <Has feat={'events'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -221,11 +202,11 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/matches',
               element: (
-                <Has feat={'games'} fallback={<FeatureLockedRouteElement />}>
+                <Has feat={'games'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -247,12 +228,12 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/supabase',
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   path: 'logs',
                   element: (
-                    <Has perm={'supabase.admin'} fallback={<UnauthorizedRouteElement />}>
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
                       <Pages.LogsManager />
                     </Has >
                   ),
@@ -260,7 +241,7 @@ const createRouter = (user: UserWithGroups | null) =>
                 {
                   path: 'database',
                   element: (
-                    <Has perm={'supabase.admin'} fallback={<UnauthorizedRouteElement />}>
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
                       <Pages.DatabaseManager />
                     </Has>
                   ),
@@ -270,7 +251,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/admin',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   path: 'drinks/history',

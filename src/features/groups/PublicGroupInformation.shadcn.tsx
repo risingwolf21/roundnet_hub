@@ -14,12 +14,12 @@ import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
-import { useLocalStorageState } from "@toolpad/core";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
+import { v4 } from "uuid";
 import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialogShadcn } from "./dialogs/CreateOrUpdateGroupDialog.shadcn";
 import { useAddUsersMutation } from "./query/addUsersMutation";
@@ -45,15 +45,15 @@ const PublicGroupInformationShadcn = () => {
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
-    codec: {
-      parse: (value): Filter => {
-        return JSON.parse(value) as Filter;
-      },
-      stringify: (value) => JSON.stringify(value),
-    },
-  });
-
+  // const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
+  //   codec: {
+  //     parse: (value): Filter => {
+  //       return JSON.parse(value) as Filter;
+  //     },
+  //     stringify: (value) => JSON.stringify(value),
+  //   },
+  // });
+  const [filter, setFilter] = useState<Filter>(DEFAULT_FILTER);
   const { data: group = null, error: groupError, isLoading: groupLoading, refetch: refetchGroup } = useGroup(groupId);
   const { data: group_users = [], isLoading: usersLoading, error: usersError, refetch } = useGroupAllUsers(groupId);
 
@@ -127,7 +127,7 @@ const PublicGroupInformationShadcn = () => {
           <div className="space-y-4 mt-6">
             <Skeleton className="h-5 w-32" />
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between rounded-md border p-2">
+              <div key={v4()} className="flex items-center justify-between rounded-md border p-2">
                 <div className="flex items-center gap-2">
                   <Skeleton className="size-10 rounded-full" />
                   <div className="space-y-1.5">

@@ -9,7 +9,6 @@ import {
   useUpdateChallengeMutation
 } from '@/tanstack/challenge';
 import { captureException, withProfiler } from '@sentry/react';
-import { TFunction } from 'i18next';
 import { useCallback } from 'react';
 import { useGrants } from '../auth/GrantsContext';
 
@@ -26,7 +25,7 @@ import { CreateOrUpdateChallengeDialogShadcn } from './dialogs/CreateOrUpdateCha
 import EnterPointDialogShadcn from './dialogs/EnterPointDialog.shadcn';
 import { ChallengeInformationSkeleton } from './skeleton/ChallengeInformationSkeleton';
 
-const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challengeId: string }) => {
+const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) => {
   const { user } = useGrants();
   const dialogs = useDialogs();
 
