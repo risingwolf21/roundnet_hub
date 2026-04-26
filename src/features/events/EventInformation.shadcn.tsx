@@ -135,7 +135,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           <AlertAction>
             <Button variant="outline" onClick={() => changeAttendance({ user, event, newState: 'Declined' })}>
               {
-                updateAttendance.isPending ? <Spinner /> : <SquareArrowRightExit />
+                (updateAttendance.isPending || isLoading) ? <Spinner /> : <SquareArrowRightExit />
               }
             </Button>
           </AlertAction>
@@ -161,7 +161,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           <AlertAction>
             <Button variant="outline" onClick={() => changeAttendance({ user, event, newState: 'Declined' })}>
               {
-                updateAttendance.isPending ? <Spinner /> : <SquareArrowRightExit />
+                (updateAttendance.isPending || isLoading) ? <Spinner /> : <SquareArrowRightExit />
               }
             </Button>
           </AlertAction>
@@ -181,7 +181,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 eventInThePast(event)}
             >
               {
-                updateAttendance.isPending ? <Spinner /> : <Hourglass className="size-4 mr-1" />
+                (updateAttendance.isPending || isLoading) ? <Spinner /> : <Hourglass className="size-4 mr-1" />
               }
               Warteliste
             </Button>
@@ -195,7 +195,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                   eventInThePast(event)}
               >
                 {
-                  updateAttendance.isPending ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
+                  (updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
                 }
 
                 Teilnahme anfragen
@@ -210,7 +210,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                   eventInThePast(event)}
               >
                 {
-                  updateAttendance.isPending ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
+                  (updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
                 }
                 Teilnehmen
               </Button>
@@ -221,7 +221,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           className="flex-1"
         >
           {
-            updateAttendance.isPending ? <Spinner /> : <XCircle className="size-4 mr-1" />
+            (updateAttendance.isPending || isLoading) ? <Spinner /> : <XCircle className="size-4 mr-1" />
           }
           Absagen
         </Button>
@@ -235,7 +235,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           className="flex-1"
         >
           {
-            updateAttendance.isPending ? <Spinner /> : <Megaphone className="size-4 mr-1" />
+            (updateAttendance.isPending || isLoading) ? <Spinner /> : <Megaphone className="size-4 mr-1" />
           }
           Als Trainer teilnehmen
         </Button>
