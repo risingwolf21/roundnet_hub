@@ -21,7 +21,7 @@ import { useDialogs } from '@/contexts/DialogsProvider';
 import { t } from 'i18next';
 import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import EditDrinkDialogShadcn from './dialog/EditDrinkDialog.shadcn';
+import EditDrinkDialog from './dialog/EditDrinkDialog';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',
@@ -35,7 +35,7 @@ const EMPTY_DRINK: Drink = {
   type: 'Drink',
 };
 
-const DrinkListScreenShadcn = () => {
+const DrinkListScreen = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
   const { data: drinks = [], error, refetch, isLoading } = useDrinks();
@@ -134,7 +134,7 @@ const DrinkListScreenShadcn = () => {
           <>
             <Has perm={"drinks.edit"}>
               <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
-                const result = await dialogs.open(EditDrinkDialogShadcn, {
+                const result = await dialogs.open(EditDrinkDialog, {
                   drink: EMPTY_DRINK
                 });
                 if (result) {
@@ -255,7 +255,7 @@ const DrinkListScreenShadcn = () => {
                                     <Button variant={"outline"} size="icon"
                                       onClick={async (e) => {
                                         e.currentTarget.blur();
-                                        const result = await dialogs.open(EditDrinkDialogShadcn, {
+                                        const result = await dialogs.open(EditDrinkDialog, {
                                           drink: drink
                                         });
                                         if (result) {
@@ -343,4 +343,4 @@ const DrinkListScreenShadcn = () => {
   );
 };
 
-export default DrinkListScreenShadcn;
+export default DrinkListScreen;

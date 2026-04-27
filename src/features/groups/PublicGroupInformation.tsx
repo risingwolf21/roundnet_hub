@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { v4 } from "uuid";
 import { useGrants } from "../auth/GrantsContext";
-import { CreateOrUpdateGroupDialogShadcn } from "./dialogs/CreateOrUpdateGroupDialog.shadcn";
+import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
@@ -36,7 +36,7 @@ const roleWeights: Record<string, number> = {
   'user': 4
 };
 
-const PublicGroupInformationShadcn = () => {
+const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
   const { user } = useGrants();
@@ -181,7 +181,7 @@ const PublicGroupInformationShadcn = () => {
         user={user}
         actions={
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-            const result = await dialogs.open(CreateOrUpdateGroupDialogShadcn, { user, group: group ?? undefined });
+            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
             if (result && result !== 'closed') {
               refetch();
               toast.success('Gruppe wurde erfolgreich bearbeitet.');
@@ -489,4 +489,4 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
   </DropdownMenu>
 }
 
-export default PublicGroupInformationShadcn;
+export default PublicGroupInformation;

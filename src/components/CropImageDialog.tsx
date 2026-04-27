@@ -19,7 +19,7 @@ interface CropPayload {
   aspectRatio?: number; // Optional: Wenn du den Payload erweitern willst
 }
 
-const CropImageDialogShadcn = ({ open, payload: { imageUrl }, onClose }: DialogProps<CropPayload, string>) => {
+const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<CropPayload, string>) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
@@ -82,7 +82,7 @@ const CropImageDialogShadcn = ({ open, payload: { imageUrl }, onClose }: DialogP
   </Dialog>
 };
 
-export default CropImageDialogShadcn;
+export default CropImageDialog;
 
 async function getCroppedImg(
   imageSrc: string,

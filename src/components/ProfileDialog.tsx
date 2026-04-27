@@ -14,7 +14,7 @@ type ProfilePayload = {
   userId: string;
 };
 
-export const ProfileDialogShadcn = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
+export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
 
   const { data: profile } = useProfile(userId);
 

@@ -3,7 +3,7 @@ import { FormEvent, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { dataURLtoFile, readFile } from '../../../utils';
 
-import CropImageDialogShadcn from '@/components/CropImageDialog.shadcn';
+import CropImageDialog from '@/components/CropImageDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -18,7 +18,7 @@ type EditDrinkDialogProps = {
   drink: Drink;
 };
 
-const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProps<EditDrinkDialogProps, Drink | null>) => {
+const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<EditDrinkDialogProps, Drink | null>) => {
   const dialogs = useDialogs();
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -101,7 +101,7 @@ const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProp
                   document.body.focus();
                   await new Promise(resolve => setTimeout(resolve, 10));
 
-                  const result = await dialogs.open(CropImageDialogShadcn, { imageUrl: imageDataUrl as string });
+                  const result = await dialogs.open(CropImageDialog, { imageUrl: imageDataUrl as string });
                   setCroppedImage(result);
                 } finally {
                   setTimeout(() => {
@@ -190,4 +190,4 @@ const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProp
     </DialogContent>
   </Dialog >
 };
-export default EditDrinkDialogShadcn;
+export default EditDrinkDialog;

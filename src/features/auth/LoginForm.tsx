@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
 
-const LoginFormShadcn = () => {
+const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -112,4 +112,4 @@ const LoginFormShadcn = () => {
   </Card>
 
 };
-export default LoginFormShadcn;
+export default LoginForm;

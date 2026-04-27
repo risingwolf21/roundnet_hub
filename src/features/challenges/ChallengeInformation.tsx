@@ -19,13 +19,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { ChallengeActivityListShadcn } from './ChallengeActivityList.shadcn';
-import { ChallengeLeaderboardShadcn } from './ChallengeLeaderboard.shadcn';
-import { CreateOrUpdateChallengeDialogShadcn } from './dialogs/CreateOrUpdateChallengeDialog.shadcn';
-import EnterPointDialogShadcn from './dialogs/EnterPointDialog.shadcn';
+import { ChallengeActivityList } from './ChallengeActivityList';
+import { ChallengeLeaderboard } from './ChallengeLeaderboard';
+import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
+import EnterPointDialog from './dialogs/EnterPointDialog';
 import { ChallengeInformationSkeleton } from './skeleton/ChallengeInformationSkeleton';
 
-const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) => {
+const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
   const { user } = useGrants();
   const dialogs = useDialogs();
 
@@ -93,7 +93,7 @@ const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) =>
       actions={
         <Has perm={"challenge.manage"}>
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-            const result = await dialogs.open(CreateOrUpdateChallengeDialogShadcn, { user, challenge });
+            const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });
             if (result) {
               await updateChallengeMutation.mutateAsync(
                 { challenge: result },
@@ -136,11 +136,11 @@ const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) =>
 
             <div className='px-2'>
               <TabsContent value={"activity"} className="m-0 mt-2">
-                <ChallengeActivityListShadcn challenge={challenge} user_challenge_stats={user_challenge_stats} />
+                <ChallengeActivityList challenge={challenge} user_challenge_stats={user_challenge_stats} />
               </TabsContent>
 
               <TabsContent value={"leaderboard"} className="m-0 mt-2">
-                <ChallengeLeaderboardShadcn challenge_points={leaderboard} isLoading={isLeaderboardLoading} />
+                <ChallengeLeaderboard challenge_points={leaderboard} isLoading={isLeaderboardLoading} />
               </TabsContent>
             </div>
           </Tabs>
@@ -157,7 +157,7 @@ const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) =>
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
           onClick={async () => {
             if (challenge) {
-              const result = await dialogs.open(EnterPointDialogShadcn, {
+              const result = await dialogs.open(EnterPointDialog, {
                 dates: user_challenge_stats.map((x) => x.created_at),
                 maxEntriesPerWeek: challenge.max_points_per_week,
                 maxEntriesPerDay: challenge.max_points_per_day,
@@ -179,4 +179,4 @@ const ChallengeInformationShadcn = ({ challengeId }: { challengeId: string }) =>
   </div>
 };
 
-export default withProfiler(ChallengeInformationShadcn);
+export default withProfiler(ChallengeInformation);

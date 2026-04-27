@@ -7,9 +7,9 @@ import { useDialogs } from "@/contexts/DialogsProvider";
 import { useLeaderboard } from "@/tanstack/games";
 import { useTranslation } from "react-i18next";
 import { useGrants } from "../auth/GrantsContext";
-import { GameHistoryDialogShadcn } from "./dialogs/GameHistoryDialog.shadcn";
+import { GameHistoryDialog } from "./dialogs/GameHistoryDialog";
 
-const LeaderboardShadcn = () => {
+const Leaderboard = () => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const { data: leaderboard = [], isLoading, isFetching, refetch } = useLeaderboard(0);
@@ -46,7 +46,7 @@ const LeaderboardShadcn = () => {
                     <Button variant={"outline"} onClick={(e) => {
                       e.stopPropagation();
                       if (entry.player_id && entry.name && entry.rating)
-                        dialogs.open(GameHistoryDialogShadcn, { player_id: entry.player_id, name: entry.name, rating: entry.rating.toFixed() })
+                        dialogs.open(GameHistoryDialog, { player_id: entry.player_id, name: entry.name, rating: entry.rating.toFixed() })
                     }}>
                       {entry.rating?.toFixed() + ' ' + ((entry.trend_30_days ?? 0) > 0 ? '↗️' : (entry.trend_30_days ?? 0) < 0 ? '↘️' : '↔️')}
                     </Button>
@@ -61,4 +61,4 @@ const LeaderboardShadcn = () => {
   );
 }
 
-export default LeaderboardShadcn;
+export default Leaderboard;

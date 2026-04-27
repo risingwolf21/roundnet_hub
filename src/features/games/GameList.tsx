@@ -13,9 +13,9 @@ import groupBy from 'lodash.groupby';
 import { AlertCircle, Loader2, Lock, Plus, SearchX, TriangleAlert } from 'lucide-react';
 import { v4 } from 'uuid';
 import { useGrants } from '../auth/GrantsContext';
-import ReportScoreShadcn from './ReportScore.shadcn';
+import ReportScore from './ReportScore';
 
-const GameListShadcn = () => {
+const GameList = () => {
   const navigate = useNavigate();
   const dialogs = useDialogs();
   const { user } = useGrants();
@@ -149,7 +149,7 @@ const GameListShadcn = () => {
           <Button
             size="icon"
             className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={() => dialogs.open(ReportScoreShadcn)}
+            onClick={() => dialogs.open(ReportScore)}
           >
             <Plus className="h-6 w-6" />
           </Button>
@@ -158,4 +158,4 @@ const GameListShadcn = () => {
     </div>
   );
 };
-export default GameListShadcn;
+export default GameList;

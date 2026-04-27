@@ -73,7 +73,7 @@ const ItemLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-ful
   </CardFooter>
 </Card>
 
-const HomePageShadcn = () => {
+const HomePage = () => {
   const [fetchMode] = useFetchMode();
 
   const { user } = useGrants();
@@ -367,4 +367,4 @@ const HomePageShadcn = () => {
     </div>
   );
 };
-export default withProfiler(HomePageShadcn);
+export default withProfiler(HomePage);

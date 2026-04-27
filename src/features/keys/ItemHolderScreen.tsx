@@ -15,12 +15,12 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { AlertCircle, AlertTriangleIcon, Info, Key, Loader2, Pencil, PencilOff, Plus, SearchX } from 'lucide-react';
 import { toast } from 'sonner';
-import { EditOrAddItemDialogShadcn } from './dialogs/EditOrAddItemDialog.shadcn';
-import { KeyHandOverDialogShadcn } from './dialogs/KeyHandOverDialog.shadcn';
+import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
+import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
-const ItemHolderScreenShadcn = () => {
+const ItemHolderScreen = () => {
   const [toggleEdit, setToggleEdit] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const actionProcessed = useRef(false);
@@ -68,7 +68,7 @@ const ItemHolderScreenShadcn = () => {
         return;
       }
 
-      const result = await dialogs.open(KeyHandOverDialogShadcn, {
+      const result = await dialogs.open(KeyHandOverDialog, {
         itemHolder: keyHolder,
         selectedUser: targetUser
       });
@@ -99,7 +99,7 @@ const ItemHolderScreenShadcn = () => {
           <>
             <Has perm={"drinks.edit"}>
               <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
-                dialogs.open(EditOrAddItemDialogShadcn, {
+                dialogs.open(EditOrAddItemDialog, {
                   itemToEdit: EMPTY_KEY
                 });
               }}>
@@ -179,7 +179,7 @@ const ItemHolderScreenShadcn = () => {
                           (
                             <Has perm={"items.manage"}>
                               <Button variant={"outline"} size={"icon-sm"} onClick={() => {
-                                dialogs.open(EditOrAddItemDialogShadcn, {
+                                dialogs.open(EditOrAddItemDialog, {
                                   itemToEdit: x
                                 });
                               }}>
@@ -196,7 +196,7 @@ const ItemHolderScreenShadcn = () => {
                                       if (!selectedUser)
                                         return;
 
-                                      const result = await dialogs.open(KeyHandOverDialogShadcn, {
+                                      const result = await dialogs.open(KeyHandOverDialog, {
                                         itemHolder: x,
                                         selectedUser: selectedUser
                                       });
@@ -219,7 +219,7 @@ const ItemHolderScreenShadcn = () => {
                                   <Button
                                     onClick={async () => {
 
-                                      const result = await dialogs.open(KeyHandOverDialogShadcn, {
+                                      const result = await dialogs.open(KeyHandOverDialog, {
                                         itemHolder: x,
                                         selectedUser: x.full_current_holder
                                       });
@@ -256,4 +256,4 @@ const ItemHolderScreenShadcn = () => {
   );
 };
 
-export default ItemHolderScreenShadcn;
+export default ItemHolderScreen;

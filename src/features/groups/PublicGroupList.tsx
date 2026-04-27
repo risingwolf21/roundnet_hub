@@ -12,7 +12,7 @@ import { AlertCircle, Loader2, Plus, SearchX, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
-import { CreateOrUpdateGroupDialogShadcn } from "./dialogs/CreateOrUpdateGroupDialog.shadcn";
+import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 
 const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
   const { refetchUserGrants } = useGrants();
@@ -39,7 +39,7 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
   );
 }
 
-const PublicGroupListShadcn = () => {
+const PublicGroupList = () => {
 
   const { user } = useGrants();
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ const PublicGroupListShadcn = () => {
       user={user}
       actions={
         <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-          const result = await dialogs.open(CreateOrUpdateGroupDialogShadcn, { user });
+          const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
           if (result && result !== 'closed') {
             refetch();
             toast.success('Gruppe wurde erfolgreich erstellt.');
@@ -171,4 +171,4 @@ const PublicGroupListShadcn = () => {
   </div>
 }
 
-export default PublicGroupListShadcn;
+export default PublicGroupList;

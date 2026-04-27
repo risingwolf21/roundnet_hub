@@ -195,7 +195,7 @@ export type PlayerWithUser = GamesTable<'players'> & {
   name?: string;
 };
 
-export const ConstellationCreationDialogShadcn = ({
+export const ConstellationCreationDialog = ({
   payload,
   open,
   onClose,

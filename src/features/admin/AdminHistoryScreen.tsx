@@ -8,7 +8,7 @@ import { useInfiniteDrinkHistory } from '@/tanstack/admin';
 import groupBy from 'lodash.groupby';
 import { useGrants } from '../auth/GrantsContext';
 
-const AdminHistoryScreenShadcn = () => {
+const AdminHistoryScreen = () => {
   const { data: history, refetch, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteDrinkHistory();
   const { user } = useGrants();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -73,4 +73,4 @@ const AdminHistoryScreenShadcn = () => {
   </div>
 };
 
-export default AdminHistoryScreenShadcn;
+export default AdminHistoryScreen;

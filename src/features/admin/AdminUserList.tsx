@@ -10,7 +10,7 @@ import { useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
 import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import EditUserDialog from './dialogs/EditUserDialog.shadcn';
+import EditUserDialog from './dialogs/EditUserDialog';
 
 const AdminUserList = () => {
   const { user } = useGrants();

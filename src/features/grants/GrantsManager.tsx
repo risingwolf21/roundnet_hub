@@ -12,7 +12,7 @@ import { useGroups } from '@/tanstack/groups';
 import { ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import { GrantsEditorDialogShadcn, GroupResult } from './GrantsEditorDialog.shadcn';
+import { GrantsEditorDialog, GroupResult } from './GrantsEditorDialog';
 
 const GroupTab = ({ searchValue }: { searchValue: string }) => {
   const { data = [], refetch } = useGroups();
@@ -58,7 +58,7 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
             .filter((x) => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
             .map(group => (
               <Item variant={"outline"} key={group.id} onClick={async () => {
-                const result = await dialogs.open(GrantsEditorDialogShadcn, {
+                const result = await dialogs.open(GrantsEditorDialog, {
                   title: 'Gruppe bearbeiten',
                   id: group.id,
                   currentPermissions: useGroupPermissions,
@@ -125,7 +125,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
             .filter((x) => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
             .map(user => (
               <Item variant={"outline"} key={user.id} onClick={async () => {
-                const result = await dialogs.open(GrantsEditorDialogShadcn, {
+                const result = await dialogs.open(GrantsEditorDialog, {
                   title: `Benutzer "${user.name}" bearbeiten`,
                   id: user.id,
                   currentPermissions: useUserPermissions,
@@ -164,7 +164,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
 
             if (!userResult) return;
 
-            const result = await dialogs.open(GrantsEditorDialogShadcn, {
+            const result = await dialogs.open(GrantsEditorDialog, {
               title: `Benutzer "${userResult.name}" bearbeiten`,
               id: userResult.id,
               currentPermissions: useUserPermissions,
@@ -181,7 +181,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
   </TabsContent>
 }
 
-const GrantsManagerShadcn = () => {
+const GrantsManager = () => {
   const [searchValue, setSearchValue] = useState('');
   const { user } = useGrants();
 
@@ -207,4 +207,4 @@ const GrantsManagerShadcn = () => {
   </div>
 };
 
-export default GrantsManagerShadcn;
+export default GrantsManager;

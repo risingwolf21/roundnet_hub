@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
 
-const ForgotPasswordFormShadcn = () => {
+const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -117,4 +117,4 @@ const ForgotPasswordFormShadcn = () => {
     </CardContent>
   </Card>
 };
-export default ForgotPasswordFormShadcn;
+export default ForgotPasswordForm;

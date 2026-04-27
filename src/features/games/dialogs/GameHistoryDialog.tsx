@@ -14,7 +14,7 @@ type GameHistoryDialogProps = {
   rating: string
 }
 
-export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, open, onClose }: DialogProps<GameHistoryDialogProps>) => {
+export const GameHistoryDialog = ({ payload: { player_id, name, rating }, open, onClose }: DialogProps<GameHistoryDialogProps>) => {
   const { data: games = [], isLoading, isFetching } = usePlayerMatches(player_id);
   const navigate = useNavigate();
 

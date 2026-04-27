@@ -12,7 +12,7 @@ import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
-export const HistoryScreenShadcn = ({
+export const HistoryScreen = ({
   user,
   data: history,
   isLoading,

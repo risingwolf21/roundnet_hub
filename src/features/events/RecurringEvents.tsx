@@ -16,7 +16,7 @@ import { useGrants } from '../auth/GrantsContext';
 import { formatDateRange } from './components/EventItem';
 import { PlaceType } from './types';
 
-const RecurringEventsShadcn = () => {
+const RecurringEvents = () => {
   const { user } = useGrants();
 
   const navigate = useNavigate();
@@ -190,4 +190,4 @@ const RecurringEventsShadcn = () => {
   );
 };
 
-export default RecurringEventsShadcn;
+export default RecurringEvents;

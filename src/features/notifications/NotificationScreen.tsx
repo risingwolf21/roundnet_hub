@@ -14,7 +14,7 @@ function hasStringUrl(value: Json): value is { url: string } {
   return typeof value === 'object' && value !== null && !Array.isArray(value) && 'url' in value && typeof value.url === 'string';
 }
 
-const NotificationScreenShadcn = () => {
+const NotificationScreen = () => {
   const { user } = useGrants();
   const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
@@ -106,4 +106,4 @@ const NotificationScreenShadcn = () => {
   );
 };
 
-export default NotificationScreenShadcn;
+export default NotificationScreen;

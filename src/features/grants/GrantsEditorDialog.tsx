@@ -24,7 +24,7 @@ type GrantsEditorProps = {
   currentFeatures: (id: string) => UseQueryResult<string[], Error>;
 };
 
-export const GrantsEditorDialogShadcn = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => {
+export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => {
   const { data: perms } = usePermissions();
   const { data: feats } = useFeatures();
 

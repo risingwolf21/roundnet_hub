@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 import { PlaceType } from './types';
 
-import EventInformationShadcn, { EventInformationError, EventInformationSkeleton } from './EventInformation.shadcn';
+import EventInformation, { EventInformationError, EventInformationSkeleton } from './EventInformation';
 
 const EventInformation = () => {
   const { selectedEventId } = useParams();
@@ -53,7 +53,7 @@ const EventInformation = () => {
     return <EventInformationError />
   }
 
-  return <EventInformationShadcn
+  return <EventInformation
     event={event}
     selectedEventPlace={selectedEventPlace}
     t={t}

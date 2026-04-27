@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
 
-const SignUpFormShadcn = () => {
+const SignUpForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
@@ -176,4 +176,4 @@ const SignUpFormShadcn = () => {
     </CardContent>
   </Card>
 };
-export default SignUpFormShadcn;
+export default SignUpForm;

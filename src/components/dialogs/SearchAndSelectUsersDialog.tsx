@@ -19,7 +19,7 @@ type BasePayload = {
 
 type SearchAndSelectUserDialogProps = DialogProps<BasePayload, User[] | User | null>;
 
-const SearchAndSelectUserDialogShadcn = (props: SearchAndSelectUserDialogProps) => {
+const SearchAndSelectUserDialog = (props: SearchAndSelectUserDialogProps) => {
 
   const { open, payload: { usersToFilter } } = props;
 
@@ -138,4 +138,4 @@ const SearchAndSelectUserDialogShadcn = (props: SearchAndSelectUserDialogProps) 
   </AlertDialog>
 };
 
-export default SearchAndSelectUserDialogShadcn;
+export default SearchAndSelectUserDialog;

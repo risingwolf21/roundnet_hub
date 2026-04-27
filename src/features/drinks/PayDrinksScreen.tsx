@@ -35,7 +35,7 @@ const PAYMENT_INFO: PayPalPaymentDTO | BankTransferDTo | undefined = import.meta
   ? JSON.parse(import.meta.env.VITE_PAYMENT_INFO)
   : undefined;
 
-const PayDrinksScreenShadcn = () => {
+const PayDrinksScreen = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
   const { data: history = [], refetch, isLoading, error } = usePaymentHistory(user.id);
@@ -259,4 +259,4 @@ const PayDrinksScreenShadcn = () => {
   );
 };
 
-export default PayDrinksScreenShadcn;
+export default PayDrinksScreen;

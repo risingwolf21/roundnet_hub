@@ -14,7 +14,7 @@ type EditOrAddItemDialogProps = {
   itemToEdit: ItemUpdate | null;
 };
 
-export const EditOrAddItemDialogShadcn = ({ open, onClose, payload: { itemToEdit } }: DialogProps<EditOrAddItemDialogProps>) => {
+export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: DialogProps<EditOrAddItemDialogProps>) => {
   const [currentItem, setCurrentItem] = useState<ItemUpdate>({
     id: itemToEdit?.id,
     name: itemToEdit?.name,

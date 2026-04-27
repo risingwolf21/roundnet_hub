@@ -86,7 +86,8 @@
     "supabase:func:deploy:stag": "dotenv -e environments/.env.staging.local -- supabase functions deploy --project-ref \"$VITE_SUPABASE_PROJECT_ID\"",
     "test:playwright": "playwright test",
     "playwright:install-deps": "npx playwright install-deps || true",
-    "playwright:install-browsers": "npx playwright install"
+    "playwright:install-browsers": "npx playwright install",
+    "test:e2e": "dotenv -e environments/.env.local -- playwright test e2e/playwright"
   },
   "browserslist": {
     "production": [

@@ -36,21 +36,21 @@ const createRouter = (user: UserWithGroups | null) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
-      element: <Pages.AuthLayoutShadcn />,
+      element: <Pages.AuthLayout />,
       children: [
         {
           path: 'login',
-          element: <Pages.LoginFormShadcn />,
+          element: <Pages.LoginForm />,
           errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: <Pages.SignUpFormShadcn />,
+          element: <Pages.SignUpForm />,
           errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: <Pages.ForgotPasswordShadcn />,
+          element: <Pages.ForgotPassword />,
           errorElement: <Pages.ErrorRouteElement />,
         }
       ],
@@ -78,15 +78,15 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/help',
-              element: <Pages.AppInformationShadcn />,
+              element: <Pages.AppInformation />,
             },
             {
               path: '/home',
-              element: <Pages.HomePageShadcn />,
+              element: <Pages.HomePage />,
             },
             {
               path: '/keys',
-              element: <Pages.ItemHolderScreenShadcn />,
+              element: <Pages.ItemHolderScreen />,
             },
             {
               path: '/notifications',
@@ -145,7 +145,7 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <Pages.ChallengeListShadcn />,
+                  element: <Pages.ChallengeList />,
                 },
                 {
                   path: ':challengeId',
@@ -191,7 +191,7 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'recurringEvents',
-                  element: <Pages.RecurringEventsShadcn />,
+                  element: <Pages.RecurringEvents />,
                 },
                 {
                   path: 'event/:selectedEventId',
@@ -214,15 +214,15 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <Pages.GameListShadcn />,
+                  element: <Pages.GameList />,
                 },
                 {
                   path: ':matchId',
-                  element: <Pages.MatchInformationShadcn />,
+                  element: <Pages.MatchInformation />,
                 },
                 {
                   path: 'leaderboard',
-                  element: <Pages.LeaderboardShadcn />,
+                  element: <Pages.Leaderboard />,
                 }
               ],
             },
@@ -255,11 +255,11 @@ const createRouter = (user: UserWithGroups | null) =>
               children: [
                 {
                   path: 'drinks/history',
-                  element: <Pages.AdminHistoryScreenShadcn />,
+                  element: <Pages.AdminHistoryScreen />,
                 },
                 {
                   path: 'drinks/payments',
-                  element: <Pages.PaymentsPendingAdminShadcn />,
+                  element: <Pages.PaymentsPendingAdmin />,
                 },
                 {
                   path: 'users',
@@ -267,19 +267,19 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'analytics',
-                  element: <Pages.AdminAnalyticsShadcn />
+                  element: <Pages.AdminAnalytics />
                 },
                 {
                   path: 'grants',
                   element: (
                     <Has perm={'grants.manage'}>
-                      <Pages.GrantsManagerShadcn />
+                      <Pages.GrantsManager />
                     </Has>
                   ),
                 },
                 {
                   path: 'merge_accounts',
-                  element: <Pages.UserPlayerMappingShadcn />
+                  element: <Pages.UserPlayerMapping />
                 }
               ],
             },

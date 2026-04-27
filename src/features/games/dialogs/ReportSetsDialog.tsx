@@ -18,7 +18,7 @@ type ReportSetsDialogProps = {
   sets: MatchSet[] | null;
 };
 
-export const ReportSetsDialogShadcn = ({ payload, open, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
+export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
   const [sets, setSets] = useState<MatchSet[]>(
     () => payload.sets?.map((x, i) => ({ ...x, set_number: i + 1 })) ?? [{ id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: 1, match: payload.matchId, team_a_score: 0, team_b_score: 0 }]
   );

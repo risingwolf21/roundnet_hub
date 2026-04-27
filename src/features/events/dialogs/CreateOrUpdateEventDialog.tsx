@@ -6,7 +6,7 @@ import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DatePickerShadcn } from '@/components/ui/date-picker';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { TimePickerShadcn } from '@/components/ui/time-picker';
+import { TimePicker } from '@/components/ui/time-picker';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
-import SearchPlacesDialog from './SearchPlacesDialog.shadcn';
+import SearchPlacesDialog from './SearchPlacesDialog';
 
 const DEFAULT_DURATION: Duration = { hours: 2 };
 
@@ -79,7 +79,7 @@ const ITEMS: {
     }
   ]
 
-export const CreateOrUpdateEventDialogShadcn = ({
+export const CreateOrUpdateEventDialog = ({
   payload: { event, eventGroup, option, items = [] },
   open,
   onClose,
@@ -245,7 +245,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
             <FieldGroup className='flex-row'>
               <Field>
                 <FieldLabel htmlFor="event-startdate">Startdatum</FieldLabel>
-                <DatePickerShadcn
+                <DatePicker
                   id='event-startdate'
                   placeholder='Datum'
                   onValueChange={(val) => {
@@ -268,7 +268,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
 
               <Field>
                 <FieldLabel htmlFor="event-starttime">Uhrzeit</FieldLabel>
-                <TimePickerShadcn
+                <TimePicker
                   id="event-starttime"
                   placeholder="12:30"
                   value={editedEvent?.startingDateTime ? new Date(editedEvent.startingDateTime) : undefined}
@@ -289,7 +289,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
             <FieldGroup className='flex-row'>
               <Field>
                 <FieldLabel htmlFor="event-enddate">Enddatum</FieldLabel>
-                <DatePickerShadcn
+                <DatePicker
                   id='event-enddate'
                   placeholder='Datum'
                   onValueChange={(val) => {
@@ -312,7 +312,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
 
               <Field>
                 <FieldLabel htmlFor="event-endtime">Uhrzeit</FieldLabel>
-                <TimePickerShadcn
+                <TimePicker
                   id="event-endtime"
                   placeholder="12:30"
                   value={editedEvent?.endDateTime ? new Date(editedEvent.endDateTime) : undefined}
@@ -366,7 +366,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
               <Field className={cn("", {
                 "hidden": editedEvent.meetingDateTime === null
               })}>
-                <TimePickerShadcn
+                <TimePicker
                   id="event-meetingdatetime"
                   placeholder="12:30"
                   value={editedEvent?.meetingDateTime ? new Date(editedEvent.meetingDateTime) : undefined}
@@ -498,7 +498,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
             <FieldGroup className='flex flex-row items-end gap-4'>
               <Field className='flex-1'>
                 <FieldLabel htmlFor="event-signupstartdate">Anmeldestart</FieldLabel>
-                <DatePickerShadcn
+                <DatePicker
                   id='event-signupstartdate'
                   placeholder='Datum'
                   className='w-full'
@@ -522,7 +522,7 @@ export const CreateOrUpdateEventDialogShadcn = ({
 
               <Field className='w-24'>
                 <FieldLabel htmlFor="event-signupstarttime" className='hidden'>Uhrzeit</FieldLabel>
-                <TimePickerShadcn
+                <TimePicker
                   id="event-signupstarttime"
                   className='!w-24'
                   placeholder="12:30"
@@ -859,7 +859,7 @@ const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date 
           <FieldGroup className='flex-row'>
             <Field>
               <FieldLabel htmlFor="date">Datum</FieldLabel>
-              <DatePickerShadcn
+              <DatePicker
                 id='date'
                 placeholder='Datum'
                 onValueChange={(val) => {
@@ -877,7 +877,7 @@ const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date 
 
             <Field>
               <FieldLabel htmlFor="time">Uhrzeit</FieldLabel>
-              <TimePickerShadcn
+              <TimePicker
                 id="time"
                 placeholder="12:30"
                 value={date ?? undefined}

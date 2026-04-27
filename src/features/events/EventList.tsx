@@ -17,8 +17,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import { EventItemShadcn } from './components/EventItem';
-import { CreateOrUpdateEventDialogShadcn } from './dialogs/CreateOrUpdateEventDialog.shadcn';
+import { EventItem } from './components/EventItem';
+import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 const EventScreen = () => {
   const { user } = useGrants();
@@ -49,7 +49,7 @@ const EventScreen = () => {
         actions={
           <>
             <Has perm={"event.edit"}>
-              <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialogShadcn, { option: 'InsertEvent' })}>
+              <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
                 <Plus />
               </Button>
             </Has>
@@ -125,7 +125,7 @@ const EventScreen = () => {
                         : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
                   </div>
                   {value.map((event: EventsUserView) => (
-                    <EventItemShadcn
+                    <EventItem
                       key={event.id}
                       event={event}
                       t={t}

@@ -11,7 +11,7 @@ import { Archive, Award, Medal, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
 
-const ChallengeListPageShadcn = () => {
+const ChallengeListPage = () => {
   const { user } = useGrants();
   const navigate = useNavigate();
 
@@ -151,4 +151,4 @@ const ChallengeListPageShadcn = () => {
   );
 };
 
-export default withProfiler(ChallengeListPageShadcn);
+export default withProfiler(ChallengeListPage);

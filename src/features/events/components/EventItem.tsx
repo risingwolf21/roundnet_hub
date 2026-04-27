@@ -2,7 +2,7 @@ import { EventsUserView } from '@/types/supabaseTypes';
 import { format, isBefore } from 'date-fns';
 import { TFunction } from 'i18next';
 
-import { Button as ButtonShadcn } from '@/components/ui/button';
+import { Button as Button } from '@/components/ui/button';
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
@@ -27,7 +27,7 @@ function eventInThePast(x: EventsUserView) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
-const EventItemSecondaryActionsShadcn = ({
+const EventItemSecondaryActions = ({
   event,
   attendEvent,
   declineEvent,
@@ -36,7 +36,7 @@ const EventItemSecondaryActionsShadcn = ({
 
   if (event.user_state === 'Waiting') {
     return (
-      <ButtonShadcn
+      <Button
         variant={"ghost"}
         size="icon-lg"
         className={`size-8 bg-info text-info-foreground`}
@@ -45,14 +45,14 @@ const EventItemSecondaryActionsShadcn = ({
         {
           attendanceUpdating ? <Spinner /> : <Hourglass className="size-5" />
         }
-      </ButtonShadcn>
+      </Button>
     );
   }
 
   return (
     <div className="flex gap-1">
       {/* --- DECLINE BUTTON --- */}
-      <ButtonShadcn
+      <Button
         variant={event.user_state === "Declined" ? "ghost" : "outline"}
         size="icon-lg"
         className={`size-8 ${event.user_state === "Declined" && "bg-error text-error-foreground"}`}
@@ -65,11 +65,11 @@ const EventItemSecondaryActionsShadcn = ({
         {
           attendanceUpdating ? <Spinner /> : <X className='size-5' />
         }
-      </ButtonShadcn>
+      </Button>
 
       {/* --- ATTEND / TRAINER BUTTON --- */}
       {event.user_state === 'AttendingAsTrainer' ? (
-        <ButtonShadcn
+        <Button
           variant={"ghost"}
           size="icon-lg"
           className={`size-8 bg-success text-success-foreground`}
@@ -78,9 +78,9 @@ const EventItemSecondaryActionsShadcn = ({
           {
             attendanceUpdating ? <Spinner /> : <Megaphone className="size-5" />
           }
-        </ButtonShadcn>
+        </Button>
       ) : (
-        <ButtonShadcn
+        <Button
           variant={event.user_state === "Attending" ? "ghost" : "outline"}
           size="icon-lg"
           className={`size-8 ${event.user_state === "Attending" && "bg-success text-success-foreground"}`}
@@ -93,7 +93,7 @@ const EventItemSecondaryActionsShadcn = ({
           {
             attendanceUpdating ? <Spinner /> : <Check className='size-5' />
           }
-        </ButtonShadcn>
+        </Button>
       )}
     </div>
   );
@@ -114,7 +114,7 @@ export const formatDateRange = (start: Date, end: Date) => {
   return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "ccc dd.MM, HH:mm")}`;
 }
 
-export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
 
   const place = JSON.parse(event?.place ?? '{}') as PlaceType;
 
@@ -148,7 +148,7 @@ export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, att
       </div>
 
       <div className='flex items-center gap-2 shrink-0'>
-        <EventItemSecondaryActionsShadcn
+        <EventItemSecondaryActions
           event={event}
           attendEvent={attendEvent}
           declineEvent={declineEvent}

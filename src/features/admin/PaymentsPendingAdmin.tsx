@@ -8,9 +8,9 @@ import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item'
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useAllPayments, useConfirmPaymentMutation } from '@/tanstack/admin';
 import { useGrants } from '../auth/GrantsContext';
-import { ConfirmPaymentDialogShadcn } from './dialogs/ConfirmPaymentDialog.shadcn';
+import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
-const PaymentsPendingAdminShadcn = () => {
+const PaymentsPendingAdmin = () => {
   const { user } = useGrants();
   const [searchString, setSearchString] = useState('');
   const dialogs = useDialogs();
@@ -57,7 +57,7 @@ const PaymentsPendingAdminShadcn = () => {
                   <ItemActions>
                     <Button variant={"outline"} onClick={async (event) => {
                       event.stopPropagation();
-                      const result = await dialogs.open(ConfirmPaymentDialogShadcn, x);
+                      const result = await dialogs.open(ConfirmPaymentDialog, x);
                       if (result) {
                         confirmPayment.mutate({ payment: x });
                       }
@@ -74,4 +74,4 @@ const PaymentsPendingAdminShadcn = () => {
   </div>
 };
 
-export default PaymentsPendingAdminShadcn;
+export default PaymentsPendingAdmin;

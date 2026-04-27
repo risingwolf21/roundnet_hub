@@ -1,4 +1,4 @@
-import CropImageDialog from "@/components/CropImageDialog.shadcn";
+import CropImageDialog from "@/components/CropImageDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Button } from "@/components/ui/button";
@@ -579,7 +579,7 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
 const TestLabContent = () => {
 
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const isShadcn = hasFeature("shadcnUI");
+  const is = hasFeature("shadcnUI");
 
   return <>
     <CardContent className="px-0">
@@ -590,7 +590,7 @@ const TestLabContent = () => {
             Enable the new shadcn user interface for the whole application
           </FieldDescription>
         </FieldContent>
-        <Switch id="switch-share" checked={isShadcn} onCheckedChange={() => toggleFeature("shadcnUI")} />
+        <Switch id="switch-share" checked={is} onCheckedChange={() => toggleFeature("shadcnUI")} />
       </Field>
     </CardContent>
   </>
@@ -634,7 +634,7 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
   </>
 };
 
-const UserShadcn = () => {
+const User = () => {
 
   const { user, signOut } = useGrants();
   const { data: player_data = null } = usePlayer(user);
@@ -685,4 +685,4 @@ const UserShadcn = () => {
   </div >
 }
 
-export default UserShadcn;
+export default User;

@@ -59,7 +59,7 @@ type EnterPointResult = {
   category_options?: string[];
 };
 
-const EnterPointDialogShadcn = ({
+const EnterPointDialog = ({
   payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false, category_options = [], start_date = null, end_date = null },
   open,
   onClose,
@@ -264,4 +264,4 @@ const EnterPointDialogShadcn = ({
   );
 };
 
-export default EnterPointDialogShadcn;
+export default EnterPointDialog;

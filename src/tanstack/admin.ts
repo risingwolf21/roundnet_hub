@@ -1,4 +1,4 @@
-import { UserEdited } from '@/features/admin/dialogs/EditUserDialog.shadcn';
+import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';

@@ -14,7 +14,7 @@ type BasePayload = {
 };
 
 
-const SearchAndSelectGroupDialogShadcn = (props: DialogProps<BasePayload, Group | null>) => {
+const SearchAndSelectGroupDialog = (props: DialogProps<BasePayload, Group | null>) => {
 
   const { open, payload: { groupsToFilter } } = props;
 
@@ -103,4 +103,4 @@ const SearchAndSelectGroupDialogShadcn = (props: DialogProps<BasePayload, Group 
   </AlertDialog>
 };
 
-export default SearchAndSelectGroupDialogShadcn;
+export default SearchAndSelectGroupDialog;

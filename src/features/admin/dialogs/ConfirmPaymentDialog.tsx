@@ -4,7 +4,7 @@ import { DialogProps } from '@/contexts/DialogsProvider';
 import { FullPayment } from '@/types/supabaseTypes';
 import { History } from 'types/supabase';
 
-export const ConfirmPaymentDialogShadcn = ({ payload, open, onClose }: DialogProps<FullPayment, boolean>) => {
+export const ConfirmPaymentDialog = ({ payload, open, onClose }: DialogProps<FullPayment, boolean>) => {
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(false)}>
     <DialogContent variant={"drawer"}>

@@ -1,7 +1,7 @@
-import DrinkListScreenShadcn from './DrinkListScreen.shadcn';
+import DrinkListScreen from './DrinkListScreen';
 
 const DrinkListScreenProvider = () => {
-  return <DrinkListScreenShadcn />
+  return <DrinkListScreen />
 };
 
 export default DrinkListScreenProvider;

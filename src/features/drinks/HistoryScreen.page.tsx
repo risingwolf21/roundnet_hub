@@ -1,12 +1,12 @@
 import { useInfiniteUserHistory } from '@/tanstack/drinks';
 import { useGrants } from '../auth/GrantsContext';
-import { HistoryScreenShadcn } from './HistoryScreen.shadcn';
+import { HistoryScreen } from './HistoryScreen';
 
 const HistoryScreenProvider = () => {
   const { user } = useGrants();
   const history = useInfiniteUserHistory(user.id);
 
-  return <HistoryScreenShadcn user={user} {...history} />
+  return <HistoryScreen user={user} {...history} />
 };
 
 export default HistoryScreenProvider;

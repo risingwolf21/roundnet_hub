@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
 
-const AuthLayoutShadcn = () => {
+const AuthLayout = () => {
 
   const { user } = useApplication();
   const location = useLocation();
@@ -18,4 +18,4 @@ const AuthLayoutShadcn = () => {
     <Outlet />
   </div>
 };
-export default AuthLayoutShadcn;
+export default AuthLayout;

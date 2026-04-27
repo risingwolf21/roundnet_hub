@@ -11,7 +11,7 @@ type KeyHandOverDialogProps = {
   selectedUser: User | null;
 };
 
-export const KeyHandOverDialogShadcn = ({
+export const KeyHandOverDialog = ({
   payload: {
     selectedUser,
     itemHolder

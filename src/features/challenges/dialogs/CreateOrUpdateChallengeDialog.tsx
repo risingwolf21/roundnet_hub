@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
-import { CreateOrUpdateGroupDialogShadcn } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog.shadcn';
+import { CreateOrUpdateGroupDialog } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog';
 import { format, isBefore } from 'date-fns';
 import { Minus, Plus, Trash } from 'lucide-react';
 import { toast } from 'sonner';
@@ -41,7 +41,7 @@ const EMPTY_CHALLENGE: Challenge = {
   category_options: []
 };
 
-export const CreateOrUpdateChallengeDialogShadcn = ({
+export const CreateOrUpdateChallengeDialog = ({
   payload,
   open,
   onClose,
@@ -90,7 +90,7 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
               value={selectedGroup?.id ?? payload.challenge?.group ?? 'none'}
               onValueChange={async (val) => {
                 if (val === 'create') {
-                  const result = await dialogs.open(CreateOrUpdateGroupDialogShadcn, { user: payload.user });
+                  const result = await dialogs.open(CreateOrUpdateGroupDialog, { user: payload.user });
                   if (result && result !== 'closed') {
                     setData({ ...data, group: result.id });
                   } else {

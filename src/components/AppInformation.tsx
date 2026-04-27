@@ -11,7 +11,7 @@ import { AppBar } from './ui/appbar';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
-const AppInformationShadcn = () => {
+const AppInformation = () => {
   const { user } = useGrants();
   const { t: translate } = useTranslation();
   const navigate = useNavigate();
@@ -157,4 +157,4 @@ const AppInformationShadcn = () => {
   // );
 };
 
-export default AppInformationShadcn;
+export default AppInformation;

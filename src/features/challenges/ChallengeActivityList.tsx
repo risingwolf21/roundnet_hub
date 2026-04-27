@@ -97,7 +97,7 @@ type ChallengeActivityListProps = {
   user_challenge_stats: ChallengeStats[];
 };
 
-export const ChallengeActivityListShadcn = ({ challenge, user_challenge_stats }: ChallengeActivityListProps) => {
+export const ChallengeActivityList = ({ challenge, user_challenge_stats }: ChallengeActivityListProps) => {
   const { data: stats, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteChallengeStats(challenge.id);
 
   const sortedEntries = useMemo(() => {

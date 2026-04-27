@@ -545,7 +545,7 @@ const EventMatchesTab = ({ event, matches }: { event: EventsUserView, matches: F
             <MessageSquare className="h-10 w-10 opacity-20" />
             <p>Noch keine Spiele.<br />Sei der Erste!</p>
             <Button onClick={async () => {
-              dialogs.open(ReportScoreShadcn, { eventId: event.id })
+              dialogs.open(ReportScore, { eventId: event.id })
             }}>
               <Plus />
               Spiel hinzufügen
@@ -742,7 +742,7 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
   </div>
 }
 
-const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
+const EventInformation = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
   const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
   const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
@@ -797,9 +797,9 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
             <DropdownMenuContent className={"w-full"}>
               <Has perm={'event.edit'}>
                 <DropdownMenuItem className={"text-base"} onClick={async () => {
-                  const result = await dialogs.open(EditEventOptionsDialogShadcn);
+                  const result = await dialogs.open(EditEventOptionsDialog);
                   if (result) {
-                    await dialogs.open(CreateOrUpdateEventDialogShadcn, {
+                    await dialogs.open(CreateOrUpdateEventDialog, {
                       event: {
                         ...event,
                         items_enabled: false,
@@ -947,7 +947,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
               {
                 event.constellations_enabled && <Has perm={"event.create.constellations"}>
                   <Button className={"w-full"} onClick={async () => {
-                    dialogs.open(ConstellationCreationDialogShadcn, {
+                    dialogs.open(ConstellationCreationDialog, {
                       users: attendance.filter(x => x.state === "Attending").map(x => x.user),
                       event
                     })
@@ -1014,11 +1014,11 @@ import { cn } from "@/lib/utils";
 import { captureException } from "@sentry/react";
 import { useNavigate } from "react-router";
 import { v4 } from "uuid";
-import ReportScoreShadcn from "../games/ReportScore.shadcn";
-import { ConstellationCreationDialogShadcn } from "./dialogs/ConstellationsCreationDialog.shadcn";
-import { CreateOrUpdateEventDialogShadcn } from "./dialogs/CreateOrUpdateEventDialog.shadcn";
-import { DeleteEventDialog } from "./dialogs/DeleteEventDialog.shadcn";
-import { EditEventOptionsDialogShadcn } from "./dialogs/EditEventOptionsDialog.shadcn";
+import ReportScore from "../games/ReportScore";
+import { ConstellationCreationDialog } from "./dialogs/ConstellationsCreationDialog";
+import { CreateOrUpdateEventDialog } from "./dialogs/CreateOrUpdateEventDialog";
+import { DeleteEventDialog } from "./dialogs/DeleteEventDialog";
+import { EditEventOptionsDialog } from "./dialogs/EditEventOptionsDialog";
 
 export const EventInformationSkeleton = () => {
   return (
@@ -1176,4 +1176,4 @@ export const EventInformationError = () => {
   );
 };
 
-export default EventInformationShadcn;
+export default EventInformation;

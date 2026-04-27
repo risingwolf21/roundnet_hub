@@ -4,7 +4,7 @@ import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { DialogProps } from '@/contexts/DialogsProvider';
 
-export const EditEventOptionsDialogShadcn = ({
+export const EditEventOptionsDialog = ({
   open,
   onClose,
 }: DialogProps<undefined, null | CreateEventOption>) => {

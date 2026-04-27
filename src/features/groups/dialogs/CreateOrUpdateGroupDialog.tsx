@@ -21,7 +21,7 @@ type CreateOrUpdateGroupDialogProps = {
   user: UserWithGroups;
 };
 
-export const CreateOrUpdateGroupDialogShadcn = ({
+export const CreateOrUpdateGroupDialog = ({
   payload,
   open,
   onClose,

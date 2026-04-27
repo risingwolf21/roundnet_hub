@@ -10,7 +10,7 @@ const medalForPlace = (index: number) => {
   else return (index + 1).toString() + ".";
 };
 
-export const ChallengeLeaderboardShadcn = ({
+export const ChallengeLeaderboard = ({
   challenge_points,
   isLoading,
 }: {

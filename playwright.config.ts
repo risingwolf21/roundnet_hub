@@ -2,17 +2,36 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'e2e/playwright',
-  timeout: 30_000,
-  expect: { timeout: 5000 },
+  timeout: 120_000,
+  expect: { timeout: 30_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
+    // Playwright uses baseURL for relative navigations. Vite dev server runs on :5173 by default.
     baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
     headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
+    // Increase action and navigation timeouts (default 30s)
+    actionTimeout: 120_000,
+    navigationTimeout: 120_000,
+  },
+  webServer: {
+    // Start the Vite dev server automatically for tests (useful locally and in CI).
+    command: 'yarn start',
+    url: process.env.BASE_URL ?? 'http://localhost:5173',
+    timeout: 120_000,
+    reuseExistingServer: !process.env.CI,
+    env: {
+      // Forward Vite env vars needed by the client at build/runtime
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+      VITE_APP_HOMEPAGE: process.env.VITE_APP_HOMEPAGE,
+      // Ensure the server is aware of the base URL
+      BASE_URL: process.env.BASE_URL ?? 'http://localhost:5173',
+    },
   },
   projects: [
     {

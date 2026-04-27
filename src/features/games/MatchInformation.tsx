@@ -15,7 +15,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import { ReportSetsDialogShadcn } from './dialogs/ReportSetsDialog.shadcn';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 
 
 const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => {
@@ -63,7 +63,7 @@ const IndexRow = ({ player, fallback, history }: { player: User | null, fallback
   </Item>
 };
 
-const MatchInformationShadcn = () => {
+const MatchInformation = () => {
   const { matchId } = useParams();
   const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
@@ -178,7 +178,7 @@ const MatchInformationShadcn = () => {
                   {
                     matchMember && hasPerm("games.update.score") &&
                     <Button variant={"ghost"} size={"icon"} onClick={() => {
-                      dialogs.open(ReportSetsDialogShadcn, {
+                      dialogs.open(ReportSetsDialog, {
                         matchId: match.id,
                         team_a_name: match.team_a_name ?? '',
                         team_b_name: match.team_b_name ?? '',
@@ -299,4 +299,4 @@ const MatchInformationShadcn = () => {
   );
 };
 
-export default MatchInformationShadcn;
+export default MatchInformation;

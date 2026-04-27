@@ -12,7 +12,7 @@ import { playerDataKeys } from "@/tanstack/player_data";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 
-const UserPlayerMappingShadcn = () => {
+const UserPlayerMapping = () => {
 
   const { user } = useGrants();
   const dialogs = useDialogs();
@@ -80,4 +80,4 @@ const UserPlayerMappingShadcn = () => {
   );
 }
 
-export default UserPlayerMappingShadcn;
+export default UserPlayerMapping;
