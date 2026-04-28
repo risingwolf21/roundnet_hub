@@ -16,12 +16,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Item, ItemContent, ItemMedia } from "@/components/ui/item";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
+import { cn } from "@/lib/utils";
 import { useAddCommentMutation, useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, eventInThePast, EventsUserView, FullAttendance, FullComment, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase, getInitials } from "@/utils";
 import { Separator } from '@base-ui/react/separator';
+import { captureException } from "@sentry/react";
 import { add, closestTo, differenceInCalendarDays, format, isAfter, isBefore } from 'date-fns';
 import { t } from "i18next";
 import { toNumber } from "lodash";
@@ -54,8 +61,15 @@ import { TFunction } from 'node_modules/i18next/typescript/t';
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { v4 } from "uuid";
 import { useGrants } from "../auth/GrantsContext";
+import ReportScore from "../games/ReportScore";
+import { ConstellationCreationDialog } from "./dialogs/ConstellationsCreationDialog";
+import { CreateOrUpdateEventDialog } from "./dialogs/CreateOrUpdateEventDialog";
+import { DeleteEventDialog } from "./dialogs/DeleteEventDialog";
+import { EditEventOptionsDialog } from "./dialogs/EditEventOptionsDialog";
 import { PlaceType } from './types';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -742,7 +756,7 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
   </div>
 }
 
-const EventInformation = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
+export const EventInformation = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
   const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
   const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
@@ -1005,21 +1019,6 @@ const EventInformation = ({ event, selectedEventPlace, fetchMode }: EventInforma
   </div >
 };
 
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Item, ItemContent, ItemMedia } from "@/components/ui/item";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
-import { useDialogs } from "@/contexts/DialogsProvider";
-import { cn } from "@/lib/utils";
-import { captureException } from "@sentry/react";
-import { useNavigate } from "react-router";
-import { v4 } from "uuid";
-import ReportScore from "../games/ReportScore";
-import { ConstellationCreationDialog } from "./dialogs/ConstellationsCreationDialog";
-import { CreateOrUpdateEventDialog } from "./dialogs/CreateOrUpdateEventDialog";
-import { DeleteEventDialog } from "./dialogs/DeleteEventDialog";
-import { EditEventOptionsDialog } from "./dialogs/EditEventOptionsDialog";
-
 export const EventInformationSkeleton = () => {
   return (
     <div className="flex flex-col h-full w-full bg-background text-foreground overscroll-none min-h-0">
@@ -1175,5 +1174,3 @@ export const EventInformationError = () => {
     </div>
   );
 };
-
-export default EventInformation;

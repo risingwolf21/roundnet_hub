@@ -3278,6 +3278,10 @@ export type Database = {
           table_schema: string
         }[]
       }
+      get_table_metadata: {
+        Args: { target_schemas?: string[] }
+        Returns: Json
+      }
       jwt_claims: {
         Args: Record<PropertyKey, never>
         Returns: Json
