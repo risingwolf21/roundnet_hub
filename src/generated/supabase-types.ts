@@ -41,7 +41,7 @@ export type Permission =
   | 'admin.analytics.view'
   | 'games.create.guest-player'
   | 'games.create.guest-player.with_index'
-  | 'testlab.shadcn'
+  | 'testlab'
   | 'games.admin.merge_accounts';
 
 export type Feature =

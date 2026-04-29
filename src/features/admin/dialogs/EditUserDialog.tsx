@@ -1,40 +1,19 @@
-import { Box, Stack } from '@mui/system';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { FormEvent, useState } from 'react';
 import { UserWithGroups } from '../../../types/supabaseTypes';
-import { UserRoleDialog } from './UserRoleDialog';
 
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item';
+import { DialogProps } from '@/contexts/DialogsProvider';
 import { supabase } from '@/lib/supabase';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import Close from '@mui/icons-material/Close';
-import Edit from '@mui/icons-material/Edit';
-import Email from '@mui/icons-material/Email';
-import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
-import Password from '@mui/icons-material/Password';
-import Verified from '@mui/icons-material/Verified';
-import AppBar from '@mui/material/AppBar';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import TextField from '@mui/material/TextField';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import { captureException } from '@sentry/react';
+import { ChevronRight, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 type EditUserDialogProps = {
   user: UserWithGroups;
-  open: boolean;
-  handleClose: () => void;
-  onUserEditFinished: (user: UserEdited) => void;
-  deleteUser: (user: User) => void;
 };
 
 export type UserEdited = {
@@ -64,9 +43,7 @@ async function resetUserPassword(userId: string, newPassword: string) {
   return await resp.json();
 }
 
-const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUserDialogProps) => {
-  const notifications = useNotifications();
-  const [editRoleOpen, setEditRoleOpen] = useState(false);
+const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(user.role);
@@ -75,7 +52,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    onUserEditFinished({
+    onClose({
       userId: user.id,
       displayName: data.get('displayName'),
       verified,
@@ -84,150 +61,97 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose}>
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
-              <Close />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Benutzer bearbeiten
-            </Typography>
-            <Button sx={{ color: 'white' }} type="submit">
-              Speichern
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className="flex-1">Benutzer bearbeiten</DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
             </Button>
-          </Toolbar>
-        </AppBar>
-        <Box>
-          <List sx={{ pb: 10 }}>
-            <ListItem key={'displayName'} sx={{ pt: 0, pb: 0 }}>
-              <ListItemAvatar>
-                <Avatar>
-                  <AccountCircle />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id=" displayName"
-                  label="DisplayName"
+          } />
+        </DialogHeader>
+        <DialogBody>
+          <form noValidate onSubmit={handleSubmit}>
+            <div className="no-scrollbar overflow-y-auto flex flex-col gap-4">
+
+              <Field key={"displayName"}>
+                <FieldLabel htmlFor="displayName">
+                  Anzeigename
+                </FieldLabel>
+                <Input
+                  id="displayName"
                   name="displayName"
                   defaultValue={user?.displayName ? user.displayName : ''}
-                />
-              </ListItemText>
-            </ListItem>
-            <ListItem key={'email'} sx={{ pt: 0, pb: 0 }}>
-              <ListItemAvatar>
-                <Avatar>
-                  <Email />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText>
-                <TextField
-                  margin="normal"
                   required
-                  fullWidth
+                />
+              </Field>
+
+              <Field key={"email"}>
+                <FieldLabel htmlFor="email">
+                  Email
+                </FieldLabel>
+                <Input
                   id="email"
-                  label="Email"
                   name="email"
+                  defaultValue={user?.email}
                   disabled
-                  defaultValue={user?.email ? user.email : ''}
                 />
-              </ListItemText>
-            </ListItem>
-            <ListItem key={'password'} sx={{ pt: 0, pb: 0 }}>
-              <ListItemAvatar>
-                <Avatar>
-                  <Password />
-                </Avatar>
-              </ListItemAvatar>
-              <Stack direction={'row'} spacing={1}>
-                <TextField
-                  margin="normal"
-                  fullWidth
-                  label="Passwort ändern"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button
-                  onClick={async () => {
+              </Field>
+
+              <Field key={"password"}>
+                <FieldLabel htmlFor="password">
+                  Passwort
+                </FieldLabel>
+                <div className='flex flex-row gap-2'>
+                  <Input
+                    className='flex-1'
+                    id="password"
+                    name="password"
+                    placeholder='Passwort ändern'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Button className={"flex-shrink"} variant={"outline"} onClick={async () => {
                     try {
                       await resetUserPassword(user.id, password);
-                      notifications.show('Passwort erfolgreich zurückgesetzt', { severity: 'success' });
+                      toast.success('Passwort erfolgreich zurückgesetzt');
                       setPassword('');
                     } catch (error: any) {
                       captureException(error);
-                      notifications.show(`Fehler beim Zurücksetzen des Passworts: ${error.message}`, {
-                        severity: 'error',
-                      });
+                      toast.error(`Fehler beim Zurücksetzen des Passworts: ${error.message}`);
                     }
-                  }}
-                >
-                  Speichern
-                </Button>
-              </Stack>
-            </ListItem>
-            <ListItem
-              key={'verified'}
-              secondaryAction={<Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)} />}
-            >
-              <ListItemAvatar>
-                <Avatar>
-                  <Verified />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary="Verified" />
-            </ListItem>
-            <ListItem
-              key={'role'}
-              onClick={() => {}}
-              secondaryAction={
-                <IconButton
-                  onClick={(event) => {
-                    setEditRoleOpen(true);
-                    event.stopPropagation();
-                  }}
-                >
-                  <Edit />
-                </IconButton>
-              }
-            >
-              <ListItemAvatar>
-                <Avatar>
-                  <AccountCircle />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={role} secondary={'User Role'} />
-            </ListItem>
-            <Divider />
-            <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
-              {user?.groups &&
-                user.groups.map((x: Group) => (
-                  <ListItem key={x.id} divider>
-                    <ListItemAvatar>
-                      <FiberManualRecord sx={{ color: x.color }} />
-                    </ListItemAvatar>
-                    <ListItemText primary={x.name} />
-                  </ListItem>
-                ))}
-            </List>
-            <Divider />
-          </List>
-        </Box>
-      </Box>
-      <UserRoleDialog
-        open={editRoleOpen}
-        role={role}
-        handleClose={() => setEditRoleOpen(false)}
-        handleSubmit={(role: UserRole) => {
-          setRole(role);
-          setEditRoleOpen(false);
-        }}
-      />
-    </Dialog>
+                  }}>
+                    Speichern
+                  </Button>
+                </div>
+              </Field>
+
+              <div className='flex flex-col gap-4'>
+                <div className='text-base font-semibold'>Gruppen</div>
+                {
+                  user.groups.map(x => (
+                    <Item key={x.id} variant={"outline"} className='pl-2'>
+                      <div className='w-full h-full flex flex-row justify-between gap-4 relative rounded-md py-1 px-2 pl-6 text-sm after:absolute after:inset-y-0 after:left-0 after:w-2 after:rounded-full after:bg-[var(--after-bg)]'
+                        style={{ '--after-bg': x.color } as React.CSSProperties}>
+                        <ItemContent>
+                          <ItemTitle>{x.name}</ItemTitle>
+
+                        </ItemContent>
+                        <ItemActions>
+                          <ChevronRight />
+                        </ItemActions>
+                      </div>
+                    </Item>
+                  ))
+                }
+              </div>
+            </div>
+
+          </form>
+        </DialogBody>
+      </DialogContent>
+    </Dialog >
   );
 };
 

@@ -1,24 +1,130 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { SUPABASE_PROJECT_REF } from '@/utils';
-import { listTablesSql } from '../lib/pg-meta';
-import { runQuery } from './use-run-query';
+import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
-// LIST Tables
-const listTables = ({ projectRef, schemas }: { projectRef: string; schemas?: string[] }) => {
-  const sql = listTablesSql(schemas)
-  return runQuery({
-    projectRef,
-    query: sql
+export interface TableMetadata {
+  id?: number; // Optional, falls du die interne Postgres OID mitlieferst
+  schema: string;
+  name: string;
+  rls_enabled: boolean;
+  rls_forced?: boolean;
+  replica_identity?: "DEFAULT" | "NOTHING" | "FULL" | "INDEX";
+  bytes?: number;
+  size?: string;
+  live_rows_estimate?: number;
+  dead_rows_estimate?: number;
+  comment: string | null;
+  primary_keys: PrimaryKey[];
+  relationships: Relationship[];
+  columns: Column[];
+}
+
+export interface PrimaryKey {
+  name: string;
+  schema?: string;
+  table_name?: string;
+  table_id?: number;
+}
+
+export interface Relationship {
+  id?: number;
+  source_schema: string;
+  constraint_name: string;
+  source_table_name: string;
+  target_table_name: string;
+  source_column_name: string;
+  target_column_name: string;
+  target_table_schema: string;
+}
+
+export interface Column {
+  id?: string; // Oft im Format "table_id.ordinal_position"
+  table_id?: number;
+  schema: string;
+  table: string;
+  ordinal_position: number;
+  name: string;
+  default_value: string | null;
+  data_type: string;
+  format: string;
+  is_identity: boolean;
+  identity_generation: "BY DEFAULT" | "ALWAYS" | null;
+  is_generated: boolean;
+  is_nullable: boolean;
+  is_updatable: boolean;
+  is_unique: boolean;
+  check: string | null;
+  enums: string[]; // Falls es ein Custom-Type mit festen Werten ist
+  comment: string | null;
+}
+
+export const useListTables = () => {
+  return useQuery<TableMetadata[]>({
+    queryKey: ['database', 'tables'],
+    queryFn: async () => {
+      const result = await supabase.schema("util").rpc("get_table_metadata", {
+        target_schemas: ['public', 'games', 'notifications']
+      });
+
+      return (result.data as unknown) as TableMetadata[];
+    },
   })
 }
 
-export const useListTables = (schemas?: string[]) => {
-  return useQuery({
-    queryKey: ['tables', SUPABASE_PROJECT_REF, schemas],
-    queryFn: () => listTables({ projectRef: SUPABASE_PROJECT_REF, schemas }),
-    enabled: !!SUPABASE_PROJECT_REF,
-  })
+export function useTableMutations(table: TableMetadata) {
+  const queryKey = ['table-data', table.schema, table.name];
+
+  // Primärschlüssel ermitteln
+  const pkColumns = table.primary_keys.map(pk => pk.name);
+
+  const updateRow = useMutation({
+    mutationFn: async (payload: any) => {
+      // Wo-Klausel für den Update-Befehl (unterstützt Composite Keys)
+      const match = Object.fromEntries(pkColumns.map(k => [k, payload[k]]));
+
+      const { data, error } = await supabase
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .schema(table.schema)
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .from(table.name)
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .update(payload)
+        .match(match)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async (newRow) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData(queryKey);
+
+      // Optimistisches Update
+      queryClient.setQueryData(queryKey, (old: any[] | undefined) => {
+        return old?.map(row => {
+          const isMatch = pkColumns.every(pk => row[pk] === newRow[pk]);
+          return isMatch ? { ...row, ...newRow } : row;
+        });
+      });
+
+      return { previousData };
+    },
+    onError: (err, _, context) => {
+      queryClient.setQueryData(queryKey, context?.previousData);
+      toast.error(`Update fehlgeschlagen: ${err.message}`);
+    },
+    onSuccess: () => {
+      toast.success('Änderungen gespeichert');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
+  return { updateRow };
 }

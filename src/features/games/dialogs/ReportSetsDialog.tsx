@@ -1,23 +1,14 @@
-import { customEnLocale } from '@/lib/date-fns';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Item, ItemContent } from '@/components/ui/item';
+import { DialogProps } from '@/contexts/DialogsProvider';
 import { useUpsertSetsToMatch } from '@/tanstack/games';
 import { formatDateToDatabase } from '@/utils';
-import Close from '@mui/icons-material/Close';
-import Delete from '@mui/icons-material/Delete';
-import AppBar from '@mui/material/AppBar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import TextField from '@mui/material/TextField';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { captureException } from '@sentry/react';
-import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { v4 as uuid } from 'uuid';
 
 type ReportSetsDialogProps = {
@@ -27,9 +18,7 @@ type ReportSetsDialogProps = {
   sets: MatchSet[] | null;
 };
 
-const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
-  const notifications = useNotifications();
-
+export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
   const [sets, setSets] = useState<MatchSet[]>(
     () => payload.sets?.map((x, i) => ({ ...x, set_number: i + 1 })) ?? [{ id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: 1, match: payload.matchId, team_a_score: 0, team_b_score: 0 }]
   );
@@ -37,133 +26,98 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
   const upsertSetsToMatch = useUpsertSetsToMatch(payload.matchId);
 
   return (
-    <>
-      <AppBar sx={{ position: 'static', pt: 'env(safe-area-inset-top)' }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
-            <Close />
-          </IconButton>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            Sätze eintragen
-          </Typography>
-          <Button
-            color="inherit"
-            onClick={async () => {
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent variant={"drawer"} showCloseButton={false}>
+        <DialogHeader className='p-4'>
+          <DialogTitle className={"font-semibold "}>Sätze bearbeiten</DialogTitle>
+        </DialogHeader>
+        <div>
+          <div className='w-full flex flex-row px-2'>
+            <div className='flex-1 px-2'>
+              <div className='text-base font-semibold'>{payload.team_a_name}</div>
+            </div>
+            <div className='flex-1 px-2'>
+              <div className='text-base font-semibold'>{payload.team_b_name}</div>
+            </div>
+            <div className='w-[36px] flex-shrink' />
+          </div>
+          {sets.map((x) => (
+            <div key={x.id} className="border-b">
+              <Item>
+                <ItemContent className='flex flex-row'>
+                  <div className='flex-1'>
+                    <Input
+                      type='number'
+                      value={x.team_a_score.toString()}
+                      onChange={(e) =>
+                        setSets(sets.map((y) => (y.id === x.id ? { ...x, team_a_score: Number(e.target.value) } : y)))
+                      }
+                    />
+                  </div>
+                  <div className='flex-1'>
+                    <Input
+                      type='number'
+                      value={x.team_b_score.toString()}
+                      onChange={(e) =>
+                        setSets(sets.map((y) => (y.id === x.id ? { ...x, team_b_score: Number(e.target.value) } : y)))
+                      }
+                    />
+                  </div>
+                  <div className='flex-shrink'>
+                    <Button variant={"ghost"} onClick={() => setSets([
+                      ...sets
+                        .filter((y) => y.set_number !== x.set_number)
+                        .map((y, i) => ({ ...y, set_number: i + 1 }))
+                    ])}>
+                      <Trash2 />
+                    </Button>
+                  </div>
+                </ItemContent>
+              </Item>
+            </div>
+          ))}
+          <div className='w-full flex justify-center p-2'>
+            <Button
+              onClick={() =>
+                setSets([
+                  ...sets,
+                  {
+                    id: uuid(),
+                    created_at: formatDateToDatabase(new Date()),
+                    set_number: sets.length + 1,
+                    match: payload.matchId,
+                    team_a_score: 0,
+                    team_b_score: 0,
+                  },
+                ])
+              }
+            >
+              <Plus />
+            </Button>
+          </div>
+        </div>
+        <DialogFooter className="p-4 m-0 border-t">
+          <div className='flex w-full justify-even gap-4'>
+            <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
+              Abbrechen
+            </Button>
+            <Button className="flex-1" onClick={async () => {
               upsertSetsToMatch.mutate(
                 { sets },
                 {
                   onSuccess: (result) => onClose(result.result),
                   onError: (error) => {
                     captureException(error);
-                    notifications.show('Die Sätze konnten nicht gespeichert werden.', { severity: 'error' });
+                    toast.error('Die Sätze konnten nicht gespeichert werden.');
                   },
                 }
               );
-            }}
-          >
-            Speichern
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <List sx={{ pl: 2, pr: 2, pb: 10, width: '100%' }}>
-        <ListItem divider disableGutters disablePadding sx={{ width: '100%' }}>
-          <>
-            <Grid size={5} sx={{ p: 2 }}>
-              <TextField
-                size="small"
-                fullWidth
-                defaultValue={payload.team_a_name}
-                value={payload.team_a_name}
-                label={'Team A'}
-                disabled
-              />
-            </Grid>
-            <Grid size={5} sx={{ p: 2 }}>
-              <TextField
-                size="small"
-                fullWidth
-                defaultValue={payload.team_b_name}
-                value={payload.team_b_name}
-                label={'Team B'}
-                disabled
-              />
-            </Grid>
-            <Grid size={2} sx={{ p: 2 }}></Grid>
-          </>
-        </ListItem>
-        {sets.map((x, index) => (
-          <ListItem key={x.id} divider disableGutters disablePadding>
-            <>
-              <Grid size={5} sx={{ p: 2 }}>
-                <TextField
-                  size="small"
-                  type="number"
-                  fullWidth
-                  value={x.team_a_score.toString()}
-                  onChange={(e) =>
-                    setSets(sets.map((y) => (y.id === x.id ? { ...x, team_a_score: Number(e.target.value) } : y)))
-                  }
-                  label={`Satz ${x.set_number} - Team A`}
-                />
-              </Grid>
-              <Grid size={5} sx={{ p: 2 }}>
-                <TextField
-                  size="small"
-                  type="number"
-                  fullWidth
-                  value={x.team_b_score.toString()}
-                  onChange={(e) =>
-                    setSets(sets.map((y) => (y.id === x.id ? { ...x, team_b_score: Number(e.target.value) } : y)))
-                  }
-                  label={`Satz ${x.set_number} - Team B`}
-                />
-              </Grid>
-              <Grid size={2} sx={{ p: 2 }}>
-                {index > 0 && (
-                  <IconButton onClick={() => setSets([
-                    ...sets
-                      .filter((y) => y.set_number !== x.set_number)
-                      .map((y, i) => ({ ...y, set_number: i + 1 }))
-                  ])}>
-                    <Delete />
-                  </IconButton>
-                )}
-              </Grid>
-            </>
-          </ListItem>
-        ))}
-        <Grid size={12} sx={{ p: 2 }}>
-          <Button
-            onClick={() =>
-              setSets([
-                ...sets,
-                {
-                  id: uuid(),
-                  created_at: formatDateToDatabase(new Date()),
-                  set_number: sets.length + 1,
-                  match: payload.matchId,
-                  team_a_score: 0,
-                  team_b_score: 0,
-                },
-              ])
-            }
-          >
-            Neuen Satz erstellen
-          </Button>
-        </Grid>
-      </List>
-    </>
-  );
-};
-
-export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <NotificationsProvider>
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
-          <Content onClose={onClose} open={open} payload={payload} />
-        </LocalizationProvider>
-      </NotificationsProvider>
+            }}>
+              Speichern
+            </Button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

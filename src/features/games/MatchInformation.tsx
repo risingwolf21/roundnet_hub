@@ -1,467 +1,302 @@
-import Layout from '@/components/layout/Layout';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { useDeleteMatch, useMatch } from '@/tanstack/games';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
-
-import { ProfileDialog } from '@/components/Profile';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Separator } from '@/components/ui/separator';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
-import AccountBox from '@mui/icons-material/AccountBox';
-import Delete from '@mui/icons-material/Delete';
-import Edit from '@mui/icons-material/Edit';
-import Alert from '@mui/material/Alert';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import Fab from '@mui/material/Fab';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { supabase } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
+import { useDeleteMatch, useMatch } from '@/tanstack/games';
+import { Loader2, Pencil, SearchX, Trash2 } from 'lucide-react';
+import React from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
+import { useGrants } from '../auth/GrantsContext';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 
-type Props = {
-  title: string;
-  expected?: number;
-  eff_team?: number;
-  cat_team?: string;
-  p1_delta?: number | null;
-  p2_delta?: number | null;
-  p1_eff?: number | null;
-  p2_eff?: number | null;
-  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
-  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
-  rated: boolean;
-};
 
-const deltaChip = (delta?: number | null) =>
-  delta && <Chip color={delta > 0 ? 'success' : 'error'} size="small" label={delta.toFixed()} />;
-
-const LoadingTeamCard = () => {
-  return (
-    <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-      <CardContent sx={{ p: 0 }}>
-        <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between', p: 2 }}>
-          <Stack direction={'row'} spacing={2}>
-            <Typography variant="h5" component="div">
-              <Skeleton variant="text" width={80} height={30} />
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Skeleton variant="rectangular" />
-            </Box>
-          </Stack>
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Skeleton variant="rectangular" />
-          </Box>
-        </Box>
-        <Divider />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Skeleton variant="text" width={100} />
-          </Box>
-          <Stack direction={'row'} spacing={1}>
-            {[0, 1, 2].map((x) => (
-              <Skeleton key={`skeleton-${x}`} variant="rectangular" width={40} height={40} />
-            ))}
-          </Stack>
-        </Box>
-        <Divider />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Skeleton variant="text" width={100} />
-          </Box>
-          <Skeleton variant="rectangular" />
-        </Box>
-        <Divider />
-        <ListItem>
-          <ListItemAvatar>
-            <Avatar sx={{ borderRadius: 2 }}>
-              <Skeleton variant="rectangular" width={40} height={40} />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Skeleton variant="text" />} />
-        </ListItem>
-        <ListItem>
-          <ListItemAvatar>
-            <Avatar sx={{ borderRadius: 2 }}>
-              <Skeleton variant="rectangular" width={40} height={40} />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Skeleton variant="text" />} />
-        </ListItem>
-      </CardContent>
-    </Card>
-  );
-};
-
-const TeamCard = ({
-  title,
-  expected,
-  eff_team,
-  cat_team,
-  p1_eff,
-  p2_eff,
-  p1_delta,
-  p2_delta,
-  p1,
-  p2,
-  rated,
-}: Props) => {
+const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => {
   const dialogs = useDialogs();
-  return (
-    <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-      <CardContent sx={{ p: 0 }}>
-        <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between', p: 2 }}>
-          <Stack direction={'row'} spacing={2}>
-            <Typography variant="h5" component="div">
-              {title}
-            </Typography>
-            {rated && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Chip color="primary" size="small" label={cat_team} />
-              </Box>
-            )}
-          </Stack>
-          {rated && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Chip color="default" label={eff_team?.toFixed()} />
-            </Box>
-          )}
-        </Box>
-        <Divider />
-        {rated && (
-          <>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography fontWeight={'bold'}>Gewinnwahrscheinlichkeit</Typography>
-              </Box>
-              <Chip
-                color={(expected ?? 0) > 0.5 ? 'success' : 'warning'}
-                variant={'filled'}
-                label={((expected ?? 0) * 100).toFixed() + ' %'}
-              />
-            </Box>
-            <Divider />
-          </>
-        )}
-        <ListItem
-          onClick={() => dialogs.open(ProfileDialog, { userId: p1?.userId, playerId: p1?.playerId })}
-          secondaryAction={
-            rated && (
-              <Stack direction={'row'} spacing={1}>
-                <Typography sx={{ fontWeight: 'bold' }}>{p1_eff?.toFixed(0)}</Typography>
-                {deltaChip(p1_delta)}
-              </Stack>
-            )
-          }
-        >
-          <ListItemAvatar>
-            <Avatar sx={{ borderRadius: 2 }}>
-              {p1?.avatarUrl ? <img src={p1?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Stack direction={'row'} spacing={2}>
-            <Typography>{p1?.displayName}</Typography>
-            {p1?.isGuest && (
-              <Chip variant="outlined" size="small" label="Gast" color="warning" />
-            )}
-          </Stack>} />
-        </ListItem>
-        <ListItem
-          onClick={() => dialogs.open(ProfileDialog, { userId: p2?.userId, playerId: p2?.playerId })}
-          secondaryAction={
-            rated && (
-              <Stack direction={'row'} spacing={1}>
-                <Typography sx={{ fontWeight: 'bold' }}>{p2_eff?.toFixed(0)}</Typography>
-                {deltaChip(p2_delta)}
-              </Stack>
-            )
-          }
-        >
-          <ListItemAvatar>
-            <Avatar sx={{ borderRadius: 2 }}>
-              {p2?.avatarUrl ? <img src={p2?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Stack direction={'row'} spacing={2}>
-            <Typography>{p2?.displayName}</Typography>
-            {p2?.isGuest && (
-              <Chip variant="outlined" size="small" label="Gast" color="warning" />
-            )}
-          </Stack>} />
-        </ListItem>
-      </CardContent>
-    </Card>
-  );
+  return <div className="flex flex-1 flex-col gap-4 min-w-0">
+    <div className='flex flex-1 flex-row gap-4 min-w-0'>
+      {[p1, p2].map((player, idx) => (
+        <div key={idx} className='flex flex-1 flex-col items-center gap-2 min-w-0'>
+          <Avatar className="w-full max-w-32 h-auto aspect-square shadow-sm" onClick={() => player && dialogs.userProfile(player.id)}>
+            <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
+            <AvatarFallback>{player?.name ? player.name[0] : 'U'}</AvatarFallback>
+          </Avatar>
+        </div>
+      ))}
+    </div>
+    <div>
+      <div className='text-center font-semibold text-sm w-full truncate'>
+        {p1?.name ?? fallback1?.display_name}
+      </div>
+      <div className='text-center font-semibold text-sm w-full truncate'>
+        {p2?.name ?? fallback2?.display_name}
+      </div>
+    </div>
+  </div>
+}
+
+const IndexRow = ({ player, fallback, history }: { player: User | null, fallback: Player | null, history: any }) => {
+  const dialogs = useDialogs();
+  return <Item className='p-0' onClick={() => player && dialogs.userProfile(player.id)}>
+    <ItemMedia>
+      <Avatar className={"mr-2"}>
+        <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
+        <AvatarFallback>{player?.name ? player.name[0] : 'U'}</AvatarFallback>
+      </Avatar>
+    </ItemMedia>
+    <ItemContent>
+      <div className="truncate">{player?.name ?? fallback?.display_name}</div>
+    </ItemContent>
+    <ItemActions>
+      <span className="text-sm text-muted-foreground">{history?.old_rating?.toFixed() ?? '-'}</span>
+      <Badge variant={!history ? 'warning' : history.delta > 0 ? "success" : "error"}>
+        {history?.delta?.toFixed() ?? '-'}
+      </Badge>
+    </ItemActions>
+  </Item>
 };
 
 const MatchInformation = () => {
   const { matchId } = useParams();
+  const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
-  const notifications = useNotifications();
   const navigate = useNavigate();
 
-  const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
+  const { data: match, isLoading, refetch } = useMatch(matchId);
   const useDeleteMatchMutation = useDeleteMatch(matchId);
 
-  const player1a_history = match?.elo_history.find((x) => x.user === match.a_player_1);
-  const player2a_history = match?.elo_history.find((x) => x.user === match.a_player_2);
-  const player1b_history = match?.elo_history.find((x) => x.user === match.b_player_1);
-  const player2b_history = match?.elo_history.find((x) => x.user === match.b_player_2);
-
-  const getName = (player: { player: Player | null, user: User | null } | null) => player?.player?.display_name ?? player?.user?.displayName ?? player?.user?.name ?? '';
-
-  const getTeamUser = (player: { player: Player | null, user: User | null } | null) => ({
-    displayName: getName(player),
-    avatarUrl: player?.user?.avatarUrl ?? player?.player?.rg_avatar_url ?? null,
-    isGuest: player?.player?.linked_user_id === null,
-    userId: player?.user?.id ?? null,
-    playerId: player?.player?.player ?? null,
-    delta: player1a_history?.delta,
-  })
-
-  useEffect(() => {
-    if (error)
-      notifications.show(error.message, { severity: 'error', actionText: 'Neu laden', onAction: () => refetch() });
-  }, [error, notifications, refetch]);
-
-  if (isLoading)
+  if (isLoading) {
     return (
-      <Layout appBarConfig={{ navigateBackPath: -1 }}>
-        <LoadingIndicator loading={true} />
-        <Stack direction={'column'} spacing={2} sx={{ m: 1, justifyContent: 'center' }}>
-          <LoadingTeamCard />
-          <LoadingTeamCard />
-        </Stack>
-      </Layout>
+      <div className="flex flex-col h-screen">
+        <AppBar className='!border-b !shadow-sm' title="Match Information" user={user} primaryAction="back" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="size-10 animate-spin text-muted-foreground" />
+        </div>
+      </div>
     );
+  }
 
-  if (!match)
+  if (!match) {
     return (
-      <Layout appBarConfig={{ navigateBackPath: -1 }}>
-        <Alert severity="error">Das Spiel konnte nicht gefunden werden oder wird gerade geladen.</Alert>
-      </Layout>
+      <div className="flex flex-col h-screen">
+        <AppBar className='!border-b !shadow-sm' title="Match Information" user={user} primaryAction="back" />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="rounded-full bg-muted p-6 mb-4">
+            <SearchX className="size-10 text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-bold tracking-tight">Spiel nicht gefunden</h2>
+          <p className="text-muted-foreground mt-2 max-w-xs">
+            Das gesuchte Spiel existiert nicht, wurde gelöscht oder du hast keine Berechtigung es zu sehen.
+          </p>
+        </div>
+      </div>
     );
+  }
 
+  // 3. DATEN AUFBEREITEN
+  const setsAWon = match.sets.filter((x: any) => x.team_a_score > x.team_b_score).length ?? 0;
+  const setsBWon = match.sets.filter((x: any) => x.team_a_score < x.team_b_score).length ?? 0;
+
+  const matchMember = [
+    match.player_1a?.player?.linked_user_id,
+    match.player_1b?.player?.linked_user_id,
+    match.player_2a?.player?.linked_user_id,
+    match.player_2b?.player?.linked_user_id
+  ].includes(user.id);
+
+
+  const getHistory = (playerId?: string) => match.elo_history.find((x: any) => x.user === playerId);
+
+  const playersData = [
+    { p: match.player_1a, f: match.player_1a.player, h: getHistory(match.player_1a.player?.player) },
+    { p: match.player_2a, f: match.player_2a.player, h: getHistory(match.player_2a.player?.player) },
+    { p: match.player_1b, f: match.player_1b.player, h: getHistory(match.player_1b.player?.player) },
+    { p: match.player_2b, f: match.player_2b.player, h: getHistory(match.player_2b.player?.player) },
+  ];
+
+  // 4. HAUPT RENDER
   return (
-    <Layout appBarConfig={{ navigateBackPath: -1 }}>
-      <Stack direction={'column'} spacing={2} sx={{ m: 1, justifyContent: 'center' }}>
-        <TeamCard
-          title="Team A"
-          expected={match.elo_calc_log?.expected_a}
-          eff_team={match.elo_calc_log?.eff_team_a}
-          cat_team={match.elo_calc_log?.category_a}
-          p1_delta={player1a_history?.delta}
-          p2_delta={player2a_history?.delta}
-          p1_eff={player1a_history?.eff_old_rating}
-          p2_eff={player2a_history?.eff_old_rating}
-          p1={getTeamUser(match.player_1a)}
-          p2={getTeamUser(match.player_2a)}
-          rated={match.rated ?? true}
-        />
+    <div className="flex flex-col min-h-screen">
+      <AppBar
+        className='!border-b !shadow-sm'
+        title="Match Information"
+        user={user}
+        primaryAction="back"
+        actions={
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.confirm("Möchtest du dieses Spiel wirklich löschen?");
 
-        <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1, pb: 0 }}>
-          <CardContent sx={{ p: 0 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, pt: 2 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Typography fontWeight={'bold'}>Sätze</Typography>
-              </Box>
-              <Stack direction={'row'} spacing={1} sx={{ px: 0, py: 1, pb: 0 }}>
-                {match.sets.map((x) => (
-                  <Stack spacing={2} key={x.id}>
-                    <Chip
-                      color={x.team_b_score < x.team_a_score ? 'success' : 'default'}
-                      variant={'filled'}
-                      label={x.team_a_score}
-                    />
-                    <Chip
-                      color={x.team_b_score > x.team_a_score ? 'success' : 'default'}
-                      variant={'filled'}
-                      label={x.team_b_score}
-                    />
-                  </Stack>
-                ))}
-              </Stack>
-            </Box>
-          </CardContent>
-        </Card>
+            if (result) {
+              useDeleteMatchMutation.mutate(undefined, {
+                onSuccess: () => navigate('/matches'),
+                onError: (error) =>
+                  toast.error('Spiel konnte nicht gelöscht werden. ' + error.message),
+              });
+            }
+          }}>
+            <Trash2 />
+          </Button>
+        }
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh onRefresh={() => refetch()}>
+          <div className='flex flex-col gap-4 p-4'>
 
-        <TeamCard
-          title="Team B"
-          expected={match.elo_calc_log?.expected_b}
-          eff_team={match.elo_calc_log?.eff_team_b}
-          cat_team={match.elo_calc_log?.category_b}
-          p1_delta={player1b_history?.delta}
-          p2_delta={player2b_history?.delta}
-          p1_eff={player1b_history?.eff_old_rating}
-          p2_eff={player2b_history?.eff_old_rating}
-          p1={getTeamUser(match.player_1b)}
-          p2={getTeamUser(match.player_2b)}
-          rated={match.rated ?? true}
-        />
+            {/* MATCH HEADER (Teams & Score) */}
+            <div>
+              <div className='flex flex-row justify-between items-center gap-4'>
+                <TeamBlock p1={match.player_1a.user} p2={match.player_2a.user} fallback1={match.player_1a.player} fallback2={match.player_2a.player} />
 
-        <Has perm={'games.update.score'}>
-          <Fab sx={{
-            background: 'primary.light',
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            mb: '16px',
-          }}
-            onClick={() => {
-              dialogs.open(ReportSetsDialog, { matchId: match.id, team_a_name: match.team_a_name ?? '', team_b_name: match.team_b_name ?? '', sets: match.sets });
-            }}>
-            <Edit />
-          </Fab>
-        </Has>
+                <div className='flex flex-col shrink-0 items-center justify-center px-2 sm:px-4'>
+                  <div className='flex flex-row gap-2'>
+                    <div className={cn("text-2xl sm:text-3xl whitespace-nowrap", { "font-bold": setsAWon > setsBWon })}>
+                      {setsAWon}
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black whitespace-nowrap"> : </div>
+                    <div className={cn("text-2xl sm:text-3xl whitespace-nowrap", { "font-bold": setsAWon < setsBWon })}>
+                      {setsBWon}
+                    </div>
+                  </div>
+                </div>
 
-        <Has perm={'games.delete.own'}>
-          <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
-            <CardActionArea sx={{ px: 1 }}>
-              <ListItem
-                onClick={() =>
-                  dialogs
-                    .confirm(
-                      `Möchtest du das Spiel wirklich löschen? ${match.rated ? 'Der Indexeintrag von diesem Spiel wird mit gelöscht.' : ''}`,
-                      { title: 'Spiel löschen' }
-                    )
-                    .then((result) => {
-                      if (result) {
-                        useDeleteMatchMutation.mutate(undefined, {
-                          onSuccess: () => navigate('/matches'),
-                          onError: (error) =>
-                            notifications.show('Spiel konnte nicht gelöscht werden. ' + error.message, {
-                              severity: 'error',
-                            }),
-                        });
-                      }
-                    })
-                }
-              >
-                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                  <Delete />
-                </ListItemAvatar>
-                <ListItemText primary="Löschen" />
-              </ListItem>
-            </CardActionArea>
-          </Card>
-        </Has>
+                <TeamBlock p1={match.player_1b.user} p2={match.player_2b.user} fallback1={match.player_1b.player} fallback2={match.player_2b.player} />
+              </div>
+            </div>
 
-        <Has perm={'games.admin.view'}>
-          <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-            <CardContent sx={{ p: 0 }}>
-              <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-                <Typography sx={{ fontWeight: 'bold' }}>Admin - Informationen</Typography>
-              </Box>
-              <Divider />
-              <ListItemButton
-                dense
-                onClick={() =>
-                  navigator.clipboard.writeText(match.id).then(() => notifications.show('Erfolgreich kopiert'))
-                }
-              >
-                <ListItemText
-                  primary={
-                    <Typography variant="body2" style={{ userSelect: 'text' }}>
-                      {match.id}
-                    </Typography>
+            {/* SÄTZE */}
+            <Item variant={"outline"}>
+              <ItemContent className='p-0'>
+                <ItemHeader>
+                  <ItemTitle className='font-semibold'>Sätze</ItemTitle>
+                  {
+                    matchMember && hasPerm("games.update.score") &&
+                    <Button variant={"ghost"} size={"icon"} onClick={() => {
+                      dialogs.open(ReportSetsDialog, {
+                        matchId: match.id,
+                        team_a_name: match.team_a_name ?? '',
+                        team_b_name: match.team_b_name ?? '',
+                        sets: match.sets
+                      })
+                    }}>
+                      <Pencil />
+                    </Button>
                   }
-                  secondary={'Match Id'}
-                />
-              </ListItemButton>
-              <Divider />
-              <ListItem dense>
-                <Stack direction={'row'} spacing={2} width={'100%'}>
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.rg_a1_used ?? 'not found'}
-                    secondary={'RG Team A - Player 1'}
-                  />
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.rg_b1_used ?? 'not found'}
-                    secondary={'RG Team B - Player 1'}
-                  />
-                </Stack>
-              </ListItem>
-              <ListItem dense>
-                <Stack direction={'row'} spacing={2} width={'100%'}>
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.rg_a2_used ?? 'not found'}
-                    secondary={'RG Team A - Player 2'}
-                  />
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.rg_b2_used ?? 'not found'}
-                    secondary={'RG Team B - Player 2'}
-                  />
-                </Stack>
-              </ListItem>
-              <Divider />
-              <ListItem dense>
-                <Stack direction={'row'} spacing={2} width={'100%'}>
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.eff_team_a.toFixed(2) ?? 'not found'}
-                    secondary={'Effective Rating Team A'}
-                  />
-                  <ListItemText
-                    sx={{ width: '50%' }}
-                    primary={match.elo_calc_log?.eff_team_b.toFixed(2) ?? 'not found'}
-                    secondary={'Effective Rating Team B'}
-                  />
-                </Stack>
-              </ListItem>
-              <Divider />
-              {match.elo_history.map((elo) => {
-                const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
-                  (x) => x?.player?.player === elo.user
-                );
-                return (
-                  <Stack key={elo.id}>
-                    <ListItem dense>
-                      <Stack direction={'row'} spacing={2} width={'100%'}>
-                        <ListItemText
-                          sx={{ width: '50%' }}
-                          primary={player?.user?.name ?? player?.player?.display_name ?? 'not found'}
-                          secondary={'Spieler'}
-                          primaryTypographyProps={{ fontWeight: 'bold' }}
-                        />
-                        <ListItemText sx={{ width: '50%' }} primary={elo.delta.toFixed(2)} secondary={'Delta'} />
-                      </Stack>
-                    </ListItem>
-                    <ListItem dense>
-                      <Stack direction={'row'} spacing={2} width={'100%'}>
-                        <ListItemText
-                          sx={{ width: '50%' }}
-                          primary={elo.eff_old_rating?.toFixed(2)}
-                          secondary={'Altes Rating'}
-                        />
-                        <ListItemText
-                          sx={{ width: '50%' }}
-                          primary={elo.eff_new_rating?.toFixed(2)}
-                          secondary={'Neues Rating'}
-                        />
-                      </Stack>
-                    </ListItem>
-                    <Divider />
-                  </Stack>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </Has>
-      </Stack>
-    </Layout>
+                </ItemHeader>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex flex-row justify-between items-center'>
+                    <div className='flex flex-col gap-1'>
+                      <div className={cn('text-md', { "font-bold": setsAWon > setsBWon })}>{match.team_a_name}</div>
+                      <div className={cn('text-md', { "font-bold": setsAWon < setsBWon })}>{match.team_b_name}</div>
+                    </div>
+
+                    <div className='flex flex-row gap-4'>
+                      {match.sets.map((x: any, i: number) => (
+                        <div key={i} className="flex flex-col gap-1 text-center">
+                          <div className={cn('text-md', { "font-bold": x.team_a_score > x.team_b_score })}>{x.team_a_score}</div>
+                          <div className={cn('text-md', { "font-bold": x.team_a_score < x.team_b_score })}>{x.team_b_score}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </ItemContent>
+            </Item>
+
+            {/* INDEX HISTORY */}
+            <Item variant={"outline"}>
+              <ItemContent className='p-0'>
+                <ItemHeader>
+                  <ItemTitle className='font-semibold'>Index</ItemTitle>
+                </ItemHeader>
+                <div className='flex flex-col gap-2'>
+                  {playersData.map((data, index) => (
+                    <React.Fragment key={index}>
+                      <IndexRow player={data.p.user} fallback={data.f} history={data.h} />
+                      {index < playersData.length - 1 && <Separator />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </ItemContent>
+            </Item>
+
+            <Has perm={["games.admin.view", "supabase.admin"]}>
+              <Separator />
+              <div className="text-sm font-semibold ml-2">
+                Admin - Aktionen
+              </div>
+              <Item variant="outline">
+                <ItemContent>
+                  <ItemTitle>Elo anwenden</ItemTitle>
+                  <ItemDescription>
+                    Startet die ELO Berechnung für dieses Spiel neu
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    supabase.schema("games").rpc("apply_elo_for_match", { p_match: match.id });
+                  }}>
+                    Start
+                  </Button>
+                </ItemActions>
+              </Item>
+            </Has>
+
+            <Has perm={"games.admin.view"}>
+              <Item variant={"outline"}>
+                <ItemContent className='p-0'>
+                  <ItemHeader>
+                    <ItemTitle className='font-semibold'>Admin - Informationen</ItemTitle>
+                  </ItemHeader>
+                  <div>
+
+                    {match.elo_history.map((elo) => {
+                      const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
+                        (x) => x?.player?.linked_user_id === elo.user
+                      );
+                      return (
+                        <div key={elo.id}>
+                          <div className='flex flex-row gap-2 w-full'>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{player?.player?.display_name ?? player?.user?.name ?? player?.user?.displayName}</div>
+                              <div>Spieler</div>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.delta.toFixed()}</div>
+                              <div>Delta</div>
+                            </div>
+                          </div>
+                          <div className='flex flex-row gap-2 w-full'>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.eff_old_rating?.toFixed(2)}</div>
+                              <div>Altes Rating</div>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.eff_new_rating?.toFixed(2)}</div>
+                              <div>Neues Rating</div>
+                            </div>
+                          </div>
+                          <Separator />
+                        </div>
+                      );
+                    })}
+
+                  </div>
+                </ItemContent>
+              </Item>
+            </Has>
+
+          </div>
+        </PullToRefresh>
+      </main>
+    </div>
   );
 };
+
 export default MatchInformation;

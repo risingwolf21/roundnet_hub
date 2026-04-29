@@ -1,74 +1,85 @@
-import CloseIcon from '@mui/icons-material/Close';
-import { Box } from '@mui/system';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 
-import AppBar from '@mui/material/AppBar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { DialogProps } from '@toolpad/core';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogBody,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { X } from 'lucide-react';
 
+interface CropPayload {
+  imageUrl: string;
+  aspectRatio?: number; // Optional: Wenn du den Payload erweitern willst
+}
 
-const CropImageDialog = ({
-  open,
-  onClose,
-  payload: { selectedImage },
-}: DialogProps<{ selectedImage: string, isShadcn?: boolean }, string | null>) => {
+const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<CropPayload, string>) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area>({ width: 0, height: 0, x: 0, y: 0 });
 
-  const onCropComplete = (_croppedArea: Area, croppedAreaPixelsParam: Area) => {
+  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixelsParam: Area) => {
     setCroppedAreaPixels(croppedAreaPixelsParam);
-  };
+  }, []);
 
-  const cropImage = async () => {
+  const handleSave = async () => {
+    if (!imageUrl || !croppedAreaPixels) return;
     try {
-      const croppedImage = await getCroppedImg(selectedImage, croppedAreaPixels, rotation);
-      onClose(croppedImage);
+      const croppedImage = await getCroppedImg(imageUrl, croppedAreaPixels, 0);
+      if (croppedImage) {
+        onClose(croppedImage);
+      }
     } catch (e) {
-      console.error('cropImage error', e);
-      onClose(null);
+      console.error('Fehler beim Zuschneiden', e);
     }
   };
 
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <Box>
-        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={() => onClose(null)} aria-label="close">
-              <CloseIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Zuschneiden
-            </Typography>
-            <Button autoFocus color="inherit" onClick={cropImage}>
-              Anwenden
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ position: 'relative', width: '100%', height: 'calc(100dvh - 64px)', background: '#333' }}>
-          <Cropper
-            image={selectedImage}
-            crop={crop}
-            zoom={zoom}
-            minZoom={1}
-            maxZoom={5}
-            rotation={rotation}
-            aspect={1 / 1}
-            onCropChange={setCrop}
-            onCropComplete={onCropComplete}
-            onZoomChange={setZoom}
-          />
-        </Box>
-      </Box>
-    </Dialog>
-  );
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogHeader variant={"appbar"}>
+        <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+            <X className="h-5 w-5" />
+          </Button>
+        } />
+      </DialogHeader>
+      <DialogBody>
+
+        {/* Container für den Cropper */}
+        <div className="relative flex-1 bg-black/90 w-full h-full">
+          {
+            imageUrl && <Cropper
+              image={imageUrl}
+              crop={crop}
+              zoom={zoom}
+              aspect={1} // 1:1 Format
+              onCropChange={setCrop}
+              onCropComplete={onCropComplete}
+              onZoomChange={setZoom}
+            />
+          }
+        </div>
+
+      </DialogBody>
+
+      <DialogFooter variant={"fullscreen"}>
+        <div className='flex w-full justify-even gap-4'>
+          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
+          <Button className="flex-1" onClick={handleSave}>
+            Zuschneiden & Speichern
+          </Button>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 };
 
 export default CropImageDialog;

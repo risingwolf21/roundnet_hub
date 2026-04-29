@@ -1,31 +1,27 @@
-import Layout from '@/components/layout/Layout';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppBar } from '@/components/ui/appbar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
-import { EventRepeat, FilterAlt } from '@mui/icons-material';
-import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, IconButton, List, ListSubheader, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
+import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter, Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { EventItem } from './components/EventItem';
-import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
-import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
 
 const EventScreen = () => {
   const { user } = useGrants();
-  const notifications = useNotifications();
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [fetchMode, setFetchMode] = useFetchMode();
@@ -34,131 +30,126 @@ const EventScreen = () => {
 
   useEffect(() => {
     if (error)
-      notifications.show(error.message, { severity: 'error', actionText: 'Neu laden', onAction: () => refetch() });
-  }, [error, notifications, refetch]);
+      toast.error(error.message, {
+        action: {
+          label: "Neu laden",
+          onClick: () => refetch()
+        }
+      });
+  }, [error, refetch]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
-  const createEventFab = (
-    <Has perm={'event.edit'}>
-      <Fab
-        hidden={isLoading}
-        key="insertEvent"
-        color={'secondary'}
-        onClick={async () => {
-          await dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' });
-        }}
-      >
-        {<AddIcon sx={{ color: 'white' }} />}
-      </Fab>
-    </Has>
-  );
-
-  if (isLoading) {
-    return (
-      <List>
-        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
-          <LoadingEventItem key={x} />
-        ))}
-      </List>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <Stack
-        spacing={2}
-        direction={'column'}
-        sx={{ height: 300, m: 2, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Typography sx={{ textAlign: 'center' }}>Es sieht so aus als ob du keine Events siehst</Typography>
-        <Typography sx={{ textAlign: 'center' }}>
-          Versuch einer Gruppe beizutreten um die Events dieser einzusehen
-        </Typography>
-        <Button variant="contained" onClick={() => navigate('/groups/list')}>
-          Gruppe beitreten
-        </Button>
-
-        <Stack
-          direction={'row-reverse'}
-          spacing={2}
-          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
-        >
-          {createEventFab}
-        </Stack>
-      </Stack>
-    );
-  }
-
   return (
-    <Layout appBarActions={
-      <>
-        {
-          !isLoading && <IconButton onClick={async () => {
-            const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
-            setFetchMode(result);
-          }}>
-            <FilterAlt sx={{ color: 'white' }} />
-          </IconButton>
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title="Events Übersicht"
+        user={user}
+        actions={
+          <>
+            <Has perm={"event.edit"}>
+              <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
+                <Plus />
+              </Button>
+            </Has>
+            <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+              const result = await dialogs.selectSingleOption<'past' | 'upcoming'>([
+                { value: 'past', label: 'Vergangene Events', icon: <CalendarArrowDown /> },
+                { value: 'upcoming', label: 'Kommende Events', icon: <CalendarArrowUp /> }
+              ], fetchMode);
+              if (result) setFetchMode(result)
+            }}>
+              <Filter />
+            </Button>
+            <Has perm={"event.edit"}>
+              <Button variant={"ghost"} size={"icon-lg"} onClick={() => navigate("/training/recurringEvents")}>
+                <CalendarSync />
+              </Button>
+            </Has>
+          </>
         }
-        {
-          !isLoading && <Has perm={'event.edit'}>
-            <IconButton onClick={() => navigate('/training/recurringEvents')}>
-              <EventRepeat sx={{ color: 'white' }} />
-            </IconButton>
-          </Has>
-        }
-      </>
-    }>
-      <PullToRefresh onRefresh={() => refetch()}>
-        <List>
-          {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
-            ([key, value]: [string, EventsUserView[]]) => (
-              <List
-                subheader={
-                  <ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh onRefresh={() => refetch()}>
+          <div className="flex p-4 flex-col space-y-2">
+
+            {isLoading && (
+              <div className="flex flex-col space-y-6">
+                {/* Wir simulieren 2 Wochen-Gruppen */}
+                {Array.from({ length: 2 }).map((_, groupIndex) => (
+                  <div key={`skeleton-group-${groupIndex}`} className="flex w-full gap-2 flex-col">
+                    {/* Wochen-Überschrift Skeleton */}
+                    <Skeleton className="h-5 w-32 ml-2 mb-1" />
+
+                    {/* 2-3 Event-Karten Skeletons pro Woche */}
+                    {Array.from({ length: groupIndex === 0 ? 3 : 2 }).map((_, itemIndex) => (
+                      <div key={`skeleton-item-${itemIndex}`} className="flex flex-col p-4 border rounded-xl shadow-sm bg-background gap-3">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2 w-2/3">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                          </div>
+                          <Skeleton className="size-10 rounded-full" /> {/* Simuliertes Avatar/Icon */}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
+                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Leerer Zustand (Empty State) */}
+            {!isLoading && events.length === 0 && (
+              <div className="flex flex-col items-center justify-center p-8 mt-12 text-center text-muted-foreground">
+                <CalendarX className="size-16 mb-4 opacity-20" />
+                <h3 className="font-semibold text-lg mb-1 text-foreground/70">Keine Events</h3>
+                <p className="text-sm mb-1">Aktuell stehen keine Termine an.</p>
+                <p className='text-sm mb-1'>Versuche einer Gruppe beizutreten um Events einzusehen</p>
+                <Button onClick={() => navigate('/groups/list')}>Gruppe beitreten</Button>
+              </div>
+            )}
+
+            {!isLoading && events.length > 0 && Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+              ([key, value]: [string, EventsUserView[]]) => (
+                <div key={key} className="flex w-full gap-2 flex-col">
+                  <div className="text-sm font-semibold ml-2">
                     {getISOWeek(key) === getISOWeek(new Date())
                       ? 'Diese Woche'
                       : getISOWeek(key) === getISOWeek(new Date()) + 1
                         ? 'Nächste Woche'
                         : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
-                  </ListSubheader>
-                }
-                key={key}
-              >
-                {value.map((event: EventsUserView) => (
-                  <EventItem
-                    key={event.id}
-                    event={event}
-                    t={t}
-                    attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
-                    attendEvent={() => {
-                      updateAttendance.mutate({ event, user, newState: 'Attending' });
-                      sendMetricsToSentry('event_attend_from_list', 1);
-                    }}
-                    declineEvent={() => {
-                      updateAttendance.mutate({ event, user, newState: 'Declined' });
-                      sendMetricsToSentry('event_decline_from_list', 1);
-                    }}
-                    onClick={() => {
-                      navigate('/training/event/' + event.id);
-                    }}
-                  />
-                ))}
-              </List>
-            )
-          )}
-
-          <Stack
-            direction={'row-reverse'}
-            spacing={2}
-            sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px', zIndex: 1 }}
-          >
-            {createEventFab}
-          </Stack>
-        </List>
-      </PullToRefresh>
-    </Layout>
+                  </div>
+                  {value.map((event: EventsUserView) => (
+                    <EventItem
+                      key={event.id}
+                      event={event}
+                      t={t}
+                      attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                      attendEvent={() => {
+                        updateAttendance.mutate({ event, user, newState: 'Attending' });
+                        sendMetricsToSentry('event_attend_from_list', 1);
+                      }}
+                      declineEvent={() => {
+                        updateAttendance.mutate({ event, user, newState: 'Declined' });
+                        sendMetricsToSentry('event_decline_from_list', 1);
+                      }}
+                      onClick={() => {
+                        navigate('/training/event/' + event.id);
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            )}
+          </div>
+        </PullToRefresh>
+      </main>
+    </div>
   );
 };
 
