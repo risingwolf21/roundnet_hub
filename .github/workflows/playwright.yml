@@ -41,17 +41,6 @@ jobs:
             sleep 1
           done
 
-      - name: Start dev server
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-        run: |
-          # start Vite and keep it in background
-          yarn start &
-          # wait for server to be responsive
-          npx -y wait-on http://localhost:5173
-
       - name: Run Playwright tests
         env:
           BASE_URL: http://localhost:5173
