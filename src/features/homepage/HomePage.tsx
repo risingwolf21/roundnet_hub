@@ -133,26 +133,26 @@ const HomePage = () => {
                       }}>
                         <CardTitle className='truncate'>{event.title}</CardTitle>
                       </CardHeader>
-                      <CardContent className='gap-2 flex flex-col' onClick={() => {
+                      <CardContent className='gap-4 py-2 flex flex-col' onClick={() => {
                         navigate('/training/event/' + event.id)
                       }}>
                         <div className="flex items-start gap-3 text-sm text-foreground">
                           <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                           <div>
-                            <p className="font-medium truncate">{date}</p>
+                            <p className="text-muted-foreground truncate">{date}</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3 text-sm text-foreground">
                           <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
                           <div>
-                            <p className="font-medium truncate">{time}</p>
+                            <p className="text-muted-foreground truncate">{time}</p>
                           </div>
                         </div>
                         {
                           place && <div className="flex items-start gap-3 text-sm text-foreground">
                             <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
                             <div>
-                              <p className="font-medium truncate">{place.name}</p>
+                              <p className="text-muted-foreground truncate">{place.name}</p>
                             </div>
                           </div>
                         }
@@ -323,7 +323,7 @@ const HomePage = () => {
                           <CardTitle className='truncate text-base'>{item.name}</CardTitle>
                         </CardHeader>
 
-                        <CardContent>
+                        <CardContent className='py-2'>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Avatar>
