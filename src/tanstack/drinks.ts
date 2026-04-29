@@ -293,13 +293,26 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
       const previousHistory = queryClient.getQueryData<InfiniteData<FullHistory[]>>(drinkKeys.userHistory(user.id));
 
       if (previousHistory) {
-        const newHistory = {
-          ...previousHistory,
-          pages: previousHistory.pages.map((page) =>
-            page.map((history) => (history.id === newEntry.id ? newEntry : history))
-          ),
-        };
-        queryClient.setQueryData<InfiniteData<FullHistory[]>>(drinkKeys.userHistory(user.id), newHistory);
+        const newStat = {
+          ...newEntry,
+        }
+        queryClient.setQueryData<InfiniteData<{ data: FullHistory[]; nextPage: number | undefined }>>(
+          drinkKeys.userHistory(user.id),
+          (old) => {
+            if (!old || old.pages.length === 0) {
+              return {
+                pages: [{ data: [newStat], nextPage: undefined }],
+                pageParams: [undefined],
+              };
+            }
+
+            const [first, ...rest] = old.pages;
+            return {
+              pages: [{ ...first, data: [newStat, ...first.data] }, ...rest],
+              pageParams: old.pageParams,
+            };
+          }
+        );
       }
       return { previousHistory };
     },

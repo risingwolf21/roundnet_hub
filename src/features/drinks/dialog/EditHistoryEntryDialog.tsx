@@ -58,7 +58,11 @@ const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<F
           <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
             Abbrechen
           </Button>
-          <Button className="flex-1" onClick={() => onClose({ ...entry, count: newCount, newCount })}>
+          <Button className="flex-1" onClick={() => onClose({
+            ...entry,
+            count: newCount, newCount,
+            amount: newCount * (entry.drink.price ?? 0)
+          })}>
             Speichern
           </Button>
         </div>
