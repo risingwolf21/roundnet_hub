@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
 import { useGrants } from '@/features/auth/GrantsContext'
 import { supabase } from '@/lib/supabase'
-import { groupBy } from '@/utils'
+import { formatDateFromDatabaseNotNull, formatDateToDatabase, groupBy } from '@/utils'
 import { useQuery } from '@tanstack/react-query'
 import { TableMetadata, useListTables, useTableMutations } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
@@ -37,14 +37,17 @@ function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
       fieldSchema = z.number()
     } else if (dataType.includes('bool')) {
       fieldSchema = z.boolean()
-    } else if (
-      dataType === 'user-defined' &&
-      column.enums &&
-      Array.isArray(column.enums) &&
-      column.enums.length > 0
-    ) {
-      // Handle enum types
-      fieldSchema = z.enum(column.enums as [string, ...string[]])
+    } else if (column.enums && column.enums.length > 0) {
+      // Zod Enum benötigt ein Array mit mind. einem Element
+      fieldSchema = z.enum(column.enums as [string, ...string[]]);
+      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
+    } else if (column.format === 'timestamptz' || column.format === 'timestamp') {
+      // Wir nutzen z.date() für den Picker, erlauben aber auch Strings (vom API-Input)
+      fieldSchema = z.preprocess((arg) => {
+        if (typeof arg === "string") return formatDateFromDatabaseNotNull(arg);
+        return arg;
+      }, z.date());
+      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
     } else {
       // Default to string for text, varchar, timestamp, uuid, etc.
       fieldSchema = z.string()
@@ -57,13 +60,6 @@ function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
     shape[column.name] = fieldSchema
   }
   return z.object(shape)
-}
-
-const getPrimaryKeys = (table: TableMetadata): string[] => {
-  if (!table || !table.primary_keys) {
-    return []
-  }
-  return table.primary_keys.map((pk: any) => pk.name)
 }
 
 type EditRowViewProps = {
@@ -107,8 +103,14 @@ function EditRowView({ payload: {
     async (formData: any) => {
       // Wir übergeben einfach das formData Objekt. 
       // Der Hook kümmert sich um den .match() via Primary Keys
+
+      const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
+        acc[key] = value instanceof Date ? formatDateToDatabase(value) : value;
+        return acc;
+      }, {} as any);
+
       try {
-        await updateRow.mutateAsync({ ...row, ...formData });
+        await updateRow.mutateAsync({ ...row, ...cleanedData });
         onSuccess();
         onClose();
       } catch (e) {
@@ -138,6 +140,8 @@ function EditRowView({ payload: {
             onSubmit={handleFormSubmit}
             columnInfo={columnInfo}
             isLoading={updateRow.isPending}
+            relationships={table.relationships}
+            primaryKeyNames={table.primary_keys.map(pk => pk.name)}
           />
         </DialogBody>
       </DialogContent>

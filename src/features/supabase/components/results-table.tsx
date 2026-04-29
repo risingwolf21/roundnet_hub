@@ -29,7 +29,7 @@ export function ResultsTable({ data, table, onRowClick }: ResultsTableProps) {
         <TableHeader>
           <TableRow className="hover:bg-transparent">
             {table.columns.map((column) => (
-              <TableHead className="first:pl-6 lg:first:pl-8 last:pr-6 lg:last:pr-8" key={column.name}>
+              <TableHead className="first:pl-4 last:pr-4" key={column.name}>
                 {column.name}
               </TableHead>
             ))}
@@ -38,7 +38,7 @@ export function ResultsTable({ data, table, onRowClick }: ResultsTableProps) {
         <TableBody>
           {data.map((row, rowIndex) => (
             <TableRow
-              key={rowIndex}
+              key={row.id || rowIndex}
               onClick={() => onRowClick?.(row)}
               className={cn(onRowClick && 'cursor-pointer hover:bg-muted/50 group')}
             >
@@ -61,8 +61,8 @@ export function ResultsTable({ data, table, onRowClick }: ResultsTableProps) {
                 }
 
                 return <TableCell
-                  className="first:pl-6 lg:first:pl-8 last:pr-6 lg:last:pr-8 text-xs text-muted-foreground group-hover:text-foreground min-w-[8rem]"
-                  key={`${rowIndex}-${column.name}`}
+                  className="first:pl-4 last:pr-4 text-xs text-muted-foreground group-hover:text-foreground min-w-[2rem]"
+                  key={`${row.id || rowIndex}-${column.name}`}
                 >
                   <div className="text-xs font-mono w-fit max-w-72 truncate">
                     {content}

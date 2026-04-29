@@ -280,6 +280,9 @@ export function AppSidebar() {
     {
       key: "supabaseList",
       header: "Supabase Admin",
+      permission: {
+        perm: 'supabase.admin'
+      },
       children: [
         {
           title: t('browse.logs'),

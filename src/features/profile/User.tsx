@@ -23,7 +23,7 @@ import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
 import { iOS, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
 import { addDays, getMonth, isAfter, isSameDay } from "date-fns";
-import { Bell, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User, Volleyball } from "lucide-react";
+import { Bell, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User as UserIcon, Volleyball } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Day } from "react-day-picker";
 import { toast } from "sonner";
@@ -32,7 +32,7 @@ import { useGrants } from "../auth/GrantsContext";
 const tabs = {
   account: {
     title: "Account",
-    icon: <User />
+    icon: <UserIcon />
   },
   changePassword: {
     title: "Passwort ändern",
