@@ -149,7 +149,7 @@ const GameListShadcn = () => {
           <Button
             size="icon"
             className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={() => dialogs.open(ReportScoreShadcn)}
+            onClick={() => dialogs.open(ReportScoreShadcn, { eventId: undefined })}
           >
             <Plus className="h-6 w-6" />
           </Button>

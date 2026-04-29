@@ -33,8 +33,8 @@ type Props = {
 const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSelect, onRemove }: Props) => {
   const dialogs = useDialogs();
 
-  const displayName = value && 'name' in value ? value.name : value?.display_name ?? 'Unknown';
-  const avatarUrl = value && 'avatarUrl' in value ? value?.avatarUrl ?? value?.rg_avatar_url ?? '' : '';
+  const displayName = value && 'name' in value ? value.name : value && 'display_name' in value ? value.display_name : 'Unbekannt';
+  const avatarUrl = value && 'avatarUrl' in value ? value.avatarUrl : value && 'rg_avatar_url' in value ? value.rg_avatar_url : '';
   const isGuest = value && value.linked_user_id === null;
 
   return (
@@ -454,8 +454,10 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                     searchString === '' || (('name' in x) ? x.name : x.display_name ?? '').toLowerCase().includes(searchString.toLowerCase())
                 )
                 .map((user) => {
-                  const displayName = 'name' in user ? user.name : user?.display_name ?? 'Unknown';
-                  const avatarUrl = 'avatarUrl' in user ? user?.avatarUrl ?? user?.rg_avatar_url ?? '' : '';
+                  const displayName = user && 'name' in user ? user.name : user && 'display_name' in user && user.display_name ? user.display_name : 'Unbekannt';
+                  const avatarUrl = user && 'avatarUrl' in user ? user.avatarUrl : user && 'rg_avatar_url' in user ? user.rg_avatar_url : '';
+
+                  console.log(displayName, user);
 
                   return <Item key={user.player} onClick={() => onClose(user)}>
                     <ItemMedia>
