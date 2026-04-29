@@ -1,100 +1,68 @@
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
-import ErrorRouteElement from './components/ErrorRouteElement';
-import { useFeature } from './contexts/FeatureToggleContext';
 import { useApplication } from './features/auth/ApplicationContext';
-import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
-import ForgotPasswordShadcn from './features/auth/ForgotPassword.shadcn';
-import { GrantsProvider } from './features/auth/GrantsContext';
-import LoginFormShadcn from './features/auth/LoginForm.shadcn';
-import SignUpFormShadcn from './features/auth/SignUpForm.shadcn';
-import HomePage from './features/homepage/HomePage';
-import UserScreenProvider from './features/profile/UserScreenProvider';
+
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
+import { GrantsProvider } from './features/auth/GrantsContext';
 import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
   const { user } = useApplication();
-  const isShadcnUi = useFeature("shadcnUI");
 
-  const router = useMemo(() => createRouter(user, isShadcnUi), [user, isShadcnUi]);
+  const router = useMemo(() => createRouter(user), [user]);
 
   return <RouterProvider router={router} />;
 };
 
-const PrivateRoute = ({ isShadcn = false }: { isShadcn?: boolean }) => {
+const PrivateRoute = () => {
   const { user } = useApplication();
   const location = useLocation();
+
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
-  const privateRoute = <DialogsProvider>
-    <Pages.DialogsProvider>
-      <NotificationsProvider
-        slotProps={{
-          snackbar: {
-            sx: {
-              bottom: 'calc(8px + env(safe-area-inset-bottom))',
-            },
-          },
-        }}
-      >
-        <Outlet />
-      </NotificationsProvider>
-    </Pages.DialogsProvider>
-  </DialogsProvider>
-
-  if (isShadcn) {
-    return <GrantsProvider user={user}>
-      <Pages.MainLayout>
-        {privateRoute}
-      </Pages.MainLayout>
-    </GrantsProvider>
-  }
   return <GrantsProvider user={user}>
-    {privateRoute}
+    <Pages.MainLayout>
+      <Pages.DialogsProvider>
+        <Outlet />
+      </Pages.DialogsProvider>
+    </Pages.MainLayout>
   </GrantsProvider>
 };
 
-const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
+const createRouter = (user: UserWithGroups | null) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
-      element: isShadcnUi ? <Pages.AuthLayoutShadcn /> : <Pages.AuthLayout />,
+      element: <Pages.AuthLayout />,
       children: [
         {
           path: 'login',
-          element: isShadcnUi ? <LoginFormShadcn /> : <Pages.LoginScreen />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.LoginForm />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: isShadcnUi ? <SignUpFormShadcn /> : <Pages.SignUpScreen />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.SignUpForm />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: isShadcnUi ? <ForgotPasswordShadcn /> : <Pages.ForgotPasswordScreen />,
-          errorElement: <ErrorRouteElement />,
-        },
-        {
-          path: 'reset-password',
-          element: <Pages.ResetPasswordScreen />,
-          errorElement: <ErrorRouteElement />,
-        },
+          element: <Pages.ForgotPassword />,
+          errorElement: <Pages.ErrorRouteElement />,
+        }
       ],
     },
     {
       path: '/',
-      element: <PrivateRoute isShadcn={isShadcnUi} />,
-      errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+      element: <PrivateRoute />,
+      errorElement: <Pages.ErrorRouteElement />,
       children: [
         {
           path: '',
-          errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+          errorElement: <Pages.ErrorRouteElement />,
           children: [
             {
               index: true,
@@ -110,55 +78,39 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             },
             {
               path: '/help',
-              element: isShadcnUi ? <Pages.AppInformationShadcn /> : <Pages.AppInformation />,
+              element: <Pages.AppInformation />,
             },
             {
               path: '/home',
-              element: isShadcnUi ? <Pages.HomePageShadcn /> : <HomePage />,
+              element: <Pages.HomePage />,
             },
             {
               path: '/keys',
-              element: isShadcnUi ? <Pages.ItemHolderScreenShadcn /> : <Pages.ItemHolderScreen />,
+              element: <Pages.ItemHolderScreen />,
             },
             {
               path: '/notifications',
-              element: <Pages.NotificationScreen isShadcn={isShadcnUi} />,
+              element: <Pages.NotificationScreen />,
             },
             {
               path: '/user',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
-                  element: <UserScreenProvider />,
-                },
-                {
-                  path: 'playerzone',
-                  element: <Pages.PlayerzoneProfileDialog />,
-                },
-                {
-                  path: 'notifications',
-                  element: <Pages.NotificationsDialog />,
-                },
-                {
-                  path: 'profile',
-                  element: <Pages.ContactInformation />,
-                },
-                {
-                  path: 'reset-password',
-                  element: <Pages.ResetPassword />,
-                },
+                  element: <Pages.User />,
+                }
               ],
             },
             {
               path: '/drinks',
               element: (
-                <Has feat={'drinks'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'drinks'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -166,26 +118,26 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <Pages.DrinkListScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.DrinkListScreen />,
                 },
                 {
                   path: 'history',
-                  element: <Pages.HistoryScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.HistoryScreenProvider />,
                 },
                 {
                   path: 'payments',
-                  element: <Pages.PayDrinksScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.PayDrinksScreen />,
                 },
               ],
             },
             {
               path: '/challenges',
               element: (
-                <Has feat={'challenges'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'challenges'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -193,18 +145,18 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: isShadcnUi ? <Pages.ChallengeListShadcn /> : <Pages.ChallengeScreen />,
+                  element: <Pages.ChallengeList />,
                 },
                 {
                   path: ':challengeId',
-                  element: <Pages.ChallengeInfoScreen isShadcn={isShadcnUi} />,
+                  element: <Pages.ChallengeInfoScreen />,
                 },
               ],
             },
             {
               path: '/groups',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -212,22 +164,22 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <Pages.PublicGroupList isShadcn={isShadcnUi} />,
+                  element: <Pages.PublicGroupList />,
                 },
                 {
                   path: ':groupId',
-                  element: <Pages.PublicGroupInformation isShadcn={isShadcnUi} />,
+                  element: <Pages.PublicGroupInformation />,
                 },
               ],
             },
             {
               path: '/training',
               element: (
-                <Has feat={'events'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'events'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -235,26 +187,26 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <Pages.EventScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.EventScreen />,
                 },
                 {
                   path: 'recurringEvents',
-                  element: isShadcnUi ? <Pages.RecurringEventsShadcn /> : <Pages.RecurringEvents />,
+                  element: <Pages.RecurringEvents />,
                 },
                 {
                   path: 'event/:selectedEventId',
-                  element: <Pages.EventInformationProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.EventInformation />,
                 },
               ],
             },
             {
               path: '/matches',
               element: (
-                <Has feat={'games'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'games'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -262,30 +214,26 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: isShadcnUi ? <Pages.GameListShadcn /> : <Pages.GameList />,
-                },
-                {
-                  path: 'report',
-                  element: <Pages.ReportScore />,
+                  element: <Pages.GameList />,
                 },
                 {
                   path: ':matchId',
-                  element: isShadcnUi ? <Pages.MatchInformationShadcn /> : <Pages.MatchInformation />,
+                  element: <Pages.MatchInformation />,
                 },
                 {
                   path: 'leaderboard',
-                  element: isShadcnUi ? <Pages.LeaderboardShadcn /> : <Pages.Leaderboard />,
+                  element: <Pages.Leaderboard />,
                 }
               ],
             },
             {
               path: '/supabase',
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   path: 'logs',
                   element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
                       <Pages.LogsManager />
                     </Has >
                   ),
@@ -293,7 +241,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 {
                   path: 'database',
                   element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
                       <Pages.DatabaseManager />
                     </Has>
                   ),
@@ -303,41 +251,35 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             {
               path: '/admin',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
-                  path: 'drinks',
-                  element: <Pages.AdminDrinkListProvider />,
-                },
-                {
                   path: 'drinks/history',
-                  element: isShadcnUi ? <Pages.AdminHistoryScreenShadcn /> : <Pages.AdminHistoryScreenProvider />,
+                  element: <Pages.AdminHistoryScreen />,
                 },
                 {
                   path: 'drinks/payments',
-                  element: isShadcnUi ? <Pages.PaymentsPendingAdminShadcn /> : <Pages.PaymentsPendingAdmin />,
+                  element: <Pages.PaymentsPendingAdmin />,
                 },
                 {
                   path: 'users',
-                  element: isShadcnUi ? <Pages.AdminUserList /> : <Pages.AdminUserListProvider />,
+                  element: <Pages.AdminUserList />,
                 },
                 {
                   path: 'analytics',
-                  element: isShadcnUi ? <Pages.AdminAnalyticsShadcn /> : <Pages.AdminAnalytics />
+                  element: <Pages.AdminAnalytics />
                 },
                 {
                   path: 'grants',
                   element: (
                     <Has perm={'grants.manage'}>
-                      {
-                        isShadcnUi ? <Pages.GrantsManagerShadcn /> : <Pages.GrantsManager />
-                      }
+                      <Pages.GrantsManager />
                     </Has>
                   ),
                 },
                 {
                   path: 'merge_accounts',
-                  element: <Pages.UserPlayerMappingShadcn />
+                  element: <Pages.UserPlayerMapping />
                 }
               ],
             },

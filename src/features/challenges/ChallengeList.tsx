@@ -1,132 +1,154 @@
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { useChallengePodiums, useChallenges } from '@/tanstack/challenge';
 import { withProfiler } from '@sentry/react';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import { useEffect } from 'react';
+
+import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Item, ItemContent } from '@/components/ui/item';
+import groupBy from 'lodash.groupby';
+import { Archive, Award, Medal, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
+import { useGrants } from '../auth/GrantsContext';
 
-import { useInsertChallengeMutation } from '@/tanstack/challenge';
-import { UserWithGroups } from '@/types/supabaseTypes';
-import Add from '@mui/icons-material/Add';
-import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
-import LinearProgress from '@mui/material/LinearProgress';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
-import Typography from '@mui/material/Typography';
-import { InfiniteData } from '@tanstack/react-query';
-
-const ChallengeList = ({
-  user,
-  challenges,
-  archived_challenges,
-  isLoading,
-  error,
-}: {
-  user: UserWithGroups;
-  challenges: Challenge[];
-  archived_challenges?: InfiniteData<{ data: Challenge[]; nextPage?: number }>;
-  isLoading: boolean;
-  error: Error | null;
-}) => {
-  const notifications = useNotifications();
+const ChallengeListPage = () => {
+  const { user } = useGrants();
   const navigate = useNavigate();
-  const dialogs = useDialogs();
-  const insertChallengeMutation = useInsertChallengeMutation();
 
-  useEffect(() => {
-    if (error) notifications.show(error.message, { severity: 'error' });
-  }, [error, notifications]);
+  const { data: challenges = [], error, isLoading, refetch } = useChallenges();
+  const { data: podium = [], refetch: archiveRefetch } = useChallengePodiums();
 
-  if (isLoading) {
-    return <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />;
-  }
-
-  if (challenges.length <= 0 && (archived_challenges?.pages?.length ?? 0) <= 0) {
-    return (
-      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
-        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
-      </Box>
-    );
-  }
+  const achievements = [
+    {
+      rank: 2,
+      icon: Award,
+      title: "Innovation Leader",
+      org: "Tech Excellence Awards",
+      year: "2024",
+      // Schiebt die zweite Position etwas nach unten
+      marginTop: "md:mt-16",
+    },
+    {
+      rank: 1,
+      icon: Trophy,
+      title: "Product of the Year",
+      org: "Global SaaS Awards",
+      year: "2024",
+      // Höchste Position (Platz 1)
+      marginTop: "md:mt-0",
+    },
+    {
+      rank: 3,
+      icon: Medal,
+      title: "Best User Experience",
+      org: "UX Design Awards",
+      year: "2024",
+      // Schiebt die dritte Position am weitesten nach unten
+      marginTop: "md:mt-32",
+    },
+  ];
 
   return (
-    <List>
-      {challenges.length > 0 && (
-        <List
-          sx={{ width: '100%' }}
-          subheader={
-            <ListSubheader
-              sx={{
-                fontWeight: 'bold',
-                lineHeight: 'normal',
-                my: 1,
-                color: 'rgba(0,0,0,0.87)',
-              }}
-            >
-              Aktive Challenges
-            </ListSubheader>
-          }
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title="Challenges"
+        user={user}
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh
+          onRefresh={() => {
+            refetch();
+            archiveRefetch();
+          }}
         >
-          {challenges.map((entry: Challenge) => (
-            <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
-              <ListItemText primary={entry.name} secondary={entry.description} />
-            </ListItem>
-          ))}
-        </List>
-      )}
-      {archived_challenges && archived_challenges.pages.flatMap((x) => x.data).length > 0 && (
-        <List
-          sx={{ width: '100%' }}
-          subheader={
-            <ListSubheader
-              sx={{
-                fontWeight: 'bold',
-                lineHeight: 'normal',
-                my: 1,
-                color: 'rgba(0,0,0,0.87)',
-              }}
-            >
+          <div className='flex flex-col gap-2 p-2'>
+            {
+              challenges.map((entry) => <Item key={entry.id} variant={"outline"} className='p-1 pl-2' onClick={() => {
+                navigate(`/challenges/${entry.id}`);
+              }}><div>
+                  <div className='text-md font-semibold'>{entry.name}</div>
+                  <div className='text-md text-muted-foreground'>{entry.description}</div>
+                </div>
+              </Item>)
+            }
+
+            <div className='text-lg font-bold pt-4 flex flex-row gap-2 items-center'>
+              <Archive />
               Archivierte Challenges
-            </ListSubheader>
-          }
-        >
-          {archived_challenges.pages
-            .flatMap((x) => x.data)
-            .map((entry: Challenge) => (
-              <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
-                <ListItemText primary={entry.name} secondary={entry.description} />
-              </ListItem>
-            ))}
-        </List>
-      )}
-      <Fab
-        sx={{
-          background: 'primary.light',
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        onClick={async () => {
-          const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user });
-          if (result) {
-            await insertChallengeMutation.mutateAsync(result, {
-              onError: (error) =>
-                notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' }),
-              onSuccess: (data) => {
-                notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
-                navigate('/challenges/' + data.id);
-              },
-            });
-          }
-        }}
-      >
-        <Add sx={{ color: 'white' }} />
-      </Fab>
-    </List>
+            </div>
+
+            {
+              podium.map((entry) => <Item key={entry.challenge_id} variant={"outline"} className='p-1 pl-2' onClick={() => {
+                navigate(`/challenges/${entry.challenge_id}`);
+              }}>
+                <ItemContent className='p-2'>
+                  <div className='text-base font-semibold'>{entry.challenge_name}</div>
+
+                  <div
+                    className="grid [grid-template-columns:repeat(var(--rank-count),1fr)] gap-2 mx-auto"
+                    style={
+                      {
+                        "--rank-count": new Set(entry.podium.map((x) => x.rank)).size.toString(),
+                      } as React.CSSProperties
+                    }>
+                    {Object.entries(groupBy(entry.podium, x => x.rank.toString())).map(([rank, items]) => {
+                      return (
+                        <div
+                          key={rank}
+                          className={`flex flex-col items-center w-full transition-all`}
+                        >
+                          <Card className="w-full border-0 shadow-none bg-zinc-50 dark:bg-zinc-900 gap-1 pb-1">
+                            <CardHeader className='w-full flex flex-col items-center'>
+                              <div className='text-3xl'>
+                                {
+                                  rank === '1' ? '🥇' : rank === '2' ? '🥈' : rank === '3' ? '🥉' : `#${rank}`
+                                }
+                              </div>
+                              <AvatarGroup>
+                                {
+                                  items.map((x: {
+                                    user_id: string;
+                                    name: string;
+                                    score: number;
+                                    rank: number;
+                                    image_url: string;
+                                  }) => (
+                                    <Avatar key={x.user_id}>
+                                      <AvatarImage src={x.image_url} alt={x.name} />
+                                      <AvatarFallback>{x.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                  ))
+                                }
+                              </AvatarGroup>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center p-2 text-center">
+                              <div className='w-full truncate'>
+                                {
+                                  items.map((x) => (
+                                    <div key={x.user_id} className='text-sm text-muted-foreground'>
+                                      {x.name}
+                                    </div>
+                                  ))
+                                }
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ItemContent>
+              </Item>)
+            }
+
+
+
+          </div>
+        </PullToRefresh>
+      </main>
+    </div>
   );
 };
 
-export default withProfiler(ChallengeList);
+export default withProfiler(ChallengeListPage);

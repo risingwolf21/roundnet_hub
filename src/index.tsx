@@ -48,7 +48,7 @@ const Fallback = (e: { error: unknown; componentStack: string; eventId: string; 
     <div className='relative max-h-screen w-full p-2 max-lg:hidden'>
       <div className='h-full w-full rounded-2xl bg-black'></div>
       <img
-        src='https://cdn.shadcnstudio.com/ss-assets/blocks/marketing/error/image-1.png'
+        src='https://cdnstudio.com/ss-assets/blocks/marketing/error/image-1.png'
         alt='404 illustration'
         className='absolute top-1/2 left-1/2 h-[clamp(260px,25vw,406px)] -translate-x-1/2 -translate-y-1/2'
       />

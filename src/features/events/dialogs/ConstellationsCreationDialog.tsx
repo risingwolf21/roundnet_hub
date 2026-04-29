@@ -1,40 +1,23 @@
-import SearchAndSelectUserDialog from '@/features/groups/dialogs/SearchAndSelectUserDialog';
-import { customEnLocale } from '@/lib/date-fns';
 import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { EventsUserView, GamesTable } from '@/types/supabaseTypes';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
 
-import NumberField from '@/components/mui/NumberField';
-import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
-import Close from '@mui/icons-material/Close';
-import Delete from '@mui/icons-material/Delete';
-import Save from '@mui/icons-material/Save';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Stack from '@mui/material/Stack';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { cn } from '@/lib/utils';
 import { captureException } from '@sentry/react';
+import { ChevronDownIcon, Plus, RefreshCcw, Save, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 type ConstellationCreationDialogProps = {
   users: { id: string; name: string }[];
@@ -212,9 +195,14 @@ export type PlayerWithUser = GamesTable<'players'> & {
   name?: string;
 };
 
-// --- UI COMPONENT ---
-const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogProps, null>) => {
-  const notifications = useNotifications();
+export const ConstellationCreationDialog = ({
+  payload,
+  open,
+  onClose,
+}: DialogProps<ConstellationCreationDialogProps, null>) => {
+
+  console.log(payload)
+
   const dialogs = useDialogs();
 
   const [loading, setLoading] = useState(true);
@@ -236,7 +224,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
         .in('player', payload.users.map((x) => x.id));
 
       if (error) {
-        notifications.show('Fehler beim Laden der Spielerdaten', { severity: 'error' });
+        toast.error('Fehler beim Laden der Spielerdaten');
         setLoading(false);
         return;
       }
@@ -263,7 +251,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       setLoading(false);
     };
     fetchPlayers();
-  }, [payload, notifications]);
+  }, [payload]);
 
   // HELPER: Option einer bestimmten Runde sicher updaten
   const updateRoundOption = (roundIndex: number, updates: Partial<MatchmakingOptions>) => {
@@ -312,12 +300,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       } catch (error: any) {
         hasError = true;
         captureException(error, { extra: { match, eventId: payload.event.id } });
-        notifications.show(`Fehler bei einem Match: ${error.message}`, { severity: 'error' });
+        toast.error(`Fehler bei einem Match: ${error.message}`);
       }
     }
 
     if (!hasError) {
-      notifications.show('Alle Matches der Runde erfolgreich erstellt!', { severity: 'success' });
+      toast.success('Alle Matches der Runde erfolgreich erstellt!');
     }
   };
 
@@ -351,482 +339,498 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
   };
 
   return (
-    <>
-      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
-            <Close />
-          </IconButton>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            Konstellationen
-          </Typography>
-        </Toolbar>
-      </AppBar>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent variant={"fullscreen"}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle>Konstellationen</DialogTitle>
+          <DialogClose render={<Button variant={"ghost"}><X /></Button>} />
+        </DialogHeader>
+        <DialogBody className='p-0'>
+          <div className='p-2 flex flex-col gap-2'>
+            {loading && <p style={{ padding: '16px' }}>Lade Spielerdaten...</p>}
 
-      <List sx={{ pl: 0, pr: 0, pb: 10 }}>
-        {loading && <p style={{ padding: '16px' }}>Lade Spielerdaten...</p>}
+            {/* FEHLENDE INDEXE */}
+            {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length > 0 && (
+              <Card className="w-full py-1">
+                <CardContent className='px-1'>
+                  <Collapsible>
+                    <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
+                      Von {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length} Spielern
+                      kein Index gefunden
+                      <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                    <CollapsibleContent className={"w-full"}>
+                      <div>
+                        {payload.users
+                          .filter((x) => !foundPlayers.map((y) => y.player).includes(x.id))
+                          .map((x) => (
+                            <Item key={x.id} variant={"outline"}>
+                              <ItemContent className='flex flex-row'>
+                                <ItemTitle className='flex-1'>{x.name}</ItemTitle>
+                                <ItemDescription>
+                                  <Input
+                                    className='w-32'
+                                    type='number'
+                                    value={players.find((y) => y.player === x.id)?.rg_index ?? 0}
+                                    onChange={(e) => {
+                                      const parsed = Number.parseInt(e.target.value);
+                                      if (!Number.isNaN(parsed) && parsed >= 0) {
+                                        setPlayers((prev) => [
+                                          ...prev.filter((y) => x.id !== y.player),
+                                          {
+                                            gender: 'm',
+                                            player: x.id,
+                                            name: x.name,
+                                            ka_index: 0,
+                                            pro_status: false,
+                                            rg_index: parsed,
+                                            created_at: '',
+                                            rg_avatar_url: null,
+                                            rg_id: null,
+                                            rg_link: null,
+                                            effective_rating_cached: 1000,
+                                            hide_rating: false,
+                                            display_name: null,
+                                            linked_user_id: x.id,
+                                            matches_played: 0,
+                                          },
+                                        ]);
+                                      }
+                                    }}
+                                    step={10}
+                                    placeholder="Initialer Index" />
+                                </ItemDescription>
+                              </ItemContent>
+                            </Item>
+                          ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            )
+            }
 
-        {/* FEHLENDE INDEXE */}
-        {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length > 0 && (
-          <Accordion disableGutters defaultExpanded>
-            <AccordionSummary expandIcon={<ArrowDropDown />}>
-              <Typography component="span">
-                Von {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length} Spielern
-                kein Index gefunden
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <List>
-                {payload.users
-                  .filter((x) => !foundPlayers.map((y) => y.player).includes(x.id))
-                  .map((x) => (
-                    <ListItem key={x.id} divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography sx={{ textAlign: 'end', fontSize: '1rem', color: `rgba(0,0,0,1)`, fontWeight: '400' }}>
-                          {x.name}
-                        </Typography>
-                        <NumberField
-                          value={players.find((y) => y.player === x.id)?.rg_index ?? 0}
-                          step={10}
-                          label="Initialer Index"
-                          onValueChange={(val) => {
-                            if (val && val >= 0) {
-                              setPlayers((prev) => [
-                                ...prev.filter((y) => x.id !== y.player),
-                                {
-                                  gender: 'm',
-                                  player: x.id,
-                                  name: x.name,
-                                  ka_index: 0,
-                                  pro_status: false,
-                                  rg_index: val,
-                                  created_at: '',
-                                  rg_avatar_url: null,
-                                  rg_id: null,
-                                  rg_link: null,
-                                  effective_rating_cached: 1000,
-                                  hide_rating: false,
-                                  display_name: null,
-                                  linked_user_id: x.id,
-                                  matches_played: 0,
-                                },
-                              ]);
-                            }
-                          }}
-                        />
-                      </Box>
-                    </ListItem>
-                  ))}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-        )}
+            {/* SPIELER BEARBEITEN */}
+            <Card className="w-full py-1">
+              <CardContent className='px-1'>
+                <Collapsible >
+                  <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{`Spieler bearbeiten - ${players.length}`}
+                    <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                  <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
 
-        {/* SPIELER BEARBEITEN */}
-        <Accordion disableGutters>
-          <AccordionSummary expandIcon={<ArrowDropDown />}>
-            <Typography component="span">{`Spieler bearbeiten - ${players.length}`}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
-              <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'start', width: '100%' }}>
-                <Button
-                  onClick={() => {
-                    dialogs
-                      .open(SearchAndSelectUserDialog, { usersToFilter: players.map((x) => x.player) })
-                      .then((result) => {
-                        if (result) {
-                          supabase
-                            .schema('games')
-                            .from('players')
-                            .select('*')
-                            .in('player', result.map((x) => x.id))
-                            .then((res) => {
-                              if (res.data) {
-                                setPlayers((prev) => [
-                                  ...prev.filter((x) => !result.map((r) => r.id).includes(x.player)),
-                                  ...res.data.map((x) => ({
-                                    ...x,
-                                    name: result.find((y) => y.id === x.player)?.name,
-                                  })),
-                                ]);
+                    <div>
+                      <Button
+                        className={"w-full"}
+                        variant={"outline"}
+                        onClick={() => {
+                          dialogs
+                            .selectMultipleUser(players.map((x) => x.player))
+                            .then((result) => {
+                              if (result) {
+                                supabase
+                                  .schema('games')
+                                  .from('players')
+                                  .select('*')
+                                  .in('player', result.map((x) => x.id))
+                                  .then((res) => {
+                                    if (res.data) {
+                                      setPlayers((prev) => [
+                                        ...prev.filter((x) => !result.map((r) => r.id).includes(x.player)),
+                                        ...res.data.map((x) => ({
+                                          ...x,
+                                          name: result.find((y) => y.id === x.player)?.name,
+                                        })),
+                                      ]);
+                                    }
+                                  });
                               }
                             });
-                        }
-                      });
-                  }}
-                >
-                  Spieler hinzufügen
-                </Button>
-              </Box>
-              <Divider />
-              {players.map((x) => (
-                <ListItem
-                  key={x.player}
-                  disableGutters
-                  disablePadding
-                  divider
-                  secondaryAction={
-                    <IconButton onClick={() => setPlayers(players.filter((y) => y.player !== x.player))}>
-                      <Delete />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText primary={x.name} secondary={'Index: ' + x.rg_index} />
-                </ListItem>
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-        <Divider sx={{ my: 1 }} />
-
-        {/* RUNDEN MAP */}
-        {rounds.map((x, index) => (
-          <Accordion key={index} defaultExpanded={index === 0} disableGutters>
-            <AccordionSummary expandIcon={<ArrowDropDown />}>
-              <Typography component="span" fontWeight="bold">Runde {index + 1}</Typography>
-            </AccordionSummary>
-            <AccordionDetails sx={{ padding: 1 }}>
-
-              {/* EINSTELLUNGEN */}
-              <Accordion disableGutters>
-                <AccordionSummary expandIcon={<ArrowDropDown />}>
-                  <Typography component="span">Einstellungen</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                    <FormControl fullWidth>
-                      <Select
-                        fullWidth
-                        value={x.options.mode ?? 'balanced'}
-                        onChange={(e) => updateRoundOption(index, { mode: e.target.value as 'balanced' | 'random' })}
-                      >
-                        <MenuItem value={'balanced'}>Balanced</MenuItem>
-                        <MenuItem value={'random'}>Random</MenuItem>
-                      </Select>
-                      <FormHelperText sx={{ ml: 0 }}>Spielmodus (heterogen/homogen)</FormHelperText>
-                    </FormControl>
-                  </ListItem>
-                  <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                    <FormControl fullWidth>
-                      <Select
-                        fullWidth
-                        value={x.options.matchupMode ?? 'any'}
-                        onChange={(e) => updateRoundOption(index, { matchupMode: e.target.value as 'any' | 'separate' | 'mixed' })}
-                      >
-                        <MenuItem value={'any'}>Gemischt</MenuItem>
-                        <MenuItem value={'separate'}>Herren / Damen</MenuItem>
-                        <MenuItem value={'mixed'}>Mixed</MenuItem>
-                      </Select>
-                      <FormHelperText sx={{ ml: 0 }}>Teammodus</FormHelperText>
-                    </FormControl>
-                  </ListItem>
-                  {index > 0 && (
-                    <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                      <ListItemAvatar>
-                        <Checkbox
-                          sx={{ pl: 0 }}
-                          checked={x.options.benchFromLastMatchMustPlay ?? false}
-                          onChange={(e) => updateRoundOption(index, { benchFromLastMatchMustPlay: e.target.checked })}
-                        />
-                      </ListItemAvatar>
-                      <ListItemText primary={'Setze zuvor ausgesetzte Spieler ein.'} />
-                    </ListItem>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-
-              {/* FESTE TEAMS */}
-              <Accordion disableGutters>
-                <AccordionSummary expandIcon={<ArrowDropDown />}>
-                  <Typography component="span">Feste Teams</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {x.options.lockedTeams &&
-                      x.options.lockedTeams?.map(([player1, player2]) => (
-                        <Box
-                          key={player1.player + player2.player}
-                          sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}
-                        >
-                          <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {player1.name}
-                            </Typography>
-                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {player2.name}
-                            </Typography>
-                          </Box>
-                          <IconButton
-                            onClick={() => {
-                              updateRoundOption(index, {
-                                lockedTeams: (x.options.lockedTeams ?? []).filter(
-                                  (y) => y[0].player !== player1.player && y[1].player !== player2.player
-                                ),
-                              });
-                            }}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Box>
-                      ))}
-                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'end', width: '100%' }}>
-                      <Select
-                        size="small"
-                        value={preSelectedPlayer1?.player ?? 'none'}
-                        onChange={(e) => setPreSelectedPlayer1(players.find((y) => y.player === e.target.value) ?? null)}
-                      >
-                        {players
-                          .filter((y) => y.player !== preSelectedPlayer2?.player)
-                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
-                          .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
-                          ))}
-                        <MenuItem value={'none'}>Kein Nutzer</MenuItem>
-                      </Select>
-                      <Select
-                        size="small"
-                        value={preSelectedPlayer2?.player ?? 'none'}
-                        onChange={(e) => setPreSelectedPlayer2(players.find((y) => y.player === e.target.value) ?? null)}
-                      >
-                        {players
-                          .filter((y) => y.player !== preSelectedPlayer1?.player)
-                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
-                          .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
-                          ))}
-                        <MenuItem value={'none'}>Kein Nutzer</MenuItem>
-                      </Select>
-                      <IconButton
-                        onClick={() => {
-                          if (!preSelectedPlayer1 || !preSelectedPlayer2) return;
-                          updateRoundOption(index, {
-                            lockedTeams: [...(x.options.lockedTeams ?? []), [preSelectedPlayer1, preSelectedPlayer2]],
-                          });
-                          setPreSelectedPlayer1(null);
-                          setPreSelectedPlayer2(null);
                         }}
                       >
-                        <Save />
-                      </IconButton>
-                    </Box>
-                  </List>
-                </AccordionDetails>
-              </Accordion>
+                        <Plus />
+                        Spieler hinzufügen
+                      </Button>
 
-              {/* FESTE SPIELER */}
-              <Accordion disableGutters>
-                <AccordionSummary expandIcon={<ArrowDropDown />}>
-                  <Typography component="span">Feste Spieler (Must Play)</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {x.options.mustPlay &&
-                      x.options.mustPlay?.map((player) => (
-                        <Box key={player.player} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {player.name}
-                            </Typography>
-                          </Box>
-                          <IconButton
-                            onClick={() => {
-                              updateRoundOption(index, {
-                                mustPlay: (x.options.mustPlay ?? []).filter((y) => y.player !== player.player),
-                              });
-                            }}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Box>
+                      {players.map((x) => (
+                        <Item key={x.player}>
+                          <ItemContent className='flex w-full flex-row justify-between'>
+                            <ItemTitle>{x.name}</ItemTitle>
+                            <ItemDescription>{'Index: ' + x.rg_index}</ItemDescription>
+                          </ItemContent>
+                          <ItemActions>
+                            <Button variant={"ghost"} size={"icon-lg"}
+                              onClick={() => setPlayers(players.filter((y) => y.player !== x.player))}>
+                              <Trash2 />
+                            </Button>
+                          </ItemActions>
+                        </Item>
                       ))}
-                    <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'end', width: '100%' }}>
-                      <Select
-                        size="small"
-                        value={preMustPlay?.player ?? 'none'}
-                        onChange={(e) => setPreMustPlay(players.find((y) => y.player === e.target.value) ?? null)}
-                      >
-                        {players
-                          .filter((y) => !x.options.mustPlay?.includes(y))
-                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
-                          .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
-                          ))}
-                        <MenuItem value={'none'}>Kein Nutzer</MenuItem>
-                      </Select>
-                      <IconButton
-                        onClick={() => {
-                          if (!preMustPlay) return;
-                          updateRoundOption(index, {
-                            mustPlay: [...(x.options.mustPlay ?? []), preMustPlay]
-                          });
-                          setPreMustPlay(null);
-                        }}
-                      >
-                        <Save />
-                      </IconButton>
-                    </Box>
-                  </List>
-                </AccordionDetails>
-              </Accordion>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </CardContent>
+            </Card>
 
-              {/* ACTION BUTTONS (GENERATE / SAVE) */}
-              <Accordion expanded={false} disableGutters>
-                <AccordionSummary>
-                  <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSaveMatches(index);
-                      }}
-                      disabled={x.game.matches.length === 0}
-                    >
-                      Matches speichern
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleGenerate(index);
-                      }}
-                    >
-                      Generieren
-                    </Button>
-                  </Box>
-                </AccordionSummary>
-              </Accordion>
+            <Separator />
 
-              {/* MATCHES ANZEIGE */}
-              {x.game.matches.map((matchData, matchIndex) => (
-                <Accordion disableGutters key={matchIndex}>
-                  <AccordionSummary expandIcon={<ArrowDropDown />}>
-                    <ListItem disableGutters disablePadding sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                      <ListItemAvatar>
-                        <Checkbox
-                          checked={x.options.fixedMatches?.includes(matchData) ?? false}
-                          onChange={(e) => {
+            {/* RUNDEN MAP */}
+            {rounds.map((x, index) => (
+              <Card key={index} className="w-full py-1">
+                <CardContent className='px-1'>
+                  <Collapsible >
+                    <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Runde {index + 1}
+                      <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                    <CollapsibleContent className="flex flex-col w-full gap-2 pt-2">
+
+                      <Collapsible >
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Einstellungen
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          <Field>
+                            <FieldLabel htmlFor='gameMode'>
+                              Spielmodus (heterogen/homogen)
+                            </FieldLabel>
+                            <Select id='gameMode'
+                              value={x.options.mode ?? 'balanced'}
+                              items={{ random: "Zufällig", balanced: "Ausgeglichen" }}
+                              onValueChange={(val) => updateRoundOption(index, { mode: val as 'balanced' | 'random' })}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem key={'balanced'} value={'balanced'}>
+                                  Ausgeglichen
+                                </SelectItem>
+                                <SelectItem key={'random'} value={'random'}>
+                                  Zufällig
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </Field>
+
+                          <Field className='w-full'>
+                            <FieldLabel htmlFor='gameMode'>
+                              Teammodus
+                            </FieldLabel>
+                            <Select id='gameMode'
+                              value={x.options.matchupMode ?? 'any'}
+                              items={{ any: "Gemischt", separate: "Herren / Damen", mixed: "Mixed" }}
+                              onValueChange={(val) => updateRoundOption(index, { matchupMode: val as 'any' | 'separate' | 'mixed' })}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem key={'any'} value={'any'}>
+                                  Gemischt
+                                </SelectItem>
+                                <SelectItem key={'separate'} value={'separate'}>
+                                  Herren / Damen
+                                </SelectItem>
+                                <SelectItem key={'mixed'} value={'mixed'}>
+                                  Mixed
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </Field>
+
+                          {
+                            index > 0 && <Field orientation={"horizontal"}>
+                              <FieldLabel>Setze zuvor ausgesetzte Spieler ein.</FieldLabel>
+                              <Switch
+                                checked={x.options.benchFromLastMatchMustPlay ?? false}
+                                onCheckedChange={(val) => updateRoundOption(index, { benchFromLastMatchMustPlay: val })} />
+                            </Field>
+                          }
+
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Collapsible >
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Feste Teams ({x.options.lockedTeams?.length ?? 0})
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          {x.options.lockedTeams &&
+                            x.options.lockedTeams?.map(([player1, player2]) => (
+                              <div
+                                key={player1.player + player2.player}
+                                className='flex flex-row justify-between w-full'>
+                                <div className='flex flex-col overflow-hidden w-full'>
+                                  <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                    {player1.name}
+                                  </div>
+                                  <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                    {player2.name}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant={"outline"}
+                                  size={"icon-lg"}
+                                  onClick={() => {
+                                    updateRoundOption(index, {
+                                      lockedTeams: (x.options.lockedTeams ?? []).filter(
+                                        (y) => y[0].player !== player1.player && y[1].player !== player2.player
+                                      ),
+                                    });
+                                  }}
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                            ))
+                          }
+                          <div className='flex flex-row w-full gap-2'>
+                            <Field className='flex-1'>
+                              <FieldLabel>Spieler 1</FieldLabel>
+                              <Select
+                                value={preSelectedPlayer1?.player ?? 'none'}
+                                items={players
+                                  .filter((y) => y.player !== preSelectedPlayer2?.player)
+                                  .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                  .reduce((a, c) => a = ({ ...a, [c.player]: [c.name] }), {})}
+                                onValueChange={(val) => setPreSelectedPlayer1(players.find((y) => y.player === val) ?? null)}>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {
+                                    players
+                                      .filter((y) => y.player !== preSelectedPlayer2?.player)
+                                      .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                      .map((x) => (
+                                        <SelectItem key={x.player} value={x.player}>{x.name}</SelectItem>
+                                      ))
+                                  }
+                                </SelectContent>
+                              </Select>
+
+                            </Field>
+                            <Field className='flex-1'>
+                              <FieldLabel>Spieler 2</FieldLabel>
+                              <Select
+                                value={preSelectedPlayer2?.player ?? 'none'}
+                                items={players
+                                  .filter((y) => y.player !== preSelectedPlayer1?.player)
+                                  .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                  .reduce((a, c) => a = ({ ...a, [c.player]: [c.name] }), {})}
+                                onValueChange={(val) => setPreSelectedPlayer2(players.find((y) => y.player === val) ?? null)}>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {
+                                    players
+                                      .filter((y) => y.player !== preSelectedPlayer1?.player)
+                                      .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                      .map((x) => (
+                                        <SelectItem key={x.player} value={x.player}>{x.name}</SelectItem>
+                                      ))
+                                  }
+                                </SelectContent>
+                              </Select>
+                            </Field>
+                            <Field className='w-12'>
+                              <FieldLabel className='invisible'>S</FieldLabel>
+                              <Button variant={"outline"} size={"icon-lg"} onClick={() => {
+                                if (!preSelectedPlayer1 || !preSelectedPlayer2) return;
+                                updateRoundOption(index, {
+                                  lockedTeams: [...(x.options.lockedTeams ?? []), [preSelectedPlayer1, preSelectedPlayer2]],
+                                });
+                                setPreSelectedPlayer1(null);
+                                setPreSelectedPlayer2(null);
+                              }}>
+                                <Save />
+                              </Button>
+                            </Field>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Collapsible >
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Feste Spieler ({x.options.lockedTeams?.length ?? 0})
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+
+                          {x.options.mustPlay &&
+                            x.options.mustPlay?.map((player) => (
+                              <div key={player.player}
+                                className='flex flex-row justify-between w-full'>
+                                <div
+                                  className='flex flex-col overflow-hidden flex-grow'>
+                                  <div className='truncate'>
+                                    {player.name}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant={"outline"}
+                                  size={"icon-lg"}
+                                  onClick={() => {
+                                    updateRoundOption(index, {
+                                      mustPlay: (x.options.mustPlay ?? []).filter((y) => y.player !== player.player),
+                                    });
+                                  }}
+                                >
+                                  <Trash2 />
+                                </Button>
+                              </div>
+                            ))}
+
+                          <div className='flex flex-row w-full gap-2'>
+                            <Field className='flex-1'>
+                              <FieldLabel>Spieler</FieldLabel>
+                              <Select
+                                value={preMustPlay?.player ?? 'none'}
+                                items={players
+                                  .filter((y) => !x.options.mustPlay?.includes(y))
+                                  .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                  .reduce((a, c) => a = ({ ...a, [c.player]: [c.name] }), {})}
+                                onValueChange={(val) => setPreMustPlay(players.find((y) => y.player === val) ?? null)}>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {
+                                    players
+                                      .filter((y) => !x.options.mustPlay?.includes(y))
+                                      .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
+                                      .map((x) => (
+                                        <SelectItem key={x.player} value={x.player}>{x.name}</SelectItem>
+                                      ))
+                                  }
+                                </SelectContent>
+                              </Select>
+
+                            </Field>
+                            <Field className='w-12'>
+                              <FieldLabel className='invisible'>S</FieldLabel>
+                              <Button variant={"outline"} size={"icon-lg"} onClick={() => {
+                                if (!preMustPlay) return;
+                                updateRoundOption(index, {
+                                  mustPlay: [...(x.options.mustPlay ?? []), preMustPlay]
+                                });
+                                setPreMustPlay(null);
+                              }}>
+                                <Save />
+                              </Button>
+                            </Field>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Separator />
+
+                      <div className='flex flex-row w-full gap-2'>
+                        <Button
+                          className={"flex-1"}
+                          variant="outline"
+                          onClick={(e) => {
                             e.stopPropagation();
-                            if (e.target.checked) {
-                              updateRoundOption(index, { fixedMatches: [...(x.options.fixedMatches ?? []), matchData] });
-                            } else {
-                              updateRoundOption(index, { fixedMatches: x.options.fixedMatches?.filter((m) => m !== matchData) });
-                            }
+                            handleSaveMatches(index);
                           }}
-                        />
-                      </ListItemAvatar>
-                      <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-                          <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {matchData[0].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
-                          </Typography>
-                          <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {matchData[1].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </ListItem>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
-                      <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {`${matchData[0].players[0].name} (${matchData[0].players[0].rg_id})`}
-                        </Typography>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {`${matchData[0].players[1].name} (${matchData[0].players[1].rg_id})`}
-                        </Typography>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
-                          Team Index: {matchData[0].strength}
-                        </Typography>
-                      </Stack>
-                      <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {`${matchData[1].players[0].name} (${matchData[1].players[0].rg_id})`}
-                        </Typography>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {`${matchData[1].players[1].name} (${matchData[1].players[1].rg_id})`}
-                        </Typography>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
-                          Team Index: {matchData[1].strength}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
+                          disabled={x.game.matches.length === 0}
+                        >
+                          <Save />
+                          Matches speichern
+                        </Button>
 
-              {/* BENCH (AUSSETZER) ANZEIGE */}
-              {x.game.bench.length > 0 && (
-                <Accordion disableGutters>
-                  <AccordionSummary expandIcon={<ArrowDropDown />}>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', color: 'error.main' }}>
+                        <Button
+                          className={"flex-1"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGenerate(index);
+                          }}
+                        >
+                          <RefreshCcw />
+                          Generieren
+                        </Button>
+                      </div>
+
+                      <Separator />
+
+                      <Collapsible >
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Spiele ({x.game.matches.length})
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          {
+                            x.game.matches.map((matchData, matchIndex) => (
+                              <Item key={matchIndex} className="w-full" variant={"outline"}>
+                                <ItemContent className=''>
+                                  <div className='flex flex-col overflow-hidden w-full'>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {matchData[0].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
+                                    </div>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {matchData[1].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
+                                    </div>
+                                  </div>
+                                </ItemContent>
+                                <ItemActions>
+                                  <Switch
+                                    checked={x.options.fixedMatches?.includes(matchData) ?? false}
+                                    onCheckedChange={(val) => {
+                                      if (val) {
+                                        updateRoundOption(index, { fixedMatches: [...(x.options.fixedMatches ?? []), matchData] });
+                                      } else {
+                                        updateRoundOption(index, { fixedMatches: x.options.fixedMatches?.filter((m) => m !== matchData) });
+                                      }
+                                    }}
+                                  />
+                                </ItemActions>
+                              </Item>
+                            ))
+                          }
+
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      <Collapsible className={cn(x.game.bench.length < 1 && "hidden")}>
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
                           Aussetzer ({x.game.bench.length})
-                        </Typography>
-                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary' }}>
-                          {x.game.bench.map((p) => p.name?.split(' ')[0]).join(', ')}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    {x.game.bench.map((p) => (
-                      <ListItem key={p.player} dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                        <ListItemText primary={p.name} secondary={`Index: ${p.rg_index}`} />
-                      </ListItem>
-                    ))}
-                  </AccordionDetails>
-                </Accordion>
-              )}
-            </AccordionDetails>
-          </Accordion>
-        ))}
+                          <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
+                        <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
+                          {
+                            x.game.bench.map((benchData, benchIndex) => (
+                              <Item key={benchIndex} className="w-full" variant={"outline"}>
+                                <ItemContent className=''>
+                                  <div className='flex flex-col overflow-hidden w-full'>
+                                    <div className='whitespace-nowrap overflow-hidden text-ellipsis'>
+                                      {benchData.name?.split(' ')[0] ?? benchData.rg_id}
+                                    </div>
+                                  </div>
+                                </ItemContent>
+                              </Item>
+                            ))
+                          }
 
-        {/* NEUE RUNDE BUTTON */}
-        <ListItem
-          sx={{ '&.MuiListItem-root': { paddingLeft: 0, marginTop: 2 } }}
-          secondaryAction={
-            <Button
-              variant="outlined"
-              onClick={() => {
-                if (players.length !== payload.users.length) {
-                  notifications.show('Einige Spieler haben einen ungültigen Index. Bitte passe diese an.', { severity: 'error' });
-                  return;
-                }
-                const options: MatchmakingOptions = {
-                  mode: 'balanced',
-                  matchupMode: 'any',
-                  players,
-                };
-                // Optionale Autogenerierung beim Erstellen der Runde:
-                // const result = generateMatches(options); 
-                setRounds([...rounds, { game: { matches: [], bench: [] }, options }]);
-              }}
-            >
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+            ))
+            }
+
+            {/* NEUE RUNDE BUTTON */}
+            <Button onClick={() => {
+              if (players.length !== payload.users.length) {
+                toast.error('Einige Spieler haben einen ungültigen Index. Bitte passe diese an.');
+                return;
+              }
+              const options: MatchmakingOptions = {
+                mode: 'balanced',
+                matchupMode: 'any',
+                players,
+              };
+              // Optionale Autogenerierung beim Erstellen der Runde:
+              const result = generateMatches(options);
+              setRounds([...rounds, { game: result, options }]);
+            }}>
               Neue Runde hinzufügen
             </Button>
-          }
-        />
-      </List>
-    </>
-  );
-};
-
-export const ConstellationCreationDialog = ({
-  payload,
-  open,
-  onClose,
-}: DialogProps<ConstellationCreationDialogProps, null>) => {
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <NotificationsProvider>
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
-          <Content onClose={onClose} open={open} payload={payload} />
-        </LocalizationProvider>
-      </NotificationsProvider>
-    </Dialog>
+          </div >
+        </DialogBody >
+      </DialogContent >
+    </Dialog >
   );
 };

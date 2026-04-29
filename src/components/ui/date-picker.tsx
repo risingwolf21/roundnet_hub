@@ -23,7 +23,7 @@ type Props = {
   className?: string;
 }
 
-export const DatePickerShadcn = ({ value, onValueChange, placeholder, dateFormat, id, name, className }: Props) => {
+export const DatePicker = ({ value, onValueChange, placeholder, dateFormat, id, name, className }: Props) => {
 
   return (
     <Popover>

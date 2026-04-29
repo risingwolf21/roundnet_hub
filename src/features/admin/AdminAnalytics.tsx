@@ -1,70 +1,62 @@
-import Layout from "@/components/layout/Layout"
-import { supabase } from "@/lib/supabase"
 import { useAdminAnalytics } from "@/tanstack/admin"
-import Close from "@mui/icons-material/Close"
-import ErrorOutline from '@mui/icons-material/ErrorOutline'
-import ExpandMoreOutlined from "@mui/icons-material/ExpandMoreOutlined"
-import PlayArrow from "@mui/icons-material/PlayArrow"
-import Autocomplete from "@mui/material/Autocomplete"
-import Box from "@mui/material/Box"
-import Button from "@mui/material/Button"
-import Dialog from "@mui/material/Dialog"
-import DialogContent from "@mui/material/DialogContent"
-import DialogTitle from "@mui/material/DialogTitle"
-import IconButton from "@mui/material/IconButton"
-import List from "@mui/material/List"
-import ListItemButton from "@mui/material/ListItemButton"
-import ListItemText from "@mui/material/ListItemText"
-import TextField from "@mui/material/TextField"
-import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
-import Stack from "@mui/system/Stack"
-import { DataGrid } from "@mui/x-data-grid/DataGrid"
-import { GridColDef } from "@mui/x-data-grid/models"
-import { DatePicker } from "@mui/x-date-pickers/DatePicker"
-import { useQuery } from "@tanstack/react-query"
-import { DialogProps, useDialogs } from "@toolpad/core"
+
 import { add, format } from "date-fns"
 import { useState } from "react"
 
-import { NoRowsOverlay } from "@/utils/mui-x-data-grid.utils"
-import { Paper } from '@mui/material'
+import { AppBar } from "@/components/ui/appbar"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { DataTable } from "@/components/ui/data-table"
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
+import { DialogProps, useDialogs } from "@/contexts/DialogsProvider"
+import { supabase } from "@/lib/supabase"
+import { useQuery } from "@tanstack/react-query"
+import { ColumnDef } from "@tanstack/react-table"
+import { ChevronDown } from "lucide-react"
+import { useGrants } from "../auth/GrantsContext"
 
-const ErrorDisplay = ({ error, onRetry }: { error: any, onRetry: () => void }) => (
-  <Stack
-    alignItems="center"
-    justifyContent="center"
-    sx={{
-      height: '100%',
-      width: '100%',
-      bgcolor: 'background.paper',
-      p: 3,
-      textAlign: 'center'
-    }}
-  >
-    <ErrorOutline color="error" sx={{ fontSize: 60, mb: 2, opacity: 0.8 }} />
+// const ErrorDisplay = ({ error, onRetry }: { error: any, onRetry: () => void }) => (
+//   <Stack
+//     alignItems="center"
+//     justifyContent="center"
+//     sx={{
+//       height: '100%',
+//       width: '100%',
+//       bgcolor: 'background.paper',
+//       p: 3,
+//       textAlign: 'center'
+//     }}
+//   >
+//     <ErrorOutline color="error" sx={{ fontSize: 60, mb: 2, opacity: 0.8 }} />
 
-    <Typography variant="h6" gutterBottom color="error">
-      Daten konnten nicht geladen werden
-    </Typography>
+//     <Typography variant="h6" gutterBottom color="error">
+//       Daten konnten nicht geladen werden
+//     </Typography>
 
-    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff0f0', mb: 3, maxWidth: '600px', width: '100%' }}>
-      <Typography variant="body2" fontFamily="monospace" sx={{ wordBreak: 'break-all', color: '#d32f2f' }}>
-        {error?.message || JSON.stringify(error)}
-      </Typography>
-      {error?.details && (
-        <Typography variant="caption" display="block" sx={{ mt: 1, color: '#d32f2f' }}>
-          Details: {error.details}
-        </Typography>
-      )}
-      {error?.hint && (
-        <Typography variant="caption" display="block" sx={{ mt: 1, color: '#d32f2f' }}>
-          Hint: {error.hint}
-        </Typography>
-      )}
-    </Paper>
-  </Stack>
-);
+//     <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff0f0', mb: 3, maxWidth: '600px', width: '100%' }}>
+//       <Typography variant="body2" fontFamily="monospace" sx={{ wordBreak: 'break-all', color: '#d32f2f' }}>
+//         {error?.message || JSON.stringify(error)}
+//       </Typography>
+//       {error?.details && (
+//         <Typography variant="caption" display="block" sx={{ mt: 1, color: '#d32f2f' }}>
+//           Details: {error.details}
+//         </Typography>
+//       )}
+//       {error?.hint && (
+//         <Typography variant="caption" display="block" sx={{ mt: 1, color: '#d32f2f' }}>
+//           Hint: {error.hint}
+//         </Typography>
+//       )}
+//     </Paper>
+//   </Stack>
+// );
 
 export type InputType =
   | 'date-range'      // Rendert Von/Bis Picker
@@ -103,9 +95,6 @@ const REPORTS: AnalyticsReportDef[] = [
         label: "Challenge auswählen",
         type: "challenge-select",
         rpcParamMapping: { value: "p_challenge_id" },
-        defaultValue: {
-          p_challenge_id: null
-        }
       },
       {
         id: "range",
@@ -150,38 +139,96 @@ const REPORTS: AnalyticsReportDef[] = [
 ]
 
 const AsyncSelect = ({
+  id,
   table,
   label,
   value,
   onChange,
   labelField = 'name'
 }: {
+  id: string,
   table: string,
   label: string,
   value: any,
   onChange: (val: any) => void,
   labelField?: string
 }) => {
-  const { data, isLoading } = useQuery({
+  const { data = [], isLoading } = useQuery<{ id: string, [labelField]: string }[]>({
     queryKey: ['table_select', table],
     queryFn: async () => {
-      const { data } = await supabase.from(table as any).select(`id, ${labelField}`).limit(100);
-      return data || [];
+      const { data, error } = await supabase.from(table as any).select(`id, ${labelField}`).limit(100);
+      if (error) throw error
+      return (data as any) || [];
     }
   });
 
-  return (
-    <Autocomplete
-      options={data || []}
-      loading={isLoading}
-      getOptionLabel={(option: any) => option[labelField] || ''}
-      value={data?.find((x: any) => x.id === value) || null}
-      onChange={(_, newValue: any) => onChange(newValue?.id || null)}
-      renderInput={(params) => <TextField {...params} label={label} size="small" />}
-      isOptionEqualToValue={(option, val) => option.id === val.id}
-      fullWidth
-    />
-  );
+  return <Select
+    id={id}
+    value={value}
+    items={[
+      ...data.map(x => ({ value: x.id, label: x[labelField] })),
+      { label: label, value: null }
+    ]}
+    onValueChange={(value) => onChange(value)}>
+    <SelectTrigger className={"w-full max-w-72"}>
+      <SelectValue placeholder={isLoading ? <Spinner /> : label} />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectGroup>
+        {
+          data.map((x) => (
+            <SelectItem
+              className={"text-base"}
+              key={x.id}
+              value={x.id.toString()}>
+              {x[labelField]}
+            </SelectItem>
+          ))
+        }
+      </SelectGroup>
+    </SelectContent>
+  </Select>
+
+  // return <Dialog open={open} onOpenChange={setOpen}>
+  //   <DialogTrigger render={<Button variant={"outline"}>
+  //     {
+  //       isLoading ? <Spinner /> : data?.find((x: any) => x.id === value) || label
+  //     }
+  //     <ChevronDown />
+  //   </Button>} />
+  //   <DialogContent variant={"drawer"}>
+  //     <DialogHeader className={"px-4 py-2"}>
+  //       <DialogTitle>Auswählen</DialogTitle>
+  //     </DialogHeader>
+  //     <div className="flex flex-col gap-2 p-4">
+  //       {
+  //         data?.map((x: any) => (
+  //           <Item variant={"outline"} key={x[labelField]} onClick={() => {
+  //             onChange(data?.find((x: any) => x.id === value) || null);
+  //             setOpen(false);
+  //           }}>
+  //             <ItemContent>
+  //               <ItemTitle>{x[labelField]}</ItemTitle>
+  //             </ItemContent>
+  //           </Item>
+  //         ))
+  //       }
+  //     </div>
+  //   </DialogContent>
+  // </Dialog>
+
+  // return (
+  //   <Autocomplete
+  //     options={data || []}
+  //     loading={isLoading}
+  //     getOptionLabel={(option: any) => option[labelField] || ''}
+  //     value={data?.find((x: any) => x.id === value) || null}
+  //     onChange={(_, newValue: any) => onChange(newValue?.id || null)}
+  //     renderInput={(params) => <TextField {...params} label={label} size="small" />}
+  //     isOptionEqualToValue={(option, val) => option.id === val.id}
+  //     fullWidth
+  //   />
+  // );
 };
 
 const getDefaults = (report: AnalyticsReportDef) => {
@@ -195,7 +242,7 @@ const getDefaults = (report: AnalyticsReportDef) => {
 
 const AdminAnalytics = () => {
   const dialogs = useDialogs();
-
+  const { user } = useGrants();
   const [selectedReport, setSelectedReport] = useState<AnalyticsReportDef>(REPORTS[0]);
 
   const [formValues, setFormValues] = useState<Record<string, any>>(() => getDefaults(REPORTS[0]));
@@ -212,9 +259,8 @@ const AdminAnalytics = () => {
     const result = await dialogs.open(SelectRpcDialog, { reports: REPORTS });
 
     if (result) {
-      // Hier passiert die Magie: Alles in einem Rutsch aktualisieren
       setSelectedReport(result);
-      setFormValues(getDefaults(result)); // <-- Direkt hier berechnen
+      setFormValues(getDefaults(result));
       setQueryParams(null);
     }
   };
@@ -247,202 +293,220 @@ const AdminAnalytics = () => {
     setFormValues(prev => ({ ...prev, [id]: val }));
   };
 
-  return <Layout>
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <Box sx={{ pb: 2, flex: '0 0 auto' }}>
-        <ListItemButton
-          onClick={handleSelectReport}
-        >
-          <ListItemText
-            primary={selectedReport.title}
-            secondary={selectedReport.description}
-            slotProps={{ primary: { fontWeight: 'bold' } }}
-          />
-          <ExpandMoreOutlined />
-        </ListItemButton>
+  return <div>
+    <AppBar
+      title="Admin Analysen"
+      user={user}
+    />
+    <main className='flex-1 size-full pb-safe-bottom flex-col flex p-2 gap-2'>
+      <div className="flex flex-row justify-center">
+        <Item variant={"outline"} onClick={handleSelectReport}>
+          <ItemContent>
+            <ItemTitle>{selectedReport.title}</ItemTitle>
+            <ItemDescription>{selectedReport.description}</ItemDescription>
+          </ItemContent>
+          <ItemActions>
+            <ChevronDown />
+          </ItemActions>
+        </Item>
+      </div>
 
-        {/* Dynamic Inputs Rendering */}
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 1 }}>
+      <Separator />
 
+      <Item variant={"outline"}>
+        <ItemContent className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 items-end w-full">
           {selectedReport.inputs.map((input) => {
             const val = formValues[input.id];
 
             if (input.type === 'date-range') {
               const currentVal = val || { from: null, to: null };
               return (
-                <Stack key={input.id} direction="row" spacing={1} sx={{ px: 1 }}>
-                  <DatePicker
-                    label="Von"
-                    value={currentVal.from}
-                    onChange={(v) => updateFormValue(input.id, { ...currentVal, from: v })}
-                    format="dd.MM.yyyy"
-                    slotProps={{ textField: { size: 'small' } }}
-                  />
-                  <DatePicker
-                    label="Bis"
-                    value={currentVal.to}
-                    onChange={(v) => updateFormValue(input.id, { ...currentVal, to: v })}
-                    format="dd.MM.yyyy"
-                    slotProps={{ textField: { size: 'small' } }}
-                  />
-                </Stack>
+                <div key={input.id} className="grid grid-cols-2 gap-2">
+                  <Field className=" w-44">
+                    <FieldLabel htmlFor="date-from">Von</FieldLabel>
+                    <Popover>
+                      <PopoverTrigger render={
+                        <Button variant="outline" id="date-from" className="justify-start font-normal">
+                          {currentVal.from ? format(currentVal.from, "PPP") : <span>Pick a date</span>}
+                        </Button>} />
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={currentVal.from}
+                          onSelect={(d) => updateFormValue(input.id, { ...currentVal, from: d })}
+                          defaultMonth={new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </Field>
+
+                  <Field className="w-44">
+                    <FieldLabel htmlFor="date-to">Bis</FieldLabel>
+                    <Popover>
+                      <PopoverTrigger render={
+                        <Button variant="outline" id="date-to" className="justify-start font-normal">
+                          {currentVal.to ? format(currentVal.to, "PPP") : <span>Pick a date</span>}
+                        </Button>} />
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={currentVal.to}
+                          onSelect={(d) => updateFormValue(input.id, { ...currentVal, to: d })}
+                          defaultMonth={new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </Field>
+                </div>
               );
             }
 
             if (input.type === 'challenge-select') {
               return (
-                <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
+                <Field key={input.id} className="w-full">
+                  <FieldLabel htmlFor="challenge-select">{input.label}</FieldLabel>
                   <AsyncSelect
+                    id="challenge-select"
                     table="challenge"
                     label={input.label}
                     value={val}
                     onChange={(newVal) => updateFormValue(input.id, newVal)}
                   />
-                </Box>
+                </Field>
               );
             }
 
             if (input.type === 'user-select') {
               return (
-                <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
+                <Field key={input.id} className="w-full">
+                  <FieldLabel htmlFor="user-select">{input.label}</FieldLabel>
                   <AsyncSelect
-                    table="user" // oder 'profiles' je nach Schema
+                    id="user-select"
+                    table="user"
                     label={input.label}
                     value={val}
                     labelField="displayName"
                     onChange={(newVal) => updateFormValue(input.id, newVal)}
                   />
-                </Box>
-              );
+                </Field>
+              )
             }
 
             if (input.type === 'number') {
               return (
-                <TextField
-                  key={input.id}
-                  label={input.label}
-                  type="number"
-                  size="small"
-                  value={val || ''}
-                  onChange={(e) => updateFormValue(input.id, Number(e.target.value))}
-                />
+                <Field key={input.id} className="w-full">
+                  <FieldLabel htmlFor={`number-${input.id}`}>{input.label}</FieldLabel>
+                  <Input
+                    id={`number-${input.id}`}
+                    placeholder={input.label}
+                    type="number"
+                    value={val || ''}
+                    onChange={(e) => updateFormValue(input.id, Number(e.target.value))}
+                  />
+                </Field>
               );
             }
 
             return null;
           })}
 
-          <Box sx={{ justifyContent: "center", width: "100%", display: "flex" }}>
-            <Button
-              variant="contained"
-              startIcon={<PlayArrow />}
-              onClick={handleRunQuery}
-              disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
-              size="small"
-            >
-              Abrufen
-            </Button>
-          </Box>
+          <Button
+            className="w-full sm:w-auto"
+            onClick={handleRunQuery}
+            disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
+          >
+            Abrufen
+          </Button>
+        </ItemContent>
+      </Item>
 
-        </Stack>
-      </Box>
+      <DataTable
+        columns={data && data.length > 0
+          ? Object.keys(data[0]).map(field => ({ accessorKey: field, header: field } as ColumnDef<any>))
+          : []
+        }
+        data={data} />
+    </main>
+  </div >
 
-      <Box sx={{ flex: 1 }}>
-        {isError ? (
-          <ErrorDisplay error={error} onRetry={refetch} />
-        ) : (<DataGrid
-          rows={isError ? [] : data}
-          rowCount={data.length}
-          columns={data && data.length > 0
-            ? Object.keys(data[0]).map(field => ({ field, headerName: field, flex: 1, minWidth: 150 } as GridColDef))
-            : [{ field: 'noData', headerName: 'Keine Daten', flex: 1 }]
-          }
-          loading={isLoading}
-          slots={{
-            noRowsOverlay: NoRowsOverlay
-          }}
-          getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
-          disableRowSelectionOnClick
-          sx={{
-            '--DataGrid-overlayHeight': '300px',
-            mb: 'min(56px,env(safe-area-inset-bottom))',
-            maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
-            height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
-            '& .MuiDataGrid-virtualScroller': {
-              minHeight: 0,
-              overflow: 'auto',
-              overscrollBehavior: 'none',
-            },
-          }}
-        />
-        )}
-      </Box>
-    </Box>
-  </Layout>
+  //         {/* Dynamic Inputs Rendering */}
+  //         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 1 }}>
+
+
+
+  //           <Box sx={{ justifyContent: "center", width: "100%", display: "flex" }}>
+  //             <Button
+  //               variant="contained"
+  //               startIcon={<PlayArrow />}
+  //               onClick={handleRunQuery}
+  //               disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
+  //               size="small"
+  //             >
+  //               Abrufen
+  //             </Button>
+  //           </Box>
+
+  //         </Stack>
+  //       </Box>
+
+  //       <Box sx={{ flex: 1 }}>
+  //         {isError ? (
+  //           <ErrorDisplay error={error} onRetry={refetch} />
+  //         ) : (<DataGrid
+  //           rows={isError ? [] : data}
+  //           rowCount={data.length}
+  //           columns={data && data.length > 0
+  //             ? Object.keys(data[0]).map(field => ({ field, headerName: field, flex: 1, minWidth: 150 } as GridColDef))
+  //             : [{ field: 'noData', headerName: 'Keine Daten', flex: 1 }]
+  //           }
+  //           loading={isLoading}
+  //           slots={{
+  //             noRowsOverlay: NoRowsOverlay
+  //           }}
+  //           getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
+  //           disableRowSelectionOnClick
+  //           sx={{
+  //             '--DataGrid-overlayHeight': '300px',
+  //             mb: 'min(56px,env(safe-area-inset-bottom))',
+  //             maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+  //             height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+  //             '& .MuiDataGrid-virtualScroller': {
+  //               minHeight: 0,
+  //               overflow: 'auto',
+  //               overscrollBehavior: 'none',
+  //             },
+  //           }}
+  //         />
+  //         )}
+  //       </Box>
+  //     </Box>
+  //   </Layout>
+  // }
 }
 
 const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: AnalyticsReportDef[] }, AnalyticsReportDef | null>) => {
   return (
-    <Dialog
-      open={open}
-      onClose={() => onClose(null)}
-      scroll={'paper'}
-      sx={{
-        '.MuiDialog-container > .MuiPaper-root': {
-          margin: 0,
-          maxHeight: '75vh',
-          minHeight: `40vh`,
-          width: '100%',
-          borderTopLeftRadius: 16,
-          borderTopRightRadius: 16,
-          borderBottomRightRadius: 0,
-          borderBottomLeftRadius: 0,
-        },
-        '.MuiDialog-container': {
-          position: 'absolute',
-          m: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          alignItems: 'end',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        },
-      }}
-    >
-      <DialogTitle sx={{ p: 0 }}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="close drawer"
-            onClick={() => onClose(null)}
-            edge="start"
-            sx={{ mr: 2 }}
-          >
-            <Close />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Funktion auswählen
-          </Typography>
-        </Toolbar>
-      </DialogTitle>
-      <DialogContent sx={{ p: 0 }}>
-        <List>
-          {
-            payload.reports.map((x) => <ListItemButton
-              divider
-              key={x.rpc}
-              onClick={() => {
-                onClose(x);
-              }}
-            >
-              <ListItemText primary={x.title} secondary={x.description} />
-            </ListItemButton>)
-          }
-        </List>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent variant={"drawer"}>
+        <DialogHeader className="px-4">
+          <DialogTitle>Funktion auswählen</DialogTitle>
+        </DialogHeader>
+        <DialogBody>
+          <div className="flex flex-col gap-2">
+            {
+              payload.reports.map(x => (<Item key={x.rpc} variant={"outline"} onClick={() => onClose(x)}>
+                <ItemContent>
+                  <ItemTitle>{x.title}</ItemTitle>
+                  <ItemDescription>{x.description}</ItemDescription>
+                </ItemContent>
+              </Item>))
+            }
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );
+
 };
 
 export default AdminAnalytics;

@@ -1,7 +1,7 @@
-import SearchAndSelectGroupDialogShadcn from '@/components/dialogs/SearchAndSelectGroupDialog.shadcn';
-import SearchAndSelectUserDialogShadcn from '@/components/dialogs/SearchAndSelectUsersDialog.shadcn';
-import { SelectSingleOptionDialog } from '@/components/dialogs/SelectSingleOptionDialog.shadcn';
-import { ProfileDialogShadcn } from '@/components/ProfileDialog.shadcn';
+import SearchAndSelectGroupDialog from '@/components/dialogs/SearchAndSelectGroupDialog';
+import SearchAndSelectUserDialog from '@/components/dialogs/SearchAndSelectUsersDialog';
+import { SelectSingleOptionDialog } from '@/components/dialogs/SelectSingleOptionDialog';
+import { ProfileDialog } from '@/components/ProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import React, { createContext, use, useCallback, useState } from 'react';
@@ -103,19 +103,19 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
   }, [open]);
 
   const selectSingleUser = useCallback(async (usersToFilter?: string[]) => {
-    const result = await open(SearchAndSelectUserDialogShadcn, { option: 'single', usersToFilter: usersToFilter ?? [] });
+    const result = await open(SearchAndSelectUserDialog, { option: 'single', usersToFilter: usersToFilter ?? [] });
 
     return result as User | null;
   }, [open]);
 
   const selectMultipleUser = useCallback(async (usersToFilter?: string[]) => {
-    const result = await open(SearchAndSelectUserDialogShadcn, { option: 'multiple', usersToFilter: usersToFilter ?? [] });
+    const result = await open(SearchAndSelectUserDialog, { option: 'multiple', usersToFilter: usersToFilter ?? [] });
 
     return result as User[] | null;
   }, [open]);
 
   const selectGroup = useCallback(async (groupsToFilter?: string[]) => {
-    const result = await open(SearchAndSelectGroupDialogShadcn, { groupsToFilter: groupsToFilter ?? [] });
+    const result = await open(SearchAndSelectGroupDialog, { groupsToFilter: groupsToFilter ?? [] });
 
     return result as Group | null;
   }, [open]);
@@ -127,7 +127,7 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
   }, [open]);
 
   const userProfile = useCallback(async (userId: string) => {
-    await open(ProfileDialogShadcn, { userId });
+    await open(ProfileDialog, { userId });
   }, [open]);
 
   return (

@@ -1,8 +1,7 @@
 'use client'
 
 import { AlertTriangle, Table, X } from 'lucide-react'
-import { useCallback, useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
+import { useCallback, useMemo } from 'react'
 import { z, type ZodTypeAny } from 'zod'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -12,14 +11,15 @@ import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTit
 import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
 import { useGrants } from '@/features/auth/GrantsContext'
-import { groupBy, SUPABASE_PROJECT_REF } from '@/utils'
-import { useRunQuery } from '../hooks/use-run-query'
-import { useListTables } from '../hooks/use-tables'
+import { supabase } from '@/lib/supabase'
+import { formatDateFromDatabaseNotNull, formatDateToDatabase, groupBy } from '@/utils'
+import { useQuery } from '@tanstack/react-query'
+import { TableMetadata, useListTables, useTableMutations } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
 import { ResultsTable } from './results-table'
 
 // Helper to generate a Zod schema from the table's column definitions
-function generateZodSchema(table: any): z.ZodObject<any, any, any> {
+function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
   if (!table || !table.columns) {
     return z.object({})
   }
@@ -27,10 +27,9 @@ function generateZodSchema(table: any): z.ZodObject<any, any, any> {
   const shape: Record<string, ZodTypeAny> = {}
   for (const column of table.columns) {
     // We can only edit updatable columns that are not generated
-    if (!column.is_updatable || column.is_generated) continue
 
     let fieldSchema: ZodTypeAny
-    const dataType = column.data_type.toLowerCase()
+    const dataType = column.format.toLowerCase()
 
     if (dataType.includes('array')) {
       fieldSchema = z.array(z.any())
@@ -38,14 +37,17 @@ function generateZodSchema(table: any): z.ZodObject<any, any, any> {
       fieldSchema = z.number()
     } else if (dataType.includes('bool')) {
       fieldSchema = z.boolean()
-    } else if (
-      dataType === 'user-defined' &&
-      column.enums &&
-      Array.isArray(column.enums) &&
-      column.enums.length > 0
-    ) {
-      // Handle enum types
-      fieldSchema = z.enum(column.enums as [string, ...string[]])
+    } else if (column.enums && column.enums.length > 0) {
+      // Zod Enum benötigt ein Array mit mind. einem Element
+      fieldSchema = z.enum(column.enums as [string, ...string[]]);
+      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
+    } else if (column.format === 'timestamptz' || column.format === 'timestamp') {
+      // Wir nutzen z.date() für den Picker, erlauben aber auch Strings (vom API-Input)
+      fieldSchema = z.preprocess((arg) => {
+        if (typeof arg === "string") return formatDateFromDatabaseNotNull(arg);
+        return arg;
+      }, z.date());
+      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
     } else {
       // Default to string for text, varchar, timestamp, uuid, etc.
       fieldSchema = z.string()
@@ -60,15 +62,8 @@ function generateZodSchema(table: any): z.ZodObject<any, any, any> {
   return z.object(shape)
 }
 
-const getPrimaryKeys = (table: any): string[] => {
-  if (!table || !table.primary_keys) {
-    return []
-  }
-  return table.primary_keys.map((pk: any) => pk.name)
-}
-
 type EditRowViewProps = {
-  table: any
+  table: TableMetadata
   row: any
   onSuccess: () => void
 }
@@ -78,18 +73,16 @@ function EditRowView({ payload: {
   row,
   onSuccess,
 }, open, onClose }: DialogProps<EditRowViewProps>) {
-  const { mutate: runUpdateQuery, isPending: isUpdatePending } = useRunQuery()
-  const formSchema = useMemo(() => generateZodSchema(table), [table])
+  const { updateRow } = useTableMutations(table);
+  const formSchema = useMemo(() => generateZodSchema(table), [table]);
 
   const columnInfo = useMemo(() => {
     if (!table || !table.columns) return {}
 
     const info: Record<string, any> = {}
     for (const column of table.columns) {
-      // Only include updatable columns that are not generated
-      if (!column.is_updatable || column.is_generated) continue
 
-      const dataType = column.data_type.toLowerCase()
+      const dataType = column.format.toLowerCase()
       const displayType =
         dataType === 'user-defined' &&
           column.enums &&
@@ -107,86 +100,25 @@ function EditRowView({ payload: {
   }, [table])
 
   const handleFormSubmit = useCallback(
-    (formData: any) => {
-      const pks = getPrimaryKeys(table)
-      if (pks.length === 0) {
-        toast.error('Cannot update row. This table does not have a primary key.')
-        return
+    async (formData: any) => {
+      // Wir übergeben einfach das formData Objekt. 
+      // Der Hook kümmert sich um den .match() via Primary Keys
+
+      const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
+        acc[key] = value instanceof Date ? formatDateToDatabase(value) : value;
+        return acc;
+      }, {} as any);
+
+      try {
+        await updateRow.mutateAsync({ ...row, ...cleanedData });
+        onSuccess();
+        onClose();
+      } catch (e) {
+        // Fehler-Handling erfolgt im Hook via Toast
       }
-
-      const setClauses = Object.entries(formData)
-        .map(([key, value]) => {
-          if (JSON.stringify(row[key]) === JSON.stringify(value)) return null
-
-          // Find the column type to determine formatting
-          const column = table.columns.find((col: any) => col.name === key)
-          const dataType = column?.data_type?.toLowerCase() || ''
-          const isNullable = column?.is_nullable || false
-
-          let formattedValue
-
-          // Handle empty/null values
-          if (
-            value === null ||
-            value === undefined ||
-            (typeof value === 'string' && value.trim() === '')
-          ) {
-            if (isNullable) {
-              formattedValue = 'NULL'
-            } else if (dataType.includes('array')) {
-              // Non-nullable array, set to empty array
-              const jsonObj = JSON.stringify({ [key]: [] })
-              formattedValue = `(select ${key} from json_populate_record(null::public."${table.name
-                }", '${jsonObj.replace(/'/g, "''")}'))`
-            } else {
-              // Non-nullable text field, set to empty string
-              formattedValue = "''"
-            }
-          } else if (Array.isArray(value) && value.length === 0) {
-            // Explicitly empty array (different from null)
-            const jsonObj = JSON.stringify({ [key]: [] })
-            formattedValue = `(select ${key} from json_populate_record(null::public."${table.name
-              }", '${jsonObj.replace(/'/g, "''")}'))`
-          } else if (dataType.includes('array')) {
-            // Array type with actual values - use json_populate_record syntax
-            const jsonObj = JSON.stringify({ [key]: value })
-            formattedValue = `(select ${key} from json_populate_record(null::public."${table.name
-              }", '${jsonObj.replace(/'/g, "''")}'))`
-          } else if (dataType === 'user-defined' && column?.enums) {
-            // Handle enum values - treat as strings with proper escaping
-            formattedValue = `'${String(value).replace(/'/g, "''")}'`
-          } else if (typeof value === 'string') {
-            formattedValue = `'${value.replace(/'/g, "''")}'`
-          } else {
-            formattedValue = value
-          }
-
-          return `"${key}" = ${formattedValue}`
-        })
-        .filter(Boolean)
-        .join(', ')
-
-      if (!setClauses) {
-        toast.error('No changes to save')
-        onSuccess()
-        return
-      }
-
-      const whereClauses = pks
-        .map((pk) => {
-          const value = row[pk]
-          const formattedValue =
-            typeof value === 'string' ? `'${value.replace(/'/g, "''")}'` : value
-          return `"${pk}" = ${formattedValue}`
-        })
-        .join(' AND ')
-
-      const updateSql = `UPDATE public."${table.name}" SET ${setClauses} WHERE ${whereClauses};`
-
-      runUpdateQuery({ projectRef: SUPABASE_PROJECT_REF, query: updateSql }, { onSuccess })
     },
-    [table, row, runUpdateQuery, onSuccess]
-  )
+    [row, updateRow, onSuccess, onClose]
+  );
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -207,7 +139,9 @@ function EditRowView({ payload: {
             initialValues={row}
             onSubmit={handleFormSubmit}
             columnInfo={columnInfo}
-            isLoading={isUpdatePending}
+            isLoading={updateRow.isPending}
+            relationships={table.relationships}
+            primaryKeyNames={table.primary_keys.map(pk => pk.name)}
           />
         </DialogBody>
       </DialogContent>
@@ -216,17 +150,27 @@ function EditRowView({ payload: {
 }
 
 type TableRecordsViewProps = {
-  table: any
+  table: TableMetadata
 }
 
 function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<TableRecordsViewProps>) {
   const dialogs = useDialogs();
 
-  const { mutate: runQuery, data, isPending, error } = useRunQuery()
+  const { data = [], isLoading } = useQuery({
+    queryKey: ['table-data', table.schema, table.name], // Konsistenter Key
+    queryFn: async () => {
+      const { data, error } = await supabase
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .schema(table.schema)
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .from(table.name)
+        .select('*')
+        .limit(100);
 
-  useEffect(() => {
-    runQuery({ projectRef: SUPABASE_PROJECT_REF, query: `SELECT * FROM "${table.schema}"."${table.name}" LIMIT 100;` })
-  }, [table, runQuery])
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleRowClick = (row: any) => dialogs.open(EditRowView, { table, row, onSuccess: () => { } })
 
@@ -235,7 +179,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
       <DialogContent variant={"fullscreen"} showCloseButton={false}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className={"flex-1"}>
-            {table}
+            {`${table.schema}.${table.name}`}
           </DialogTitle>
           <DialogClose render={
             <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
@@ -243,8 +187,8 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
             </Button>
           } />
         </DialogHeader>
-        <DialogBody>
-          <ResultsTable data={data} onRowClick={(row) => handleRowClick(row)} />
+        <DialogBody className='p-0'>
+          <ResultsTable data={data} table={table} onRowClick={(row) => handleRowClick(row)} />
         </DialogBody>
       </DialogContent>
     </Dialog>
@@ -254,9 +198,9 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 const DatabaseManager = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const { data: tables, isLoading, isError } = useListTables(['public', 'games', 'notifications'])
+  const { data: tables = [], isLoading, isError } = useListTables()
 
-  const handleTableClick = (table: any) => {
+  const handleTableClick = (table: TableMetadata) => {
     dialogs.open(TableRecordsView, { table })
   }
 
@@ -268,7 +212,7 @@ const DatabaseManager = () => {
         user={user}
       />
       <main className='flex-1 size-full pb-safe-bottom'>
-        <div className="p-6 pt-4 lg:p-8 lg:pt-8">
+        <div className="p-4 pt-4 lg:p-8 lg:pt-8">
 
           {isError && (
             <Alert variant="destructive" className="mt-8">
@@ -289,14 +233,14 @@ const DatabaseManager = () => {
 
           {tables && tables.length > 0 ? (
             <div>
-              {groupBy(tables, (x: any) => x.schema).entries().map(([key, groupedTables]) => (
+              {groupBy(tables, (x: TableMetadata) => x.schema).entries().map(([key, groupedTables]) => (
                 <div key={key}>
                   <div className='text-base font-bold'>{key}</div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {
                       groupedTables.map(table => <Button
                         variant="outline"
-                        key={table.id}
+                        key={table.name}
                         size="lg"
                         className="flex-row justify-between text-left"
                         onClick={() => handleTableClick(table)}

@@ -6,7 +6,9 @@ import { useForm } from 'react-hook-form'
 import type { z, ZodTypeAny } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -15,6 +17,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import { de } from 'date-fns/locale'
+import { CalendarIcon } from 'lucide-react'
+import { Relationship } from '../hooks/use-tables'
+import { ForeignKeyPicker } from './foreign-key-picker'
 import {
   Form,
   FormControl,
@@ -32,6 +40,8 @@ interface DynamicFormProps<T extends z.ZodRawShape = z.ZodRawShape> {
   initialValues?: Partial<z.infer<z.ZodObject<T>>>
   labels?: Record<string, string | { label: string; options?: Record<string, string> }>
   columnInfo?: Record<string, { data_type: string; is_nullable: boolean }>
+  relationships?: Relationship[]
+  primaryKeyNames?: string[]
 }
 
 const getZodDef = (schema: ZodTypeAny): Record<string, any> =>
@@ -80,6 +90,8 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
   initialValues,
   labels,
   columnInfo,
+  relationships,
+  primaryKeyNames = [],
 }: DynamicFormProps<T>) {
   const isInitializingRef = useRef(true)
 
@@ -231,14 +243,45 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
           const label =
             typeof labelConfig === 'string' ? labelConfig : labelConfig?.label || fieldName
           const typeDisplay = columnInfo?.[fieldName]?.data_type || ''
+          const isPK = primaryKeyNames?.includes(fieldName);
+          const rel = relationships?.find(r => r.source_column_name === fieldName)
+
+          if (rel) {
+            return (
+              <FormItem className="py-2 border-b">
+                <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-8">
+                  <div className="flex-1 pr-4">
+                    <FormLabel className="flex items-center gap-2">
+                      {label} <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 rounded">FK</span> {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}
+                    </FormLabel>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Verweist auf {rel.target_table_name}.{rel.target_column_name}
+                    </div>
+                    <FormMessage />
+                  </div>
+                  <div className="flex-1 lg:max-w-1/2">
+                    <FormControl>
+                      <ForeignKeyPicker
+                        relationship={rel}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                  </div>
+                </div>
+              </FormItem>
+            )
+          }
+
           switch (typeName) {
             case 'ZodString':
             case 'string':
               return (
-                <FormItem className="py-6 border-b">
+                <FormItem className="py-2 border-b">
                   <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
                     <div className="flex-1 pr-4">
-                      <FormLabel>{label}</FormLabel>
+                      <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
                       <div className="text-sm text-muted-foreground mt-1">{typeDisplay}</div>
                       {description && <FormDescription>{description}</FormDescription>}
                       <FormMessage />
@@ -258,10 +301,10 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
             case 'ZodNumber':
             case 'number':
               return (
-                <FormItem className="py-6 border-b">
+                <FormItem className="py-2 border-b">
                   <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
                     <div className="flex-1 pr-4">
-                      <FormLabel>{label}</FormLabel>
+                      <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
                       <div className="text-sm text-muted-foreground">{typeDisplay}</div>
                       {description && <FormDescription>{description}</FormDescription>}
                       <FormMessage />
@@ -287,9 +330,9 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
             case 'ZodBoolean':
             case 'boolean':
               return (
-                <FormItem className="py-6 border-b flex flex-row items-center justify-between gap-8">
+                <FormItem className="py-2 border-b flex flex-row items-center justify-between gap-8">
                   <div>
-                    <FormLabel>{label}</FormLabel>
+                    <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
                     <div className="text-sm text-muted-foreground">{typeDisplay}</div>
                     {description && <FormDescription>{description}</FormDescription>}
                     <FormMessage />
@@ -305,15 +348,14 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
                 const options = getZodDef(baseType).values
                 const optionLabels = typeof labelConfig === 'object' ? labelConfig.options : undefined
                 return (
-                  <FormItem className="py-6 border-b">
+                  <FormItem className="py-2 border-b">
                     <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4 lg:gap-8">
                       <div className="flex-1 pr-4">
-                        <FormLabel>{label}</FormLabel>
+                        <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
                         <div className="text-sm text-muted-foreground">{typeDisplay}</div>
                         {description && <FormDescription>{description}</FormDescription>}
-                        <FormMessage />
                       </div>
-                      <div className="flex-1 lg:max-w-1/2">
+                      <div className="flex-1 w-full lg:max-w-1/2">
                         <Select
                           onValueChange={(value) => {
                             if (!isInitializingRef.current) {
@@ -322,7 +364,7 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
                           }}
                           value={String(field.value || '')}
                         >
-                          <FormControl>
+                          <FormControl className={"w-full"}>
                             <SelectTrigger>
                               <SelectValue placeholder={`Select a ${fieldName}`} />
                             </SelectTrigger>
@@ -340,13 +382,84 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
                   </FormItem>
                 )
               }
+            case 'ZodDate': {
+              const rawValue = field.value as any;
+              const dateValue: Date | null = rawValue
+                ? (rawValue instanceof Date ? rawValue : new Date(rawValue))
+                : null;
+
+
+              return (
+                <FormItem className="py-2 border-b">
+                  <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex-1 pr-4">
+                      <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
+                      <div className="text-sm text-muted-foreground mt-1">Datum & Uhrzeit</div>
+                      <FormMessage />
+                    </div>
+                    <div className="flex-1 lg:max-w-1/2 flex gap-2">
+                      <Popover>
+                        <PopoverTrigger render={<FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "flex-1 pl-3 text-left font-normal",
+                              !dateValue && "text-muted-foreground"
+                            )}
+                          >
+                            {dateValue ? (
+                              format(dateValue, "PPP", { locale: de })
+                            ) : (
+                              <span>Datum wählen</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>}>
+
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={dateValue ?? undefined}
+                            month={dateValue ?? undefined}
+                            onSelect={(date) => {
+                              if (!date) return;
+                              const currentTime = dateValue || new Date();
+                              date.setHours(currentTime.getHours());
+                              date.setMinutes(currentTime.getMinutes());
+                              field.onChange(date);
+                            }}
+                            disabled={(date) => date < new Date("1900-01-01")}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* Zeit-Input daneben */}
+                      <Input
+                        type="time"
+                        className="flex-1"
+                        value={dateValue ? format(dateValue, "HH:mm") : ""}
+                        onChange={(e) => {
+                          const [hours, minutes] = e.target.value.split(":");
+                          const newDate = new Date(dateValue || new Date());
+                          newDate.setHours(parseInt(hours));
+                          newDate.setMinutes(parseInt(minutes));
+                          field.onChange(newDate);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </FormItem>
+              );
+            }
             case 'ZodArray':
             case 'array':
               return (
-                <FormItem className="py-6 border-b">
-                  <div className="flex flex-row items-center justify-between w-full gap-8">
+                <FormItem className="py-2 border-b">
+                  <div className="flex flex-row items-center justify-between w-full gap-4">
                     <div className="flex-1 pr-4">
-                      <FormLabel>{label}</FormLabel>
+                      <FormLabel>{label} {isPK && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 rounded">PK</span>}</FormLabel>
                       <div className="text-sm text-muted-foreground">
                         Enter as JSON array: [&quot;item1&quot;, &quot;item2&quot;]
                         {columnInfo?.[fieldName]?.is_nullable && ' (leave empty for null)'}

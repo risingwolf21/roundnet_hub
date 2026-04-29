@@ -15,7 +15,7 @@ type Props = {
   disabled?: boolean;
 }
 
-export const TimePickerShadcn = ({
+export const TimePicker = ({
   value,
   onValueChange,
   placeholder = "12:30",
