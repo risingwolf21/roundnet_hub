@@ -1,16 +1,19 @@
 import { useUpdateHistoryEntryMutation } from '@/tanstack/drinks';
 import { captureException } from '@sentry/react';
 import { format } from 'date-fns';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { groupBy } from '../../utils';
-import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
+import { Button } from '@/components/ui/button';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 import { t } from 'i18next';
+import { Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 
 export const HistoryScreen = ({
   user,
@@ -22,27 +25,9 @@ export const HistoryScreen = ({
   isFetchingNextPage,
 }: UseInfiniteQueryResult<InfiniteData<{ data: FullHistory[]; nextPage?: number }>> & { user: User }) => {
 
-  const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
-  const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
-
   const updateEntry = useUpdateHistoryEntryMutation(user);
 
-  const handleEntryUpdate = (newEntry: FullHistory) => {
-    updateEntry.mutate(newEntry, {
-      onError: (error) => {
-        captureException(error);
-        toast.error(error.message);
-      },
-      onSuccess: () => {
-        setEditHistoryEntryOpen(false);
-      },
-    });
-  };
-
-  const handleEntryOnClick = (entry: FullHistory) => {
-    setHistoryEntryToEdit(entry);
-    setEditHistoryEntryOpen(true);
-  };
+  const dialogs = useDialogs();
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -97,6 +82,22 @@ export const HistoryScreen = ({
                     </ItemContent>
                     <ItemActions>
                       <div className='text-sm'>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</div>
+                      <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                        const result = await dialogs.open(EditHistoryEntryDialog, x);
+                        if (result) {
+                          updateEntry.mutate(result, {
+                            onError: (error) => {
+                              captureException(error);
+                              toast.error(error.message);
+                            },
+                            onSuccess: () => {
+                              toast.success("Eintrag aktualisiert");
+                            },
+                          });
+                        }
+                      }}>
+                        <Pencil />
+                      </Button>
                     </ItemActions>
                   </Item>)}
                 </div>
@@ -105,13 +106,6 @@ export const HistoryScreen = ({
           </div>
           {isFetchingNextPage && <p style={{ padding: '12px' }}>Lade mehr...</p>}
           <div ref={loadMoreRef} style={{ height: 40 }} />
-          <EditHistoryEntryDialog
-            open={editHistoryEntryOpen}
-            setOpen={() => setEditHistoryEntryOpen(true)}
-            handleClose={() => setEditHistoryEntryOpen(false)}
-            entry={historyEntryToEdit}
-            handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}
-          />
         </PullToRefresh>
       </main>
     </div>
