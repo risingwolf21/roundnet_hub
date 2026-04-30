@@ -1,12 +1,13 @@
 'use client'
 
 import { AlertTriangle, Table, X } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { z, type ZodTypeAny } from 'zod'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AppBar } from '@/components/ui/appbar'
 import { Button } from '@/components/ui/button'
+import { DataTable, FilterCondition } from '@/components/ui/data-table'
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
@@ -14,9 +15,9 @@ import { useGrants } from '@/features/auth/GrantsContext'
 import { supabase } from '@/lib/supabase'
 import { formatDateFromDatabaseNotNull, formatDateToDatabase, groupBy } from '@/utils'
 import { useQuery } from '@tanstack/react-query'
-import { TableMetadata, useListTables, useTableMutations } from '../hooks/use-tables'
+import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/react-table'
+import { generateColumnsFromMetadata, TableMetadata, useListTables, useTableMutations } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
-import { ResultsTable } from './results-table'
 
 // Helper to generate a Zod schema from the table's column definitions
 function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
@@ -156,19 +157,73 @@ type TableRecordsViewProps = {
 function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<TableRecordsViewProps>) {
   const dialogs = useDialogs();
 
-  const { data = [], isLoading } = useQuery({
-    queryKey: ['table-data', table.schema, table.name], // Konsistenter Key
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 40 })
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const columns = useMemo(() => generateColumnsFromMetadata(table), [table])
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['table-data', table.schema, table.name, sorting, pagination, columnFilters], // Konsistenter Key
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
         .schema(table.schema)
         // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
         .from(table.name)
-        .select('*')
-        .limit(100);
+        .select('*', { count: 'exact' })
 
-      if (error) throw error;
-      return data;
+      if (sorting.length > 0) {
+        sorting.forEach(sort => {
+          query = query.order(sort.id, { ascending: !sort.desc })
+        })
+      }
+
+      const advancedFilter = columnFilters.find(f => f.id === "advanced_filters");
+
+      if (advancedFilter && Array.isArray(advancedFilter.value)) {
+        advancedFilter.value.forEach((cond: FilterCondition) => {
+          if (cond.value === "" && cond.operator !== "is") return;
+
+          const column = cond.column;
+          const val = cond.value;
+
+          switch (cond.operator) {
+            // COMPARISON
+            case 'eq': query = query.eq(column, val); break;
+            case 'neq': query = query.neq(column, val); break;
+            case 'gt': query = query.gt(column, val); break;
+            case 'lt': query = query.lt(column, val); break;
+            case 'gte': query = query.gte(column, val); break;
+            case 'lte': query = query.lte(column, val); break;
+
+            // PATTERN MATCHING
+            case 'like': query = query.like(column, `%${val}%`); break;
+            case 'ilike': query = query.ilike(column, `%${val}%`); break;
+
+            // SET & NULL CHECKS
+            case 'in': {
+              const list = val.split(',').map(s => s.trim());
+              query = query.in(column, list);
+              break;
+            }
+
+            case 'is':
+              if (val.toLowerCase() === "null") query = query.is(column, null);
+              else if (val.toLowerCase() === "true") query = query.is(column, true);
+              else if (val.toLowerCase() === "false") query = query.is(column, false);
+              break;
+          }
+        });
+      }
+
+      const from = pagination.pageIndex * pagination.pageSize
+      const to = from + pagination.pageSize - 1
+      query = query.range(from, to)
+
+      const { data, error, count } = await query
+      if (error) throw error
+      return { data, count }
     },
   });
 
@@ -187,8 +242,20 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
             </Button>
           } />
         </DialogHeader>
-        <DialogBody className='p-0'>
-          <ResultsTable data={data} table={table} onRowClick={(row) => handleRowClick(row)} />
+        <DialogBody className='p-2'>
+          <DataTable
+            columns={columns}
+            data={data?.data || []}
+            rowCount={data?.count || 0}
+            onRowClick={handleRowClick}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={setColumnFilters}
+            isLoading={isLoading}
+          />
         </DialogBody>
       </DialogContent>
     </Dialog>

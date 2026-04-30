@@ -1,9 +1,12 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query';
-
+import { Button } from '@/components/ui/button';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 export interface TableMetadata {
@@ -60,6 +63,52 @@ export interface Column {
   check: string | null;
   enums: string[]; // Falls es ein Custom-Type mit festen Werten ist
   comment: string | null;
+}
+
+export function generateColumnsFromMetadata(table: TableMetadata): ColumnDef<any, any>[] {
+  return table.columns.map((col) => {
+    return {
+      meta: col.format,
+      accessorKey: col.name,
+      // Header-Anzeige (Name groß geschrieben oder formatiert)
+      header: ({ column }) => {
+        return <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {col.name.charAt(0).toUpperCase() + col.name.slice(1)}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      },
+
+      // Zell-Rendering basierend auf dem Typ
+      cell: ({ getValue }) => {
+        const value = getValue()
+        if (value === null || value === undefined) return <span className="text-muted-foreground italic">null</span>
+
+        // Spezial-Formatierung für Datums-Typen
+        if (col.format === 'timestamptz' || col.format === 'timestamp') {
+          try {
+            return format(new Date(value as string), "dd.MM.yyyy HH:mm")
+          } catch {
+            return String(value)
+          }
+        }
+
+        // Booleans als kleine Badges oder Text
+        if (typeof value === 'boolean') {
+          return value ? "✅" : "❌"
+        }
+
+        // Lange Texte kürzen
+        if (typeof value === 'string' && value.length > 50) {
+          return <span title={value}>{value.substring(0, 50)}...</span>
+        }
+
+        return String(value)
+      },
+    }
+  })
 }
 
 export const useListTables = () => {
