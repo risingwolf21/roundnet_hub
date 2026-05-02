@@ -1,52 +1,29 @@
 import { PullToRefresh } from '@/components/PullToRefresh';
-import { useChallengePodiums, useChallenges } from '@/tanstack/challenge';
+import { useChallengePodiums, useChallenges, useInsertChallengeMutation } from '@/tanstack/challenge';
 import { withProfiler } from '@sentry/react';
 
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Item, ItemContent } from '@/components/ui/item';
+import { useDialogs } from '@/contexts/DialogsProvider';
+import { Has } from '@/hooks/useGrants';
 import groupBy from 'lodash.groupby';
-import { Archive, Award, Medal, Trophy } from 'lucide-react';
+import { Archive, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
+import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
 const ChallengeListPage = () => {
   const { user } = useGrants();
+  const dialogs = useDialogs();
   const navigate = useNavigate();
 
   const { data: challenges = [], error, isLoading, refetch } = useChallenges();
   const { data: podium = [], refetch: archiveRefetch } = useChallengePodiums();
-
-  const achievements = [
-    {
-      rank: 2,
-      icon: Award,
-      title: "Innovation Leader",
-      org: "Tech Excellence Awards",
-      year: "2024",
-      // Schiebt die zweite Position etwas nach unten
-      marginTop: "md:mt-16",
-    },
-    {
-      rank: 1,
-      icon: Trophy,
-      title: "Product of the Year",
-      org: "Global SaaS Awards",
-      year: "2024",
-      // Höchste Position (Platz 1)
-      marginTop: "md:mt-0",
-    },
-    {
-      rank: 3,
-      icon: Medal,
-      title: "Best User Experience",
-      org: "UX Design Awards",
-      year: "2024",
-      // Schiebt die dritte Position am weitesten nach unten
-      marginTop: "md:mt-32",
-    },
-  ];
+  const insertChallengeMutation = useInsertChallengeMutation();
 
   return (
     <div>
@@ -54,6 +31,26 @@ const ChallengeListPage = () => {
         className='!border-b !shadow-sm'
         title="Challenges"
         user={user}
+        actions={
+          <Has perm={"challenge.create"}>
+            <Button variant={"ghost"} size={"icon-lg"}
+              onClick={async () => {
+                const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user });
+                if (result) {
+                  await insertChallengeMutation.mutateAsync(result, {
+                    onError: (error) =>
+                      toast.error('Challenge konnte nicht erstellt werden. ' + error.message),
+                    onSuccess: (data) => {
+                      toast.success('Challenge wurde erfolgreich erstellt.');
+                      navigate('/challenges/' + data.id);
+                    },
+                  });
+                }
+              }}>
+              <Plus />
+            </Button>
+          </Has>
+        }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh
@@ -141,9 +138,6 @@ const ChallengeListPage = () => {
                 </ItemContent>
               </Item>)
             }
-
-
-
           </div>
         </PullToRefresh>
       </main>

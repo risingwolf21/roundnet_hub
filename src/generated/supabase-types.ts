@@ -7,6 +7,7 @@ export type Permission =
   | 'challenges.edit.own-group'
   | 'challenges.stats.read'
   | 'challenges.stats.write'
+  | 'challenge.create'
   | 'drinks.confirm.payments'
   | 'drinks.edit'
   | 'drinks.history.admin'
