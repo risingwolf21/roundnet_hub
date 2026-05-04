@@ -3,16 +3,33 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren, useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
+import { supabase } from './lib/supabase';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
-  useRegisterSW({
+  const { updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegistered: (registration) => {
       if (!registration) return;
 
       const updateSW = async () => {
         try {
-          await registration.update();
+
+          const { data } = await supabase
+            .from('app_config')
+            .select('value')
+            .eq('key', 'latest_deployment_hash')
+            .single();
+
+          const currentLocalHash = import.meta.env.VITE_GIT_COMMIT;
+
+          if (data && data.value !== currentLocalHash) {
+            console.log('Neuer Hash erkannt, starte SW Update...');
+            await registration.update();
+
+            if (registration.waiting) {
+              updateServiceWorker(true);
+            }
+          }
         } catch (error) {
           console.debug('ServiceWorker update check failed:', error);
         }
@@ -27,12 +44,13 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
       });
 
       document.addEventListener('focus', updateSW);
+
+      updateSW();
     },
   });
 
   useEffect(() => {
     const handleControllerChange = () => {
-
       window.location.reload();
     };
 
