@@ -184,10 +184,52 @@ jobs:
           projectId: ${{ vars.FIREBASE_PROJECT }}
           target: ${{ vars.FIREBASE_TARGET }}
 
+  update-hash-karlsruhe:
+    runs-on: ubuntu-latest
+    needs: [deploy-karlsruhe]
+    environment: "Roundnet Karlsruhe"
+    steps:
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Update Supabase Hash
+        run: |
+          curl -X POST "${{ vars.SUPABASE_DB_URL }}/rest/v1/app_config" \
+          -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Content-Type: application/json" \
+          -H "Prefer: resolution=merge-duplicates" \
+          -d '{
+            "key": "latest_deployment_hash",
+            "value": "${{ steps.vars.outputs.sha_short }}"
+          }'
+  
+  update-hash-munich:
+    runs-on: ubuntu-latest
+    needs: [deploy-munich]
+    environment: "Munich Roundnet"
+    steps:
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Update Supabase Hash
+        run: |
+          curl -X POST "${{ vars.SUPABASE_DB_URL }}/rest/v1/app_config" \
+          -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Content-Type: application/json" \
+          -H "Prefer: resolution=merge-duplicates" \
+          -d '{
+            "key": "latest_deployment_hash",
+            "value": "${{ steps.vars.outputs.sha_short }}"
+          }'
+
   cleanup-artifact-munich:
     name: "Cleanup Artifacts Munich"
     runs-on: ubuntu-latest
-    needs: [deploy-munich]
+    needs: [update-hash-munich]
     environment: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v6
@@ -201,7 +243,7 @@ jobs:
   cleanup-artifact-karlsruhe:
     name: "Cleanup Artifacts Karlsruhe"
     runs-on: ubuntu-latest
-    needs: [deploy-karlsruhe]
+    needs: [update-hash-karlsruhe]
     environment: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v6
