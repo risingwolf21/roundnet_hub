@@ -205,6 +205,8 @@ jobs:
           -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -H "Content-Type: application/json" \
+          -H "Content-Profile: public" \
+          -H "Accept-Profile: public" \
           -H "Prefer: resolution=merge-duplicates" \
           -d '{
             "key": "latest_deployment_hash",
@@ -223,6 +225,8 @@ jobs:
           -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
           -H "Content-Type: application/json" \
+          -H "Content-Profile: public" \
+          -H "Accept-Profile: public" \
           -H "Prefer: resolution=merge-duplicates" \
           -d '{
             "key": "latest_deployment_hash",
