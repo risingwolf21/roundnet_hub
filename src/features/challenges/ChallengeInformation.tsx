@@ -13,11 +13,14 @@ import { useCallback } from 'react';
 import { useGrants } from '../auth/GrantsContext';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDialogs } from '@/contexts/DialogsProvider';
-import { Edit, Plus } from 'lucide-react';
+import { formatDateFromDatabaseNotNull } from '@/utils';
+import { format, isAfter } from 'date-fns';
+import { Edit, Info, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
@@ -123,6 +126,14 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
               <div className="text-sm text-muted-foreground">
                 {challenge.description || "Keine Beschreibung vorhanden."}
               </div>
+              {
+                challenge.end_date && isAfter(new Date(), challenge.end_date) && <Alert key={'alert'} className='p-2' variant="info">
+                  <Info />
+                  <AlertDescription>
+                    Diese Challenge ist seit dem {format(challenge.end_date, "dd.MM.yyyy")} beendet
+                  </AlertDescription>
+                </Alert>
+              }
             </div>
           </div>
           <Tabs defaultValue={"activity"} className="w-full relative flex flex-col">
@@ -155,6 +166,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
         <Button
           size="icon"
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+          disabled={challenge.end_date ? (isAfter(new Date(), formatDateFromDatabaseNotNull(challenge.end_date))) : false}
           onClick={async () => {
             if (challenge) {
               const result = await dialogs.open(EnterPointDialog, {
