@@ -26,7 +26,7 @@ const UserPlayerMapping = () => {
       />
       <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className="p-2 gap-2">
+          <div className="flex flex-col p-2 gap-2">
             {
               data.map(x => (
                 <Item key={x.player} variant={"outline"}>
@@ -53,8 +53,8 @@ const UserPlayerMapping = () => {
                         }
 
                         const { error } = await supabase.schema("games").rpc("merge_guest_player", {
-                          p_guest_player_id: x.player,
-                          p_user_id: result.id
+                          guest_player_id: x.player,
+                          target_user_id: result.id
                         });
                         if (error) {
                           toast.error(error.message);

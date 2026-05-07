@@ -23,7 +23,6 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
           const currentLocalHash = import.meta.env.VITE_GIT_COMMIT;
 
           if (data && data.value !== currentLocalHash) {
-            console.log('Neuer Hash erkannt, starte SW Update...');
             await registration.update();
 
             if (registration.waiting) {
