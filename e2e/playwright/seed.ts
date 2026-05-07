@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function seedPlaywright() {
   const admin = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const password = process.env.TEST_USER_PASSWORD || 'password';
+  const password = 'password';
 
   async function ensureUser(email: string, displayName: string) {
     const { data: existing } = await admin.from('user').select('id').eq('email', email).maybeSingle();
@@ -44,6 +44,11 @@ export async function seedPlaywright() {
       .upsert({ id: g.id, name: g.name, visible: true, is_public: true, need_request_to_join: g.need_request_to_join })
       .throwOnError();
   }
+
+  await admin.from("user_direct_grants").upsert([
+    { user: adminId, kind: "perm", key: "supabase.admin" },
+    { user: adminId, kind: "perm", key: "grants.manage" }
+  ]).throwOnError();
 
   await admin
     .from('group_user_mapping')
