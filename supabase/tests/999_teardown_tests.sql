@@ -5,11 +5,8 @@ SELECT
 -- Löscht pgTAP aus dem extensions-Schema
 DROP EXTENSION IF EXISTS "pgtap" CASCADE;
 
--- Löscht die Basejump Test-Helper aus dem public-Schema
-DROP EXTENSION IF EXISTS "basejump-supabase_test_helpers" CASCADE;
-
--- Löscht supabase-dbdev aus dem public-Schema
-DROP EXTENSION IF EXISTS "supabase-dbdev" CASCADE;
+-- Räumt das inline tests-Schema auf (ersetzt basejump-supabase_test_helpers)
+DROP SCHEMA IF EXISTS tests CASCADE;
 
 -- -----------------------------
 -- Gruppen & Relationen
