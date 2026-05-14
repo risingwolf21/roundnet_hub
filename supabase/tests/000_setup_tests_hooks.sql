@@ -165,6 +165,12 @@ BEGIN
 END;
 $$;
 
+-- Allow non-superuser roles to resolve and execute tests.* functions.
+-- Needed because test files call authenticate_as/get_supabase_uid as the
+-- 'authenticated' role (after the first authenticate_as switches the role).
+GRANT USAGE ON SCHEMA tests TO authenticated, anon, service_role;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA tests TO authenticated, anon, service_role;
+
 \if :{?TESTDIR}
   \cd :TESTDIR
 \endif
