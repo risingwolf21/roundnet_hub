@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, production]
+
+env:
+  CI: ""
+
+jobs:
+  db-test:
+    name: "Test database"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase db start
+      - run: supabase test db
+      - run: supabase db lint --schema public,util,notifications,games --fail-on error
+
+  build-karlsruhe:
+    name: "Build Karlsruhe"
+    runs-on: ubuntu-latest
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: yarn run build:karlsruhe
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ github.sha }}
+          VITE_ENV: "staging"
+
+  build-munich:
+    name: "Build Munich Roundnet"
+    runs-on: ubuntu-latest
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: yarn run build:munich
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ github.sha }}
+          VITE_ENV: "staging"
