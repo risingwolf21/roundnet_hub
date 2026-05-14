@@ -65,7 +65,7 @@ BEGIN
         '',
         '',
         '{"provider":"email","providers":["email"]}'::jsonb,
-        jsonb_build_object('test_identifier', identifier),
+        jsonb_build_object('test_identifier', identifier, 'name', identifier, 'displayName', identifier),
         false,
         NOW(),
         NOW(),
