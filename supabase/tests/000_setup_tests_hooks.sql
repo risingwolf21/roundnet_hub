@@ -185,9 +185,4 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA tests TO authenticated, anon, service_r
   \cd :TESTDIR
 \endif
 
--- Verify setup with a no-op test
-BEGIN;
-SELECT plan(1);
-SELECT ok(true, 'Pre-test hook completed successfully');
-SELECT * FROM finish();
-ROLLBACK;
+SELECT plan(0);
