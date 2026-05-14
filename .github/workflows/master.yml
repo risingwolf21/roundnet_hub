@@ -23,4 +23,4 @@ jobs:
           version: latest
       - run: supabase db start
       - run: supabase test db
-      - run: supabase db lint --schema public,util,notificiations,games --fail-on error
+      - run: supabase db lint --schema public,util,notifications,games --fail-on error
