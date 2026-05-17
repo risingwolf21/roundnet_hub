@@ -138,6 +138,7 @@ export const useChallengeStatsForUser = (challengeId: string, user: User) =>
 
 export const useIncreasePointForUserMutation = (challengeId: string) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({
       challenge,
       created_at,
@@ -296,6 +297,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
 
 export const useUpdateChallengeMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ challenge }: { challenge: TablesUpdate<'challenge'> }) => {
       const result = await supabase
         .from('challenge')
@@ -341,6 +343,7 @@ export const useUpdateChallengeMutation = () =>
 
 export const useInsertChallengeMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async (challenge: TablesInsert<'challenge'>) => {
       const result = await supabase
         .from('challenge')

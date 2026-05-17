@@ -21,7 +21,9 @@ export const queryClient = new QueryClient({
   },
   mutationCache: new MutationCache({
     onError: (err, variables, context, mutation) => {
-      toast.error(i18n.t('errors.mutation'));
+      if (!mutation.meta?.suppressErrorToast) {
+        toast.error(i18n.t('errors.mutation'));
+      }
       captureException(err, (scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,

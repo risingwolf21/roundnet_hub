@@ -309,6 +309,7 @@ export const useCreateGroupMutation = () =>
 
 export const useUpdateGroupMutation = (groupId?: string) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ group }: { group: TablesUpdate<'event_group'> }) => {
       if (!groupId) throw Error('Group Id is missing');
       const result = await supabase

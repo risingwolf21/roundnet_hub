@@ -149,6 +149,7 @@ export const useConfirmPaymentMutation = () =>
 
 export const useUpdateUserMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ update }: { update: UserEdited }) => {
       return AdminUsersRepository.updateUser(update);
     },
