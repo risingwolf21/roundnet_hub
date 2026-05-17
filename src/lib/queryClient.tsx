@@ -2,7 +2,7 @@ import { captureException } from '@sentry/react';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
-import i18n from '@/translation/i18n';
+import { t } from 'i18next';
 import { toast } from 'sonner';
 
 export const queryClient = new QueryClient({
@@ -22,7 +22,7 @@ export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (err, variables, context, mutation) => {
       if (!mutation.meta?.suppressErrorToast) {
-        toast.error(i18n.t('errors.mutation'));
+        toast.error(t('errors.mutation'));
       }
       captureException(err, (scope) => {
         scope.setContext('mutation', {
@@ -43,7 +43,7 @@ export const queryClient = new QueryClient({
   }),
   queryCache: new QueryCache({
     onError: (err, query) => {
-      toast.error(i18n.t('errors.query'));
+      toast.error(t('errors.query'));
       captureException(err, (scope) => {
         scope.setContext('query', { queryHash: query.queryHash });
         return scope;

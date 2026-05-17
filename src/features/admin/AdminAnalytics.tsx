@@ -163,7 +163,7 @@ const AsyncSelect = ({
     <SelectContent>
       <SelectGroup>
         {
-          data.map((x) => (
+          data.map((x: any) => (
             <SelectItem
               className={"text-base"}
               key={x.id}
