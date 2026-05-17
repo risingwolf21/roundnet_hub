@@ -29,6 +29,7 @@ export const useUnlinkedPlayers = () =>
     queryFn: async () => {
       const result = await supabase.schema("games").from("players").select("*").is("linked_user_id", null);
 
+      if (result.error) throw result.error;
       return result.data ?? [];
     },
   })
@@ -98,6 +99,7 @@ export const useAllPayments = () =>
         .eq('paymentState', 'Open' as PaymentState)
         .order('displayName', { referencedTable: 'user', ascending: true })
         .returns<FullPayment[]>();
+      if (response.error) throw response.error;
       return response.data ?? [];
     },
   });
@@ -147,6 +149,7 @@ export const useConfirmPaymentMutation = () =>
 
 export const useUpdateUserMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ update }: { update: UserEdited }) => {
       return AdminUsersRepository.updateUser(update);
     },

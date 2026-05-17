@@ -27,6 +27,7 @@ export const useItemHistory = (id: number) =>
 
 export const useHandoverKeyMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ keyHolder, user }: { keyHolder: FullItemHolder; user: User }) => {
       return SupabaseKeysRepository.giveItemToUser(keyHolder, user);
     },

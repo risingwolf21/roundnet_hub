@@ -94,6 +94,7 @@ export const useInfiniteUserHistory = (userId: string, count: number = 20) =>
 
 export const useInsertHistoryEntryMutation = (user: User) => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ drinks }: { drinks: DrinkCounter[] }) => {
       const drinksToAdd = drinks.map((x) => ({ id: x.id, count: x.count, price: x.price }));
       return supabase.rpc('add_drinks_history', { items: drinksToAdd }).throwOnError();
@@ -117,6 +118,7 @@ export const useInsertHistoryEntryMutation = (user: User) => {
 };
 
 export const useDeleteDrinkMutation = () => useMutation({
+  meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
     const result = await supabase
       .from("drink")
@@ -168,6 +170,7 @@ export const useDeleteDrinkMutation = () => useMutation({
 })
 
 export const useInsertDrinkMutation = () => useMutation({
+  meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
     const drinkInsert = _.omit(drink, ['id']);
     const result = await supabase
@@ -217,6 +220,7 @@ export const useInsertDrinkMutation = () => useMutation({
 })
 
 export const useUpdateDrinkMutation = () => useMutation({
+  meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
     const drinkUpdate = _.omit(drink, ['id']);
     const result = await supabase
@@ -280,6 +284,7 @@ export const useUpdateDrinkMutation = () => useMutation({
 
 export const useUpdateHistoryEntryMutation = (user: User) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async (newEntry: FullHistory) => {
       const result = await supabase
         .from('history')

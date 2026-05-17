@@ -82,6 +82,7 @@ export async function compress(file: Blob | File, convertSize: number) {
 
 export const useUpdateUserProfile = (user: User) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ displayName, fullName, avatarUrl, croppedImage }: { displayName: string, fullName: string, avatarUrl: string | null, croppedImage: string | null }) => {
 
       let newAvatarUrl: string | null = null;

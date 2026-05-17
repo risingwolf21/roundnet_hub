@@ -50,6 +50,7 @@ export const useRecurringEvents = () =>
   });
 
 export const useCreateNextOccurences = () => useMutation({
+  meta: { suppressErrorToast: true },
   mutationFn: async () => {
     const result = await supabase.rpc("create_next_occurrences", {
       p_horizon: '30 days',
@@ -414,6 +415,7 @@ export const useUpsetBringPledges = () => {
 
 export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ event, newState, user }: { user: User; event: EventsUserView; newState: EventAttendance }) => {
       return SupabaseEventRepository.updateAttendance(user.id, event.id!, newState);
     },
@@ -511,6 +513,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useAddCommentMutation = (user: User) => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({
       event,
       comment,
@@ -598,6 +601,7 @@ export const useAddCommentMutation = (user: User) => {
 
 export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ event, isCancelled }: { event: EventsUserView; isCancelled: boolean }) => {
       return SupabaseEventRepository.updateCancellationForEvent(event.id, isCancelled);
     },
@@ -658,6 +662,7 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ event, type }: { event: EventsUserView; type: DeleteEventType; currentUser: User }) => {
       if (type === 'This Event') {
         return SupabaseEventRepository.deleteEvent(event.id);

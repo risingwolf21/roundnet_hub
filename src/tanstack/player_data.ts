@@ -38,6 +38,7 @@ export const usePlayer = (user: User) =>
 
 export const useUpdatePlayer = (user: User) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ updates }: { updates: GamesTableUpdate<'players'> }) => {
       const result = await supabase
         .schema('games')

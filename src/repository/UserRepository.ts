@@ -13,7 +13,8 @@ export const SupabaseUserRepository = {
 
   async fetchGroupsForUser(userId: string): Promise<GroupWithUserRole[]> {
     const { data, error } = await fetchGroups().eq('user', userId);
-    if (!data || error) return [];
+    if (error) throw error;
+    if (!data) return [];
     return data.map(
       (x) =>
         ({
