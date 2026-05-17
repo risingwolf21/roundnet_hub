@@ -55,9 +55,7 @@ export const useGroupAllUsers = (groupId?: string) =>
     queryFn: async () => {
       const result = await fetchGroupUsers(groupId!);
 
-      if (result.error) {
-        return [];
-      }
+      if (result.error) throw result.error;
 
       return result.data;
     },
@@ -71,9 +69,7 @@ export const useGroupUsers = (role: GroupRole, groupId?: string) =>
       const result = await fetchGroupUsers(groupId!)
         .eq('role', role);
 
-      if (result.error) {
-        return [];
-      }
+      if (result.error) throw result.error;
 
       return result.data;
     },

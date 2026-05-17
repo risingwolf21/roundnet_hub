@@ -50,7 +50,8 @@ export const useMatch = (matchId?: string) =>
         .eq('id', matchId)
         .maybeSingle();
 
-      if (error || !match) return null;
+      if (error) throw error;
+      if (!match) return null;
 
       const playerIds = [match.a_player_1, match.a_player_2, match.b_player_1, match.b_player_2].filter(Boolean);
 

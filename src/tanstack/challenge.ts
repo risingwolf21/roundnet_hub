@@ -303,8 +303,6 @@ export const useUpdateChallengeMutation = () =>
         .eq('id', challenge.id ?? '')
         .throwOnError();
 
-      console.log(result);
-
       return result.data;
     },
     onMutate: async ({ challenge }) => {
