@@ -1,4 +1,4 @@
-import { useAdminAnalytics } from "@/tanstack/admin"
+import { RpcName, useAdminAnalytics } from "@/tanstack/admin"
 
 import { add, format } from "date-fns"
 import { useState } from "react"
@@ -164,11 +164,7 @@ const AsyncSelect = ({
 
   return <Select
     id={id}
-    value={value}
-    items={[
-      ...data.map(x => ({ value: x.id, label: x[labelField] })),
-      { label: label, value: null }
-    ]}
+    value={value ?? undefined}
     onValueChange={(value) => onChange(value)}>
     <SelectTrigger className={"w-full max-w-72"}>
       <SelectValue placeholder={isLoading ? <Spinner /> : label} />

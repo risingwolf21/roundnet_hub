@@ -4,8 +4,11 @@ import { supabase } from '@/lib/supabase';
 import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
 import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
 import { fetchSimpleUser } from '@/repository/UserRepository';
+import { Database } from '@/types/supabase-generated.types';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+
+export type RpcName = keyof Database['public']['Functions'];
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -122,7 +125,7 @@ export const useConfirmPaymentMutation = () =>
           if (x.user === payment.user.id) {
             return {
               ...x,
-              paymentState: 'FulFilled' as PaymentState,
+              paymentState: 'Fulfilled' as PaymentState,
             };
           }
           return x;
