@@ -421,63 +421,16 @@ const AdminAnalytics = () => {
           ? Object.keys(data[0]).map(field => ({ accessorKey: field, header: field } as ColumnDef<any>))
           : []
         }
-        data={data} />
+        data={data}
+        columnFilters={[]}
+        sorting={[]}
+        pagination={{ pageIndex: 0, pageSize: 1 }}
+        onSortingChange={() => { }}
+        onPaginationChange={() => { }}
+        onColumnFiltersChange={() => { }}
+        onRowClick={() => { }} />
     </main>
   </div >
-
-  //         {/* Dynamic Inputs Rendering */}
-  //         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 1 }}>
-
-
-
-  //           <Box sx={{ justifyContent: "center", width: "100%", display: "flex" }}>
-  //             <Button
-  //               variant="contained"
-  //               startIcon={<PlayArrow />}
-  //               onClick={handleRunQuery}
-  //               disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
-  //               size="small"
-  //             >
-  //               Abrufen
-  //             </Button>
-  //           </Box>
-
-  //         </Stack>
-  //       </Box>
-
-  //       <Box sx={{ flex: 1 }}>
-  //         {isError ? (
-  //           <ErrorDisplay error={error} onRetry={refetch} />
-  //         ) : (<DataGrid
-  //           rows={isError ? [] : data}
-  //           rowCount={data.length}
-  //           columns={data && data.length > 0
-  //             ? Object.keys(data[0]).map(field => ({ field, headerName: field, flex: 1, minWidth: 150 } as GridColDef))
-  //             : [{ field: 'noData', headerName: 'Keine Daten', flex: 1 }]
-  //           }
-  //           loading={isLoading}
-  //           slots={{
-  //             noRowsOverlay: NoRowsOverlay
-  //           }}
-  //           getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
-  //           disableRowSelectionOnClick
-  //           sx={{
-  //             '--DataGrid-overlayHeight': '300px',
-  //             mb: 'min(56px,env(safe-area-inset-bottom))',
-  //             maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
-  //             height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
-  //             '& .MuiDataGrid-virtualScroller': {
-  //               minHeight: 0,
-  //               overflow: 'auto',
-  //               overscrollBehavior: 'none',
-  //             },
-  //           }}
-  //         />
-  //         )}
-  //       </Box>
-  //     </Box>
-  //   </Layout>
-  // }
 }
 
 const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: AnalyticsReportDef[] }, AnalyticsReportDef | null>) => {
