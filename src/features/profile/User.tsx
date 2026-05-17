@@ -18,7 +18,7 @@ import { supabase } from "@/lib/supabase";
 import { useUserAttendanceInMonth } from "@/tanstack/events";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
 import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from "@/tanstack/player_data";
-import { useUpdateUserProfile } from "@/tanstack/user";
+import { useUpdateAvatarFromPlayerMutation, useUpdateUserProfile } from "@/tanstack/user";
 import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
 import { iOS, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
@@ -145,6 +145,7 @@ const Playerzone = ({ user, player_data }: { user: UserWithGroups; player_data: 
 
   const updateHideRatingMutation = useUpdateIndexHidden(user);
   const updatePlayer = useUpdatePlayer(user);
+  const updateAvatarFromPlayer = useUpdateAvatarFromPlayerMutation(user);
 
   const elo_change_last_30_days = useMemo(() => {
     return (
@@ -180,21 +181,16 @@ const Playerzone = ({ user, player_data }: { user: UserWithGroups; player_data: 
     );
   };
 
-  const handleChangeProfilePicture = async () => {
+  const handleChangeProfilePicture = () => {
     setLoading(true);
-    const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`);
-    if (error || !list) {
-      toast.error('Fehler beim Laden des Profilbildes');
-      captureException(error);
-      setLoading(false);
-      return;
-    }
-    const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
-
-    await supabase.storage.from('user').remove(filesToRemove);
-
-    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('id', user.id);
-    setLoading(false);
+    updateAvatarFromPlayer.mutate(
+      { avatarUrl: player_data?.rg_avatar_url },
+      {
+        onSuccess: () => toast.success('Profilbild erfolgreich aktualisiert'),
+        onError: (error) => toast.error('Fehler beim Laden des Profilbildes: ' + error.message),
+        onSettled: () => setLoading(false),
+      }
+    );
   };
 
   const genders = [

@@ -1,8 +1,7 @@
 import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
-import { SupabaseEventRepository } from '@/repository/EventRepository';
+import { EventRepository } from '@/repository/EventRepository';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
@@ -26,13 +25,10 @@ export const eventKeys = {
   eventTranformationApplication: (event: string) => [...eventKeys.all, 'transformation-application', event] as const,
 };
 
-export const fetchFullEventPledges = (eventId: string) =>
-  supabase.from('event_bring_pledges').select('*, user: user(*), item: event_bring_items(*)').eq('event', eventId);
-
 export const useEvents = (filter: 'past' | 'upcoming', limit?: number) => {
   return useQuery<EventsUserView[]>({
     queryKey: eventKeys.list(filter),
-    queryFn: () => SupabaseEventRepository.fetchUserEvents(filter),
+    queryFn: () => EventRepository.fetchUserEvents(filter),
   });
 };
 
@@ -40,29 +36,22 @@ export const useEvent = (eventId?: string) =>
   useQuery<EventsUserView | null>({
     queryKey: eventKeys.event(eventId),
     enabled: !!eventId,
-    queryFn: () => SupabaseEventRepository.fetchUserEvent(eventId!),
+    queryFn: () => EventRepository.fetchUserEvent(eventId!),
   });
 
 export const useRecurringEvents = () =>
   useQuery({
     queryKey: eventKeys.recurring(),
-    queryFn: () => SupabaseEventRepository.fetchRecurringEvents(),
+    queryFn: () => EventRepository.fetchRecurringEvents(),
   });
 
 export const useCreateNextOccurences = () => useMutation({
   meta: { suppressErrorToast: true },
-  mutationFn: async () => {
-    const result = await supabase.rpc("create_next_occurrences", {
-      p_horizon: '30 days',
-      p_run_at: formatDateToDatabase(new Date())
-    }).throwOnError();
-
-    return result.data ?? [];
-  },
+  mutationFn: () => EventRepository.createNextOccurrences(),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: eventKeys.list("upcoming") });
   }
-})
+});
 
 export const useEventMatches = (eventId: string) =>
   useQuery<FullMatch[]>({
@@ -74,19 +63,13 @@ export const useComments = (eventId: string) =>
   useQuery({
     queryKey: eventKeys.eventComments(eventId),
     queryFn: async () => {
-      const result = await supabase
-        .from('event_comments')
-        .select('user(id, displayName, avatarUrl), *')
-        .eq('event', eventId)
-        .order('last_update', { ascending: false })
-        .returns<FullComment[]>()
-        .throwOnError();
+      const comments = await EventRepository.fetchComments(eventId);
 
-      const mainComments = (result.data ?? [])
+      const mainComments = comments
         .filter((x) => !x.reply_to)
         .map((x) => ({
           ...x,
-          replies: (result.data ?? []).filter((y) => y.reply_to === x.id),
+          replies: comments.filter((y) => y.reply_to === x.id),
         }));
 
       return mainComments;
@@ -96,11 +79,7 @@ export const useComments = (eventId: string) =>
 export const useBringOverview = (eventId: string) =>
   useQuery<Tables<'event_bring_overview'>[]>({
     queryKey: eventKeys.eventBringOverview(eventId),
-    queryFn: async () => {
-      const result = await supabase.from('event_bring_overview').select('*').eq('event', eventId);
-
-      return result.data ?? [];
-    },
+    queryFn: () => EventRepository.fetchBringOverview(eventId),
   });
 
 export const useBringItems = (eventId?: string) =>
@@ -110,97 +89,48 @@ export const useBringItems = (eventId?: string) =>
     staleTime: 60_000,
     queryFn: async () => {
       if (!eventId) return [];
-      const result = await supabase.from('event_bring_items').select('*').eq('event', eventId);
-
-      return result.data ?? [];
+      return EventRepository.fetchBringItems(eventId);
     },
   });
 
 export const useBringPledges = (eventId: string) =>
   useQuery<FullEventPledges[]>({
     queryKey: eventKeys.eventBringPledges(eventId),
-    queryFn: async () => {
-      const result = await fetchFullEventPledges(eventId);
-
-      return result.data ?? [];
-    },
+    queryFn: () => EventRepository.fetchBringPledges(eventId),
   });
 
 export const useUserAttendanceInMonth = (userId: string, month: number) =>
   useQuery({
     queryKey: eventKeys.eventUserAttendanceInMonth(userId, month),
     queryFn: async () => {
-      const result = await supabase
-        .from('event_attendance_user_mapping')
-        .select('*, eventTime: events!inner(startingDateTime)')
-        .eq('user', userId)
-        .gte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month - 1, 1)))
-        .lte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month, 0, 23, 59, 59)))
-        .throwOnError();
-
-      return result.data.map(x => formatDateFromDatabaseNotNull(x.eventTime.startingDateTime));
+      const result = await EventRepository.fetchUserAttendanceInMonth(userId, month);
+      return (result ?? []).map(x => formatDateFromDatabaseNotNull(x.eventTime.startingDateTime));
     },
   });
 
 export const useAttendance = (eventId: string) =>
   useQuery({
     queryKey: eventKeys.eventAttendance(eventId),
-    queryFn: async () => {
-      const result = await supabase
-        .from('event_attendance_user_mapping')
-        .select('user(id, displayName, avatarUrl, name), *')
-        .eq('event', eventId)
-        .returns<FullAttendance[]>()
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => EventRepository.fetchAttendance(eventId),
   });
 
 export const useEventTransformation = (eventKey: string, open: boolean) =>
   useQuery<EventTransformation | null>({
     queryKey: eventKeys.eventTranformation(eventKey),
     enabled: open,
-    queryFn: async () => {
-      const result = await supabase
-        .schema('public')
-        .from('event_transformations')
-        .select('*')
-        .eq('event_key', eventKey)
-        .maybeSingle();
-      return result.data;
-    },
+    queryFn: () => EventRepository.fetchEventTransformation(eventKey),
   });
 
 export const useEventTransformationApplication = (event: string) =>
   useQuery({
     queryKey: eventKeys.eventTranformationApplication(event),
-    queryFn: async () => {
-      const result = await supabase
-        .schema("public")
-        .from("event_transformation_applications")
-        .select("*")
-        .eq("event", event)
-        .maybeSingle();
-      return result.data;
-    }
-  })
+    queryFn: () => EventRepository.fetchEventTransformationApplication(event),
+  });
 
 export const useDeleteEventTransformation = () =>
   useMutation({
-    mutationFn: async (payload: {
-      eventKey: string;
-    }) => {
-      const result = await supabase
-        .schema('public')
-        .from('event_transformations')
-        .delete()
-        .eq('event_key', payload.eventKey);
-
-      if (result.error) {
-        throw result.error;
-      }
-      return result.data;
+    mutationFn: async (payload: { eventKey: string }) => {
+      return EventRepository.deleteEventTransformation(payload.eventKey);
     },
     onMutate: async (payload) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
@@ -239,33 +169,17 @@ export const useUpsertEventTransformation = () =>
       trigger: TransformationTrigger;
       oneTime: boolean;
     }) => {
-      const result = await supabase
-        .schema('public')
-        .from('event_transformations')
-        .upsert({
-          event_key: payload.eventKey,
-          created_by: payload.userId,
-          lead_time: durationToPostgresInterval(payload.leadTime),
-          next: {
-            title: payload.newTitle,
-            description: payload.newDescription,
-            group: payload.newGroupId,
-            disableAnswerDeadline: payload.disableAnswerDeadline,
-          },
-          one_time: payload.oneTime,
-          active: true,
-          trigger: {
-            attending_lt: payload.trigger.attending_lt,
-          },
-        })
-        .eq('event_key', payload.eventKey)
-        .select('*')
-        .single();
-
-      if (result.error) {
-        throw result.error;
-      }
-      return result.data;
+      return EventRepository.upsertEventTransformation({
+        eventKey: payload.eventKey,
+        userId: payload.userId,
+        leadTime: durationToPostgresInterval(payload.leadTime),
+        newTitle: payload.newTitle,
+        newDescription: payload.newDescription,
+        newGroupId: payload.newGroupId,
+        disableAnswerDeadline: payload.disableAnswerDeadline,
+        trigger: payload.trigger,
+        oneTime: payload.oneTime,
+      });
     },
     onMutate: async (payload) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
@@ -326,27 +240,7 @@ export const useUpsetBringPledges = () => {
         status: string;
       }[];
     }) => {
-      await supabase
-        .from('event_bring_pledges')
-        .delete()
-        .eq('event', event)
-        .eq('user_id', user)
-        .in(
-          'item',
-          items.filter((x) => x.quantity <= 0).map((x) => x.item_id)
-        );
-      await supabase.from('event_bring_pledges').upsert(
-        items
-          .filter((x) => x.quantity > 0)
-          .map((x) => ({
-            event: event,
-            user_id: user,
-            qty: x.quantity,
-            status: x.status,
-            item: x.item_id,
-          })),
-        { onConflict: 'user_id, item' }
-      );
+      await EventRepository.upsertBringPledges(event, user, items);
       return null;
     },
     onMutate: async ({ items, event, user }) => {
@@ -417,7 +311,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: ({ event, newState, user }: { user: User; event: EventsUserView; newState: EventAttendance }) => {
-      return SupabaseEventRepository.updateAttendance(user.id, event.id!, newState);
+      return EventRepository.updateAttendance(user.id, event.id!, newState);
     },
     onMutate: async ({ event, newState, user }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
@@ -523,7 +417,7 @@ export const useAddCommentMutation = (user: User) => {
       comment: string;
       reply_to: FullComment | null;
     }) => {
-      return SupabaseEventRepository.insertComment(user, event.id, comment, reply_to?.id ?? null);
+      return EventRepository.insertComment(user, event.id, comment, reply_to?.id ?? null);
     },
     onMutate: async ({ event, comment, reply_to }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.eventComments(event.id) });
@@ -603,7 +497,7 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: ({ event, isCancelled }: { event: EventsUserView; isCancelled: boolean }) => {
-      return SupabaseEventRepository.updateCancellationForEvent(event.id, isCancelled);
+      return EventRepository.updateCancellationForEvent(event.id, isCancelled);
     },
     onMutate: async ({ event, isCancelled }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
@@ -665,9 +559,9 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
     meta: { suppressErrorToast: true },
     mutationFn: ({ event, type }: { event: EventsUserView; type: DeleteEventType; currentUser: User }) => {
       if (type === 'This Event') {
-        return SupabaseEventRepository.deleteEvent(event.id);
+        return EventRepository.deleteEvent(event.id);
       } else {
-        return SupabaseEventRepository.deleteEventAndUpcomingEvents(event.id, event.key, event.startingDateTime);
+        return EventRepository.deleteEventAndUpcomingEvents(event.id, event.key, event.startingDateTime);
       }
     },
     onMutate: async ({ event, type }) => {
@@ -723,13 +617,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
       items: { name: string; required_qty: number; unit: string; notes: string | null; sort_order: number }[];
       currentUser: User;
     }) => {
-      const result = await supabase
-        .rpc('insert_event_with_bring_items', {
-          p_event: event,
-          p_items: items,
-        })
-        .throwOnError();
-      return result.data;
+      return EventRepository.insertEventWithBringItems(event, items);
     },
     onMutate: async ({ event }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
@@ -779,8 +667,7 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
     }) => {
-      const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
-      return result.data;
+      return EventRepository.updateSingleEvent(id, eventChanges);
     },
     onMutate: async ({ eventChanges, id }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
@@ -847,7 +734,7 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
     }) => {
-      return await SupabaseEventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
+      return EventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
     },
     onMutate: async ({ eventChanges, key, startingDateTime }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });

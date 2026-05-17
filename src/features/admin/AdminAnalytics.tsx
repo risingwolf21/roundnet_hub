@@ -1,4 +1,4 @@
-import { RpcName, useAdminAnalytics } from "@/tanstack/admin"
+import { RpcName, useAdminAnalytics, useAnalyticsTableOptions } from "@/tanstack/admin"
 
 import { add, format } from "date-fns"
 import { useState } from "react"
@@ -16,8 +16,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { DialogProps, useDialogs } from "@/contexts/DialogsProvider"
-import { supabase } from "@/lib/supabase"
-import { useQuery } from "@tanstack/react-query"
 import { ColumnDef } from "@tanstack/react-table"
 import { ChevronDown } from "lucide-react"
 import { useGrants } from "../auth/GrantsContext"
@@ -153,14 +151,7 @@ const AsyncSelect = ({
   onChange: (val: any) => void,
   labelField?: string
 }) => {
-  const { data = [], isLoading } = useQuery<{ id: string, [labelField]: string }[]>({
-    queryKey: ['table_select', table],
-    queryFn: async () => {
-      const { data, error } = await supabase.from(table as any).select(`id, ${labelField}`).limit(100);
-      if (error) throw error
-      return (data as any) || [];
-    }
-  });
+  const { data = [], isLoading } = useAnalyticsTableOptions(table, labelField);
 
   return <Select
     id={id}

@@ -1,5 +1,5 @@
 import { queryClient } from "@/lib/queryClient";
-import { supabase } from "@/lib/supabase";
+import { UserRepository } from "@/repository/UserRepository";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { dataURLtoFile, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
@@ -13,25 +13,16 @@ export const useProfile = (userId: string) =>
   useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
-      const result = await supabase.schema('public')
-        .from('user')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
-        .throwOnError();
-
-      const playerResult = await supabase.schema('games')
-        .from('players')
-        .select('*')
-        .eq('linked_user_id', userId)
-        .maybeSingle()
-        .throwOnError();
+      const [user, player] = await Promise.all([
+        UserRepository.fetchProfile(userId),
+        UserRepository.fetchLinkedPlayer(userId),
+      ]);
 
       return {
-        user: result?.data ?? null,
-        player: playerResult?.data ?? null,
-        avatarUrl: result?.data?.avatarUrl || playerResult?.data?.rg_avatar_url || null,
-        displayName: result?.data?.name || playerResult?.data?.display_name || 'Unbekannter Spieler',
+        user: user ?? null,
+        player: player ?? null,
+        avatarUrl: user?.avatarUrl || player?.rg_avatar_url || null,
+        displayName: user?.name || player?.display_name || 'Unbekannter Spieler',
       };
     },
   });
@@ -39,7 +30,7 @@ export const useProfile = (userId: string) =>
 const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
   const compressedFile = await readFile(file);
   if (compressedFile && typeof compressedFile === 'string') {
-    const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`)
+    const { data: list, error } = await UserRepository.listAvatarFiles(user.id);
 
     if (error || !list) {
       throw error;
@@ -48,14 +39,14 @@ const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
     const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
 
     if (filesToRemove.length > 0) {
-      await supabase.storage.from('user').remove(filesToRemove);
+      await UserRepository.removeAvatarFiles(filesToRemove);
     }
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('user')
-      .upload(`${user.id}/${fileName}`, dataURLtoFile(compressedFile, fileName), {
-        upsert: true,
-      });
+    const { data: uploadData, error: uploadError } = await UserRepository.uploadAvatar(
+      `${user.id}/${fileName}`,
+      dataURLtoFile(compressedFile, fileName),
+      { upsert: true }
+    );
     if (uploadError) {
       throw uploadError;
     }
@@ -63,9 +54,7 @@ const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
       throw new Error("Error uploading the image")
     }
 
-    const { data } = supabase.storage.from('user').getPublicUrl(uploadData.path);
-
-    return data.publicUrl;
+    return UserRepository.getAvatarUrl(uploadData.path);
   }
   return null;
 }
@@ -92,13 +81,13 @@ export const useUpdateUserProfile = (user: User) =>
         newAvatarUrl = await uploadAvatarImage(result, fileName, user);
       }
 
-      const { data } = await supabase.from('user')
-        .update({ name: fullName, displayName, avatarUrl: newAvatarUrl ?? avatarUrl })
-        .eq('id', user.id)
-        .select("*")
-        .maybeSingle()
-        .throwOnError();
+      const data = await UserRepository.updateProfile(user.id, {
+        name: fullName,
+        displayName,
+        avatarUrl: newAvatarUrl ?? avatarUrl,
+      });
 
+      const { supabase } = await import('@/lib/supabase');
       const { error } = await supabase.auth.updateUser({
         data: { displayName, name: fullName, avatarUrl: newAvatarUrl ?? avatarUrl },
       });
@@ -136,5 +125,26 @@ export const useUpdateUserProfile = (user: User) =>
       if (context?.previousUser) {
         queryClient.setQueryData(authKeys.currentUser(user.id), context.previousUser);
       }
+    },
+  });
+
+export const useUpdateAvatarFromPlayerMutation = (user: User) =>
+  useMutation({
+    mutationFn: async ({ avatarUrl }: { avatarUrl: string | null | undefined }) => {
+      const { data: list, error } = await UserRepository.listAvatarFiles(user.id);
+      if (error || !list) throw error ?? new Error('Failed to list avatar files');
+
+      const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
+      if (filesToRemove.length > 0) {
+        await UserRepository.removeAvatarFiles(filesToRemove);
+      }
+
+      return UserRepository.updateProfile(user.id, { avatarUrl: avatarUrl ?? null });
+    },
+    onError: (error) => {
+      captureException(error, {
+        extra: { userId: user.id, userName: user.name },
+        tags: { type: 'UpdateAvatarFromPlayer', scope: 'user' },
+      });
     },
   });
