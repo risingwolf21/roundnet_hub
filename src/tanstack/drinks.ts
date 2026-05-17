@@ -1,10 +1,8 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
-import { fetchFullHistory } from '@/repository/DrinkRepository';
-import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
+import { DrinkRepository } from '@/repository/DrinkRepository';
+import { DrinkCounter } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import _ from "lodash";
 
 
 export const drinkKeys = {
@@ -21,73 +19,31 @@ export const drinkKeys = {
 export const useAllDrinksAsAdmin = () =>
   useQuery<Drink[]>({
     queryKey: drinkKeys.listAdmin(),
-    queryFn: async () => {
-      const result = await supabase.from('drink').select('*');
-      return result.data ?? [];
-    },
+    queryFn: () => DrinkRepository.fetchAllDrinks(),
   });
 
 export const usePaymentHistory = (userId: string) =>
   useQuery({
     queryKey: drinkKeys.paymentHistory(userId),
-    queryFn: async () => {
-      const result = await supabase
-        .from('history')
-        .select('*, drink ( id, name, price ), payments ( paymentState ), voucher')
-        .eq('payments.paymentState', 'Open')
-        .not('payments', 'is', null)
-        .eq('user', userId)
-        .returns<PaymentHistory[]>()
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => DrinkRepository.fetchPaymentHistory(userId),
   });
 
 export const useVouchers = () =>
   useQuery({
     queryKey: drinkKeys.vouchers(),
-    queryFn: async () => {
-      const result = await supabase.from('user_vouchers').select('*').throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => DrinkRepository.fetchVouchers(),
   });
 
 export const useDrinks = () =>
   useQuery({
     queryKey: drinkKeys.drinks(),
-    queryFn: async () => {
-      const result = await supabase
-        .from('drink')
-        .select('*')
-        .order('id', { ascending: false })
-        .returns<Drink[]>()
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => DrinkRepository.fetchDrinks(),
   });
 
 export const useInfiniteUserHistory = (userId: string, count: number = 20) =>
   useInfiniteQuery({
     queryKey: drinkKeys.userHistory(userId),
-    queryFn: async ({ pageParam }) => {
-      const { data } = await fetchFullHistory()
-        .not('user', 'is', null)
-        .eq('user.id', userId)
-        .range(pageParam * count, pageParam * count + count - 1)
-        .order('created_at', { ascending: false })
-        .returns<FullHistory[]>()
-        .throwOnError();
-
-      const hasMore = (data?.length ?? 0) === count;
-
-      return {
-        data: data ?? [],
-        nextPage: hasMore ? pageParam + 1 : undefined,
-      };
-    },
+    queryFn: ({ pageParam }) => DrinkRepository.fetchUserHistoryPage(userId, count, pageParam),
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
   });
@@ -96,8 +52,7 @@ export const useInsertHistoryEntryMutation = (user: User) => {
   return useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: async ({ drinks }: { drinks: DrinkCounter[] }) => {
-      const drinksToAdd = drinks.map((x) => ({ id: x.id, count: x.count, price: x.price }));
-      return supabase.rpc('add_drinks_history', { items: drinksToAdd }).throwOnError();
+      return DrinkRepository.insertHistoryItems(drinks);
     },
     onError: (error, variables) => {
       captureException(error, {
@@ -120,13 +75,7 @@ export const useInsertHistoryEntryMutation = (user: User) => {
 export const useDeleteDrinkMutation = () => useMutation({
   meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
-    const result = await supabase
-      .from("drink")
-      .delete()
-      .eq("id", drink.id)
-      .throwOnError();
-
-    return result;
+    return DrinkRepository.deleteDrink(drink.id);
   },
   onMutate: async (drink) => {
     await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
@@ -172,13 +121,7 @@ export const useDeleteDrinkMutation = () => useMutation({
 export const useInsertDrinkMutation = () => useMutation({
   meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
-    const drinkInsert = _.omit(drink, ['id']);
-    const result = await supabase
-      .from("drink")
-      .insert({ ...drinkInsert })
-      .throwOnError();
-
-    return result;
+    return DrinkRepository.insertDrink(drink);
   },
   onMutate: async (drink) => {
     await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
@@ -222,14 +165,7 @@ export const useInsertDrinkMutation = () => useMutation({
 export const useUpdateDrinkMutation = () => useMutation({
   meta: { suppressErrorToast: true },
   mutationFn: async (drink: Drink) => {
-    const drinkUpdate = _.omit(drink, ['id']);
-    const result = await supabase
-      .from("drink")
-      .update({ ...drinkUpdate })
-      .eq("id", drink.id)
-      .throwOnError();
-
-    return result;
+    return DrinkRepository.updateDrink(drink);
   },
   onMutate: async (drink) => {
     await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
@@ -286,12 +222,7 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
   useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: async (newEntry: FullHistory) => {
-      const result = await supabase
-        .from('history')
-        .update({ count: newEntry.count, amount: newEntry.amount })
-        .eq('id', newEntry.id)
-        .throwOnError();
-      return result.data;
+      return DrinkRepository.updateHistoryEntry(newEntry.id, newEntry.count, newEntry.amount);
     },
     onMutate: async (newEntry: FullHistory) => {
       await queryClient.cancelQueries({ queryKey: drinkKeys.userHistory(user.id) });

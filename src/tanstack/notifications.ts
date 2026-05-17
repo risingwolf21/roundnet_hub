@@ -1,5 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
+import { NotificationsRepository } from '@/repository/NotificationsRepository';
 import { Tables } from '@/types/helpers';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
@@ -18,30 +18,13 @@ export const useAllNotifications = (user: User | null) =>
   useQuery<Notification[]>({
     queryKey: notificationKeys.all,
     enabled: !!user,
-    queryFn: async () => {
-      const result = await supabase
-        .schema('notifications')
-        .from('notifications')
-        .select('*')
-        .eq('user', user!.id)
-        .throwOnError()
-        .order('created_at', { ascending: false });
-
-      return result.data ?? [];
-    },
+    queryFn: () => NotificationsRepository.fetchNotifications(user!.id),
   });
 
 export const useDismissNotification = () =>
   useMutation({
     mutationFn: async ({ notficationId }: { notficationId: string }) => {
-      const result = await supabase
-        .schema('notifications')
-        .from('notifications')
-        .update({ dismissed_at: formatDateToDatabase(new Date()) })
-        .eq('id', notficationId)
-        .throwOnError();
-
-      return result;
+      return NotificationsRepository.dismissNotification(notficationId);
     },
     onMutate: async ({ notficationId }) => {
       await queryClient.cancelQueries({ queryKey: notificationKeys.all });
@@ -82,14 +65,7 @@ export const useDismissNotification = () =>
 export const useMarkNotificationsAsRead = (user: User) =>
   useMutation({
     mutationFn: async () => {
-      const result = await supabase
-        .schema('notifications')
-        .from('notifications')
-        .delete()
-        .eq('user', user.id)
-        .throwOnError();
-
-      return result;
+      return NotificationsRepository.clearAllNotifications(user.id);
     },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: notificationKeys.all });
@@ -120,26 +96,13 @@ export const useMarkNotificationsAsRead = (user: User) =>
 export const useNotificationTags = (user: User) =>
   useQuery<Tables<'notifications', 'user_notification_preferences'>[]>({
     queryKey: notificationKeys.preferences(user.id),
-    queryFn: async () => {
-      const result = await supabase
-        .schema('notifications')
-        .from('user_notification_preferences')
-        .select('*')
-        .eq('user', user.id)
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => NotificationsRepository.fetchNotificationPreferences(user.id),
   });
 
 export const useNotificationTopics = () =>
   useQuery<Tables<'notifications', 'notification_topics'>[]>({
     queryKey: notificationKeys.topics(),
-    queryFn: async () => {
-      const result = await supabase.schema('notifications').from('notification_topics').select('*').throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => NotificationsRepository.fetchNotificationTopics(),
   });
 
 export const useUpdateNotificationPreferences = (user: User) =>
@@ -157,18 +120,7 @@ export const useUpdateNotificationPreferences = (user: User) =>
       scopeType: string;
       scopeId?: string;
     }) => {
-      const result = await supabase
-        .schema('notifications')
-        .rpc('set_notification_pref', {
-          p_topic: topic,
-          p_enabled: enabled,
-          p_channel: channel,
-          p_scope_type: scopeType,
-          p_scope_id: scopeId,
-        })
-        .throwOnError();
-
-      return result.data;
+      return NotificationsRepository.setNotificationPreference({ topic, enabled, channel, scopeType, scopeId });
     },
     onMutate: async ({ topic, enabled, channel, scopeType, scopeId }) => {
       await queryClient.cancelQueries({ queryKey: notificationKeys.tags(user.id) });

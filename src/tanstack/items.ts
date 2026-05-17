@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
-import { SupabaseKeysRepository } from '@/repository/KeysRepository';
+import { KeysRepository } from '@/repository/KeysRepository';
 import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
@@ -16,20 +15,20 @@ export const itemKeys = {
 export const useAllItems = () =>
   useQuery<FullItemHolder[]>({
     queryKey: itemKeys.list(),
-    queryFn: () => SupabaseKeysRepository.getItems(),
+    queryFn: () => KeysRepository.getItems(),
   });
 
 export const useItemHistory = (id: number) =>
   useQuery<FullItemHistory[]>({
     queryKey: itemKeys.history(id),
-    queryFn: () => SupabaseKeysRepository.loadKeyHistory(id),
+    queryFn: () => KeysRepository.loadKeyHistory(id),
   });
 
 export const useHandoverKeyMutation = () =>
   useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: async ({ keyHolder, user }: { keyHolder: FullItemHolder; user: User }) => {
-      return SupabaseKeysRepository.giveItemToUser(keyHolder, user);
+      return KeysRepository.giveItemToUser(keyHolder, user);
     },
     onMutate: async ({ keyHolder, user }) => {
       await queryClient.cancelQueries({ queryKey: itemKeys.list() });
@@ -96,16 +95,7 @@ export const useHandoverKeyMutation = () =>
 export const useUpdateItemMutation = () =>
   useMutation({
     mutationFn: async ({ item }: { item: TablesUpdate<'items'> & { id: number } }) => {
-      const result = await supabase
-        .rpc('edit_item', {
-          p_color: item.color,
-          p_id: item.id,
-          p_name: item.name,
-          p_type: item.type,
-        })
-        .throwOnError();
-
-      return result.data;
+      return KeysRepository.updateItem(item);
     },
     onMutate: async ({ item }) => {
       await queryClient.cancelQueries({ queryKey: itemKeys.list() });
@@ -149,9 +139,7 @@ export const useUpdateItemMutation = () =>
 export const useInsertItemMutation = () =>
   useMutation({
     mutationFn: async ({ item }: { item: TablesInsert<'items'> }) => {
-      const result = await supabase.from('items').insert(item).select().single().throwOnError();
-
-      return result.data;
+      return KeysRepository.insertItem(item);
     },
     onMutate: async ({ item }) => {
       await queryClient.cancelQueries({ queryKey: itemKeys.list() });

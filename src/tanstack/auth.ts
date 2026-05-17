@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase';
-import { SupabaseUserRepository } from '@/repository/UserRepository';
+import { GrantsRepository } from '@/repository/GrantsRepository';
+import { UserRepository } from '@/repository/UserRepository';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
@@ -21,8 +21,8 @@ export const useCurrentUser = (session: Session | null) =>
       if (!session) return null;
       setUser({ email: session.user.email, id: session.user.id, ...(_.omit(session.user, ['id', 'email'])) });
       const [{ data: user, error }, groups] = await Promise.all([
-        SupabaseUserRepository.fetchUser(session.user.id),
-        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
+        UserRepository.fetchUser(session.user.id),
+        UserRepository.fetchGroupsForUser(session.user.id),
       ]);
       if (error) {
         captureException(error);
@@ -44,11 +44,9 @@ export const useCurrentUserGrants = (userId?: string | null) =>
     queryFn: async () => {
       if (!userId) return { perm: [], feat: [] };
 
-      const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
+      const data = await GrantsRepository.fetchUserGrants(userId);
 
-      if (error) throw error;
-
-      return data.reduce(
+      return (data ?? []).reduce(
         (prev, curr) => {
           if (curr.key && curr.kind) {
             switch (curr.kind) {
