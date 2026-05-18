@@ -1,5 +1,8 @@
 -- install tests utilities
 -- install pgtap extension for testing
+
+SELECT plan(0);
+
 create extension if not exists pgtap with schema extensions;
 /*
 ---------------------
