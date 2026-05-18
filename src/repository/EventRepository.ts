@@ -151,29 +151,19 @@ export const EventRepository = {
     const result = await supabase
       .schema('public')
       .from('events_user_view')
-      .select('*')
+      .select('*, group: event_group(*)')
       .eq('id', eventId)
       .single()
       .throwOnError();
 
     if (result.data) {
-      const { data: group } = await supabase
-        .schema('public')
-        .from('event_group')
-        .select('*')
-        .eq('id', result.data.group ?? '')
-        .maybeSingle();
-
-      return {
-        ...result.data,
-        group: group,
-      } as EventsUserView;
+      return result.data as unknown as EventsUserView;
     }
     return null;
   },
 
   async fetchUserEvents(fetchMode: 'past' | 'upcoming', limit?: number): Promise<EventsUserView[]> {
-    let query = supabase.schema('public').from('events_user_view').select('*').throwOnError();
+    let query = supabase.schema('public').from('events_user_view').select('*, group: event_group(*)').throwOnError();
 
     if (fetchMode === 'past') {
       query = query
@@ -194,16 +184,10 @@ export const EventRepository = {
     const result = await query;
 
     if (result.data) {
-      const foundGroups = [...new Set(result.data.map((x) => x.group).filter((x) => x !== null))];
-      const { data: groups } = await supabase.schema('public').from('event_group').select('*').in('id', foundGroups);
-
-      return result.data.map((r) => {
-        return {
-          ...r,
-          group: groups?.find((x) => x.id === r.group) ?? null,
-          max_attendees_trials: r.max_trial_attendees,
-        } as EventsUserView;
-      });
+      return result.data.map((r) => ({
+        ...r,
+        max_attendees_trials: r.max_trial_attendees,
+      } as unknown as EventsUserView));
     }
     return [];
   },

@@ -21,23 +21,24 @@ export const GamesRepository = {
     return result.data ?? [];
   },
 
-  async fetchAvailablePlayers(): Promise<(PlayerWithSimpleUser | Player)[]> {
-    const { data: simpleUsers } = await fetchSimpleUser();
-    const { data: players } = await supabase.schema('games').from('players').select('*');
+  async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
+    const [{ data: simpleUsers }, { data: players }] = await Promise.all([
+      fetchSimpleUser(),
+      supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null),
+    ]);
 
-    const usersById = _.keyBy(simpleUsers || [], 'id');
-
-    const combinedPlayers = (players || []).map((player) => {
-      if (player.linked_user_id && usersById[player.linked_user_id]) {
-        return {
-          ...player,
-          ...usersById[player.linked_user_id],
-        } as PlayerWithSimpleUser;
-      }
-      return { ...player } as Player;
-    });
-
-    return combinedPlayers.sort((x, y) => (x.display_name || '').localeCompare(y.display_name || ''));
+    return _(players) // start sequence
+      .keyBy('player') // create a dictionary of the 1st array
+      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
+      .values() // turn the combined dictionary to array
+      .value()
+      .map(
+        (x) =>
+          ({
+            ...x,
+          }) as PlayerWithSimpleUser
+      )
+      .sort((x, y) => x.name.localeCompare(y.name));
   },
 
   async reportScores(
