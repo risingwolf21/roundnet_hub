@@ -30,17 +30,21 @@ export const useMatch = (matchId?: string) =>
 
       if (!result.data) return null;
 
-      const p1a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.player).single();
-      const p1b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.player).single();
-      const p2a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.player).single();
-      const p2b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.player).single();
+      const playerIds = [
+        result.data.team_a.player_1.player,
+        result.data.team_b.player_1.player,
+        result.data.team_a.player_2.player,
+        result.data.team_b.player_2.player,
+      ];
+      const { data: users } = await supabase.from('user').select('*').in('id', playerIds);
+      const findUser = (id: string) => users?.find((u) => u.id === id) ?? null;
 
       return {
         ...result.data,
-        player_1a: p1a.data,
-        player_1b: p1b.data,
-        player_2a: p2a.data,
-        player_2b: p2b.data,
+        player_1a: findUser(result.data.team_a.player_1.player),
+        player_1b: findUser(result.data.team_b.player_1.player),
+        player_2a: findUser(result.data.team_a.player_2.player),
+        player_2b: findUser(result.data.team_b.player_2.player),
       };
     },
   });
