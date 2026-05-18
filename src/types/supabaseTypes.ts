@@ -53,6 +53,10 @@ export function eventInThePast(x: EventsUserView | EventWithGroup) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
+export function eventHasStarted(x: EventsUserView | EventWithGroup) {
+  return isBefore(x.startingDateTime!, Date.now());
+}
+
 export function maxAttendeesExceeded(x: EventsUserView, attendance: Attendance[]) {
   if (!x.maxAttendees) return false;
   return attendance.filter((y) => y.state === 'Attending').length >= x.maxAttendees && x.maxAttendees > 0;
