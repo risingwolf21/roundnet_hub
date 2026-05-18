@@ -113,10 +113,16 @@ export const ChallengeRepository = {
   },
 
   async updateChallenge(update: TablesUpdate<'challenge'>) {
+    const sanitized: TablesUpdate<'challenge'> = {
+      ...update,
+      ...(update.category_options !== undefined && {
+        category_options: Array.isArray(update.category_options) ? update.category_options : null,
+      }),
+    };
     const result = await supabase
       .from('challenge')
-      .update(update)
-      .eq('id', update.id ?? '')
+      .update(sanitized)
+      .eq('id', sanitized.id ?? '')
       .throwOnError();
     return result.data;
   },

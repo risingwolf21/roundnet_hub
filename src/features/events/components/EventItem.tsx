@@ -27,6 +27,10 @@ function eventInThePast(x: EventsUserView) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
+function eventHasStarted(x: EventsUserView) {
+  return isBefore(x.startingDateTime!, Date.now());
+}
+
 const EventItemSecondaryActions = ({
   event,
   attendEvent,
@@ -60,7 +64,7 @@ const EventItemSecondaryActions = ({
           declineEvent();
           e.stopPropagation();
         }}
-        disabled={event.isCancelled || eventInThePast(event)}
+        disabled={event.isCancelled || eventHasStarted(event)}
       >
         {
           attendanceUpdating ? <Spinner /> : <X className='size-5' />
@@ -73,7 +77,7 @@ const EventItemSecondaryActions = ({
           variant={"ghost"}
           size="icon-lg"
           className={`size-8 bg-success text-success-foreground`}
-          disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
+          disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event)}
         >
           {
             attendanceUpdating ? <Spinner /> : <Megaphone className="size-5" />
@@ -88,7 +92,7 @@ const EventItemSecondaryActions = ({
             attendEvent();
             e.stopPropagation();
           }}
-          disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
+          disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event)}
         >
           {
             attendanceUpdating ? <Spinner /> : <Check className='size-5' />
