@@ -1,8 +1,5 @@
 -- install tests utilities
 -- install pgtap extension for testing
-
-SELECT plan(0);
-
 create extension if not exists pgtap with schema extensions;
 /*
 ---------------------
@@ -49,3 +46,14 @@ create extension "supabase-dbdev";
 -- Install test helpers
 select dbdev.install('basejump-supabase_test_helpers');
 create extension if not exists "basejump-supabase_test_helpers" version '0.0.6';
+
+\if :{?TESTDIR}
+  \cd :TESTDIR
+\endif
+
+-- Verify setup with a no-op test
+begin;
+select plan(1);
+select ok(true, 'Pre-test hook completed successfully');
+select * from finish();
+rollback;
