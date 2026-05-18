@@ -50,8 +50,10 @@ export const GamesRepository = {
   },
 
   async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
-    const { data: simpleUsers } = await fetchSimpleUser();
-    const { data: players } = await supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null);
+    const [{ data: simpleUsers }, { data: players }] = await Promise.all([
+      fetchSimpleUser(),
+      supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null),
+    ]);
 
     return _(players) // start sequence
       .keyBy('player') // create a dictionary of the 1st array
