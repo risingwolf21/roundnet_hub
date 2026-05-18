@@ -1,13 +1,14 @@
 // src/features/grants/useUserGrantsQuery.ts
+import { Feature, Permission } from '@/generated/supabase-types';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { authKeys, useCurrentUserGrants } from '@/tanstack/auth';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
-export type GrantsState = { perm: Set<string>; feat: Set<string> };
+export type GrantsState = { perm: string[]; feat: string[] };
 export type Mode = 'all' | 'any';
 
-const empty: GrantsState = { perm: new Set(), feat: new Set() };
+const empty: GrantsState = { perm: [], feat: [] };
 
 export function useUserGrantsQuery(userId: string | undefined | null) {
   const q = useCurrentUserGrants(userId);
@@ -75,18 +76,27 @@ export function useUserGrantsQuery(userId: string | undefined | null) {
     };
   }, [userId]);
 
-  const toArray = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
-  const check = (need: string[], set: Set<string>, mode: Mode) =>
-    need.length === 0 ? true : mode === 'any' ? need.some((k) => set.has(k)) : need.every((k) => set.has(k));
+  const toArray = (v?: Permission | Permission[] | Feature | Feature[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  const ensureArray = (list: any): string[] => Array.isArray(list) ? list : [];
+
+  const check = (need: string[], list: any, mode: Mode) => {
+    const safeList = ensureArray(list);
+
+    if (need.length === 0) return true;
+
+    return mode === 'any'
+      ? need.some((k) => safeList.includes(k))
+      : need.every((k) => safeList.includes(k));
+  };
 
   const has = useMemo(() => {
-    const hasPerm = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
-    const hasFeat = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
+    const hasPerm = (k: Permission | Permission[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
+    const hasFeat = (k: Feature | Feature[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
     return { hasPerm, hasFeat };
   }, [q.data]);
 
   return {
-    isEmpty: q.data?.perm.size === 0 && q.data.feat.size === 0,
+    isEmpty: (q.data?.perm.length === 0) && (q.data?.feat.length === 0),
     refetchUserGrants: q.refetch,
     loading: q.isFetching,
     grants: q.data ?? empty,

@@ -1,5 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
+import { PlayerDataRepository } from '@/repository/PlayerDataRepository';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { GamesTableUpdate } from '../types/supabaseTypes';
@@ -13,41 +13,20 @@ export const playerDataKeys = {
 export const useEloHistory = (user: User) =>
   useQuery({
     queryKey: playerDataKeys.eloHistory(user.id),
-    queryFn: async () => {
-      const result = await supabase.schema('games').from('elo_history').select('*').eq('user', user.id);
-
-      return result.data ?? [];
-    },
+    queryFn: () => PlayerDataRepository.fetchEloHistory(user.id),
   });
 
 export const usePlayer = (user: User) =>
   useQuery<PlayerPublic | null>({
     queryKey: playerDataKeys.player(user.id),
-    queryFn: async () => {
-      const result = await supabase
-        .schema('games')
-        .from('players_public')
-        .select('*')
-        .eq('player', user.id)
-        .maybeSingle()
-        .throwOnError();
-
-      return result.data;
-    },
+    queryFn: () => PlayerDataRepository.fetchPublicPlayer(user.id),
   });
 
 export const useUpdatePlayer = (user: User) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ updates }: { updates: GamesTableUpdate<'players'> }) => {
-      const result = await supabase
-        .schema('games')
-        .from('players')
-        .update(updates)
-        .eq('player', user.id)
-        .select('*')
-        .throwOnError();
-
-      return result.data;
+      return PlayerDataRepository.updatePlayer(user.id, updates);
     },
     onMutate: async ({ updates }) => {
       await queryClient.cancelQueries({ queryKey: playerDataKeys.player(user.id) });
@@ -86,15 +65,7 @@ export const useUpdatePlayer = (user: User) =>
 export const useUpdateIndexHidden = (user: User) =>
   useMutation({
     mutationFn: async ({ hide_rating }: { hide_rating: boolean }) => {
-      const result = await supabase
-        .schema('games')
-        .from('players')
-        .update({ hide_rating: hide_rating })
-        .eq('player', user.id)
-        .select('*')
-        .throwOnError();
-
-      return result.data;
+      return PlayerDataRepository.updateIndexHidden(user.id, hide_rating);
     },
     onMutate: async ({ hide_rating }) => {
       await queryClient.cancelQueries({ queryKey: playerDataKeys.player(user.id) });

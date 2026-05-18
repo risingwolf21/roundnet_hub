@@ -49,7 +49,7 @@ export function answerDeadlineExpired(x: EventsUserView) {
   return isBefore(x.answerDeadline, Date.now());
 }
 
-export function eventInThePast(x: EventsUserView) {
+export function eventInThePast(x: EventsUserView | EventWithGroup) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
@@ -139,16 +139,6 @@ export type ChallengePointsView = {
   displayName: string;
   total_points: number;
   user: string;
-};
-
-export type UserMatchesView = {
-  created_at: string;
-  event: string | null;
-  id: string;
-  team_a_name: string;
-  team_b_name: string;
-  set_results: string;
-  rated: boolean;
 };
 
 type Modify<T, R> = Omit<T, keyof R> & R;

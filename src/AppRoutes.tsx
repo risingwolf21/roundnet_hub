@@ -1,51 +1,13 @@
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
-import ErrorRouteElement from './components/ErrorRouteElement';
-import AuthLayout from './components/layout/AuthLayout';
-import { AdminAnalytics } from './features/admin/AdminAnalytics';
 import { useApplication } from './features/auth/ApplicationContext';
-import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
-import { GrantsProvider } from './features/auth/GrantsContext';
-import GrantsManager from './features/grants/GrantsManager';
-import HomePage from './features/homepage/HomePage';
-import UserScreenProvider from './features/profile/User';
-import { lazyWithRetry } from './hooks/lazyWithRetry';
+
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
-const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreen.page'));
-const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
-const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinks.page'));
-const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
-const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
-const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
-const AdminHistoryScreenProvider = lazyWithRetry(() => import('./features/admin/AdminHistoryScreen'));
-const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/AdminUserList'));
-const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Drinklist.page'));
-const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
-const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
-const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
-const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList.page'));
-const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation'));
-const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
-const GameList = lazyWithRetry(() => import('./features/games/GameList'));
-const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
-const SupabaseClient = lazyWithRetry(() => import('./features/supabase/SupabaseClient'));
-const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
-const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
-const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
-const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
-const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
-const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
-const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
-const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
-const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
-const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/PlayerzoneProfile'));
-const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
-const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
-const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
+import { GrantsProvider } from './features/auth/GrantsContext';
+import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
   const { user } = useApplication();
@@ -58,62 +20,49 @@ export const AppRoutes = () => {
 const PrivateRoute = () => {
   const { user } = useApplication();
   const location = useLocation();
+
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
-  return (
-    <GrantsProvider user={user}>
-      <DialogsProvider>
-        <NotificationsProvider
-          slotProps={{
-            snackbar: {
-              sx: {
-                bottom: 'calc(8px + env(safe-area-inset-bottom))',
-              },
-            },
-          }}
-        >
-          <Outlet />
-        </NotificationsProvider>
-      </DialogsProvider>
-    </GrantsProvider>
-  );
+  return <GrantsProvider user={user}>
+    <Pages.MainLayout>
+      <Pages.DialogsProvider>
+        <Outlet />
+      </Pages.DialogsProvider>
+    </Pages.MainLayout>
+  </GrantsProvider>
 };
 
 const createRouter = (user: UserWithGroups | null) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
-      element: <AuthLayout />,
+      element: <Pages.AuthLayout />,
       children: [
         {
           path: 'login',
-          element: <LoginScreen />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.LoginForm />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: <SignUpScreen />,
-          errorElement: <ErrorRouteElement />,
+          element: <Pages.SignUpForm />,
+          errorElement: <Pages.ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: <ForgotPasswordScreen />,
-          errorElement: <ErrorRouteElement />,
-        },
-        {
-          path: 'reset-password',
-          element: <ResetPasswordScreen />,
-          errorElement: <ErrorRouteElement />,
-        },
+          element: <Pages.ForgotPassword />,
+          errorElement: <Pages.ErrorRouteElement />,
+        }
       ],
     },
     {
       path: '/',
       element: <PrivateRoute />,
+      errorElement: <Pages.ErrorRouteElement />,
       children: [
         {
           path: '',
-          errorElement: <ErrorRouteElement />,
+          errorElement: <Pages.ErrorRouteElement />,
           children: [
             {
               index: true,
@@ -129,59 +78,39 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/help',
-              element: <AppInformation />,
+              element: <Pages.AppInformation />,
             },
             {
               path: '/home',
-              element: <HomePage />,
-            },
-            {
-              path: '/reset-password',
-              element: <ResetPasswordScreen />,
+              element: <Pages.HomePage />,
             },
             {
               path: '/keys',
-              element: <ItemHolderScreen />,
+              element: <Pages.ItemHolderScreen />,
             },
             {
               path: '/notifications',
-              element: <NotificationScreen />,
+              element: <Pages.NotificationScreen />,
             },
             {
               path: '/user',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
-                  element: <UserScreenProvider />,
-                },
-                {
-                  path: 'playerzone',
-                  element: <PlayerzoneProfileDialog />,
-                },
-                {
-                  path: 'notifications',
-                  element: <NotificationsDialog />,
-                },
-                {
-                  path: 'profile',
-                  element: <ContactInformation />,
-                },
-                {
-                  path: 'reset-password',
-                  element: <ResetPassword />,
-                },
+                  element: <Pages.User />,
+                }
               ],
             },
             {
               path: '/drinks',
               element: (
-                <Has feat={'drinks'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'drinks'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -189,26 +118,26 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <DrinkListScreenProvider />,
+                  element: <Pages.DrinkListScreen />,
                 },
                 {
                   path: 'history',
-                  element: <HistoryScreenProvider />,
+                  element: <Pages.HistoryScreenProvider />,
                 },
                 {
                   path: 'payments',
-                  element: <PayDrinksScreenProvider />,
+                  element: <Pages.PayDrinksScreen />,
                 },
               ],
             },
             {
               path: '/challenges',
               element: (
-                <Has feat={'challenges'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'challenges'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -216,18 +145,18 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <ChallengeScreen />,
+                  element: <Pages.ChallengeList />,
                 },
                 {
                   path: ':challengeId',
-                  element: <ChallengeInfoScreen />,
+                  element: <Pages.ChallengeInfoScreen />,
                 },
               ],
             },
             {
               path: '/groups',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -235,22 +164,22 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <PublicGroupList />,
+                  element: <Pages.PublicGroupList />,
                 },
                 {
                   path: ':groupId',
-                  element: <PublicGroupInformation />,
+                  element: <Pages.PublicGroupInformation />,
                 },
               ],
             },
             {
               path: '/training',
               element: (
-                <Has feat={'events'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'events'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -258,26 +187,26 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <EventScreenProvider />,
+                  element: <Pages.EventScreen />,
                 },
                 {
                   path: 'recurringEvents',
-                  element: <RecurringEvents />,
+                  element: <Pages.RecurringEvents />,
                 },
                 {
                   path: 'event/:selectedEventId',
-                  element: <EventInformationProvider />,
+                  element: <Pages.EventInformation />,
                 },
               ],
             },
             {
               path: '/matches',
               element: (
-                <Has feat={'games'} fallback={<FeatureNotAvailable />}>
+                <Has feat={'games'} fallback={<Pages.FeatureLockedRouteElement />}>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -285,75 +214,73 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <GameList />,
-                },
-                {
-                  path: 'report',
-                  element: <ReportScore />,
+                  element: <Pages.GameList />,
                 },
                 {
                   path: ':matchId',
-                  element: <MatchInformation />,
+                  element: <Pages.MatchInformation />,
                 },
+                {
+                  path: 'leaderboard',
+                  element: <Pages.Leaderboard />,
+                }
               ],
+            },
+            {
+              path: '/supabase',
+              errorElement: <Pages.ErrorRouteElement />,
+              children: [
+                {
+                  path: 'logs',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.LogsManager />
+                    </Has >
+                  ),
+                },
+                {
+                  path: 'database',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.DatabaseManager />
+                    </Has>
+                  ),
+                }
+              ]
             },
             {
               path: '/admin',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
-                  path: 'drinks',
-                  element: <AdminDrinkListProvider />,
-                },
-                {
                   path: 'drinks/history',
-                  element: <AdminHistoryScreenProvider />,
+                  element: <Pages.AdminHistoryScreen />,
                 },
                 {
                   path: 'drinks/payments',
-                  element: <PaymentsPendingAdmin />,
+                  element: <Pages.PaymentsPendingAdmin />,
                 },
                 {
                   path: 'users',
-                  element: <AdminUserListProvider />,
+                  element: <Pages.AdminUserList />,
                 },
                 {
                   path: 'analytics',
-                  element: <AdminAnalytics />
-                },
-                {
-                  path: 'notify_users',
-                  element: (
-                    <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
-                      <SendNotifications />
-                    </Has>
-                  ),
-                },
-                {
-                  path: 'audit/logs',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <LogsList />
-                    </Has>
-                  ),
-                },
-                {
-                  path: 'supabase',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <SupabaseClient />
-                    </Has>
-                  ),
+                  element: <Pages.AdminAnalytics />
                 },
                 {
                   path: 'grants',
                   element: (
                     <Has perm={'grants.manage'}>
-                      <GrantsManager />
+                      <Pages.GrantsManager />
                     </Has>
                   ),
                 },
+                {
+                  path: 'merge_accounts',
+                  element: <Pages.UserPlayerMapping />
+                }
               ],
             },
             {

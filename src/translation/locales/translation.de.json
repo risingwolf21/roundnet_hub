@@ -2,10 +2,28 @@
   "format": {
     "distanceToNow": "{{ date, ago }}"
   },
+  "common": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "filter": "Filter"
+  },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
     "diffInDaysPrior_one": "{{count}} Tag davor",
-    "diffInDaysPrior_other": "{{count}} Tage davor"
+    "diffInDaysPrior_other": "{{count}} Tage davor",
+    "diffInHoursPrior_zero": "Am selben Tag",
+    "diffInHoursPrior_one": "{{count}} Stunde zuvor",
+    "diffInHoursPrior_other": "{{count}} Stunden zuvor"
+  },
+  "drinks": {
+    "drinks": "Getränke",
+    "noDrinks": "Keine Getränke",
+    "noDrinksDescription": "Aktuell sind keine Getränke in den gewählten Kategorien verfügbar.",
+    "confirmDrinkDeletion": "Möchtest du das Getränk wirklich löschen?",
+    "deletionSuccess": "Getränk erfolgreich gelöscht",
+    "deletionError": "Beim löschen ist ein Fehler aufgetreten. {{error}} ",
+    "updateSuccess": "Getränk erfolgreich aktualisiert",
+    "updateError": "Beim aktualisieren ist ein Fehler aufgetreten. {{error}} "
   },
   "attendees": "Teilnehmer",
   "browse": {
@@ -26,6 +44,9 @@
     "payment": "Zahlung",
     "postgresClient": "Postgres Client",
     "auditLogs": "Audit Logs",
+    "logs": "Logs",
+    "database": "Datenbank",
+    "user": "Benutzer",
     "notifyUsers": "Nachrichten senden",
     "training": "Training",
     "permissions": "Berechtigungen",
@@ -33,14 +54,20 @@
     "sentryIssues": "Sentry Issues",
     "group_features": "Gruppen Features",
     "helpAndInformation": "Hilfe und Informationen",
-    "appRefresh": "App aktualisieren"
+    "appRefresh": "App aktualisieren",
+    "merge_accounts": "Account-Merge"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
   "confirmKeyHandover": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" an \"{{ userName }}\" abgeben möchtest?",
+  "confirmKeyTakenFromNull": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" annehmen möchtest?",
   "confirmKeyTaken": "Hiermit bestätigst du das du den Schlüssel \"{{ keyName }}\" von \"{{ userName }}\" erhalten hast!",
   "challenges": {
     "edit": "Challenge bearbeiten"
+  },
+  "matches": {
+    "leaderboard": "Rangliste",
+    "leaderboardTooltip": "Veränderung des Index in den letzten 30 Tagen: {{trend}}"
   },
   "events": {
     "upcoming": "Anstehende",
@@ -98,6 +125,7 @@
     "notifications": "Benachrichtigungen",
     "training": "Training",
     "matches": "Spiele",
+    "leaderboard": "Rangliste",
     "groups": "Gruppen"
   },
   "notificationTags": {
@@ -158,5 +186,9 @@
     "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten",
     "pullToRefresh": "Auf den meisten Seiten gibt es eine Pull-to-Refresh Funktionalität. Ziehe die Seite einfach nach unten um die Daten zu aktualisieren.",
     "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten"
+  },
+  "errors": {
+    "mutation": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu."
   }
 }
