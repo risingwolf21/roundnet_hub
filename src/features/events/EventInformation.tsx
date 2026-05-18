@@ -25,7 +25,7 @@ import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useAddCommentMutation, useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
-import { answerDeadlineExpired, eventInThePast, EventsUserView, FullAttendance, FullComment, maxAttendeesExceeded } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView, FullAttendance, FullComment, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase, getInitials } from "@/utils";
 import { Separator } from '@base-ui/react/separator';
 import { captureException } from "@sentry/react";
@@ -192,7 +192,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
               className="flex-1"
               disabled={event.isCancelled ||
                 event.user_state === 'Waiting' ||
-                eventInThePast(event)}
+                eventHasStarted(event)}
             >
               {
                 (updateAttendance.isPending || isLoading) ? <Spinner /> : <Hourglass className="size-4 mr-1" />
@@ -206,7 +206,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}
                 className="flex-1"
                 disabled={event.isCancelled ||
-                  eventInThePast(event)}
+                  eventHasStarted(event)}
               >
                 {
                   (updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
@@ -221,7 +221,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 disabled={event.isCancelled
                   || maxAttendeesExceeded(event, attendance) ||
                   answerDeadlineExpired(event) ||
-                  eventInThePast(event)}
+                  eventHasStarted(event)}
               >
                 {
                   (updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
@@ -233,6 +233,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           onClick={() => changeAttendance({ event: event, newState: 'Declined', user })}
           variant={event.user_state === 'Declined' ? 'error' : 'outline'}
           className="flex-1"
+          disabled={event.isCancelled || eventHasStarted(event)}
         >
           {
             (updateAttendance.isPending || isLoading) ? <Spinner /> : <XCircle className="size-4 mr-1" />
@@ -247,6 +248,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           onClick={() => changeAttendance({ event: event, newState: 'AttendingAsTrainer', user })}
           variant={event.user_state === 'AttendingAsTrainer' ? 'success' : 'outline'}
           className="flex-1"
+          disabled={event.isCancelled || eventHasStarted(event)}
         >
           {
             (updateAttendance.isPending || isLoading) ? <Spinner /> : <Megaphone className="size-4 mr-1" />
