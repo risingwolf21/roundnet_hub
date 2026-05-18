@@ -186,5 +186,9 @@
     "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it.",
     "pullToRefresh": "Most pages offer a pull-to-refresh feature. Simply pull the page down to refresh the data.",
     "refreshApplication": "To refresh all application data, click 'App refresh' in the page navigation at the bottom."
+  },
+  "errors": {
+    "mutation": "An error occurred. Please try again.",
+    "query": "Failed to load data. Please refresh the page."
   }
 }

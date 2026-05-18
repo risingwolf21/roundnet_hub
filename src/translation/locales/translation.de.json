@@ -186,5 +186,9 @@
     "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten",
     "pullToRefresh": "Auf den meisten Seiten gibt es eine Pull-to-Refresh Funktionalität. Ziehe die Seite einfach nach unten um die Daten zu aktualisieren.",
     "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten"
+  },
+  "errors": {
+    "mutation": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu."
   }
 }

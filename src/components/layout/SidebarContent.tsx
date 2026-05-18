@@ -213,6 +213,7 @@ export function AppSidebar() {
           'drinks.history.admin',
           'grants.manage',
           'supabase.admin',
+          'admin.analytics.view'
         ],
         any: true
       },

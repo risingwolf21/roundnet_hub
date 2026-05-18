@@ -1,11 +1,12 @@
 import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
-import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
-import { fetchSimpleUser } from '@/repository/UserRepository';
+import { AdminUsersRepository, RpcName } from '@/repository/AdminUsersRepository';
+import { UserRepository } from '@/repository/UserRepository';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+
+export type { RpcName };
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -17,34 +18,21 @@ export const adminKeys = {
   simpleUsers: () => [...adminKeys.all, 'simpleUsers'] as const,
   logs: (pageKey: string, filterKey: string, sortKey: string) => [...adminKeys.all, 'logs', pageKey, filterKey, sortKey] as const,
   analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to],
-  unlinkedPlayers: () => [...adminKeys.all, 'unlinkedPlayers']
+  unlinkedPlayers: () => [...adminKeys.all, 'unlinkedPlayers'],
+  tableOptions: (table: string) => [...adminKeys.all, 'tableOptions', table],
 };
 
 export const useUnlinkedPlayers = () =>
   useQuery({
     queryKey: adminKeys.unlinkedPlayers(),
-    queryFn: async () => {
-      const result = await supabase.schema("games").from("players").select("*").is("linked_user_id", null);
-
-      return result.data ?? [];
-    },
-  })
+    queryFn: () => AdminUsersRepository.fetchUnlinkedPlayers(),
+  });
 
 export const useUsers = () =>
   useQuery({
     queryKey: adminKeys.simpleUsers(),
-    queryFn: async () => {
-      const result = await fetchSimpleUser().throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => UserRepository.fetchSimpleUsers(),
   });
-
-const cleanParams = (params: Record<string, any>) => {
-  return Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v !== null && v !== undefined && v !== '')
-  );
-};
 
 export const useAdminAnalytics = (
   rpc: RpcName | undefined,
@@ -55,19 +43,15 @@ export const useAdminAnalytics = (
   enabled: !!rpc && enabled,
   queryFn: async () => {
     if (!rpc) return [];
-
-    const { data, error } = await supabase.rpc(
-      rpc as any,
-      cleanParams(params) as any
-    );
-
-    if (error) {
-      throw error;
-    }
-
-    return data as any[];
+    return AdminUsersRepository.runAnalytics(rpc, params);
   }
 });
+
+export const useAnalyticsTableOptions = (table: string, labelField: string = 'name') =>
+  useQuery({
+    queryKey: adminKeys.tableOptions(table),
+    queryFn: () => AdminUsersRepository.fetchTableOptions(table, labelField),
+  });
 
 export const useAllUsersAsAdmin = () =>
   useQuery<UserWithGroups[]>({
@@ -86,31 +70,13 @@ export const useInfiniteDrinkHistory = () =>
 export const useAllPayments = () =>
   useQuery<FullPayment[]>({
     queryKey: adminKeys.payments.list(),
-    queryFn: async () => {
-      const response = await supabase
-        .from('payments')
-        .select(
-          'id, created_at, paymentState, amountToPay, userId: user, user (id, displayName, name, email), history (*)'
-        )
-        .eq('paymentState', 'Open' as PaymentState)
-        .order('displayName', { referencedTable: 'user', ascending: true })
-        .returns<FullPayment[]>();
-      return response.data ?? [];
-    },
+    queryFn: () => AdminUsersRepository.fetchOpenPayments(),
   });
 
 export const useConfirmPaymentMutation = () =>
   useMutation({
     mutationFn: async ({ payment }: { payment: FullPayment }) => {
-      const result = await supabase
-        .from('payments')
-        .update({ paymentState: 'Fulfilled' as PaymentState })
-        .eq('user', payment?.user?.id)
-        .eq('paymentState', 'Open' as PaymentState)
-        .select('*')
-        .single();
-
-      return result.data;
+      return AdminUsersRepository.confirmPayment(payment?.user?.id);
     },
     onMutate: async ({ payment }) => {
       await queryClient.cancelQueries({ queryKey: adminKeys.payments.list() });
@@ -122,7 +88,7 @@ export const useConfirmPaymentMutation = () =>
           if (x.user === payment.user.id) {
             return {
               ...x,
-              paymentState: 'FulFilled' as PaymentState,
+              paymentState: 'Fulfilled' as PaymentState,
             };
           }
           return x;
@@ -144,6 +110,7 @@ export const useConfirmPaymentMutation = () =>
 
 export const useUpdateUserMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ update }: { update: UserEdited }) => {
       return AdminUsersRepository.updateUser(update);
     },
