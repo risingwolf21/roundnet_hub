@@ -1,33 +1,17 @@
-import CropImageDialog from "@/components/CropImageDialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
-import { Button } from "@/components/ui/button";
-import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
-import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDialogs } from "@/contexts/DialogsProvider";
-import { AVAILABLE_FEATURES, useFeatureFlags } from "@/contexts/FeatureToggleContext";
-import { supabase } from "@/lib/supabase";
+import { AVAILABLE_FEATURES } from "@/contexts/FeatureToggleContext";
 import { useUserAttendanceInMonth } from "@/tanstack/events";
-import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
-import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from "@/tanstack/player_data";
-import { useUpdateAvatarFromPlayerMutation, useUpdateUserProfile } from "@/tanstack/user";
-import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
-import { iOS, readFile } from "@/utils";
-import { captureException } from "@sentry/react";
-import { addDays, getMonth, isAfter, isSameDay } from "date-fns";
-import { AlertTriangle, Bell, BellOff, CalendarIcon, CalendarSync, CheckCircle2, Eye, EyeOff, FlaskConical, Image, Info, MoveRight, RectangleEllipsis, Swords, Trash, TrendingDown, TrendingUp, Trophy, UploadCloud, User as UserIcon, Users, Volleyball, XCircle } from "lucide-react";
-import { ElementType, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Day } from "react-day-picker";
-import { toast } from "sonner";
+import { usePlayer } from "@/tanstack/player_data";
+import { Bell, CalendarIcon, FlaskConical, RectangleEllipsis, User as UserIcon, Volleyball } from "lucide-react";
+import { getMonth } from "date-fns";
 import { useGrants } from "../auth/GrantsContext";
+import { AccountTab } from "./tabs/AccountTab";
+import { CalendarTab } from "./tabs/CalendarTab";
+import { ChangePasswordTab } from "./tabs/ChangePasswordTab";
+import { NotificationsTab } from "./tabs/NotificationsTab";
+import { PlayerzoneTab } from "./tabs/PlayerzoneTab";
+import { TestLabTab } from "./tabs/TestLabTab";
 
 export type TabItem = {
   title: string;
@@ -35,7 +19,6 @@ export type TabItem = {
   disabled: boolean;
 };
 
-// 2. Der Typ für das gesamte Tabs-Objekt (die Map)
 export type SettingsTabs = {
   account: TabItem;
   changePassword: TabItem;
@@ -49,941 +32,81 @@ const tabs: SettingsTabs = {
   account: {
     title: "Account",
     icon: <UserIcon />,
-    disabled: false
+    disabled: false,
   },
   changePassword: {
     title: "Passwort ändern",
     icon: <RectangleEllipsis />,
-    disabled: false
+    disabled: false,
   },
   playerzone: {
     title: "Playerzone Profil",
     icon: <Volleyball />,
-    disabled: false
+    disabled: false,
   },
   calendar: {
     title: "Kalender",
     icon: <CalendarIcon />,
-    disabled: false
+    disabled: false,
   },
   notifications: {
     title: "Benachrichtigungen",
     icon: <Bell />,
-    disabled: false
+    disabled: false,
   },
   testlab: {
     title: "Test-Labor",
     icon: <FlaskConical />,
-    disabled: AVAILABLE_FEATURES.length < 1
-  }
-}
-
-type Tab = keyof typeof tabs
-
-const CalendarCard = ({ userAttendance, user }: { userAttendance: Date[]; user: UserWithGroups }) => {
-
-  const hasEntry = useCallback((date: Date) => userAttendance
-    .some((activeDate) => isSameDay(activeDate, date)), [userAttendance]);
-
-
-  const syncCalendar = () => {
-    if (iOS) {
-      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
-    } else {
-      window.location.href = `https://calendar.google.com/calendar/render?cid=webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${user.id}/calendar.ics`;
-    }
-  };
-
-  return <>
-    <CardContent>
-
-      <div className="flex flex-col gap-4 ">
-        <Alert variant={"info"}>
-          <AlertTitle>Kalender</AlertTitle>
-          <AlertDescription>
-            Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.
-          </AlertDescription>
-        </Alert>
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="w-full">
-            <Calendar
-              mode="single"
-              weekStartsOn={1}
-              month={new Date()}
-              className="w-full"
-              classNames={{
-                root: "w-full", // Überschreibt das standardmäßige w-fit
-                months: "w-full",
-                month_grid: "w-full",
-                month: "w-full",
-                table: "w-full",
-                weekdays: "flex w-full",
-                weekday: "flex-1 text-center", // Wochentage gleichmäßig verteilen
-                week: "flex w-full mt-2",
-                day: "flex-1 aspect-square p-0", // Jeder Tag wird zur flexiblen, quadratischen Spalte
-              }}
-              components={{
-                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                Nav: () => <></>,
-
-                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                MonthCaption: () => <></>,
-                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                Day: ({ ...props }) => {
-                  return <Day {...props} className='w-full' />
-                },
-                // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                DayButton: ({ children, modifiers, day, ...props }) => {
-                  const isActive = hasEntry(day.date);
-                  return <CalendarDayButton day={day} modifiers={modifiers} {...props} disabled
-                    className="!opacity-100 !h-auto !w-full aspect-square">
-                    {
-                      isActive ? <Volleyball className="size-full max-w-6 max-h-6 text-success" /> : children
-                    }
-                  </CalendarDayButton>
-                }
-              }}
-            />
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button variant={"outline"} onClick={syncCalendar}>
-              <CalendarSync />
-              Kalender synchronisieren
-            </Button>
-          </CardFooter>
-        </Card>
-
-      </div>
-    </CardContent>
-  </>
-}
-
-const Playerzone = ({ user, player_data }: { user: UserWithGroups; player_data: PlayerPublic | null }) => {
-  const { data: elo_history } = useEloHistory(user);
-
-  const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
-  const [gender, setGender] = useState(player_data?.gender ?? '');
-  const [loading, setLoading] = useState(false);
-
-  const updateHideRatingMutation = useUpdateIndexHidden(user);
-  const updatePlayer = useUpdatePlayer(user);
-  const updateAvatarFromPlayer = useUpdateAvatarFromPlayerMutation(user);
-
-  const elo_change_last_30_days = useMemo(() => {
-    return (
-      elo_history?.filter((x) => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
-    );
-  }, [elo_history]);
-
-  const onSafeRgLinkClick = async () => {
-    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
-      toast.warning(
-        'Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.');
-      return;
-    }
-    if (gender === "") {
-      toast.error(
-        'Du musst ein Geschlecht auswählen, damit dein Profil korrekt angezeigt wird.');
-      return;
-    }
-    const updates: GamesTableUpdate<'players'> = {
-      rg_link: rgLink ?? null,
-      rg_avatar_url: null,
-      rg_index: null,
-      gender: gender
-    };
-
-    updatePlayer.mutate(
-      { updates },
-      {
-        onError: (error) =>
-          toast.error('Playerzone Profil konnte nicht aktualisiert werden. ' + error.message),
-        onSuccess: () => toast.success('Profil erfolgreich aktualisiert'),
-      }
-    );
-  };
-
-  const handleChangeProfilePicture = () => {
-    setLoading(true);
-    updateAvatarFromPlayer.mutate(
-      { avatarUrl: player_data?.rg_avatar_url },
-      {
-        onSuccess: () => toast.success('Profilbild erfolgreich aktualisiert'),
-        onError: (error) => toast.error('Fehler beim Laden des Profilbildes: ' + error.message),
-        onSettled: () => setLoading(false),
-      }
-    );
-  };
-
-  const genders = [
-    { label: "Open", value: "m" },
-    { label: "Women", value: "w" }
-  ]
-
-  return <>
-    <CardContent>
-      <div className='space-y-6 lg:col-span-2'>
-        <div className='mb-6 w-full space-y-2'>
-          <div className='flex items-center gap-4'>
-            <div
-              className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'
-            >
-              {player_data?.rg_avatar_url ? (
-                <img src={player_data.rg_avatar_url} alt='avatar preview' className='h-full w-full object-cover' />
-              ) : (
-                <Image />
-              )}
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <Button type='button' variant='outline' disabled={!player_data?.rg_avatar_url} onClick={handleChangeProfilePicture} className='flex items-center gap-2'>
-                <UploadCloud />
-                Dieses Bild als Profilbild verwenden
-              </Button>
-            </div>
-          </div>
-          <div className='w-full space-y-4'>
-            <div className='w-full space-y-1'>
-              <Label className='leading-5' htmlFor='pzUrl'>
-                Playerzone URL
-              </Label>
-              <div className='relative'>
-                <Input
-                  id='pzUrl'
-                  type='text'
-                  placeholder='https://playerzone.de/user/123'
-                  value={rgLink}
-                  onChange={(e) => setRgLink(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className='w-full space-y-1'>
-              <Label className='leading-5' htmlFor='gender'>
-                Geschlecht
-              </Label>
-              <div className='relative'>
-                <Select items={genders} value={gender} onValueChange={(value) => value && setGender(value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Geschlecht auswählen" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {genders.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className='flex justify-end'>
-          <Button type='submit' className='max-sm:w-full' disabled={loading || (rgLink === player_data?.rg_link && gender === player_data?.gender)} onClick={onSafeRgLinkClick}>
-            {
-              loading && <Spinner />
-            }
-            Änderungen Speichern
-          </Button>
-        </div>
-      </div>
-      <Separator className="my-6" />
-      <div className="space-y-6">
-        {
-          player_data?.rg_id && <Field orientation="horizontal" className="max-w-sm">
-            <FieldContent>
-              <FieldLabel htmlFor="switch-focus-mode">
-                {player_data.rg_id}
-              </FieldLabel>
-              <FieldDescription>
-                Roundent Germany ID
-              </FieldDescription>
-            </FieldContent>
-          </Field>
-        }
-        {
-          player_data?.rg_index && <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="switch-focus-mode">
-                {player_data.rg_index}
-              </FieldLabel>
-              <FieldDescription>
-                Roundent Germany Index
-              </FieldDescription>
-            </FieldContent>
-          </Field>
-        }
-        {
-          player_data?.effective_rating_cached && <Field orientation={"horizontal"} className="flex !items-center">
-            <FieldContent>
-              <FieldLabel htmlFor="elo-trend">
-                {player_data.effective_rating_cached.toFixed()}
-              </FieldLabel>
-              <FieldDescription>
-                Interner Index
-              </FieldDescription>
-            </FieldContent>
-            {
-              elo_change_last_30_days > 0 ? (
-                <TrendingUp className="text-success" />
-              ) : elo_change_last_30_days < 0 ? (
-                <TrendingDown className="text-error" />
-              ) : (
-                <MoveRight className="text-info" />
-              )
-            }
-          </Field>
-        }
-        <Field orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor="switch-mode">
-              Index verbergen?
-            </FieldLabel>
-            <FieldDescription>
-              Dein Index wird anderen Spielern verborgen. Für die Berechnung wird er aber weiterhin verwendet
-            </FieldDescription>
-          </FieldContent>
-          <Switch id="switch-mode"
-            disabled={updateHideRatingMutation.isPending}
-            checked={player_data?.hide_rating ?? false}
-            onCheckedChange={(e) => updateHideRatingMutation.mutate({ hide_rating: e })} />
-        </Field>
-      </div>
-
-    </CardContent>
-  </>
-}
-
-const ChangePassword = () => {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setLoading(true);
-    const data = new FormData(event.currentTarget);
-    const password = data.get('password')?.toString();
-    const password1 = data.get('confirmPassword')?.toString();
-
-    if (password !== password1 || !password || !password1) {
-      toast.error("Die Passwörter stimmen nicht überein.")
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({ password });
-
-    if (error) {
-      captureException(error);
-      toast.error(error.message);
-    }
-    setLoading(false);
-  }
-
-  return <>
-    <CardTitle className="px-4 font-semibold">Passwort ändern</CardTitle>
-    <CardContent className="px-4">
-      <form className='space-y-6' onSubmit={submit}>
-        <div className='w-full space-y-1'>
-          <Label className='leading-5' htmlFor='password'>
-            New Password*
-          </Label>
-          <div className='relative'>
-            <Input
-              id='password'
-              type={isPasswordVisible ? 'text' : 'password'}
-              placeholder='••••••••••••••••'
-              className='pr-9'
-            />
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={() => setIsPasswordVisible(prevState => !prevState)}
-              className='text-muted-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 rounded-l-none hover:bg-transparent'
-            >
-              {isPasswordVisible ? <EyeOff /> : <Eye />}
-              <span className='sr-only'>{isPasswordVisible ? 'Hide password' : 'Show password'}</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Confirm Password */}
-        <div className='w-full space-y-1'>
-          <Label className='leading-5' htmlFor='confirmPassword'>
-            Confirm Password*
-          </Label>
-          <div className='relative'>
-            <Input
-              id='confirmPassword'
-              type={isConfirmPasswordVisible ? 'text' : 'password'}
-              placeholder='••••••••••••••••'
-              className='pr-9'
-            />
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={() => setIsConfirmPasswordVisible(prevState => !prevState)}
-              className='text-muted-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 rounded-l-none hover:bg-transparent'
-            >
-              {isConfirmPasswordVisible ? <EyeOff /> : <Eye />}
-              <span className='sr-only'>{isConfirmPasswordVisible ? 'Hide password' : 'Show password'}</span>
-            </Button>
-          </div>
-        </div>
-
-        <Button className='w-full' type='submit' disabled={loading}>
-          {
-            loading && <Spinner />
-          }
-          Neues Passwort setzen
-        </Button>
-      </form>
-    </CardContent>
-  </>
-}
-
-const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut: () => void }) => {
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const [displayName, setDisplayName] = useState(user.displayName);
-  const [name, setName] = useState(user.name.split(' ')[0] ?? '');
-  const [surname, setSurname] = useState(user.name.split(' ')[1] ?? '');
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState(user);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const dialogs = useDialogs();
-
-  const updateUserMutation = useUpdateUserProfile(user);
-
-  const onSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-
-    if (!f) return
-
-    if (!f.type.startsWith('image/')) {
-      e.currentTarget.value = ''
-      return
-    }
-
-    const imageDataUrl = await readFile(f);
-    e.target.files = null;
-    e.target.value = '';
-
-    const result = await dialogs.open(CropImageDialog, { imageUrl: imageDataUrl as string });
-    setCroppedImage(result);
-  }
-
-  const openPicker = () => inputRef.current?.click()
-
-  const submit = async () => {
-    try {
-      setLoadingSave(true);
-      const fullName = `${name} ${surname}`;
-      if (fullName.length < 6 || displayName.length < 4) {
-        toast.warning('Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein')
-        return;
-      }
-      if (fullName.split(' ').length < 2) {
-        toast.warning('Du musst dein vollen Name, mit Vor und Nachname angeben')
-        return;
-      }
-
-      await updateUserMutation.mutateAsync({
-        displayName,
-        fullName,
-        croppedImage,
-        avatarUrl: currentUser.avatarUrl
-      }, {
-        onSuccess: (data) => {
-          toast.success('Successfully updated your profile!');
-          setCurrentUser({ ...currentUser, avatarUrl: data?.avatarUrl ?? null });
-          setCroppedImage(null);
-        },
-        onError: (error) => {
-          toast.error('There was an error while updating your profile! ' + error.message);
-        }
-      })
-    } finally {
-      setLoadingSave(false)
-    }
-  }
-
-  return <>
-    <CardContent className="px-4">
-      <div className='space-y-6 lg:col-span-2'>
-        <div className='mb-6 w-full space-y-2'>
-          <Label className="mb-4">Profilbild</Label>
-          <div className='flex items-center gap-4'>
-            <div
-              role='button'
-              tabIndex={0}
-              aria-label='Upload your avatar'
-              onClick={openPicker}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  openPicker()
-                }
-              }}
-              className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'
-            >
-              {croppedImage ? (
-                <img src={croppedImage} alt='avatar preview' className='h-full w-full object-cover' />
-              ) : currentUser.avatarUrl ? (
-                <img src={currentUser.avatarUrl} alt="avatar logo" className='h-full w-full object-cover' />
-              ) : (
-                <Image />
-              )}
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onSelect} />
-              <Button type='button' variant='outline' onClick={openPicker} className='flex items-center gap-2'>
-                <UploadCloud />
-                Upload avatar
-              </Button>
-              <Button
-                type='button'
-                variant='ghost'
-                hidden={!croppedImage && !currentUser.avatarUrl}
-                onClick={() => {
-                  if (croppedImage) {
-                    setCroppedImage(null)
-                  } else {
-                    setCurrentUser({ ...currentUser, avatarUrl: null })
-                  }
-                }}
-                className='text-destructive'>
-                <Trash />
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-          <div className='flex flex-col items-start gap-2'>
-            <Label htmlFor='multi-step-personal-info-first-name'>Anzeigename</Label>
-            <Input id='multi-step-personal-info-first-name' value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          </div>
-          <div className='flex flex-col items-start gap-2'>
-            <Label htmlFor='multi-step-personal-info-first-name'>First Name</Label>
-            <Input id='multi-step-personal-info-first-name' placeholder='John' value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className='flex flex-col items-start gap-2'>
-            <Label htmlFor='multi-step-personal-info-last-name'>Last Name</Label>
-            <Input id='multi-step-personal-info-last-name' placeholder='Doe' value={surname} onChange={(e) => setSurname(e.target.value)} />
-          </div>
-        </div>
-        <div className='flex justify-end'>
-          <Button type='submit' className='max-sm:w-full' disabled={loadingSave} onClick={submit}>
-            {
-              loadingSave && <Spinner />
-            }
-            Änderungen Speichern
-          </Button>
-        </div>
-        <Separator />
-
-        <Button variant={"destructive"} className='max-sm:w-full' onClick={handleSignOut}>
-          Logout
-        </Button>
-      </div>
-    </CardContent>
-  </>
-}
-
-const TestLabContent = () => {
-
-  const { toggleFeature, hasFeature } = useFeatureFlags();
-
-  return <>
-    <CardContent className="px-0">
-      {
-        AVAILABLE_FEATURES.map((feature) => <Field key={feature.key} className="px-4 py-2" orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor="switch-share">{feature.key}</FieldLabel>
-            <FieldDescription>
-              {feature.description}
-            </FieldDescription>
-          </FieldContent>
-          <Switch id="switch-share" checked={hasFeature(feature.key)} onCheckedChange={() => toggleFeature("shadcnUI")} />
-        </Field>)
-      }
-    </CardContent>
-  </>
-}
-
-// --- Web Push helpers -------------------------------------------------------
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-  return outputArray;
-}
-
-function bufferToBase64Url(buf: ArrayBuffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buf);
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function getDeviceId() {
-  let id = localStorage.getItem('device_id');
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem('device_id', id);
-  }
-  return id;
-}
-
-function detectPlatform() {
-  const ua = navigator.userAgent || '';
-  if (/iPad|iPhone|iPod|Macintosh/.test(ua) && 'ontouchend' in document) return 'ios';
-  if (/Android/.test(ua)) return 'android';
-  return 'web';
-}
-
-async function getSW() {
-  if (!('serviceWorker' in navigator)) throw new Error('Service Worker not supported');
-  return navigator.serviceWorker.ready;
-}
-
-async function getCurrentSubscription(reg: ServiceWorkerRegistration) {
-  try {
-    return await reg.pushManager.getSubscription();
-  } catch {
-    return null;
-  }
-}
-
-async function registerOnServer(sub: PushSubscription) {
-  await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
-    p_endpoint: sub.endpoint,
-    p_p256dh: bufferToBase64Url(sub.getKey('p256dh')!),
-    p_auth: bufferToBase64Url(sub.getKey('auth')!),
-    p_platform: detectPlatform(),
-    p_device_id: getDeviceId(),
-    p_user_agent: navigator.userAgent,
-  });
-}
-
-async function revokeOnServer(endpoint?: string | null) {
-  if (endpoint)
-    await supabase
-      .schema('notifications')
-      .from('web_push_subscriptions')
-      .update({ revoked_at: new Date().toISOString() })
-      .eq('endpoint', endpoint);
-}
-
-// ---------------------------------------------------------------------------
-
-const isNotificationSupported =
-  'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-
-const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
-  event: { label: 'Veranstaltungen', icon: CalendarIcon },
-  challenge: { label: 'Challenges', icon: Trophy },
-  game: { label: 'Spiele', icon: Swords },
-  group: { label: 'Gruppen', icon: Users },
-  item: { label: 'Sonstiges', icon: Bell },
-  payment: { label: 'Sonstiges', icon: Bell },
+    disabled: AVAILABLE_FEATURES.length < 1,
+  },
 };
 
-const CATEGORY_ORDER = ['event', 'challenge', 'game', 'group', 'item', 'payment'];
-
-const Notifications = ({ user }: { user: UserWithGroups }) => {
-  const { data: notificationTags = [], isLoading } = useNotificationTags(user);
-  const { data: topics = [] } = useNotificationTopics();
-  const updateNotificationPreferences = useUpdateNotificationPreferences(user);
-
-  const [permission, setPermission] = useState<NotificationPermission>(
-    'Notification' in window ? Notification.permission : 'denied',
-  );
-  const [pushLoading, setPushLoading] = useState(false);
-  const [pushError, setPushError] = useState<string | null>(null);
-  const [registered, setRegistered] = useState(false);
-
-  const VAPID = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string)?.trim();
-  const isPWA = useMemo(() => window.matchMedia?.('(display-mode: standalone)').matches ?? false, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const reg = await getSW();
-        const sub = await getCurrentSubscription(reg);
-        setRegistered(!!sub);
-      } catch {
-        // SW not supported or not ready
-      }
-    })();
-  }, []);
-
-  const handleEnable = async () => {
-    setPushError(null);
-    setPushLoading(true);
-    try {
-      if (Notification.permission !== 'granted') {
-        const perm = await Notification.requestPermission();
-        setPermission(perm);
-        if (perm !== 'granted') return;
-      }
-      if (!VAPID) throw new Error('VAPID Public Key fehlt.');
-      const reg = await getSW();
-      const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => {});
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID),
-      });
-      await registerOnServer(sub);
-      setRegistered(true);
-    } catch (e) {
-      setPushError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setPushLoading(false);
-    }
-  };
-
-  const handleRebind = async () => {
-    setPushError(null);
-    setPushLoading(true);
-    try {
-      if (!VAPID) throw new Error('VAPID Public Key fehlt.');
-      const reg = await getSW();
-      const old = await reg.pushManager.getSubscription();
-      await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => {});
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID),
-      });
-      await registerOnServer(sub);
-      setRegistered(true);
-    } catch (e) {
-      setPushError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setPushLoading(false);
-    }
-  };
-
-  const handleDisable = async () => {
-    setPushError(null);
-    setPushLoading(true);
-    try {
-      const reg = await getSW();
-      const sub = await reg.pushManager.getSubscription();
-      await revokeOnServer(sub?.endpoint);
-      await sub?.unsubscribe();
-      setRegistered(false);
-    } catch (e) {
-      setPushError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setPushLoading(false);
-    }
-  };
-
-  if (!isNotificationSupported) {
-    return (
-      <CardContent className="px-4 py-8 flex flex-col items-center gap-3 text-center">
-        <BellOff className="size-10 text-muted-foreground" />
-        <div>
-          <div className="font-medium">Push-Benachrichtigungen nicht unterstützt</div>
-          <div className="text-sm text-muted-foreground mt-1">
-            Dieser Browser unterstützt keine Push-Benachrichtigungen.
-          </div>
-        </div>
-      </CardContent>
-    );
-  }
-
-  const installingHint = !isPWA
-    ? iOS
-      ? 'Für iOS Web Push die App über Teilen → „Zum Home-Bildschirm hinzufügen" installieren.'
-      : 'Für Android Web Push die App über „Zum Home-Bildschirm hinzufügen" installieren.'
-    : undefined;
-
-  const grouped = topics.reduce<Record<string, typeof topics>>((acc, topic) => {
-    const key = topic.scope_type ?? 'other';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(topic);
-    return acc;
-  }, {});
-
-  const orderedEntries: [string, typeof topics][] = [
-    ...CATEGORY_ORDER.filter(k => grouped[k]).map(k => [k, grouped[k]] as [string, typeof topics]),
-    ...Object.entries(grouped).filter(([k]) => !CATEGORY_ORDER.includes(k)),
-  ];
-
-
-  return (
-    <CardContent className="px-0">
-      {/* Device & permission status */}
-      <div className="px-4 py-2 flex flex-col gap-1">
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Berechtigung</span>
-          {permission === 'granted'
-            ? <CheckCircle2 className="size-4 text-green-500" />
-            : permission === 'default'
-            ? <Info className="size-4 text-blue-500" />
-            : <AlertTriangle className="size-4 text-yellow-500" />}
-        </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Registriert</span>
-          {registered
-            ? <CheckCircle2 className="size-4 text-green-500" />
-            : <XCircle className="size-4 text-muted-foreground" />}
-        </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Gerät</span>
-          <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
-        </div>
-      </div>
-
-      <Separator />
-
-      {installingHint && (
-        <Alert className="mx-4 my-2">
-          <AlertDescription>{installingHint}</AlertDescription>
-        </Alert>
-      )}
-
-      {pushError && (
-        <Alert variant="destructive" className="mx-4 my-2">
-          <AlertDescription>{pushError}</AlertDescription>
-        </Alert>
-      )}
-
-      {permission === 'denied' && (
-        <Alert className="mx-4 my-2">
-          <AlertDescription>
-            Mitteilungen sind deaktiviert. Öffne die Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
-            Falls die App dort nicht erscheint: App deinstallieren, Seite in Safari öffnen, „Zum Home-Bildschirm" hinzufügen und hier erneut aktivieren.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Action buttons */}
-      <div className="px-4 py-3 flex flex-col gap-2">
-        {permission !== 'granted' && (
-          <Button onClick={handleEnable} disabled={pushLoading}>
-            {pushLoading ? <Spinner className="size-4" /> : 'Benachrichtigungen aktivieren'}
-          </Button>
-        )}
-        {permission === 'granted' && !registered && (
-          <Button onClick={handleEnable} disabled={pushLoading}>
-            {pushLoading ? <Spinner className="size-4" /> : 'Gerät registrieren'}
-          </Button>
-        )}
-        {permission === 'granted' && registered && (
-          <>
-            <Button variant="outline" onClick={handleRebind} disabled={pushLoading}>
-              {pushLoading ? <Spinner className="size-4" /> : 'Neu koppeln'}
-            </Button>
-            <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={handleDisable} disabled={pushLoading}>
-              {pushLoading ? <Spinner className="size-4" /> : 'Keine Benachrichtigungen'}
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Topic toggles — only when permission granted */}
-      {permission === 'granted' && (
-        <>
-          <Separator />
-          {orderedEntries.map(([scopeType, groupTopics], groupIndex) => {
-            const cat = CATEGORY_LABELS[scopeType] ?? { label: scopeType, icon: Bell };
-            const Icon = cat.icon;
-            return (
-              <Fragment key={scopeType}>
-                <div className="flex items-center gap-2 px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  <Icon className="size-3.5" />
-                  {cat.label}
-                </div>
-                {groupTopics.map((topic, i) => (
-                  <Fragment key={topic.topic}>
-                    <Field className="px-4 py-2" orientation="horizontal">
-                      <FieldContent>
-                        <FieldLabel htmlFor={`switch-${topic.topic}`}>{topic.description ?? topic.topic}</FieldLabel>
-                      </FieldContent>
-                      {isLoading ? <Spinner /> : (
-                        <Switch
-                          id={`switch-${topic.topic}`}
-                          checked={notificationTags.find(y => y.topic === topic.topic)?.enabled ?? true}
-                          onCheckedChange={(newValue) =>
-                            updateNotificationPreferences.mutate({ topic: topic.topic, enabled: newValue, scopeType: topic.scope_type })
-                          }
-                        />
-                      )}
-                    </Field>
-                    {i < groupTopics.length - 1 && <Separator />}
-                  </Fragment>
-                ))}
-                {groupIndex < orderedEntries.length - 1 && <Separator className="my-2" />}
-              </Fragment>
-            );
-          })}
-        </>
-      )}
-    </CardContent>
-  );
-};
+type Tab = keyof typeof tabs;
 
 const User = () => {
-
   const { user, signOut } = useGrants();
   const { data: player_data = null } = usePlayer(user);
 
   const now = getMonth(new Date()) + 1;
-
   const { data: userAttendance = [] } = useUserAttendanceInMonth(user.id, now);
 
-
-  return <div>
-    <AppBar
-      title="Profil"
-    />
-    <main className='flex-1 size-full pb-safe-bottom'>
-      <div className="flex flex-col px-4">
-        <Tabs defaultValue="overview" className="gap-4">
-          <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
-            {
-              tabs && Object.entries(tabs).filter((x) => !x[1].disabled).map(([key, { title, icon }]) => (
+  return (
+    <div>
+      <AppBar title="Profil" />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <div className="flex flex-col px-4">
+          <Tabs defaultValue="overview" className="gap-4">
+            <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
+              {Object.entries(tabs).filter(([, tab]) => !tab.disabled).map(([key, { title, icon }]) => (
                 <TabsTrigger key={key} value={key as Tab} className="flex items-center gap-2">
                   {icon}
                   {title}
                 </TabsTrigger>
-              ))
-            }
-          </TabsList>
-          <TabsContent value="account">
-            <Account user={user} handleSignOut={signOut} />
-          </TabsContent>
-          <TabsContent value="changePassword">
-            <ChangePassword />
-          </TabsContent>
-          <TabsContent value="playerzone">
-            <Playerzone user={user} player_data={player_data} />
-          </TabsContent>
-          <TabsContent value="calendar">
-            <CalendarCard {...{ user, userAttendance }} />
-          </TabsContent>
-          <TabsContent value="notifications">
-            <Notifications user={user} />
-          </TabsContent>
-          <TabsContent value="testlab">
-            <TestLabContent />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </main >
-  </div >
-}
+              ))}
+            </TabsList>
+            <TabsContent value="account">
+              <AccountTab user={user} handleSignOut={signOut} />
+            </TabsContent>
+            <TabsContent value="changePassword">
+              <ChangePasswordTab />
+            </TabsContent>
+            <TabsContent value="playerzone">
+              <PlayerzoneTab user={user} player_data={player_data} />
+            </TabsContent>
+            <TabsContent value="calendar">
+              <CalendarTab user={user} userAttendance={userAttendance} />
+            </TabsContent>
+            <TabsContent value="notifications">
+              <NotificationsTab user={user} />
+            </TabsContent>
+            <TabsContent value="testlab">
+              <TestLabTab />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+    </div>
+  );
+};
 
 export default User;
