@@ -1,11 +1,3 @@
-import { format, startOfMonth, subDays } from 'date-fns';
-import {
-  AlertCircle, CalendarClock, ChartArea, Euro, GitMerge,
-  History, KeyRound, Send, Users, Volleyball
-} from 'lucide-react';
-import { ElementType, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +6,14 @@ import { Has } from '@/hooks/useGrants';
 import { useAdminAnalytics, useAllPayments } from '@/tanstack/admin';
 import { useEvents } from '@/tanstack/events';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
+import { format, startOfMonth, subDays } from 'date-fns';
+import {
+  AlertCircle, CalendarClock, ChartArea, Euro, GitMerge,
+  History, KeyRound, Send, Users, Volleyball
+} from 'lucide-react';
+import { ElementType, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
 
 const StatCard = ({
@@ -148,13 +148,13 @@ const AdminDashboard = () => {
   }, [pastEvents]);
 
   const quickLinks = [
-    { title: t('browse.managePayments'), icon: Euro,      path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
-    { title: t('browse.manageUsers'),    icon: Users,     path: '/admin/users',            perm: 'users.manage' as const },
-    { title: t('browse.analytics'),      icon: ChartArea, path: '/admin/analytics',        perm: 'admin.analytics.view' as const },
-    { title: 'Grants',                   icon: KeyRound,  path: '/admin/grants',           perm: 'grants.manage' as const },
-    { title: t('browse.completeHistory'),icon: History,   path: '/admin/drinks/history',   perm: 'drinks.history.admin' as const },
-    { title: t('browse.merge_accounts'), icon: GitMerge,  path: '/admin/merge_accounts',   perm: 'games.admin.merge_accounts' as const },
-    { title: t('browse.notifyUsers'),    icon: Send,      path: '/admin/notify_users',     perm: 'admin.notify_users' as const },
+    { title: t('browse.managePayments'), icon: Euro, path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
+    { title: t('browse.manageUsers'), icon: Users, path: '/admin/users', perm: 'users.manage' as const },
+    { title: t('browse.analytics'), icon: ChartArea, path: '/admin/analytics', perm: 'admin.analytics.view' as const },
+    { title: 'Grants', icon: KeyRound, path: '/admin/grants', perm: 'grants.manage' as const },
+    { title: t('browse.completeHistory'), icon: History, path: '/admin/drinks/history', perm: 'drinks.history.admin' as const },
+    { title: t('browse.merge_accounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' as const },
+    { title: t('browse.notifyUsers'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' as const },
   ] as const;
 
   return (
@@ -182,14 +182,14 @@ const AdminDashboard = () => {
               </StatCard>
             </Has>
 
-            <Has perm="users.manage">
+            <Has perm="groups.manage.admin">
               <StatCard
                 title={t('admin.dashboard.joinRequests')}
                 icon={Users}
                 highlight={!requestsLoading && !requestsError && joinRequests.length > 0}
                 isLoading={requestsLoading}
                 isError={requestsError}
-                onClick={() => navigate('/admin/users')}
+                onClick={() => navigate('/groups')}
               >
                 <div className="text-3xl font-bold">{joinRequests.length}</div>
                 <div className="text-xs text-muted-foreground mt-1">
