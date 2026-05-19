@@ -232,33 +232,6 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
   return (
     <CardContent className="px-0">
       {/* Device & permission status */}
-<<<<<<< HEAD
-      <Alert className="my-2">
-        <AlertDescription className="w-full">
-          <div className="w-full flex flex-col gap-1">
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm">Berechtigung</span>
-              {permission === 'granted'
-                ? <CheckCircle2 className="size-4 text-green-500" />
-                : permission === 'default'
-                  ? <Info className="size-4 text-blue-500" />
-                  : <AlertTriangle className="size-4 text-yellow-500" />}
-            </div>
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm">Registriert</span>
-              {registered
-                ? <CheckCircle2 className="size-4 text-green-500" />
-                : <XCircle className="size-4 text-muted-foreground" />}
-            </div>
-            <div className="flex items-center justify-between py-1">
-              <span className="text-sm">Gerät</span>
-              <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
-            </div>
-          </div>
-        </AlertDescription>
-      </Alert>
-
-=======
       <div className="px-4 py-2 flex flex-col gap-1">
         <div className="flex items-center justify-between py-1">
           <span className="text-sm">{t('profile.notifications.permission')}</span>
@@ -279,7 +252,6 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
           <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
         </div>
       </div>
->>>>>>> 361e8eae (Add empty states and full i18n sweep across 15 components)
 
       <Separator />
 
