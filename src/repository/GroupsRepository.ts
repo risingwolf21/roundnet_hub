@@ -4,6 +4,11 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { fetchGroupWithUsers } from './AdminUsersRepository';
 
+export const fetchGroupUsers = (groupId: string) =>
+  supabase
+    .from('group_user_mapping')
+    .select('*, user: user(*)').eq('group', groupId);
+
 export const GroupsRepository = {
   async upsertGroup(group: TablesInsert<'event_group'>): Promise<PostgrestSingleResponse<Tables<'event_group'>>> {
     return supabase.from('event_group').upsert(group).select('*').single().throwOnError();
@@ -39,12 +44,15 @@ export const GroupsRepository = {
     });
   },
 
-  async fetchGroupUsers(groupId: string, role?: GroupRole) {
-    let query = supabase.from('group_user_mapping').select('*, user: user(*)').eq('group', groupId);
-    if (role) query = (query as any).eq('role', role);
+  async fetchGroupUsers(groupId: string, role?: GroupRole): Promise<GroupUsers[]> {
+    let query = fetchGroupUsers(groupId).throwOnError();
+    if (role) query = query.eq('role', role);
+
+
     const result = await query;
+
     if (result.error) throw result.error;
-    return result.data;
+    return result.data as unknown as GroupUsers[];
   },
 
   async fetchRequestedUsers(excludeUserId: string): Promise<GroupUserMapping[]> {

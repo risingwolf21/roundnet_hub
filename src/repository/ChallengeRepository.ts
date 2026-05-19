@@ -116,7 +116,7 @@ export const ChallengeRepository = {
     const sanitized: TablesUpdate<'challenge'> = {
       ...update,
       ...(update.category_options !== undefined && {
-        category_options: Array.isArray(update.category_options) ? update.category_options : null,
+        category_options: Array.isArray(update.category_options) ? update.category_options : [],
       }),
     };
     const result = await supabase
