@@ -16,6 +16,13 @@ export const useEloHistory = (user: User) =>
     queryFn: () => PlayerDataRepository.fetchEloHistory(user.id),
   });
 
+export const useEloHistoryForPlayer = (playerId: string) =>
+  useQuery({
+    queryKey: playerDataKeys.eloHistory(playerId),
+    queryFn: () => PlayerDataRepository.fetchEloHistory(playerId),
+    enabled: !!playerId,
+  });
+
 export const usePlayer = (user: User) =>
   useQuery<PlayerPublic | null>({
     queryKey: playerDataKeys.player(user.id),
