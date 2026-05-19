@@ -78,24 +78,34 @@ const AttendanceSparkline = ({ events }: { events: TrendPoint[] }) => {
   const isUp = counts[counts.length - 1] >= counts[0];
   const color = isUp ? '#22c55e' : '#ef4444';
 
+  const firstDate = format(new Date(events[0].startingDateTime), 'dd.MM.');
+  const lastDate = format(new Date(events[events.length - 1].startingDateTime), 'dd.MM.');
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={areaPoints} fill="url(#att-spark-fill)" />
-      <polyline
-        points={linePoints}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={areaPoints} fill="url(#att-spark-fill)" />
+        <polyline
+          points={linePoints}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+        <span>{firstDate}</span>
+        <span>{lastDate}</span>
+      </div>
+    </div>
   );
 };
 
