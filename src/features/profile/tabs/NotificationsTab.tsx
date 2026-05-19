@@ -85,12 +85,12 @@ const isNotificationSupported =
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
 const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
-  event:     { label: 'Veranstaltungen', icon: CalendarIcon },
-  challenge: { label: 'Challenges',      icon: Trophy },
-  game:      { label: 'Spiele',          icon: Swords },
-  group:     { label: 'Gruppen',         icon: Users },
-  item:      { label: 'Sonstiges',       icon: Bell },
-  payment:   { label: 'Sonstiges',       icon: Bell },
+  event: { label: 'Veranstaltungen', icon: CalendarIcon },
+  challenge: { label: 'Challenges', icon: Trophy },
+  game: { label: 'Spiele', icon: Swords },
+  group: { label: 'Gruppen', icon: Users },
+  item: { label: 'Sonstiges', icon: Bell },
+  payment: { label: 'Sonstiges', icon: Bell },
 };
 
 const CATEGORY_ORDER = ['event', 'challenge', 'game', 'group', 'item', 'payment'];
@@ -134,7 +134,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       if (!VAPID) throw new Error('VAPID Public Key fehlt.');
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID),
@@ -156,7 +156,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID),
@@ -221,43 +221,48 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
   return (
     <CardContent className="px-0">
       {/* Device & permission status */}
-      <div className="px-4 py-2 flex flex-col gap-1">
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Berechtigung</span>
-          {permission === 'granted'
-            ? <CheckCircle2 className="size-4 text-green-500" />
-            : permission === 'default'
-            ? <Info className="size-4 text-blue-500" />
-            : <AlertTriangle className="size-4 text-yellow-500" />}
-        </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Registriert</span>
-          {registered
-            ? <CheckCircle2 className="size-4 text-green-500" />
-            : <XCircle className="size-4 text-muted-foreground" />}
-        </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-sm">Gerät</span>
-          <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
-        </div>
-      </div>
+      <Alert className="my-2">
+        <AlertDescription className="w-full">
+          <div className="w-full flex flex-col gap-1">
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm">Berechtigung</span>
+              {permission === 'granted'
+                ? <CheckCircle2 className="size-4 text-green-500" />
+                : permission === 'default'
+                  ? <Info className="size-4 text-blue-500" />
+                  : <AlertTriangle className="size-4 text-yellow-500" />}
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm">Registriert</span>
+              {registered
+                ? <CheckCircle2 className="size-4 text-green-500" />
+                : <XCircle className="size-4 text-muted-foreground" />}
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-sm">Gerät</span>
+              <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
+
 
       <Separator />
 
       {installingHint && (
-        <Alert className="mx-4 my-2">
+        <Alert className="px-4 my-2">
           <AlertDescription>{installingHint}</AlertDescription>
         </Alert>
       )}
 
       {pushError && (
-        <Alert variant="destructive" className="mx-4 my-2">
+        <Alert variant="destructive" className="px-4 my-2">
           <AlertDescription>{pushError}</AlertDescription>
         </Alert>
       )}
 
       {permission === 'denied' && (
-        <Alert className="mx-4 my-2">
+        <Alert className="px-4 my-2">
           <AlertDescription>
             Mitteilungen sind deaktiviert. Öffne die Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
             Falls die App dort nicht erscheint: App deinstallieren, Seite in Safari öffnen, „Zum Home-Bildschirm" hinzufügen und hier erneut aktivieren.
@@ -266,7 +271,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       )}
 
       {/* Action buttons */}
-      <div className="px-4 py-3 flex flex-col gap-2">
+      <div className="py-3 flex flex-col gap-2">
         {permission !== 'granted' && (
           <Button onClick={handleEnable} disabled={pushLoading}>
             {pushLoading ? <Spinner className="size-4" /> : 'Benachrichtigungen aktivieren'}
