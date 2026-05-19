@@ -1,12 +1,11 @@
 import { fetchGroupWithUsers } from '@/repository/AdminUsersRepository';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { fetchFullHistory } from '@/repository/DrinkRepository';
-import { fetchEvents } from '@/repository/EventRepository';
+import { fetchEventBringPledges, fetchEvents } from '@/repository/EventRepository';
 import { fetchMatch } from '@/repository/GamesRepository';
+import { fetchGroupUsers } from '@/repository/GroupsRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
 import { fetchGroups, fetchSimpleUser } from '@/repository/UserRepository';
-import { fetchFullEventPledges } from '@/tanstack/events';
-import { fetchGroupUsers } from '@/tanstack/groups';
 import { Database, Enums } from '@/types/supabase-generated.types';
 import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
@@ -62,7 +61,7 @@ declare global {
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
   type FullMatch = QueryData<ReturnType<typeof fetchMatch>> extends Array<infer U> ? U : never;
-  type FullEventPledges = QueryData<ReturnType<typeof fetchFullEventPledges>> extends Array<infer U> ? U : never;
+  type FullEventPledges = QueryData<ReturnType<typeof fetchEventBringPledges>> extends Array<infer U> ? U : never;
   type GroupUsers = QueryData<ReturnType<typeof fetchGroupUsers>> extends Array<infer U> ? U : never;
 
   type PaymentInsert = TablesInsert<'payments'>;

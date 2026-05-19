@@ -13,6 +13,10 @@ export const fetchEvents = () =>
       '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(id, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, id, avatarUrl))'
     );
 
+export const fetchEventBringPledges = () => supabase
+  .from('event_bring_pledges')
+  .select('*, user: user(*), item: event_bring_items(*)')
+
 export const EventRepository = {
   async updateEventAndAllRecurrences(updates: TablesUpdate<'events'>, key: string, oldStartTime: string) {
     const { data, error } = await supabase
@@ -224,9 +228,7 @@ export const EventRepository = {
   },
 
   async fetchBringPledges(eventId: string) {
-    const result = await supabase
-      .from('event_bring_pledges')
-      .select('*, user: user(*), item: event_bring_items(*)')
+    const result = await fetchEventBringPledges()
       .eq('event', eventId);
     return result.data ?? [];
   },

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toggle } from "@/components/ui/toggle";
@@ -301,8 +302,8 @@ const PublicGroupInformation = () => {
                       .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
                         || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
                       .map((x) => (
-                        <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
-                          <div className="flex items-center gap-2">
+                        <Item variant={"outline"} key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
+                          <ItemMedia>
                             <Avatar className="cursor-pointer" {...(
                               (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
                                 onClick: () => {
@@ -325,12 +326,12 @@ const PublicGroupInformation = () => {
                                   </>
                               }
                             </Avatar>
-                            <div>
-                              <div className="text-sm font-medium">{x.user.name}</div>
-                              <div className="text-xs text-muted-foreground">{x.user.email}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
+                          </ItemMedia>
+                          <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
+                            <ItemTitle>{x.user.name}</ItemTitle>
+                            <ItemDescription>{x.user.email}</ItemDescription>
+                          </ItemContent>
+                          <ItemActions>
                             {
                               x.role === 'admin' && (
                                 <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
@@ -342,8 +343,8 @@ const PublicGroupInformation = () => {
                             {
                               role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
                             }
-                          </div>
-                        </div>
+                          </ItemActions>
+                        </Item>
                       ))}
                   </div>
                 ))

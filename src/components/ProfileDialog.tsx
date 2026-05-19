@@ -22,8 +22,8 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
 
   const rankStyle: Record<number, { color: string; label: string }> = {
     1: { color: 'text-yellow-500', label: '1. Platz' },
-    2: { color: 'text-slate-400',  label: '2. Platz' },
-    3: { color: 'text-amber-700',  label: '3. Platz' },
+    2: { color: 'text-slate-400', label: '2. Platz' },
+    3: { color: 'text-amber-700', label: '3. Platz' },
   };
 
   return (
@@ -45,7 +45,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
 
           <div className='grid grid-cols-2 gap-4 mt-4'>
             {
-              profile?.player?.effective_rating_cached && <Item variant={"outline"}>
+              !!profile?.player?.effective_rating_cached && <Item variant={"outline"}>
                 <ItemContent>
                   <ItemTitle>
                     {profile.player.effective_rating_cached.toFixed()}
@@ -57,7 +57,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               </Item>
             }
             {
-              profile?.player?.matches_played && <Item variant={"outline"}>
+              !!profile?.player?.matches_played && <Item variant={"outline"}>
                 <ItemContent>
                   <ItemTitle>
                     {profile.player.matches_played.toFixed()}
@@ -70,7 +70,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             }
 
             {
-              profile?.player?.rg_id && <Item variant={"outline"}>
+              !!profile?.player?.rg_id && <Item variant={"outline"}>
                 <ItemMedia className='flex flex-row h-full align-center justify-center'>
                   <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
                 </ItemMedia>
@@ -93,7 +93,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               </Item>
             }
             {
-              profile?.player?.rg_index && <Item variant={"outline"}>
+              !!profile?.player?.rg_index && <Item variant={"outline"}>
                 <ItemMedia className='flex flex-row h-full align-center justify-center'>
                   <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
                 </ItemMedia>

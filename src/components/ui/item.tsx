@@ -81,7 +81,7 @@ function Item({
 }
 
 const itemMediaVariants = cva(
-  "gap-2 group-has-data-[slot=item-description]/item:translate-y-0.5 group-has-data-[slot=item-description]/item:self-start flex shrink-0 items-center justify-center [&_svg]:pointer-events-none",
+  "gap-2 group-has-data-[slot=item-description]/item:translate-y-0.5 group-has-data-[slot=item-description]/item:self-start flex shrink-0 items-center justify-center [&_svg]:pointer-events-none flex-row h-full align-center justify-center",
   {
     variants: {
       variant: {
