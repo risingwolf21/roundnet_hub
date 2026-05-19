@@ -1,7 +1,10 @@
 import React, { createContext, use, useEffect, useState } from 'react';
 
-export type FeatureKey =
-  | 'shadcnUI';
+export const AVAILABLE_FEATURES: { key: string, description: string }[] = [
+
+] as const;
+
+export type FeatureKey = (typeof AVAILABLE_FEATURES)[number]['key'];
 
 const defaultFeatures: Record<FeatureKey, boolean> = {
   shadcnUI: false

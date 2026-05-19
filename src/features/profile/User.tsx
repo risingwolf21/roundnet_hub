@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
-import { useFeatureFlags } from "@/contexts/FeatureToggleContext";
+import { AVAILABLE_FEATURES, useFeatureFlags } from "@/contexts/FeatureToggleContext";
 import { supabase } from "@/lib/supabase";
 import { useUserAttendanceInMonth } from "@/tanstack/events";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
@@ -29,30 +29,52 @@ import { Day } from "react-day-picker";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 
-const tabs = {
+export type TabItem = {
+  title: string;
+  icon: React.ReactNode;
+  disabled: boolean;
+};
+
+// 2. Der Typ für das gesamte Tabs-Objekt (die Map)
+export type SettingsTabs = {
+  account: TabItem;
+  changePassword: TabItem;
+  playerzone: TabItem;
+  calendar: TabItem;
+  notifications: TabItem;
+  testlab: TabItem;
+};
+
+const tabs: SettingsTabs = {
   account: {
     title: "Account",
-    icon: <UserIcon />
+    icon: <UserIcon />,
+    disabled: false
   },
   changePassword: {
     title: "Passwort ändern",
-    icon: <RectangleEllipsis />
+    icon: <RectangleEllipsis />,
+    disabled: false
   },
   playerzone: {
     title: "Playerzone Profil",
-    icon: <Volleyball />
+    icon: <Volleyball />,
+    disabled: false
   },
   calendar: {
     title: "Kalender",
-    icon: <CalendarIcon />
+    icon: <CalendarIcon />,
+    disabled: false
   },
   notifications: {
-    title: "Notifications",
-    icon: <Bell />
+    title: "Benachrichtigungen",
+    icon: <Bell />,
+    disabled: false
   },
   testlab: {
     title: "Test-Labor",
-    icon: <FlaskConical />
+    icon: <FlaskConical />,
+    disabled: AVAILABLE_FEATURES.length < 1
   }
 }
 
@@ -575,19 +597,20 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
 const TestLabContent = () => {
 
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const is = hasFeature("shadcnUI");
 
   return <>
     <CardContent className="px-0">
-      <Field className="px-4 py-2" orientation="horizontal">
-        <FieldContent>
-          <FieldLabel htmlFor="switch-share">shadcn/ui</FieldLabel>
-          <FieldDescription>
-            Enable the new shadcn user interface for the whole application
-          </FieldDescription>
-        </FieldContent>
-        <Switch id="switch-share" checked={is} onCheckedChange={() => toggleFeature("shadcnUI")} />
-      </Field>
+      {
+        AVAILABLE_FEATURES.map((feature) => <Field key={feature.key} className="px-4 py-2" orientation="horizontal">
+          <FieldContent>
+            <FieldLabel htmlFor="switch-share">{feature.key}</FieldLabel>
+            <FieldDescription>
+              {feature.description}
+            </FieldDescription>
+          </FieldContent>
+          <Switch id="switch-share" checked={hasFeature(feature.key)} onCheckedChange={() => toggleFeature("shadcnUI")} />
+        </Field>)
+      }
     </CardContent>
   </>
 }
@@ -596,12 +619,12 @@ const isNotificationSupported =
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
 const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
-  event:     { label: 'Veranstaltungen', icon: CalendarIcon },
-  challenge: { label: 'Challenges',      icon: Trophy },
-  game:      { label: 'Spiele',          icon: Swords },
-  group:     { label: 'Gruppen',         icon: Users },
-  item:      { label: 'Sonstiges',       icon: Bell },
-  payment:   { label: 'Sonstiges',       icon: Bell },
+  event: { label: 'Veranstaltungen', icon: CalendarIcon },
+  challenge: { label: 'Challenges', icon: Trophy },
+  game: { label: 'Spiele', icon: Swords },
+  group: { label: 'Gruppen', icon: Users },
+  item: { label: 'Sonstiges', icon: Bell },
+  payment: { label: 'Sonstiges', icon: Bell },
 };
 
 const CATEGORY_ORDER = ['event', 'challenge', 'game', 'group', 'item', 'payment'];
@@ -610,6 +633,20 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
   const { data: notificationTags = [], isLoading } = useNotificationTags(user);
   const { data: topics = [] } = useNotificationTopics();
   const updateNotificationPreferences = useUpdateNotificationPreferences(user);
+
+
+
+  const grouped = topics.reduce<Record<string, typeof topics>>((acc, topic) => {
+    const key = topic.scope_type ?? 'other';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(topic);
+    return acc;
+  }, {});
+
+  const orderedEntries: [string, typeof topics][] = [
+    ...CATEGORY_ORDER.filter(k => grouped[k]).map(k => [k, grouped[k]] as [string, typeof topics]),
+    ...Object.entries(grouped).filter(([k]) => !CATEGORY_ORDER.includes(k)),
+  ];
 
   if (!isNotificationSupported || Notification.permission !== 'granted') {
     return (
@@ -629,18 +666,6 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
       </CardContent>
     );
   }
-
-  const grouped = topics.reduce<Record<string, typeof topics>>((acc, topic) => {
-    const key = topic.scope_type ?? 'other';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(topic);
-    return acc;
-  }, {});
-
-  const orderedEntries: [string, typeof topics][] = [
-    ...CATEGORY_ORDER.filter(k => grouped[k]).map(k => [k, grouped[k]] as [string, typeof topics]),
-    ...Object.entries(grouped).filter(([k]) => !CATEGORY_ORDER.includes(k)),
-  ];
 
   return (
     <CardContent className="px-0">
@@ -672,7 +697,7 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
                 {i < groupTopics.length - 1 && <Separator />}
               </Fragment>
             ))}
-            {groupIndex < orderedEntries.length - 1 && <Separator className="my-2" />}
+            {groupIndex < orderedEntries.length - 1 && <Separator className="mb-2" />}
           </Fragment>
         );
       })}
@@ -699,7 +724,7 @@ const User = () => {
         <Tabs defaultValue="overview" className="gap-4">
           <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
             {
-              tabs && Object.entries(tabs).map(([key, { title, icon }]) => (
+              tabs && Object.entries(tabs).filter((x) => !x[1].disabled).map(([key, { title, icon }]) => (
                 <TabsTrigger key={key} value={key as Tab} className="flex items-center gap-2">
                   {icon}
                   {title}
