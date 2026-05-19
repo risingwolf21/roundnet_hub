@@ -254,6 +254,10 @@ const createRouter = (user: UserWithGroups | null) =>
               errorElement: <Pages.ErrorRouteElement />,
               children: [
                 {
+                  index: true,
+                  element: <Pages.AdminDashboard />,
+                },
+                {
                   path: 'drinks/history',
                   element: <Pages.AdminHistoryScreen />,
                 },

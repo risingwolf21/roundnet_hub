@@ -14,6 +14,7 @@ export const ErrorRouteElement = lazyWithRetry(() => import('@/components/ErrorR
 export const MainLayout = lazyWithRetry(() => import('@/components/layout/MainLayout'));
 export const DialogsProvider = lazyWithRetry(() => import('@/contexts/DialogsProvider'));
 export const AdminAnalytics = lazyWithRetry(() => import('@/features/admin/AdminAnalytics'));
+export const AdminDashboard = lazyWithRetry(() => import('@/features/admin/AdminDashboard'));
 export const AdminUserList = lazyWithRetry(() => import('@/features/admin/AdminUserList'));
 export const AuthLayout = lazyWithRetry(() => import('@/features/auth/AuthLayout'));
 export const ForgotPassword = lazyWithRetry(() => import('@/features/auth/ForgotPassword'));

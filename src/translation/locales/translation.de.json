@@ -57,7 +57,8 @@
     "group_features": "Gruppen Features",
     "helpAndInformation": "Hilfe und Informationen",
     "appRefresh": "App aktualisieren",
-    "merge_accounts": "Account-Merge"
+    "merge_accounts": "Account-Merge",
+    "adminOverview": "Übersicht"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
@@ -318,6 +319,20 @@
     }
   },
   "admin": {
+    "dashboard": {
+      "title": "Admin Übersicht",
+      "pendingPayments": "Offene Zahlungen",
+      "pendingPaymentsDesc": "Keine ausstehenden Zahlungen",
+      "joinRequests": "Beitrittsanfragen",
+      "joinRequestsDesc": "Ausstehende Gruppenanfragen",
+      "lastTraining": "Letztes Training",
+      "lastTrainingDesc": "Anmeldungen",
+      "monthlyActivity": "Aktivität (Monat)",
+      "monthlyActivityDesc": "Nutzer mit mind. 1 Training diesen Monat",
+      "quickLinks": "Schnellzugriff",
+      "noEvent": "Kein Training gefunden",
+      "total": "Gesamt: {{amount}} €"
+    },
     "analytics": {
       "title": "Admin Analysen",
       "inactiveParticipants": "Inaktive Challenge Teilnehmer (Top Trainingsbesucher)",

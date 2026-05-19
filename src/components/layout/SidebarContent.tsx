@@ -4,7 +4,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ChartArea, Database, Euro, GitMerge, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ChartArea, Database, Euro, GitMerge, HelpCircle, History, Home, KeyRound, LayoutDashboard, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -218,6 +218,25 @@ export function AppSidebar() {
         any: true
       },
       children: [
+        {
+          title: t('browse.adminOverview'),
+          icon: <LayoutDashboard />,
+          path: 'admin',
+          permission: {
+            perm: [
+              'drinks.confirm.payments',
+              'drinks.manage',
+              'users.manage',
+              'drinks.history.admin',
+              'grants.manage',
+              'supabase.admin',
+              'admin.analytics.view',
+              'games.admin.merge_accounts',
+              'admin.notify_users',
+            ] as Permission[],
+            any: true,
+          },
+        },
         {
           title: t('browse.merge_accounts'),
           icon: <GitMerge />,
