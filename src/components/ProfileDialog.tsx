@@ -106,30 +106,35 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
   const { data: playerMatches = [], isLoading: matchesLoading, isError: matchesError } = usePlayerMatches(playerId);
   const { data: eloHistory = [], isLoading: eloLoading, isError: eloError } = useEloHistoryForPlayer(playerId);
 
-  const winRate = useMemo(() => {
-    const rated = playerMatches.filter((m) => m.rated && m.winner_side);
-    if (rated.length === 0) return null;
-    const wins = rated.filter((m) => {
-      const onTeamA = m.team_a_p1 === playerId || m.team_a_p2 === playerId;
-      return (onTeamA && m.winner_side === 'A') || (!onTeamA && m.winner_side === 'B');
-    }).length;
-    return { wins, total: rated.length, rate: Math.round((wins / rated.length) * 100) };
-  }, [playerMatches, playerId]);
-
-  const h2h = useMemo(() => {
-    if (!currentPlayerId || currentUser.id === userId || matchesLoading) return null;
-    const shared = playerMatches.filter(
+  const shared = useMemo(() => {
+    return playerMatches.filter(
       (m) => m.rated && m.winner_side &&
         (m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId ||
-         m.team_b_p1 === currentPlayerId || m.team_b_p2 === currentPlayerId)
-    );
+          m.team_b_p1 === currentPlayerId || m.team_b_p2 === currentPlayerId)
+    )
+  }, [playerMatches, currentPlayerId]);
+
+  const winRate = useMemo(() => {
     if (shared.length === 0) return null;
     const wins = shared.filter((m) => {
       const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
-      return (onTeamA && m.winner_side === 'A') || (!onTeamA && m.winner_side === 'B');
+      return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
     }).length;
-    return { wins, losses: shared.length - wins };
-  }, [playerMatches, currentPlayerId, currentUser.id, userId, matchesLoading]);
+    return { wins, total: shared.length, rate: Math.round((wins / shared.length) * 100) };
+  }, [shared, currentPlayerId]);
+
+  const h2h = useMemo(() => {
+    if (!currentPlayerId || currentUser.id === userId || matchesLoading) return null;
+    if (shared.length === 0) return null;
+    const wins = shared.filter((m) => {
+      const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
+      return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
+    }).length;
+    const draws = shared.filter((m) => {
+      return m.winner_side == "draw";
+    }).length;
+    return { wins, losses: shared.length - wins - draws, draws };
+  }, [currentPlayerId, currentUser.id, userId, matchesLoading, shared]);
 
   const sortedEloHistory = useMemo(
     () => [...eloHistory].sort((a, b) => a.created_at.localeCompare(b.created_at)),
@@ -140,8 +145,8 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
 
   const rankStyle: Record<number, { color: string; label: string }> = {
     1: { color: 'text-yellow-500', label: '1. Platz' },
-    2: { color: 'text-slate-400',  label: '2. Platz' },
-    3: { color: 'text-amber-700',  label: '3. Platz' },
+    2: { color: 'text-slate-400', label: '2. Platz' },
+    3: { color: 'text-amber-700', label: '3. Platz' },
   };
 
   return (
@@ -248,14 +253,8 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               <>
                 <Item variant={"outline"}>
                   <ItemContent>
-                    <ItemTitle>{h2h.wins}</ItemTitle>
-                    <ItemDescription>{t('profile.h2h.wins')}</ItemDescription>
-                  </ItemContent>
-                </Item>
-                <Item variant={"outline"}>
-                  <ItemContent>
-                    <ItemTitle>{h2h.losses}</ItemTitle>
-                    <ItemDescription>{t('profile.h2h.losses')}</ItemDescription>
+                    <ItemTitle>{`${h2h.wins}W ${h2h.draws}D ${h2h.losses}L`}</ItemTitle>
+                    <ItemDescription>{t('profile.h2h.ratio')}</ItemDescription>
                   </ItemContent>
                 </Item>
               </>
@@ -320,11 +319,10 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             <div className="mt-4 rounded-lg border p-3">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">ELO Verlauf</span>
-                <span className={`text-sm font-medium ${
-                  sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                }`}>
+                <span className={`text-sm font-medium ${sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
+                  ? 'text-green-500'
+                  : 'text-red-500'
+                  }`}>
                   {sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating ? '+' : ''}
                   {(sortedEloHistory[sortedEloHistory.length - 1].new_rating - sortedEloHistory[0].new_rating).toFixed(0)}
                 </span>

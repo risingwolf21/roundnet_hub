@@ -312,6 +312,7 @@
     "offline": "Du bist offline. Es werden gespeicherte Daten angezeigt.",
     "h2h": {
       "title": "Head-to-Head",
+      "ratio": "Siege (W), Unentschieden (D), Niederlagen (L)",
       "wins": "H2H Siege",
       "losses": "H2H Niederlagen"
     }
