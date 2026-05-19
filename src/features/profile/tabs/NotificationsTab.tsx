@@ -11,6 +11,7 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { iOS } from "@/utils";
 import { AlertTriangle, Bell, BellOff, CalendarIcon, CheckCircle2, Info, Swords, Trophy, Users, XCircle } from "lucide-react";
 import { ElementType, Fragment, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // --- Web Push helpers -------------------------------------------------------
 
@@ -84,21 +85,31 @@ async function revokeOnServer(endpoint?: string | null) {
 const isNotificationSupported =
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
-const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
-  event: { label: 'Veranstaltungen', icon: CalendarIcon },
-  challenge: { label: 'Challenges', icon: Trophy },
-  game: { label: 'Spiele', icon: Swords },
-  group: { label: 'Gruppen', icon: Users },
-  item: { label: 'Sonstiges', icon: Bell },
-  payment: { label: 'Sonstiges', icon: Bell },
+const CATEGORY_ICON_MAP: Record<string, ElementType> = {
+  event:     CalendarIcon,
+  challenge: Trophy,
+  game:      Swords,
+  group:     Users,
+  item:      Bell,
+  payment:   Bell,
 };
 
 const CATEGORY_ORDER = ['event', 'challenge', 'game', 'group', 'item', 'payment'];
 
 export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
+  const { t } = useTranslation();
   const { data: notificationTags = [], isLoading } = useNotificationTags(user);
   const { data: topics = [] } = useNotificationTopics();
   const updateNotificationPreferences = useUpdateNotificationPreferences(user);
+
+  const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
+    event:     { label: t('profile.notifications.categoryEvents'),     icon: CalendarIcon },
+    challenge: { label: t('profile.notifications.categoryChallenges'), icon: Trophy },
+    game:      { label: t('profile.notifications.categoryGames'),      icon: Swords },
+    group:     { label: t('profile.notifications.categoryGroups'),     icon: Users },
+    item:      { label: t('profile.notifications.categoryOther'),      icon: Bell },
+    payment:   { label: t('profile.notifications.categoryOther'),      icon: Bell },
+  };
 
   const [permission, setPermission] = useState<NotificationPermission>(
     'Notification' in window ? Notification.permission : 'denied',
@@ -131,7 +142,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
         setPermission(perm);
         if (perm !== 'granted') return;
       }
-      if (!VAPID) throw new Error('VAPID Public Key fehlt.');
+      if (!VAPID) throw new Error(t('profile.notifications.vapidMissing'));
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await old?.unsubscribe().catch(() => { });
@@ -152,7 +163,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
     setPushError(null);
     setPushLoading(true);
     try {
-      if (!VAPID) throw new Error('VAPID Public Key fehlt.');
+      if (!VAPID) throw new Error(t('profile.notifications.vapidMissing'));
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
@@ -191,9 +202,9 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       <CardContent className="px-4 py-8 flex flex-col items-center gap-3 text-center">
         <BellOff className="size-10 text-muted-foreground" />
         <div>
-          <div className="font-medium">Push-Benachrichtigungen nicht unterstützt</div>
+          <div className="font-medium">{t('profile.notifications.notSupported')}</div>
           <div className="text-sm text-muted-foreground mt-1">
-            Dieser Browser unterstützt keine Push-Benachrichtigungen.
+            {t('profile.notifications.notSupportedDescription')}
           </div>
         </div>
       </CardContent>
@@ -202,8 +213,8 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
 
   const installingHint = !isPWA
     ? iOS
-      ? 'Für iOS Web Push die App über Teilen → „Zum Home-Bildschirm hinzufügen" installieren.'
-      : 'Für Android Web Push die App über „Zum Home-Bildschirm hinzufügen" installieren.'
+      ? t('profile.notifications.installHintIos')
+      : t('profile.notifications.installHintAndroid')
     : undefined;
 
   const grouped = topics.reduce<Record<string, typeof topics>>((acc, topic) => {
@@ -221,6 +232,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
   return (
     <CardContent className="px-0">
       {/* Device & permission status */}
+<<<<<<< HEAD
       <Alert className="my-2">
         <AlertDescription className="w-full">
           <div className="w-full flex flex-col gap-1">
@@ -246,6 +258,28 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
         </AlertDescription>
       </Alert>
 
+=======
+      <div className="px-4 py-2 flex flex-col gap-1">
+        <div className="flex items-center justify-between py-1">
+          <span className="text-sm">{t('profile.notifications.permission')}</span>
+          {permission === 'granted'
+            ? <CheckCircle2 className="size-4 text-green-500" />
+            : permission === 'default'
+            ? <Info className="size-4 text-blue-500" />
+            : <AlertTriangle className="size-4 text-yellow-500" />}
+        </div>
+        <div className="flex items-center justify-between py-1">
+          <span className="text-sm">{t('profile.notifications.registered')}</span>
+          {registered
+            ? <CheckCircle2 className="size-4 text-green-500" />
+            : <XCircle className="size-4 text-muted-foreground" />}
+        </div>
+        <div className="flex items-center justify-between py-1">
+          <span className="text-sm">{t('profile.notifications.device')}</span>
+          <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded">{getDeviceId().slice(0, 8)}</span>
+        </div>
+      </div>
+>>>>>>> 361e8eae (Add empty states and full i18n sweep across 15 components)
 
       <Separator />
 
@@ -264,8 +298,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       {permission === 'denied' && (
         <Alert className="px-4 my-2">
           <AlertDescription>
-            Mitteilungen sind deaktiviert. Öffne die Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
-            Falls die App dort nicht erscheint: App deinstallieren, Seite in Safari öffnen, „Zum Home-Bildschirm" hinzufügen und hier erneut aktivieren.
+            {t('profile.notifications.deniedAlert')}
           </AlertDescription>
         </Alert>
       )}
@@ -274,21 +307,21 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       <div className="py-3 flex flex-col gap-2">
         {permission !== 'granted' && (
           <Button onClick={handleEnable} disabled={pushLoading}>
-            {pushLoading ? <Spinner className="size-4" /> : 'Benachrichtigungen aktivieren'}
+            {pushLoading ? <Spinner className="size-4" /> : t('profile.notifications.enable')}
           </Button>
         )}
         {permission === 'granted' && !registered && (
           <Button onClick={handleEnable} disabled={pushLoading}>
-            {pushLoading ? <Spinner className="size-4" /> : 'Gerät registrieren'}
+            {pushLoading ? <Spinner className="size-4" /> : t('profile.notifications.registerDevice')}
           </Button>
         )}
         {permission === 'granted' && registered && (
           <>
             <Button variant="outline" onClick={handleRebind} disabled={pushLoading}>
-              {pushLoading ? <Spinner className="size-4" /> : 'Neu koppeln'}
+              {pushLoading ? <Spinner className="size-4" /> : t('profile.notifications.rebind')}
             </Button>
             <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={handleDisable} disabled={pushLoading}>
-              {pushLoading ? <Spinner className="size-4" /> : 'Keine Benachrichtigungen'}
+              {pushLoading ? <Spinner className="size-4" /> : t('profile.notifications.disable')}
             </Button>
           </>
         )}
@@ -299,7 +332,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
         <>
           <Separator />
           {orderedEntries.map(([scopeType, groupTopics], groupIndex) => {
-            const cat = CATEGORY_LABELS[scopeType] ?? { label: scopeType, icon: Bell };
+            const cat = CATEGORY_LABELS[scopeType] ?? { label: scopeType, icon: CATEGORY_ICON_MAP[scopeType] ?? Bell };
             const Icon = cat.icon;
             return (
               <Fragment key={scopeType}>

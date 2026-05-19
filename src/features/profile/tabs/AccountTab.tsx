@@ -11,9 +11,11 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
 import { Image, Trash, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; handleSignOut: () => void }) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [displayName, setDisplayName] = useState(user.displayName);
   const [name, setName] = useState(user.name.split(' ')[0] ?? '');
@@ -46,23 +48,23 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
       setLoadingSave(true);
       const fullName = `${name} ${surname}`;
       if (fullName.length < 6 || displayName.length < 4) {
-        toast.warning('Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein');
+        toast.warning(t('profile.account.nameTooShort'));
         return;
       }
       if (fullName.split(' ').length < 2) {
-        toast.warning('Du musst dein vollen Name, mit Vor und Nachname angeben');
+        toast.warning(t('profile.account.nameIncomplete'));
         return;
       }
       await updateUserMutation.mutateAsync(
         { displayName, fullName, croppedImage, avatarUrl: currentUser.avatarUrl },
         {
           onSuccess: (data) => {
-            toast.success('Successfully updated your profile!');
+            toast.success(t('profile.account.updateSuccess'));
             setCurrentUser({ ...currentUser, avatarUrl: data?.avatarUrl ?? null });
             setCroppedImage(null);
           },
           onError: (error) => {
-            toast.error('There was an error while updating your profile! ' + error.message);
+            toast.error(t('profile.account.updateError', { error: error.message }));
           },
         }
       );
@@ -76,12 +78,12 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
       <CardContent className="px-4">
         <div className='space-y-6 lg:col-span-2'>
           <div className='mb-6 w-full space-y-2'>
-            <Label className="mb-4">Profilbild</Label>
+            <Label className="mb-4">{t('profile.account.avatar')}</Label>
             <div className='flex items-center gap-4'>
               <div
                 role='button'
                 tabIndex={0}
-                aria-label='Upload your avatar'
+                aria-label={t('profile.account.uploadAvatar')}
                 onClick={openPicker}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -103,7 +105,7 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
                 <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onSelect} />
                 <Button type='button' variant='outline' onClick={openPicker} className='flex items-center gap-2'>
                   <UploadCloud />
-                  Upload avatar
+                  {t('profile.account.uploadAvatar')}
                 </Button>
                 <Button
                   type='button'
@@ -125,27 +127,27 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
           </div>
           <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
             <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-display-name'>Anzeigename</Label>
+              <Label htmlFor='multi-step-personal-info-display-name'>{t('profile.account.displayName')}</Label>
               <Input id='multi-step-personal-info-display-name' value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
             </div>
             <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-first-name'>First Name</Label>
-              <Input id='multi-step-personal-info-first-name' placeholder='John' value={name} onChange={(e) => setName(e.target.value)} />
+              <Label htmlFor='multi-step-personal-info-first-name'>{t('profile.account.firstName')}</Label>
+              <Input id='multi-step-personal-info-first-name' placeholder={t('profile.account.firstNamePlaceholder')} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-last-name'>Last Name</Label>
-              <Input id='multi-step-personal-info-last-name' placeholder='Doe' value={surname} onChange={(e) => setSurname(e.target.value)} />
+              <Label htmlFor='multi-step-personal-info-last-name'>{t('profile.account.lastName')}</Label>
+              <Input id='multi-step-personal-info-last-name' placeholder={t('profile.account.lastNamePlaceholder')} value={surname} onChange={(e) => setSurname(e.target.value)} />
             </div>
           </div>
           <div className='flex justify-end'>
             <Button type='submit' className='max-sm:w-full' disabled={loadingSave} onClick={submit}>
               {loadingSave && <Spinner />}
-              Änderungen Speichern
+              {t('profile.account.saveChanges')}
             </Button>
           </div>
           <Separator />
           <Button variant={"destructive"} className='max-sm:w-full' onClick={handleSignOut}>
-            Logout
+            {t('profile.account.logout')}
           </Button>
         </div>
       </CardContent>

@@ -7,9 +7,11 @@ import { supabase } from "@/lib/supabase";
 import { captureException } from "@sentry/react";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export const ChangePasswordTab = () => {
+  const { t } = useTranslation();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export const ChangePasswordTab = () => {
     const password1 = data.get('confirmPassword')?.toString();
 
     if (password !== password1 || !password || !password1) {
-      toast.error("Die Passwörter stimmen nicht überein.");
+      toast.error(t('profile.password.mismatch'));
       setLoading(false);
       return;
     }
@@ -37,19 +39,19 @@ export const ChangePasswordTab = () => {
 
   return (
     <>
-      <CardTitle className="px-4 font-semibold">Passwort ändern</CardTitle>
+      <CardTitle className="px-4 font-semibold">{t('profile.password.title')}</CardTitle>
       <CardContent className="px-4">
         <form className='space-y-6' onSubmit={submit}>
           <div className='w-full space-y-1'>
             <Label className='leading-5' htmlFor='password'>
-              New Password*
+              {t('profile.password.newPassword')}
             </Label>
             <div className='relative'>
               <Input
                 id='password'
                 name='password'
                 type={isPasswordVisible ? 'text' : 'password'}
-                placeholder='••••••••••••••••'
+                placeholder={t('profile.password.placeholder')}
                 className='pr-9'
               />
               <Button
@@ -60,20 +62,20 @@ export const ChangePasswordTab = () => {
                 className='text-muted-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 rounded-l-none hover:bg-transparent'
               >
                 {isPasswordVisible ? <EyeOff /> : <Eye />}
-                <span className='sr-only'>{isPasswordVisible ? 'Hide password' : 'Show password'}</span>
+                <span className='sr-only'>{isPasswordVisible ? t('profile.password.hidePassword') : t('profile.password.showPassword')}</span>
               </Button>
             </div>
           </div>
           <div className='w-full space-y-1'>
             <Label className='leading-5' htmlFor='confirmPassword'>
-              Confirm Password*
+              {t('profile.password.confirmPassword')}
             </Label>
             <div className='relative'>
               <Input
                 id='confirmPassword'
                 name='confirmPassword'
                 type={isConfirmPasswordVisible ? 'text' : 'password'}
-                placeholder='••••••••••••••••'
+                placeholder={t('profile.password.placeholder')}
                 className='pr-9'
               />
               <Button
@@ -84,13 +86,13 @@ export const ChangePasswordTab = () => {
                 className='text-muted-foreground focus-visible:ring-ring/50 absolute inset-y-0 right-0 rounded-l-none hover:bg-transparent'
               >
                 {isConfirmPasswordVisible ? <EyeOff /> : <Eye />}
-                <span className='sr-only'>{isConfirmPasswordVisible ? 'Hide password' : 'Show password'}</span>
+                <span className='sr-only'>{isConfirmPasswordVisible ? t('profile.password.hidePassword') : t('profile.password.showPassword')}</span>
               </Button>
             </div>
           </div>
           <Button className='w-full' type='submit' disabled={loading}>
             {loading && <Spinner />}
-            Neues Passwort setzen
+            {t('profile.password.submit')}
           </Button>
         </form>
       </CardContent>

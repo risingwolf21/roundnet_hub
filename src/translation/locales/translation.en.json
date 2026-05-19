@@ -11,7 +11,7 @@
     "diffInDaysPrior_zero": "The same day",
     "diffInDaysPrior_one": "{{count}} day prior",
     "diffInDaysPrior_other": "{{count}} days prior",
-    "diffInHoursPrior_zero": "Am selben Tag",
+    "diffInHoursPrior_zero": "The same day",
     "diffInHoursPrior_one": "{{count}} hour prior",
     "diffInHoursPrior_other": "{{count}} hours prior"
   },
@@ -23,7 +23,9 @@
     "deletionSuccess": "Drink deleted successfully",
     "deletionError": "An error occurred while deleting. {{error}} ",
     "updateSuccess": "Drink updated successfully",
-    "updateError": "An error occurred while updating. {{error}} "
+    "updateError": "An error occurred while updating. {{error}} ",
+    "addSuccess": "Drink added successfully",
+    "addError": "An error occurred while adding: {{error}}"
   },
   "attendees": "Attendees",
   "browse": {
@@ -108,10 +110,25 @@
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
-    "startTime": "{{date, cccc}} um {{date, HH:mm}}",
+    "startTime": "{{date, cccc}} at {{date, HH:mm}}",
     "secondaryTextStart": "{{start, HH:mm}}",
     "secondaryTextWithEnd": "- {{end, HH:mm}}",
-    "secondaryTextWithPlace": " at {{place}}"
+    "secondaryTextWithPlace": " at {{place}}",
+    "list": {
+      "title": "Events",
+      "past": "Past events",
+      "upcoming": "Upcoming events",
+      "empty": "No events",
+      "emptyDescription": "No upcoming events at the moment.",
+      "joinGroup": "Join a group",
+      "joinGroupHint": "Try joining a group to see events",
+      "thisWeek": "This week",
+      "nextWeek": "Next week",
+      "reload": "Reload"
+    },
+    "item": {
+      "noLocation": "No location specified"
+    }
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",
@@ -161,8 +178,8 @@
     },
     "faq": {
       "push": {
-        "title": "Why aren’t push notifications working?",
-        "answer": "Make sure you’ve allowed push notifications and that the app is installed (PWA). Sometimes your browser blocks notifications — check your browser settings. Under Account > Notifications you can view the current status. If there’s an error shown, reconnect using the available button."
+        "title": "Why aren't push notifications working?",
+        "answer": "Make sure you've allowed push notifications and that the app is installed (PWA). Sometimes your browser blocks notifications — check your browser settings. Under Account > Notifications you can view the current status. If there's an error shown, reconnect using the available button."
       }
     },
     "updateAvailable": "💭 As soon as an update is available, it will be automatically downloaded and applied in the background. The app page will reload once to apply it, and required data will be reloaded.",
@@ -172,12 +189,12 @@
     "confirmInstallation": "A dialog will open — confirm it by tapping 'Install'.",
     "confirmName": "Confirm the app name. You can edit it if you want.",
     "clickAdd": "Tap 'Add'. On iOS and iPadOS, bookmarks and home screen apps look the same.",
-    "openMenuAndroid": "Open your browser’s menu — usually shown as three dots at the top.",
+    "openMenuAndroid": "Open your browser's menu — usually shown as three dots at the top.",
     "navigateToGroups": "In the left-side menu (☰), navigate to 'Groups'.",
     "listAllGroups": "All available groups will be listed.",
     "joinGroup": "Some groups can be joined directly, while others require approval from a group administrator.",
-    "eventsFromGroupInfo": "💭 As a member of a group, you’ll see all events created for that group.",
-    "challengesFromGroupInfo": "💭 As a member of a group, you’ll see all challenges created for that group.",
+    "eventsFromGroupInfo": "💭 As a member of a group, you'll see all events created for that group.",
+    "challengesFromGroupInfo": "💭 As a member of a group, you'll see all challenges created for that group.",
     "navigateToEvents": "In the menu on the left side (☰), navigate to the events.",
     "listAllEvents": "All events from your groups are displayed. You can join or decline them using the thumbs up and thumbs down buttons.",
     "eventInformation": "By clicking on an event, you can see all information about it.",
@@ -190,5 +207,135 @@
   "errors": {
     "mutation": "An error occurred. Please try again.",
     "query": "Failed to load data. Please refresh the page."
+  },
+  "games": {
+    "list": {
+      "title": "Match list",
+      "loadError": "Failed to load",
+      "loadErrorDescription": "Could not load matches. Please try again later.",
+      "empty": "No matches found",
+      "emptyDescription": "There are no recorded matches yet. Enter a new match to get started.",
+      "unrated": "Unrated",
+      "private": "Private",
+      "enterScores": "Enter scores"
+    },
+    "history": {
+      "noGames": "No matches",
+      "noGamesDescription": "No matches have been recorded for this player yet."
+    },
+    "leaderboard": {
+      "empty": "No entries yet"
+    }
+  },
+  "keys": {
+    "screen": {
+      "disclaimer": "Please keep your key safe and record all handovers! Anyone who loses a key through no fault of their own (e.g. theft) will be supported by the department. Anyone who loses the key through their own fault (e.g. misplacing it) must cover the cost of a replacement key themselves. The registered person is always responsible for the key!",
+      "loadError": "Failed to load",
+      "loadErrorDescription": "Could not load keys. Please try again later.",
+      "empty": "No keys found",
+      "emptyDescription": "No keys are currently registered in the system.",
+      "noHolder": "Unassigned"
+    }
+  },
+  "profile": {
+    "account": {
+      "avatar": "Profile picture",
+      "uploadAvatar": "Upload avatar",
+      "displayName": "Display name",
+      "firstName": "First name",
+      "firstNamePlaceholder": "Max",
+      "lastName": "Last name",
+      "lastNamePlaceholder": "Doe",
+      "saveChanges": "Save changes",
+      "logout": "Logout",
+      "nameTooShort": "Name or display name must be at least 6 or 4 characters",
+      "nameIncomplete": "You must provide your full name, including first and last name",
+      "updateSuccess": "Profile updated successfully",
+      "updateError": "Error updating profile: {{error}}"
+    },
+    "password": {
+      "title": "Change password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "placeholder": "••••••••••••••••",
+      "submit": "Set new password",
+      "mismatch": "The passwords do not match.",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "playerzone": {
+      "useAsAvatar": "Use this image as profile picture",
+      "urlLabel": "Playerzone URL",
+      "urlPlaceholder": "https://playerzone.de/user/123",
+      "gender": "Gender",
+      "genderPlaceholder": "Select gender",
+      "genderOpen": "Open",
+      "genderWomen": "Women",
+      "saveChanges": "Save changes",
+      "rgId": "Roundnet Germany ID",
+      "rgIndex": "Roundnet Germany Index",
+      "internalIndex": "Internal index",
+      "hideIndex": "Hide index?",
+      "hideIndexDescription": "Your index is hidden from other players, but it's still used for calculations.",
+      "invalidUrl": "Please make sure the URL is correct. Copy it from your Playerzone profile.",
+      "noGender": "You must select a gender for your profile to be displayed correctly.",
+      "updateError": "Could not update Playerzone profile: {{error}}",
+      "updateSuccess": "Profile updated successfully",
+      "avatarSuccess": "Profile picture updated successfully",
+      "avatarError": "Error loading profile picture: {{error}}"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "Show all your confirmed events in your personal calendar.",
+      "sync": "Sync calendar"
+    },
+    "notifications": {
+      "notSupported": "Push notifications not supported",
+      "notSupportedDescription": "This browser does not support push notifications.",
+      "permission": "Permission",
+      "registered": "Registered",
+      "device": "Device",
+      "categoryEvents": "Events",
+      "categoryChallenges": "Challenges",
+      "categoryGames": "Matches",
+      "categoryGroups": "Groups",
+      "categoryOther": "Other",
+      "installHintIos": "For iOS Web Push, install the app via Share → \"Add to Home Screen\".",
+      "installHintAndroid": "For Android Web Push, install the app via \"Add to Home Screen\".",
+      "deniedAlert": "Notifications are disabled. Open Settings → Notifications → App and allow notifications. If the app doesn't appear there: uninstall the app, open the page in Safari, add it to the Home Screen and activate here again.",
+      "enable": "Enable notifications",
+      "registerDevice": "Register device",
+      "rebind": "Re-bind",
+      "disable": "Disable notifications",
+      "vapidMissing": "VAPID public key missing."
+    }
+  },
+  "admin": {
+    "analytics": {
+      "title": "Admin Analytics",
+      "inactiveParticipants": "Inactive challenge participants (top training attendees)",
+      "inactiveParticipantsDescription": "Shows users with 0 points in the challenge, sorted by training frequency.",
+      "selectChallenge": "Select challenge",
+      "trainingPeriod": "Training period",
+      "trainingRegistrations": "Training registrations per user (period)",
+      "trainingRegistrationsDescription": "Who attended training most frequently in the selected period?",
+      "period": "Period",
+      "drinkBookings": "Drink bookings per user (period)",
+      "drinkBookingsDescription": "Who consumed the most drinks?",
+      "from": "From",
+      "to": "To",
+      "datePlaceholder": "Pick a date",
+      "fetch": "Fetch",
+      "selectFunction": "Select function"
+    },
+    "history": {
+      "title": "Admin Drink History"
+    }
+  },
+  "notifications": {
+    "screen": {
+      "title": "Notifications",
+      "empty": "You have no new notifications."
+    }
   }
 }

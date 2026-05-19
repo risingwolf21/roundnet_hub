@@ -3,10 +3,13 @@ import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Item } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
 import { DialogProps } from "@/contexts/DialogsProvider";
 import { cn } from "@/lib/utils";
+import { SearchX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type GameHistoryDialogProps = {
   player_id: string
@@ -15,6 +18,7 @@ type GameHistoryDialogProps = {
 }
 
 export const GameHistoryDialog = ({ payload: { player_id, name, rating }, open, onClose }: DialogProps<GameHistoryDialogProps>) => {
+  const { t } = useTranslation();
   const { data: games = [], isLoading, isFetching } = usePlayerMatches(player_id);
   const navigate = useNavigate();
 
@@ -27,9 +31,16 @@ export const GameHistoryDialog = ({ payload: { player_id, name, rating }, open, 
         </DialogTitle>
       </DialogHeader>
       <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-4 ">
-        {
-          (isLoading || isFetching) && <Spinner />
-        }
+        {(isLoading || isFetching) && <Spinner />}
+        {!isLoading && !isFetching && games.length === 0 && (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
+              <EmptyTitle>{t('games.history.noGames')}</EmptyTitle>
+              <EmptyDescription>{t('games.history.noGamesDescription')}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
         {
           games.map((match) => {
             const sets = (match.set_scores?.split(",").filter(x => x) ?? []).map(x => {

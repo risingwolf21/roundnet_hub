@@ -10,7 +10,7 @@ import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import groupBy from 'lodash.groupby';
 import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter, Plus } from 'lucide-react';
 import { useEffect } from 'react';
@@ -21,6 +21,7 @@ import { EventItem } from './components/EventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 const EventScreen = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -32,11 +33,11 @@ const EventScreen = () => {
     if (error)
       toast.error(error.message, {
         action: {
-          label: "Neu laden",
+          label: t('events.list.reload'),
           onClick: () => refetch()
         }
       });
-  }, [error, refetch]);
+  }, [error, refetch, t]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
@@ -44,7 +45,7 @@ const EventScreen = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title="Events Übersicht"
+        title={t('events.list.title')}
         user={user}
         actions={
           <>
@@ -55,8 +56,8 @@ const EventScreen = () => {
             </Has>
             <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
               const result = await dialogs.selectSingleOption<'past' | 'upcoming'>([
-                { value: 'past', label: 'Vergangene Events', icon: <CalendarArrowDown /> },
-                { value: 'upcoming', label: 'Kommende Events', icon: <CalendarArrowUp /> }
+                { value: 'past', label: t('events.list.past'), icon: <CalendarArrowDown /> },
+                { value: 'upcoming', label: t('events.list.upcoming'), icon: <CalendarArrowUp /> }
               ], fetchMode);
               if (result) setFetchMode(result)
             }}>
@@ -107,10 +108,10 @@ const EventScreen = () => {
             {!isLoading && events.length === 0 && (
               <div className="flex flex-col items-center justify-center p-8 mt-12 text-center text-muted-foreground">
                 <CalendarX className="size-16 mb-4 opacity-20" />
-                <h3 className="font-semibold text-lg mb-1 text-foreground/70">Keine Events</h3>
-                <p className="text-sm mb-1">Aktuell stehen keine Termine an.</p>
-                <p className='text-sm mb-1'>Versuche einer Gruppe beizutreten um Events einzusehen</p>
-                <Button onClick={() => navigate('/groups/list')}>Gruppe beitreten</Button>
+                <h3 className="font-semibold text-lg mb-1 text-foreground/70">{t('events.list.empty')}</h3>
+                <p className="text-sm mb-1">{t('events.list.emptyDescription')}</p>
+                <p className='text-sm mb-1'>{t('events.list.joinGroupHint')}</p>
+                <Button onClick={() => navigate('/groups/list')}>{t('events.list.joinGroup')}</Button>
               </div>
             )}
 
@@ -119,9 +120,9 @@ const EventScreen = () => {
                 <div key={key} className="flex w-full gap-2 flex-col">
                   <div className="text-sm font-semibold ml-2">
                     {getISOWeek(key) === getISOWeek(new Date())
-                      ? 'Diese Woche'
+                      ? t('events.list.thisWeek')
                       : getISOWeek(key) === getISOWeek(new Date()) + 1
-                        ? 'Nächste Woche'
+                        ? t('events.list.nextWeek')
                         : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
                   </div>
                   {value.map((event: EventsUserView) => (

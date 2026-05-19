@@ -6,10 +6,13 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { iOS } from "@/utils";
 import { CalendarSync, Volleyball } from "lucide-react";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Day } from "react-day-picker";
 import { isSameDay } from "date-fns";
 
 export const CalendarTab = ({ userAttendance, user }: { userAttendance: Date[]; user: UserWithGroups }) => {
+  const { t } = useTranslation();
+
   const hasEntry = useCallback(
     (date: Date) => userAttendance.some((activeDate) => isSameDay(activeDate, date)),
     [userAttendance]
@@ -28,9 +31,9 @@ export const CalendarTab = ({ userAttendance, user }: { userAttendance: Date[]; 
       <CardContent>
         <div className="flex flex-col gap-4 ">
           <Alert variant={"info"}>
-            <AlertTitle>Kalender</AlertTitle>
+            <AlertTitle>{t('profile.calendar.title')}</AlertTitle>
             <AlertDescription>
-              Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.
+              {t('profile.calendar.description')}
             </AlertDescription>
           </Alert>
           <Card className="w-full max-w-md mx-auto">
@@ -73,7 +76,7 @@ export const CalendarTab = ({ userAttendance, user }: { userAttendance: Date[]; 
             <CardFooter className="flex justify-center">
               <Button variant={"outline"} onClick={syncCalendar}>
                 <CalendarSync />
-                Kalender synchronisieren
+                {t('profile.calendar.sync')}
               </Button>
             </CardFooter>
           </Card>

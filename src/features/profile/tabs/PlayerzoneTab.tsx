@@ -13,11 +13,13 @@ import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
 import { addDays, isAfter } from "date-fns";
 import { Image, MoveRight, TrendingDown, TrendingUp, UploadCloud } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 type PlayerPublic = NonNullable<ReturnType<typeof usePlayer>['data']>;
 
 export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; player_data: PlayerPublic | null }) => {
+  const { t } = useTranslation();
   const { data: elo_history } = useEloHistory(user);
 
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
@@ -36,11 +38,11 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
 
   const onSafeRgLinkClick = async () => {
     if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
-      toast.warning('Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.');
+      toast.warning(t('profile.playerzone.invalidUrl'));
       return;
     }
     if (gender === "") {
-      toast.error('Du musst ein Geschlecht auswählen, damit dein Profil korrekt angezeigt wird.');
+      toast.error(t('profile.playerzone.noGender'));
       return;
     }
     const updates: GamesTableUpdate<'players'> = {
@@ -52,8 +54,8 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
     updatePlayer.mutate(
       { updates },
       {
-        onError: (error) => toast.error('Playerzone Profil konnte nicht aktualisiert werden. ' + error.message),
-        onSuccess: () => toast.success('Profil erfolgreich aktualisiert'),
+        onError: (error) => toast.error(t('profile.playerzone.updateError', { error: error.message })),
+        onSuccess: () => toast.success(t('profile.playerzone.updateSuccess')),
       }
     );
   };
@@ -63,16 +65,16 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
     updateAvatarFromPlayer.mutate(
       { avatarUrl: player_data?.rg_avatar_url },
       {
-        onSuccess: () => toast.success('Profilbild erfolgreich aktualisiert'),
-        onError: (error) => toast.error('Fehler beim Laden des Profilbildes: ' + error.message),
+        onSuccess: () => toast.success(t('profile.playerzone.avatarSuccess')),
+        onError: (error) => toast.error(t('profile.playerzone.avatarError', { error: error.message })),
         onSettled: () => setLoading(false),
       }
     );
   };
 
   const genders = [
-    { label: "Open", value: "m" },
-    { label: "Women", value: "w" },
+    { label: t('profile.playerzone.genderOpen'), value: "m" },
+    { label: t('profile.playerzone.genderWomen'), value: "w" },
   ];
 
   return (
@@ -91,20 +93,20 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
               <div className='flex items-center gap-2'>
                 <Button type='button' variant='outline' disabled={!player_data?.rg_avatar_url} onClick={handleChangeProfilePicture} className='flex items-center gap-2'>
                   <UploadCloud />
-                  Dieses Bild als Profilbild verwenden
+                  {t('profile.playerzone.useAsAvatar')}
                 </Button>
               </div>
             </div>
             <div className='w-full space-y-4'>
               <div className='w-full space-y-1'>
                 <Label className='leading-5' htmlFor='pzUrl'>
-                  Playerzone URL
+                  {t('profile.playerzone.urlLabel')}
                 </Label>
                 <div className='relative'>
                   <Input
                     id='pzUrl'
                     type='text'
-                    placeholder='https://playerzone.de/user/123'
+                    placeholder={t('profile.playerzone.urlPlaceholder')}
                     value={rgLink}
                     onChange={(e) => setRgLink(e.target.value)}
                   />
@@ -112,12 +114,12 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
               </div>
               <div className='w-full space-y-1'>
                 <Label className='leading-5' htmlFor='gender'>
-                  Geschlecht
+                  {t('profile.playerzone.gender')}
                 </Label>
                 <div className='relative'>
                   <Select items={genders} value={gender} onValueChange={(value) => value && setGender(value)}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Geschlecht auswählen" />
+                      <SelectValue placeholder={t('profile.playerzone.genderPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -141,7 +143,7 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
               onClick={onSafeRgLinkClick}
             >
               {loading && <Spinner />}
-              Änderungen Speichern
+              {t('profile.playerzone.saveChanges')}
             </Button>
           </div>
         </div>
@@ -151,7 +153,7 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             <Field orientation="horizontal" className="max-w-sm">
               <FieldContent>
                 <FieldLabel htmlFor="rg-id">{player_data.rg_id}</FieldLabel>
-                <FieldDescription>Roundnet Germany ID</FieldDescription>
+                <FieldDescription>{t('profile.playerzone.rgId')}</FieldDescription>
               </FieldContent>
             </Field>
           )}
@@ -159,7 +161,7 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldLabel htmlFor="rg-index">{player_data.rg_index}</FieldLabel>
-                <FieldDescription>Roundnet Germany Index</FieldDescription>
+                <FieldDescription>{t('profile.playerzone.rgIndex')}</FieldDescription>
               </FieldContent>
             </Field>
           )}
@@ -167,7 +169,7 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             <Field orientation={"horizontal"} className="flex !items-center">
               <FieldContent>
                 <FieldLabel htmlFor="elo-trend">{player_data.effective_rating_cached.toFixed()}</FieldLabel>
-                <FieldDescription>Interner Index</FieldDescription>
+                <FieldDescription>{t('profile.playerzone.internalIndex')}</FieldDescription>
               </FieldContent>
               {elo_change_last_30_days > 0 ? (
                 <TrendingUp className="text-success" />
@@ -180,9 +182,9 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
           )}
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel htmlFor="switch-hide-rating">Index verbergen?</FieldLabel>
+              <FieldLabel htmlFor="switch-hide-rating">{t('profile.playerzone.hideIndex')}</FieldLabel>
               <FieldDescription>
-                Dein Index wird anderen Spielern verborgen. Für die Berechnung wird er aber weiterhin verwendet
+                {t('profile.playerzone.hideIndexDescription')}
               </FieldDescription>
             </FieldContent>
             <Switch
