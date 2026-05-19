@@ -23,8 +23,8 @@ import { GamesTableUpdate, UserWithGroups } from "@/types/supabaseTypes";
 import { iOS, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
 import { addDays, getMonth, isAfter, isSameDay } from "date-fns";
-import { Bell, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Trash, TrendingDown, TrendingUp, UploadCloud, User as UserIcon, Volleyball } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Bell, BellOff, CalendarIcon, CalendarSync, Eye, EyeOff, FlaskConical, Image, MoveRight, RectangleEllipsis, Swords, Trash, TrendingDown, TrendingUp, Trophy, UploadCloud, User as UserIcon, Users, Volleyball } from "lucide-react";
+import { ElementType, Fragment, useCallback, useMemo, useRef, useState } from "react";
 import { Day } from "react-day-picker";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
@@ -595,39 +595,89 @@ const TestLabContent = () => {
 const isNotificationSupported =
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
+const CATEGORY_LABELS: Record<string, { label: string; icon: ElementType }> = {
+  event:     { label: 'Veranstaltungen', icon: CalendarIcon },
+  challenge: { label: 'Challenges',      icon: Trophy },
+  game:      { label: 'Spiele',          icon: Swords },
+  group:     { label: 'Gruppen',         icon: Users },
+  item:      { label: 'Sonstiges',       icon: Bell },
+  payment:   { label: 'Sonstiges',       icon: Bell },
+};
+
+const CATEGORY_ORDER = ['event', 'challenge', 'game', 'group', 'item', 'payment'];
+
 const Notifications = ({ user }: { user: UserWithGroups }) => {
   const { data: notificationTags = [], isLoading } = useNotificationTags(user);
   const { data: topics = [] } = useNotificationTopics();
   const updateNotificationPreferences = useUpdateNotificationPreferences(user);
 
-  return <>
+  if (!isNotificationSupported || Notification.permission !== 'granted') {
+    return (
+      <CardContent className="px-4 py-8 flex flex-col items-center gap-3 text-center">
+        <BellOff className="size-10 text-muted-foreground" />
+        <div>
+          <div className="font-medium">Push-Benachrichtigungen sind nicht aktiviert</div>
+          <div className="text-sm text-muted-foreground mt-1">
+            Aktiviere Benachrichtigungen, um über Events, Challenges und Spiele informiert zu werden.
+          </div>
+        </div>
+        {isNotificationSupported && Notification.permission !== 'denied' && (
+          <Button onClick={() => Notification.requestPermission().then(() => window.location.reload())}>
+            Jetzt aktivieren
+          </Button>
+        )}
+      </CardContent>
+    );
+  }
+
+  const grouped = topics.reduce<Record<string, typeof topics>>((acc, topic) => {
+    const key = topic.scope_type ?? 'other';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(topic);
+    return acc;
+  }, {});
+
+  const orderedEntries: [string, typeof topics][] = [
+    ...CATEGORY_ORDER.filter(k => grouped[k]).map(k => [k, grouped[k]] as [string, typeof topics]),
+    ...Object.entries(grouped).filter(([k]) => !CATEGORY_ORDER.includes(k)),
+  ];
+
+  return (
     <CardContent className="px-0">
-      {
-        (isNotificationSupported && Notification.permission === 'granted') && topics.flatMap((x, i) => [
-          <Field key={x.topic} className="px-4 py-2" orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor={`switch-${x.topic}`}>{x.topic}</FieldLabel>
-              <FieldDescription>
-                {x.description}
-              </FieldDescription>
-            </FieldContent>
-            {
-              isLoading ? <Spinner /> : <Switch id={`switch-${x.topic}`}
-                checked={notificationTags.find((y) => y.topic === x.topic)?.enabled ?? true}
-                onCheckedChange={(newValue) => {
-                  updateNotificationPreferences.mutate({
-                    topic: x.topic,
-                    enabled: newValue,
-                    scopeType: x.scope_type,
-                  });
-                }} />
-            }
-          </Field>,
-          <Separator key={x.topic + "-separator"} {...(i === topics.length - 1 && { className: "hidden" })} />
-        ])
-      }
+      {orderedEntries.map(([scopeType, groupTopics], groupIndex) => {
+        const cat = CATEGORY_LABELS[scopeType] ?? { label: scopeType, icon: Bell };
+        const Icon = cat.icon;
+        return (
+          <Fragment key={scopeType}>
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <Icon className="size-3.5" />
+              {cat.label}
+            </div>
+            {groupTopics.map((topic, i) => (
+              <Fragment key={topic.topic}>
+                <Field className="px-4 py-2" orientation="horizontal">
+                  <FieldContent>
+                    <FieldLabel htmlFor={`switch-${topic.topic}`}>{topic.description ?? topic.topic}</FieldLabel>
+                  </FieldContent>
+                  {isLoading ? <Spinner /> : (
+                    <Switch
+                      id={`switch-${topic.topic}`}
+                      checked={notificationTags.find(y => y.topic === topic.topic)?.enabled ?? true}
+                      onCheckedChange={(newValue) =>
+                        updateNotificationPreferences.mutate({ topic: topic.topic, enabled: newValue, scopeType: topic.scope_type })
+                      }
+                    />
+                  )}
+                </Field>
+                {i < groupTopics.length - 1 && <Separator />}
+              </Fragment>
+            ))}
+            {groupIndex < orderedEntries.length - 1 && <Separator className="my-2" />}
+          </Fragment>
+        );
+      })}
     </CardContent>
-  </>
+  );
 };
 
 const User = () => {
