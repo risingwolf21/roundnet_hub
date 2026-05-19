@@ -6,7 +6,6 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,10 +22,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
-import { answerDeadlineExpired, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase } from "@/utils";
 import { captureException } from "@sentry/react";
-import { format } from 'date-fns';
+import { format, isBefore } from 'date-fns';
 import { t } from "i18next";
 import {
   Ban,
@@ -46,10 +45,9 @@ import {
   XCircle
 } from "lucide-react";
 import { TFunction } from 'node_modules/i18next/typescript/t';
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import { isBefore } from "date-fns";
 import { useGrants } from "../../auth/GrantsContext";
 import { ConstellationCreationDialog } from "../dialogs/ConstellationsCreationDialog";
 import { CreateOrUpdateEventDialog } from "../dialogs/CreateOrUpdateEventDialog";
@@ -146,7 +144,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
               onClick={() => changeAttendance({ event: event, newState: 'Waiting', user })}
               variant={event.user_state === 'Waiting' ? 'info' : 'outline'}
               className="flex-1"
-              disabled={event.isCancelled || event.user_state === 'Waiting' || eventInThePast(event)}
+              disabled={event.isCancelled || event.user_state === 'Waiting' || eventInThePast(event) || eventHasStarted(event)}
             >
               {(updateAttendance.isPending || isLoading) ? <Spinner /> : <Hourglass className="size-4 mr-1" />}
               Warteliste
@@ -156,7 +154,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 onClick={() => changeAttendance({ event: event, newState: 'RequestedAttendance', user })}
                 variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}
                 className="flex-1"
-                disabled={event.isCancelled || eventInThePast(event)}
+                disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
               >
                 {(updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />}
                 Teilnahme anfragen
@@ -165,7 +163,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 onClick={() => changeAttendance({ event: event, newState: 'Attending', user })}
                 variant={event.user_state === 'Attending' ? 'success' : 'outline'}
                 className="flex-1"
-                disabled={event.isCancelled || maxAttendeesExceeded(event, attendance) || answerDeadlineExpired(event) || eventInThePast(event)}
+                disabled={event.isCancelled || maxAttendeesExceeded(event, attendance) || answerDeadlineExpired(event) || eventInThePast(event) || eventHasStarted(event)}
               >
                 {(updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />}
                 Teilnehmen
@@ -175,6 +173,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
             onClick={() => changeAttendance({ event: event, newState: 'Declined', user })}
             variant={event.user_state === 'Declined' ? 'error' : 'outline'}
             className="flex-1"
+            disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
           >
             {(updateAttendance.isPending || isLoading) ? <Spinner /> : <XCircle className="size-4 mr-1" />}
             Absagen
@@ -187,6 +186,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
             onClick={() => changeAttendance({ event: event, newState: 'AttendingAsTrainer', user })}
             variant={event.user_state === 'AttendingAsTrainer' ? 'success' : 'outline'}
             className="flex-1"
+            disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
           >
             {(updateAttendance.isPending || isLoading) ? <Spinner /> : <Megaphone className="size-4 mr-1" />}
             Als Trainer teilnehmen
