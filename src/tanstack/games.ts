@@ -37,7 +37,16 @@ export const useMatches = () =>
 export const usePlayerMatches = (player_id: string) => useQuery({
   queryKey: gamesKeys.playerMatches(player_id),
   queryFn: () => GamesRepository.fetchPlayerMatches(player_id),
+  enabled: !!player_id,
 });
+
+export const usePlayerLeaderboardEntry = (userId: string) =>
+  useQuery({
+    queryKey: gamesKeys.Leaderboard(0),
+    queryFn: () => GamesRepository.fetchLeaderboard(0),
+    select: (data) => data.find((x) => x.linked_user_id === userId) ?? null,
+    enabled: !!userId,
+  });
 
 export const usePlayers = (user: UserWithGroups | null) =>
   useQuery<{ players: (PlayerWithSimpleUser | Player)[], me: PlayerWithSimpleUser | null }>({
