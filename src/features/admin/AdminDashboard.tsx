@@ -64,8 +64,10 @@ const AttendanceSparkline = ({ events }: { events: TrendPoint[] }) => {
   if (events.length < 2) return null;
 
   const counts = events.map(e => e.attending_count ?? 0);
-  const min = Math.min(...counts) - 2;
-  const max = Math.max(...counts) + 2;
+  const actualMin = Math.min(...counts);
+  const actualMax = Math.max(...counts);
+  const min = actualMin - 2;
+  const max = actualMax + 2;
   const range = max - min || 1;
   const W = 240, H = 48;
 
@@ -81,26 +83,44 @@ const AttendanceSparkline = ({ events }: { events: TrendPoint[] }) => {
   const firstDate = format(new Date(events[0].startingDateTime), 'dd.MM.');
   const lastDate = format(new Date(events[events.length - 1].startingDateTime), 'dd.MM.');
 
+  const minY = toY(actualMin);
+  const maxY = toY(actualMax);
+  const showBands = actualMin !== actualMax;
+
   return (
     <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-            <stop offset="100%" stopColor={color} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <polygon points={areaPoints} fill="url(#att-spark-fill)" />
-        <polyline
-          points={linePoints}
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+      <div className="relative">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+              <stop offset="100%" stopColor={color} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {showBands && (
+            <>
+              <line x1="0" y1={maxY} x2={W} y2={maxY} stroke={color} strokeOpacity="0.35" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+              <line x1="0" y1={minY} x2={W} y2={minY} stroke={color} strokeOpacity="0.35" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
+            </>
+          )}
+          <polygon points={areaPoints} fill="url(#att-spark-fill)" />
+          <polyline
+            points={linePoints}
+            fill="none"
+            stroke={color}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        {showBands && (
+          <>
+            <span className="absolute right-0 text-[9px] leading-none text-muted-foreground" style={{ top: `${(maxY / H) * 100}%`, transform: 'translateY(-100%)' }}>{actualMax}</span>
+            <span className="absolute right-0 text-[9px] leading-none text-muted-foreground" style={{ top: `${(minY / H) * 100}%`, transform: 'translateY(-100%)' }}>{actualMin}</span>
+          </>
+        )}
+      </div>
       <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
         <span>{firstDate}</span>
         <span>{lastDate}</span>
