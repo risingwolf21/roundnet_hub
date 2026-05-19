@@ -39,18 +39,13 @@ function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
     } else if (dataType.includes('bool')) {
       fieldSchema = z.boolean()
     } else if (column.enums && column.enums.length > 0) {
-      // Zod Enum benötigt ein Array mit mind. einem Element
-      fieldSchema = z.enum(column.enums as [string, ...string[]]);
-      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
+      fieldSchema = z.enum(column.enums as [string, ...string[]])
     } else if (column.format === 'timestamptz' || column.format === 'timestamp') {
-      // Wir nutzen z.date() für den Picker, erlauben aber auch Strings (vom API-Input)
       fieldSchema = z.preprocess((arg) => {
         if (typeof arg === "string") return formatDateFromDatabaseNotNull(arg);
         return arg;
-      }, z.date());
-      if (column.is_nullable) fieldSchema = fieldSchema.nullable().optional();
+      }, z.date())
     } else {
-      // Default to string for text, varchar, timestamp, uuid, etc.
       fieldSchema = z.string()
     }
 
@@ -102,23 +97,49 @@ function EditRowView({ payload: {
 
   const handleFormSubmit = useCallback(
     async (formData: any) => {
-      // Wir übergeben einfach das formData Objekt. 
-      // Der Hook kümmert sich um den .match() via Primary Keys
+      const pkNames = table.primary_keys.map(pk => pk.name);
 
       const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
-        acc[key] = value instanceof Date ? formatDateToDatabase(value) : value;
+        const column = table.columns.find(c => c.name === key);
+        if (value instanceof Date) {
+          acc[key] = formatDateToDatabase(value);
+        } else if (value === '' && column?.is_nullable) {
+          // Restore null for empty nullable fields (e.g. FK UUIDs that were null)
+          acc[key] = null;
+        } else {
+          acc[key] = value;
+        }
         return acc;
       }, {} as any);
 
+      const hasValueChanged = (key: string, original: any, cleaned: any): boolean => {
+        const column = table.columns.find(c => c.name === key);
+        if (column?.format === 'timestamptz' || column?.format === 'timestamp') {
+          // Compare as milliseconds to avoid format string differences
+          const originalMs = original ? new Date(original).getTime() : null;
+          const cleanedMs = cleaned ? new Date(cleaned).getTime() : null;
+          return originalMs !== cleanedMs;
+        }
+        return (original ?? null) !== (cleaned ?? null);
+      };
+
+      const changedFields = Object.fromEntries(
+        Object.entries(cleanedData).filter(([key, value]) =>
+          pkNames.includes(key) || hasValueChanged(key, row[key], value)
+        )
+      );
+
+      console.log('changedFields', changedFields);
+
       try {
-        await updateRow.mutateAsync({ ...row, ...cleanedData });
+        await updateRow.mutateAsync(changedFields);
         onSuccess();
         onClose();
       } catch (e) {
         // Fehler-Handling erfolgt im Hook via Toast
       }
     },
-    [row, updateRow, onSuccess, onClose]
+    [row, table, updateRow, onSuccess, onClose]
   );
 
   return (

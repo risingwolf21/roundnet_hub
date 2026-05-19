@@ -37,9 +37,9 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: supabase db start
+      - run: supabase start --ignore-health-check
       - run: supabase test db
-      - run: supabase db lint --schema public,util,notificiations,games --fail-on error
+      - run: supabase db lint --schema public,util,notifications,games --fail-on error
 
   build-karlsruhe:
     name: "Build Karlsruhe"

@@ -172,6 +172,12 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
           // Support both old (typeName) and new (type) Zod formats
           const getTypeName = (def: Record<string, any>) => def.typeName || def.type
 
+          // A field is nullable if its outer Zod wrapper is Optional or Nullable
+          const outerTypeName = getTypeName(getZodDef(fieldDefFromSchema))
+          const fieldIsNullable =
+            outerTypeName === 'ZodOptional' || outerTypeName === 'optional' ||
+            outerTypeName === 'ZodNullable' || outerTypeName === 'nullable'
+
           const fieldTypeName = getTypeName(getZodDef(baseFieldType))
           if (fieldTypeName === 'ZodBoolean' || fieldTypeName === 'boolean') {
             acc[key] = !!value
@@ -179,13 +185,20 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
             acc[key] = value === null || value === undefined ? '' : String(value)
           } else if (fieldTypeName === 'ZodEnum' || fieldTypeName === 'enum') {
             const enumValues = getZodDef(baseFieldType).values || []
-            acc[key] =
-              value === null || value === undefined || !enumValues.includes(value)
-                ? enumValues[0] || ''
-                : String(value)
+            if ((value === null || value === undefined) && fieldIsNullable) {
+              acc[key] = null
+            } else if (value === null || value === undefined || !enumValues.includes(value)) {
+              acc[key] = enumValues[0] || ''
+            } else {
+              acc[key] = String(value)
+            }
           } else if (fieldTypeName === 'ZodNumber' || fieldTypeName === 'number') {
-            const num = Number(value)
-            acc[key] = isNaN(num) ? 0 : num
+            if ((value === null || value === undefined) && fieldIsNullable) {
+              acc[key] = null
+            } else {
+              const num = Number(value)
+              acc[key] = isNaN(num) ? 0 : num
+            }
           } else if (fieldTypeName === 'ZodArray' || fieldTypeName === 'array') {
             // For arrays, the value should already be an array from the database
             // Handle null values properly
