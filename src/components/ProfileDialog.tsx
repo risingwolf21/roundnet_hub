@@ -1,8 +1,9 @@
 import pzLogo from '../images/pz_logo.svg';
 
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { useUserTrophies } from '@/tanstack/challenge';
 import { useProfile } from '@/tanstack/user';
-import { Copy, X } from 'lucide-react';
+import { Copy, Medal, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -17,6 +18,13 @@ type ProfilePayload = {
 export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
 
   const { data: profile } = useProfile(userId);
+  const { data: trophies = [] } = useUserTrophies(userId);
+
+  const rankStyle: Record<number, { color: string; label: string }> = {
+    1: { color: 'text-yellow-500', label: '1. Platz' },
+    2: { color: 'text-slate-400',  label: '2. Platz' },
+    3: { color: 'text-amber-700',  label: '3. Platz' },
+  };
 
   return (
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose(null)}>
@@ -109,11 +117,28 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             }
           </div>
 
-          <div className='flex flex-col gap-4 mt-4'>
-            <div className="text-sm font-semibold ml-2">
-              Challenges
+          {trophies.length > 0 && (
+            <div className='flex flex-col gap-2 mt-4'>
+              <div className="text-sm font-semibold ml-2">Challenges</div>
+              {trophies.map((trophy) => {
+                const style = rankStyle[trophy.rank];
+                return (
+                  <Item key={trophy.challenge_id} variant={"outline"}>
+                    <ItemMedia>
+                      <Medal className={`size-6 ${style.color}`} />
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>{trophy.challenge_name}</ItemTitle>
+                      <ItemDescription>{style.label}</ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <span className="text-sm font-medium">{trophy.score} Pkt</span>
+                    </ItemActions>
+                  </Item>
+                );
+              })}
             </div>
-          </div>
+          )}
 
         </DialogBody>
       </DialogContent>

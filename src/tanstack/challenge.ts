@@ -48,6 +48,27 @@ export const useChallengePodiums = () =>
     queryFn: () => ChallengeRepository.fetchPodiums(),
   });
 
+export const useUserTrophies = (userId: string) =>
+  useQuery({
+    queryKey: [...challengeKeys.all, 'podiums'] as const,
+    queryFn: () => ChallengeRepository.fetchPodiums(),
+    select: (podiums) =>
+      podiums
+        .flatMap((p) => {
+          const entry = p.podium.find((x) => x.user_id === userId);
+          if (!entry) return [];
+          return [{
+            challenge_id: p.challenge_id,
+            challenge_name: p.challenge_name,
+            end_date: p.end_date,
+            rank: entry.rank,
+            score: entry.score,
+          }];
+        })
+        .sort((a, b) => a.rank - b.rank),
+    enabled: !!userId,
+  });
+
 export const useArchivedChallenges = () =>
   useInfiniteQuery({
     queryKey: challengeKeys.archivedList(),
