@@ -331,7 +331,9 @@
       "monthlyActivityDesc": "Users with at least 1 training this month",
       "quickLinks": "Quick Links",
       "noEvent": "No training found",
-      "total": "Total: {{amount}} €"
+      "total": "Total: {{amount}} €",
+      "attendanceTrend": "Training Trend (30 days)",
+      "noTrendData": "No data for the last 30 days"
     },
     "analytics": {
       "title": "Admin Analytics",

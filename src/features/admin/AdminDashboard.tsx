@@ -1,4 +1,4 @@
-import { format, startOfMonth } from 'date-fns';
+import { format, startOfMonth, subDays } from 'date-fns';
 import {
   AlertCircle, CalendarClock, ChartArea, Euro, GitMerge,
   History, KeyRound, Send, Users, Volleyball
@@ -63,6 +63,70 @@ const StatCard = ({
 );
 
 // ---------------------------------------------------------------------------
+// AttendanceSparkline — SVG line chart for event attendance over time
+// ---------------------------------------------------------------------------
+
+type TrendPoint = { attending_count: number | null; startingDateTime: string };
+
+const AttendanceSparkline = ({ events }: { events: TrendPoint[] }) => {
+  const counts = events.map(e => e.attending_count ?? 0);
+  const min = Math.min(...counts);
+  const max = Math.max(...counts) + 1;
+  const range = max - min || 1;
+  const W = 240, H = 56;
+
+  const toX = (i: number) => events.length === 1 ? W / 2 : (i / (events.length - 1)) * W;
+  const toY = (v: number) => H - ((v - min) / range) * H;
+
+  const linePoints = counts.map((c, i) => `${toX(i)},${toY(c)}`).join(' ');
+  const areaPoints = `0,${H} ${linePoints} ${W},${H}`;
+
+  const labelIndices = events.length <= 1
+    ? [0]
+    : [0, Math.floor((events.length - 1) / 2), events.length - 1].filter((v, i, a) => a.indexOf(v) === i);
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-14" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={areaPoints} fill="url(#att-spark-fill)" />
+        <polyline
+          points={linePoints}
+          fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {counts.map((c, i) => (
+          <circle key={i} cx={toX(i)} cy={toY(c)} r="2.5" fill="hsl(var(--primary))" />
+        ))}
+      </svg>
+      {/* Date axis labels: first, middle, last */}
+      <div className="relative h-4 mt-0.5 text-[10px] text-muted-foreground select-none">
+        {labelIndices.map((i, li) => {
+          const pct = events.length <= 1 ? 50 : (i / (events.length - 1)) * 100;
+          const cls =
+            li === 0 ? 'absolute left-0' :
+            li === labelIndices.length - 1 ? 'absolute right-0' :
+            'absolute -translate-x-1/2';
+          return (
+            <span key={i} className={cls} style={li === 0 || li === labelIndices.length - 1 ? {} : { left: `${pct}%` }}>
+              {format(new Date(events[i].startingDateTime), 'dd.MM')}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // AdminDashboard
 // ---------------------------------------------------------------------------
 
@@ -71,7 +135,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, hasPerm } = useGrants();
 
-  // Conditionally enable expensive/restricted queries
   const canViewAnalytics = hasPerm('admin.analytics.view');
 
   const { p_start: monthStart, p_end: today } = useMemo(() => ({
@@ -97,17 +160,22 @@ const AdminDashboard = () => {
   );
 
   const lastTraining = pastEvents.find(e => !e.isCancelled) ?? null;
-  const recentEvents = pastEvents.filter(e => !e.isCancelled).slice(0, 3);
 
-  // Quick-link tiles — each is gated by its own Has
+  const trendEvents = useMemo(() => {
+    const cutoff = subDays(new Date(), 30);
+    return pastEvents
+      .filter(e => !e.isCancelled && new Date(e.startingDateTime) >= cutoff)
+      .sort((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
+  }, [pastEvents]);
+
   const quickLinks = [
-    { title: t('browse.managePayments'), icon: Euro,     path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
-    { title: t('browse.manageUsers'),    icon: Users,    path: '/admin/users',            perm: 'users.manage' as const },
-    { title: t('browse.analytics'),      icon: ChartArea, path: '/admin/analytics',       perm: 'admin.analytics.view' as const },
-    { title: 'Grants',                   icon: KeyRound, path: '/admin/grants',           perm: 'grants.manage' as const },
-    { title: t('browse.completeHistory'),icon: History,  path: '/admin/drinks/history',   perm: 'drinks.history.admin' as const },
-    { title: t('browse.merge_accounts'), icon: GitMerge, path: '/admin/merge_accounts',   perm: 'games.admin.merge_accounts' as const },
-    { title: t('browse.notifyUsers'),    icon: Send,     path: '/admin/notify_users',     perm: 'admin.notify_users' as const },
+    { title: t('browse.managePayments'), icon: Euro,      path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
+    { title: t('browse.manageUsers'),    icon: Users,     path: '/admin/users',            perm: 'users.manage' as const },
+    { title: t('browse.analytics'),      icon: ChartArea, path: '/admin/analytics',        perm: 'admin.analytics.view' as const },
+    { title: 'Grants',                   icon: KeyRound,  path: '/admin/grants',           perm: 'grants.manage' as const },
+    { title: t('browse.completeHistory'),icon: History,   path: '/admin/drinks/history',   perm: 'drinks.history.admin' as const },
+    { title: t('browse.merge_accounts'), icon: GitMerge,  path: '/admin/merge_accounts',   perm: 'games.admin.merge_accounts' as const },
+    { title: t('browse.notifyUsers'),    icon: Send,      path: '/admin/notify_users',     perm: 'admin.notify_users' as const },
   ] as const;
 
   return (
@@ -118,7 +186,6 @@ const AdminDashboard = () => {
 
           {/* ─── Stat cards grid ─────────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-3">
-
             <Has perm="drinks.confirm.payments">
               <StatCard
                 title={t('admin.dashboard.pendingPayments')}
@@ -152,10 +219,9 @@ const AdminDashboard = () => {
                 </div>
               </StatCard>
             </Has>
-
           </div>
 
-          {/* ─── Last Training ───────────────────────────────────────── */}
+          {/* ─── Last Training + Attendance Trend ────────────────────── */}
           <Has perm="event.manage.attendees">
             <Card
               className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
@@ -199,6 +265,31 @@ const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Volleyball className="size-4 text-muted-foreground" />
+                  <CardTitle className="text-sm">{t('admin.dashboard.attendanceTrend')}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {eventsLoading ? (
+                  <div>
+                    <Skeleton className="h-14 w-full" />
+                    <Skeleton className="h-3 w-full mt-2" />
+                  </div>
+                ) : eventsError ? (
+                  <div className="flex items-center gap-1 text-destructive/80 text-sm">
+                    <AlertCircle className="size-3.5" />–
+                  </div>
+                ) : trendEvents.length < 2 ? (
+                  <span className="text-muted-foreground text-sm">{t('admin.dashboard.noTrendData')}</span>
+                ) : (
+                  <AttendanceSparkline events={trendEvents} />
+                )}
+              </CardContent>
+            </Card>
           </Has>
 
           {/* ─── Monthly Activity ────────────────────────────────────── */}
@@ -226,26 +317,6 @@ const AdminDashboard = () => {
                 <div className="text-xs text-muted-foreground mt-1">
                   {t('admin.dashboard.monthlyActivityDesc')}
                 </div>
-
-                {/* Mini event list — last 3 trainings */}
-                {recentEvents.length > 0 && (
-                  <div className="mt-3 flex flex-col">
-                    {recentEvents.map(event => (
-                      <div
-                        key={event.id}
-                        className="flex items-center justify-between text-xs py-1.5 border-t border-border/40"
-                      >
-                        <span className="text-muted-foreground truncate flex-1">{event.title}</span>
-                        <span className="ml-3 font-semibold shrink-0 tabular-nums">
-                          {event.attending_count ?? 0}
-                          {event.maxAttendees != null && (
-                            <span className="font-normal text-muted-foreground">/{event.maxAttendees}</span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </Has>

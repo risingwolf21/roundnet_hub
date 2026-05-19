@@ -237,64 +237,6 @@ export function AppSidebar() {
             any: true,
           },
         },
-        {
-          title: t('browse.merge_accounts'),
-          icon: <GitMerge />,
-          path: 'admin/merge_accounts',
-          permission: {
-            perm: 'games.admin.merge_accounts'
-          }
-        },
-        {
-          title: t('browse.analytics'),
-          icon: <ChartArea />,
-          path: 'admin/analytics',
-          permission: {
-            perm: 'admin.analytics.view'
-          }
-        },
-        {
-          title: t('browse.managePayments'),
-          icon: <Euro />,
-          path: 'admin/drinks/payments',
-          permission: {
-            perm: 'drinks.confirm.payments',
-            feat: 'drinks'
-          }
-        },
-        {
-          title: t('browse.manageUsers'),
-          icon: <Users />,
-          path: 'admin/users',
-          permission: {
-            perm: 'users.manage'
-          }
-        },
-        {
-          title: t('browse.completeHistory'),
-          icon: <History />,
-          path: 'admin/drinks/history',
-          permission: {
-            perm: 'drinks.history.admin',
-            feat: 'drinks'
-          }
-        },
-        {
-          title: 'Grants-Manager',
-          icon: <KeyRound />,
-          path: 'admin/grants',
-          permission: {
-            perm: 'grants.manage'
-          }
-        },
-        {
-          title: t('browse.notifyUsers'),
-          icon: <Send />,
-          path: 'admin/notify_users',
-          permission: {
-            perm: 'admin.notify_users'
-          }
-        }
       ]
     },
     {
