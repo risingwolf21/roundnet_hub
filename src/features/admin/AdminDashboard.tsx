@@ -16,10 +16,6 @@ import { useEvents } from '@/tanstack/events';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useGrants } from '../auth/GrantsContext';
 
-// ---------------------------------------------------------------------------
-// StatCard — reusable tile for a single KPI
-// ---------------------------------------------------------------------------
-
 const StatCard = ({
   title,
   icon: Icon,
@@ -62,73 +58,46 @@ const StatCard = ({
   </Card>
 );
 
-// ---------------------------------------------------------------------------
-// AttendanceSparkline — SVG line chart for event attendance over time
-// ---------------------------------------------------------------------------
-
 type TrendPoint = { attending_count: number | null; startingDateTime: string };
 
 const AttendanceSparkline = ({ events }: { events: TrendPoint[] }) => {
-  const counts = events.map(e => e.attending_count ?? 0);
-  const min = Math.min(...counts);
-  const max = Math.max(...counts) + 1;
-  const range = max - min || 1;
-  const W = 240, H = 56;
+  if (events.length < 2) return null;
 
-  const toX = (i: number) => events.length === 1 ? W / 2 : (i / (events.length - 1)) * W;
+  const counts = events.map(e => e.attending_count ?? 0);
+  const min = Math.min(...counts) - 2;
+  const max = Math.max(...counts) + 2;
+  const range = max - min || 1;
+  const W = 240, H = 48;
+
+  const toX = (i: number) => (i / (counts.length - 1)) * W;
   const toY = (v: number) => H - ((v - min) / range) * H;
 
   const linePoints = counts.map((c, i) => `${toX(i)},${toY(c)}`).join(' ');
   const areaPoints = `0,${H} ${linePoints} ${W},${H}`;
 
-  const labelIndices = events.length <= 1
-    ? [0]
-    : [0, Math.floor((events.length - 1) / 2), events.length - 1].filter((v, i, a) => a.indexOf(v) === i);
+  const isUp = counts[counts.length - 1] >= counts[0];
+  const color = isUp ? '#22c55e' : '#ef4444';
 
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-14" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <polygon points={areaPoints} fill="url(#att-spark-fill)" />
-        <polyline
-          points={linePoints}
-          fill="none"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {counts.map((c, i) => (
-          <circle key={i} cx={toX(i)} cy={toY(c)} r="2.5" fill="hsl(var(--primary))" />
-        ))}
-      </svg>
-      {/* Date axis labels: first, middle, last */}
-      <div className="relative h-4 mt-0.5 text-[10px] text-muted-foreground select-none">
-        {labelIndices.map((i, li) => {
-          const pct = events.length <= 1 ? 50 : (i / (events.length - 1)) * 100;
-          const cls =
-            li === 0 ? 'absolute left-0' :
-            li === labelIndices.length - 1 ? 'absolute right-0' :
-            'absolute -translate-x-1/2';
-          return (
-            <span key={i} className={cls} style={li === 0 || li === labelIndices.length - 1 ? {} : { left: `${pct}%` }}>
-              {format(new Date(events[i].startingDateTime), 'dd.MM')}
-            </span>
-          );
-        })}
-      </div>
-    </div>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="att-spark-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={areaPoints} fill="url(#att-spark-fill)" />
+      <polyline
+        points={linePoints}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 };
-
-// ---------------------------------------------------------------------------
-// AdminDashboard
-// ---------------------------------------------------------------------------
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
@@ -184,7 +153,6 @@ const AdminDashboard = () => {
       <main className="flex-1 size-full pb-safe-bottom">
         <div className="p-4 flex flex-col gap-4">
 
-          {/* ─── Stat cards grid ─────────────────────────────────────── */}
           <div className="grid grid-cols-2 gap-3">
             <Has perm="drinks.confirm.payments">
               <StatCard
@@ -221,7 +189,6 @@ const AdminDashboard = () => {
             </Has>
           </div>
 
-          {/* ─── Last Training + Attendance Trend ────────────────────── */}
           <Has perm="event.manage.attendees">
             <Card
               className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
@@ -275,10 +242,7 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent className="pt-0">
                 {eventsLoading ? (
-                  <div>
-                    <Skeleton className="h-14 w-full" />
-                    <Skeleton className="h-3 w-full mt-2" />
-                  </div>
+                  <Skeleton className="h-12 w-full" />
                 ) : eventsError ? (
                   <div className="flex items-center gap-1 text-destructive/80 text-sm">
                     <AlertCircle className="size-3.5" />–
@@ -292,7 +256,6 @@ const AdminDashboard = () => {
             </Card>
           </Has>
 
-          {/* ─── Monthly Activity ────────────────────────────────────── */}
           <Has perm="admin.analytics.view">
             <Card
               className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
@@ -321,7 +284,6 @@ const AdminDashboard = () => {
             </Card>
           </Has>
 
-          {/* ─── Quick Links ─────────────────────────────────────────── */}
           <div>
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
               {t('admin.dashboard.quickLinks')}
