@@ -1,12 +1,15 @@
 import pzLogo from '../images/pz_logo.svg';
 
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { useIsOffline } from '@/hooks/useIsOffline';
 import { useUserTrophies } from '@/tanstack/challenge';
 import { usePlayerLeaderboardEntry, usePlayerMatches } from '@/tanstack/games';
 import { useEloHistoryForPlayer } from '@/tanstack/player_data';
 import { useProfile } from '@/tanstack/user';
-import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff, X } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -89,6 +92,12 @@ const EloSparkline = ({ history }: { history: EloPoint[] }) => {
 };
 
 export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
+  const { t } = useTranslation();
+  const isOffline = useIsOffline();
+  const { user: currentUser } = useGrants();
+  const { data: currentUserProfile } = useProfile(currentUser.id);
+  const currentPlayerId = currentUserProfile?.player?.player ?? '';
+
   const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile(userId);
   const { data: trophies = [], isLoading: trophiesLoading, isError: trophiesError } = useUserTrophies(userId);
   const { data: leaderboardEntry, isLoading: leaderboardLoading, isError: leaderboardError } = usePlayerLeaderboardEntry(userId);
@@ -106,6 +115,21 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
     }).length;
     return { wins, total: rated.length, rate: Math.round((wins / rated.length) * 100) };
   }, [playerMatches, playerId]);
+
+  const h2h = useMemo(() => {
+    if (!currentPlayerId || currentUser.id === userId || matchesLoading) return null;
+    const shared = playerMatches.filter(
+      (m) => m.rated && m.winner_side &&
+        (m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId ||
+         m.team_b_p1 === currentPlayerId || m.team_b_p2 === currentPlayerId)
+    );
+    if (shared.length === 0) return null;
+    const wins = shared.filter((m) => {
+      const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
+      return (onTeamA && m.winner_side === 'A') || (!onTeamA && m.winner_side === 'B');
+    }).length;
+    return { wins, losses: shared.length - wins };
+  }, [playerMatches, currentPlayerId, currentUser.id, userId, matchesLoading]);
 
   const sortedEloHistory = useMemo(
     () => [...eloHistory].sort((a, b) => a.created_at.localeCompare(b.created_at)),
@@ -127,6 +151,14 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
           <DialogClose render={<Button variant={"ghost"} size={"icon-lg"}><X /></Button>} />
         </DialogHeader>
         <DialogBody>
+
+          {/* Offline banner */}
+          {isOffline && (
+            <div className="bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground text-sm rounded-lg mb-2">
+              <WifiOff className="size-4 shrink-0" />
+              {t('profile.offline')}
+            </div>
+          )}
 
           {/* Profile header */}
           {profileLoading ? (
@@ -210,6 +242,24 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 </ItemContent>
               </Item>
             ) : null}
+
+            {/* H2H tiles */}
+            {h2h !== null && (
+              <>
+                <Item variant={"outline"}>
+                  <ItemContent>
+                    <ItemTitle>{h2h.wins}</ItemTitle>
+                    <ItemDescription>{t('profile.h2h.wins')}</ItemDescription>
+                  </ItemContent>
+                </Item>
+                <Item variant={"outline"}>
+                  <ItemContent>
+                    <ItemTitle>{h2h.losses}</ItemTitle>
+                    <ItemDescription>{t('profile.h2h.losses')}</ItemDescription>
+                  </ItemContent>
+                </Item>
+              </>
+            )}
 
             {/* RG tiles (profile-sourced, shown after loading) */}
             {!profileLoading && !profileError && (

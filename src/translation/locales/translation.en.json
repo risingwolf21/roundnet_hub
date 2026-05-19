@@ -308,6 +308,12 @@
       "rebind": "Re-bind",
       "disable": "Disable notifications",
       "vapidMissing": "VAPID public key missing."
+    },
+    "offline": "You are offline. Cached data is displayed.",
+    "h2h": {
+      "title": "Head-to-Head",
+      "wins": "H2H Wins",
+      "losses": "H2H Losses"
     }
   },
   "admin": {

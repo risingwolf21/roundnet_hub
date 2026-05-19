@@ -308,6 +308,12 @@
       "rebind": "Neu koppeln",
       "disable": "Keine Benachrichtigungen",
       "vapidMissing": "VAPID Public Key fehlt."
+    },
+    "offline": "Du bist offline. Es werden gespeicherte Daten angezeigt.",
+    "h2h": {
+      "title": "Head-to-Head",
+      "wins": "H2H Siege",
+      "losses": "H2H Niederlagen"
     }
   },
   "admin": {
