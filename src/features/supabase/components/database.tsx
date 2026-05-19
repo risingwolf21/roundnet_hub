@@ -208,15 +208,17 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 
           const column = cond.column;
           const val = cond.value;
+          const isTimestampCol = cond.data_type === 'timestamptz' || cond.data_type === 'timestamp';
+          const isValidTimestampVal = !isTimestampCol || !Number.isNaN(new Date(val).getTime());
 
           switch (cond.operator) {
             // COMPARISON
-            case 'eq': query = query.eq(column, val); break;
-            case 'neq': query = query.neq(column, val); break;
-            case 'gt': query = query.gt(column, val); break;
-            case 'lt': query = query.lt(column, val); break;
-            case 'gte': query = query.gte(column, val); break;
-            case 'lte': query = query.lte(column, val); break;
+            case 'eq': if (isValidTimestampVal) query = query.eq(column, val); break;
+            case 'neq': if (isValidTimestampVal) query = query.neq(column, val); break;
+            case 'gt': if (isValidTimestampVal) query = query.gt(column, val); break;
+            case 'lt': if (isValidTimestampVal) query = query.lt(column, val); break;
+            case 'gte': if (isValidTimestampVal) query = query.gte(column, val); break;
+            case 'lte': if (isValidTimestampVal) query = query.lte(column, val); break;
 
             // PATTERN MATCHING
             case 'like': query = query.like(column, `%${val}%`); break;

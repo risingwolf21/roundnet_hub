@@ -195,7 +195,7 @@ const EnterPointDialog = ({
                   onSelect={setDate}
                   defaultMonth={date}
                   disabled={(day) => isAfter(day, new Date()) || highlightedDays.some((x) => isSameDay(x, day))
-                    || highlightedDays.filter((x) => isSameWeek(x, day, { weekStartsOn: 1 })).length > (maxEntriesPerWeek ?? 0)}
+                    || (maxEntriesPerWeek !== null && highlightedDays.filter((x) => isSameWeek(x, day, { weekStartsOn: 1 })).length >= maxEntriesPerWeek)}
                   weekStartsOn={1}
                   className="[--cell-size:--spacing(10)] md:[--cell-size:--spacing(12)]"
                   modifiers={{
