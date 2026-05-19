@@ -57,7 +57,8 @@
     "group_features": "Group Features",
     "helpAndInformation": "Help and information",
     "appRefresh": "Refresh Application",
-    "merge_accounts": "Account-Merge"
+    "merge_accounts": "Account-Merge",
+    "adminOverview": "Overview"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -317,6 +318,20 @@
     }
   },
   "admin": {
+    "dashboard": {
+      "title": "Admin Overview",
+      "pendingPayments": "Pending Payments",
+      "pendingPaymentsDesc": "No outstanding payments",
+      "joinRequests": "Join Requests",
+      "joinRequestsDesc": "Pending group requests",
+      "lastTraining": "Last Training",
+      "lastTrainingDesc": "Sign-ups",
+      "monthlyActivity": "Activity (Month)",
+      "monthlyActivityDesc": "Users with at least 1 training this month",
+      "quickLinks": "Quick Links",
+      "noEvent": "No training found",
+      "total": "Total: {{amount}} €"
+    },
     "analytics": {
       "title": "Admin Analytics",
       "inactiveParticipants": "Inactive challenge participants (top training attendees)",
