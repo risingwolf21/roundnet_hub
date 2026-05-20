@@ -284,7 +284,15 @@ const createRouter = (user: UserWithGroups | null) =>
                 {
                   path: 'merge_accounts',
                   element: <Pages.UserPlayerMapping />
-                }
+                },
+                {
+                  path: 'notify_users',
+                  element: (
+                    <Has perm={'admin.notify_users'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.NotifyUsersScreen />
+                    </Has>
+                  ),
+                },
               ],
             },
             {

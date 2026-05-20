@@ -32,6 +32,7 @@ export const GrantsManager = lazyWithRetry(() => import('@/features/grants/Grant
 export const AdminHistoryScreen = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen'));
 export const PaymentsPendingAdmin = lazyWithRetry(() => import('@/features/admin/PaymentsPendingAdmin'));
 export const UserPlayerMapping = lazyWithRetry(() => import("@/features/admin/UserPlayerMapping"));
+export const NotifyUsersScreen = lazyWithRetry(() => import('@/features/admin/NotifyUsersScreen'));
 export const RecurringEvents = lazyWithRetry(() => import('@/features/events/RecurringEvents'));
 export const User = lazyWithRetry(() => import('@/features/profile/User'));
 export const FeatureLockedRouteElement = lazyWithRetry(() => import('@/components/FeatureLockedRouteElement'));
