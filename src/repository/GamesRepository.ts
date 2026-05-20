@@ -98,6 +98,7 @@ export const GamesRepository = {
   },
 
   async fetchMatchWithDetails(matchId: string) {
+    // Single query: embed player rows via FK aliases to avoid a separate players fetch
     const { data: match, error } = await supabase
       .schema('games')
       .from('match')
@@ -105,7 +106,11 @@ export const GamesRepository = {
         *,
         sets(*),
         elo_calc_log(*),
-        elo_history!elo_history_match_fkey(*)
+        elo_history!elo_history_match_fkey(*),
+        a_player_1_info: players!a_player_1(*),
+        a_player_2_info: players!a_player_2(*),
+        b_player_1_info: players!b_player_1(*),
+        b_player_2_info: players!b_player_2(*)
       `)
       .eq('id', matchId)
       .maybeSingle();
@@ -113,24 +118,25 @@ export const GamesRepository = {
     if (error) throw error;
     if (!match) return null;
 
-    const playerIds = [match.a_player_1, match.a_player_2, match.b_player_1, match.b_player_2].filter(Boolean);
+    const playerInfos = [
+      match.a_player_1_info,
+      match.a_player_2_info,
+      match.b_player_1_info,
+      match.b_player_2_info,
+    ] as any[];
 
-    const { data: players } = await supabase
-      .schema('games')
-      .from('players')
-      .select('*')
-      .in('player', playerIds);
+    const userIds = playerInfos
+      .map((p) => p?.linked_user_id)
+      .filter((id): id is string => Boolean(id));
 
-    const userIds = players?.map(p => p.linked_user_id).filter(x => x !== null) || [];
+    const { data: users } = userIds.length > 0
+      ? await supabase.from('user').select('*').in('id', userIds)
+      : { data: [] as any[] };
 
-    const { data: users } = await supabase
-      .from('user')
-      .select('*')
-      .in('id', userIds);
-
-    const getUser = (playerId: string) => {
-      const player = players?.find(p => p.player === playerId) ?? null;
-      const user = users?.find(u => u.id === player?.linked_user_id) ?? null;
+    const getUser = (playerId: string | null) => {
+      if (!playerId) return { player: null, user: null };
+      const player = playerInfos.find((p) => p?.player === playerId) ?? null;
+      const user = users?.find((u) => u.id === player?.linked_user_id) ?? null;
       return { player, user };
     };
 
