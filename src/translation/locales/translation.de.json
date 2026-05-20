@@ -132,7 +132,8 @@
     "eventComments": "Event Kommentare",
     "paymentPending": "Zahlung wartend",
     "paymentRequest": "Zahlungsaufforderung",
-    "userRegistration": "Benutzer Registierung"
+    "userRegistration": "Benutzer Registierung",
+    "waitinglistPromoted": "Warteliste: Aufgerückt"
   },
   "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
   "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
