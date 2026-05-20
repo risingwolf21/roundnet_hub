@@ -9,7 +9,7 @@ import { useAddCommentMutation } from '@/tanstack/events';
 import { eventInThePast, EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { getInitials } from '@/utils';
 import { format } from 'date-fns';
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -73,13 +73,15 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
 
                       {/* Reply button */}
                       {!eventInThePast(event) && hasPerm('event.comment') && (
-                        <button
+                        <Button
                           type="button"
+                          variant={"outline"}
+                          size={"xs"}
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                           onClick={() => setReplyingTo(comment)}
                         >
                           Antworten
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </ItemContent>
@@ -127,15 +129,15 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
         {/* Comment Input */}
         <form onSubmit={submit}>
           {replyingTo && (
-            <div className="px-3 pt-2 flex items-center gap-1 text-xs text-muted-foreground">
+            <div className="px-3 py-2 border-t  justify-between w-full flex items-center gap-1 text-xs text-muted-foreground">
               <span>Antworte auf @{replyingTo.user?.displayName || replyingTo.user?.name}</span>
-              <button
-                type="button"
+              <Button
+                variant={"outline"}
                 className="ml-1 hover:text-foreground transition-colors"
                 onClick={() => setReplyingTo(null)}
               >
-                <X className="h-3 w-3" />
-              </button>
+                <Trash2 className="h-3 w-3" />
+              </Button>
             </div>
           )}
           <div className="p-3 pb-0 border-t bg-background shrink-0 flex items-center gap-2">
