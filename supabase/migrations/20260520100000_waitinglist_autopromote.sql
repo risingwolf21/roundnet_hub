@@ -1,5 +1,5 @@
 -- Insert new notification topic
-INSERT INTO notifications.notification_topics (topic, scope_type, description, is_active)
+INSERT INTO notifications.notification_topics (topic, scope_type, description, default_enabled)
 VALUES ('event.waitinglist.promoted', 'event', 'Warteliste: Platz freigeworden', true)
 ON CONFLICT (topic) DO NOTHING;
 
