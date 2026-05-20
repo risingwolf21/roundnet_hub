@@ -140,7 +140,7 @@ export const ChallengeRepository = {
         group: challenge.group,
         comments_enabled: challenge.comments_enabled,
         category_enabled: challenge.category_enabled,
-        category_options: challenge.category_options,
+        category_options: Array.isArray(challenge.category_options) ? challenge.category_options : [],
         show_all_members: challenge.show_all_members,
       })
       .select('*')
