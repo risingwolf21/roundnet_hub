@@ -1,7 +1,3 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Send, Users, UsersRound } from 'lucide-react';
-import { toast } from 'sonner';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -11,8 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAllUsersAsAdmin, useNotifyEmitMutation } from '@/tanstack/admin';
-import { useGroups, useGroupAllUsers } from '@/tanstack/groups';
+import { useGroupAllUsers, useGroups } from '@/tanstack/groups';
 import { useNotificationTopics } from '@/tanstack/notifications';
+import { Send, Users, UsersRound } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 
 type TargetMode = 'group' | 'users';
@@ -25,7 +25,7 @@ const NotifyUsersScreen = () => {
 
   const [mode, setMode] = useState<TargetMode>('group');
   const [selectedGroupId, setSelectedGroupId] = useState('');
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(() => new Set());
   const [topic, setTopic] = useState('');
   const [urgency, setUrgency] = useState<'normal' | 'high'>('normal');
   const [title, setTitle] = useState('');
@@ -41,7 +41,7 @@ const NotifyUsersScreen = () => {
 
   const recipients =
     mode === 'group'
-      ? groupUsers.map((gu: any) => gu.user?.id ?? gu.user).filter(Boolean) as string[]
+      ? groupUsers.map((gu: GroupUsers) => gu.user?.id ?? gu.user).filter(Boolean) as string[]
       : Array.from(selectedUserIds);
 
   const filteredUsers = allUsers.filter(
@@ -120,7 +120,7 @@ const NotifyUsersScreen = () => {
           {mode === 'group' && (
             <div>
               <Label className="mb-1.5 block text-sm">{t('admin.notify.selectGroup')}</Label>
-              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <Select value={selectedGroupId} onValueChange={(val) => val && setSelectedGroupId(val)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('admin.notify.selectGroup')} />
                 </SelectTrigger>
@@ -175,7 +175,7 @@ const NotifyUsersScreen = () => {
           {/* Topic */}
           <div>
             <Label className="mb-1.5 block text-sm">{t('admin.notify.topic')}</Label>
-            <Select value={topic} onValueChange={setTopic}>
+            <Select value={topic} onValueChange={(topic) => topic && setTopic(topic)}>
               <SelectTrigger>
                 <SelectValue placeholder={t('admin.notify.selectTopic')} />
               </SelectTrigger>

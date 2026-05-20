@@ -1,9 +1,8 @@
 import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase-generated.types';
+import { Database, Tables } from '@/types/supabase-generated.types';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Database } from '@/types/supabase-generated.types';
 
 export type RpcName = keyof Database['public']['Functions'];
 
@@ -130,7 +129,7 @@ export const AdminUsersRepository = {
     scopeId: string;
     sourceId: string;
   }): Promise<number> {
-    const { data, error } = await supabase.rpc('notify_emit', {
+    const { data, error } = await supabase.schema("notifications").rpc('notify_emit', {
       p_recipients: args.recipients,
       p_topic: args.topic,
       p_title: args.title,
