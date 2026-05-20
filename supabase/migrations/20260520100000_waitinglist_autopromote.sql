@@ -17,7 +17,7 @@ DECLARE
   v_event_title text;
 BEGIN
   -- Only fire when someone declines/leaves who was attending
-  IF NEW.state NOT IN ('Declined', 'DeclinedAsTrial') THEN
+  IF NEW.state NOT IN ('Declined') THEN
     RETURN NEW;
   END IF;
   IF OLD.state NOT IN ('Attending', 'AttendingAsTrial') THEN
