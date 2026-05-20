@@ -339,6 +339,31 @@ export const EventRepository = {
     return result.data;
   },
 
+  async syncEventBringItems(
+    eventId: string,
+    items: Array<{ id?: string | null; name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>
+  ) {
+    const keepIds = items.filter(x => x.id).map(x => x.id!);
+    if (keepIds.length > 0) {
+      await supabase.from('event_bring_items').delete().eq('event', eventId).not('id', 'in', `(${keepIds.join(',')})`);
+    } else {
+      await supabase.from('event_bring_items').delete().eq('event', eventId);
+    }
+    if (items.length > 0) {
+      await supabase.from('event_bring_items').upsert(
+        items.map((item, i) => ({
+          ...(item.id ? { id: item.id } : {}),
+          event: eventId,
+          name: item.name,
+          required_qty: item.required_qty ?? 0,
+          unit: item.unit || 'Stk.',
+          notes: item.notes ?? null,
+          sort_order: item.sort_order ?? i,
+        }))
+      );
+    }
+  },
+
   async updateSingleEvent(id: string, eventChanges: TablesUpdate<'events'>) {
     const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
     return result.data;

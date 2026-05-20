@@ -157,7 +157,12 @@ export const CreateOrUpdateEventDialog = ({
         );
       } else if (option === 'UpdateSingle') {
         updateSingleEvent.mutate(
-          { eventChanges, id: edited_event.id ?? '', currentUser: user },
+          {
+            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
+            id: edited_event.id ?? '',
+            currentUser: user,
+            items: bring_items,
+          },
           {
             onError: (error) =>
               toast.error('Event konnte nicht aktualisiert werden: ' + error.message),
@@ -165,8 +170,21 @@ export const CreateOrUpdateEventDialog = ({
           }
         );
       } else if (option === 'UpdateRecurrence') {
+        const recurrenceItems = bring_items.map(({ name, required_qty, unit, notes, sort_order }) => ({
+          name,
+          required_qty,
+          unit,
+          notes,
+          sort_order,
+        }));
         updateRecurrenceEvents.mutate(
-          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime, currentUser: user },
+          {
+            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
+            key: editedEvent.key,
+            startingDateTime: editedEvent.startingDateTime,
+            currentUser: user,
+            items: recurrenceItems,
+          },
           {
             onError: (error) =>
               toast.error('Events konnten nicht aktualisiert werden: ' + error.message),
