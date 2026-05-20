@@ -185,6 +185,7 @@ export const GamesRepository = {
     is_public: boolean;
     created_by?: string;
     player_names: { [key: string]: string };
+    spezi_set?: { team_a_score: number; team_b_score: number; set_awarded: boolean } | null;
   }): Promise<PostgrestSingleResponse<string>> {
     return supabase
       .schema('games')
@@ -203,6 +204,7 @@ export const GamesRepository = {
         is_public: params.is_public,
         created_by: params.created_by,
         player_names: params.player_names,
+        spezi_set: params.spezi_set ?? null,
       })
       .throwOnError();
   },

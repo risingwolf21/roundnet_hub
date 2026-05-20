@@ -4,6 +4,7 @@ import { v4 as uuid, v4 } from 'uuid';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -99,6 +100,9 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
 
   const [rating_enabled, setRatingEnabled] = useState(true);
   const [is_public, setIsPublic] = useState(true);
+  const [speziA, setSpeziA] = useState<string>('');
+  const [speziB, setSpeziB] = useState<string>('');
+  const [speziSetAwarded, setSpeziSetAwarded] = useState(false);
   const [player1a, setPlayer1a] = useState<PlayerSelection>(null);
   const [player2a, setPlayer2a] = useState<PlayerSelection>(null);
   const [player1b, setPlayer1b] = useState<PlayerSelection>(null);
@@ -175,6 +179,12 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
       playerNamesMapping[p.id] = p.name;
     });
 
+    const speziANum = speziA !== '' ? parseInt(speziA, 10) : null;
+    const speziBNum = speziB !== '' ? parseInt(speziB, 10) : null;
+    const speziSet = (speziANum !== null || speziBNum !== null)
+      ? { team_a_score: speziANum ?? 0, team_b_score: speziBNum ?? 0, set_awarded: speziSetAwarded }
+      : null;
+
     createMatch.mutate(
       {
         sets,
@@ -196,7 +206,8 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
         is_public: is_public,
         created_by: user?.id,
         playerNamesMapping,
-        event: eventId
+        event: eventId,
+        spezi_set: speziSet,
       },
       {
         onSuccess: () => onClose(),
@@ -344,6 +355,46 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
               </ItemContent>
             </Item>
 
+
+            <Item variant={"outline"}>
+              <ItemContent>
+                <div className="flex flex-col gap-3 w-full">
+                  <FieldLabel>Spezi (optional)</FieldLabel>
+                  <div className="flex gap-4">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <span className="text-xs text-muted-foreground">Team A Spezi-Punkte</span>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={speziA}
+                        onChange={(e) => setSpeziA(e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <span className="text-xs text-muted-foreground">Team B Spezi-Punkte</span>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={speziB}
+                        onChange={(e) => setSpeziB(e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="spezi-set-awarded"
+                      checked={speziSetAwarded}
+                      onCheckedChange={(v) => setSpeziSetAwarded(!!v)}
+                    />
+                    <label htmlFor="spezi-set-awarded" className="text-sm cursor-pointer">
+                      Spezi-Satz zugesprochen
+                    </label>
+                  </div>
+                </div>
+              </ItemContent>
+            </Item>
 
             <Item variant={"outline"}>
               <ItemContent>
