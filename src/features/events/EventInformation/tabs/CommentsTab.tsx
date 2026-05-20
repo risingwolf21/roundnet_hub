@@ -9,13 +9,15 @@ import { useAddCommentMutation } from '@/tanstack/events';
 import { eventInThePast, EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { getInitials } from '@/utils';
 import { format } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
   const dialogs = useDialogs();
   const addCommentMutation = useAddCommentMutation(user);
   const { hasPerm } = useGrants();
+  const [replyingTo, setReplyingTo] = useState<FullComment | null>(null);
 
   const submit = (formEvent: React.FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
@@ -25,8 +27,11 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
     if (!commentValue) return;
 
     addCommentMutation.mutate(
-      { event, comment: commentValue, reply_to: null },
+      { event, comment: commentValue, reply_to: replyingTo },
       {
+        onSuccess: () => {
+          setReplyingTo(null);
+        },
         onError: () => {
           toast.error('Kommentar konnte nicht hinzugefügt werden.');
         },
@@ -48,54 +53,70 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-2">
           {comments.length > 0 ? (
             comments.map(comment => (
-              <Item key={comment.id} className="flex flex-row items-center gap-3 border-b last:border-0 p-0">
-                <ItemMedia onClick={() => dialogs.userProfile(comment.user.id)}>
-                  <Avatar>
-                    <AvatarImage src={comment.user.avatarUrl || ""} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(comment.user.name ?? "User")}</AvatarFallback>
-                  </Avatar>
-                </ItemMedia>
-                <ItemContent>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold">{comment.displayName}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(comment.created_at), "dd.MM HH:mm")}
-                      </span>
-                    </div>
-                    <p className="text-sm text-foreground/90 ">{comment.comment}</p>
-
-                    {/* Nested Replies */}
-                    {comment.replies && comment.replies.length > 0 && (
-                      <div className="mt-3 space-y-3 pl-4 border-l-2">
-                        {comment.replies.map(reply => (
-                          <Item key={reply.id} className="flex gap-2">
-                            <ItemMedia onClick={() => dialogs.userProfile(reply.user.id)}>
-                              <Avatar>
-                                <AvatarImage src={reply.user.avatarUrl || ""} />
-                                <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(reply.user.name ?? "User")}</AvatarFallback>
-                              </Avatar>
-                            </ItemMedia>
-                            <ItemContent>
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between">
-                                  <p className="text-xs font-semibold">{reply.displayName}</p>
-                                  <span className="text-[10px] text-muted-foreground">
-                                    {format(new Date(reply.created_at), "HH:mm")}
-                                  </span>
-                                </div>
-                                <div className="text-xs text-foreground/90 mt-0.5">
-                                  {reply.comment}
-                                </div>
-                              </div>
-                            </ItemContent>
-                          </Item>
-                        ))}
+              <div key={comment.id}>
+                <Item key={comment.id} className="flex flex-row items-center gap-3 border-b last:border-0 p-0">
+                  <ItemMedia onClick={() => dialogs.userProfile(comment.user.id)}>
+                    <Avatar>
+                      <AvatarImage src={comment.user.avatarUrl || ""} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(comment.user.name ?? "User")}</AvatarFallback>
+                    </Avatar>
+                  </ItemMedia>
+                  <ItemContent>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold">{comment.displayName}</p>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.created_at), "dd.MM HH:mm")}
+                        </span>
                       </div>
-                    )}
+                      <p className="text-sm text-foreground/90 ">{comment.comment}</p>
+
+                      {/* Reply button */}
+                      {!eventInThePast(event) && hasPerm('event.comment') && (
+                        <Button
+                          type="button"
+                          variant={"outline"}
+                          size={"xs"}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setReplyingTo(comment)}
+                        >
+                          Antworten
+                        </Button>
+                      )}
+                    </div>
+                  </ItemContent>
+                </Item>
+
+
+                {/* Nested Replies */}
+                {comment.replies && comment.replies.length > 0 && (
+                  <div className="flex flex-col">
+                    {comment.replies.map(reply => (
+                      <Item key={reply.id} className="flex w-full flex-row gap-4 pr-0">
+                        <ItemMedia onClick={() => dialogs.userProfile(reply.user.id)}>
+                          <Avatar>
+                            <AvatarImage src={reply.user.avatarUrl || ""} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(reply.user.name ?? "User")}</AvatarFallback>
+                          </Avatar>
+                        </ItemMedia>
+                        <ItemContent>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-semibold">{reply.displayName}</p>
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(reply.created_at), "dd.MM HH:mm")}
+                              </span>
+                            </div>
+                            <div className="text-foreground/90 mt-0.5">
+                              {reply.comment}
+                            </div>
+                          </div>
+                        </ItemContent>
+                      </Item>
+                    ))}
                   </div>
-                </ItemContent>
-              </Item>
+                )}
+              </div>
             ))
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-muted-foreground">
@@ -107,6 +128,18 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
 
         {/* Comment Input */}
         <form onSubmit={submit}>
+          {replyingTo && (
+            <div className="px-3 py-2 border-t  justify-between w-full flex items-center gap-1 text-xs text-muted-foreground">
+              <span>Antworte auf @{replyingTo.user?.displayName || replyingTo.user?.name}</span>
+              <Button
+                variant={"outline"}
+                className="ml-1 hover:text-foreground transition-colors"
+                onClick={() => setReplyingTo(null)}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
           <div className="p-3 pb-0 border-t bg-background shrink-0 flex items-center gap-2">
             <Avatar>
               <AvatarImage src={user.avatarUrl || ""} />
