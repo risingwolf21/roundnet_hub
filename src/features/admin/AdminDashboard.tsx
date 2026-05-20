@@ -164,7 +164,7 @@ const AdminDashboard = () => {
     const cutoff = subDays(new Date(), 30);
     return pastEvents
       .filter(e => !e.isCancelled && new Date(e.startingDateTime) >= cutoff)
-      .sort((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
+      .toSorted((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
   }, [pastEvents]);
 
   const quickLinks = [
