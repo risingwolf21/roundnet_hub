@@ -160,12 +160,10 @@ const AdminDashboard = () => {
 
   const lastTraining = pastEvents.find(e => !e.isCancelled) ?? null;
 
-  const trendEvents = useMemo(() => {
-    const cutoff = subDays(new Date(), 30);
-    return pastEvents
-      .filter(e => !e.isCancelled && new Date(e.startingDateTime) >= cutoff)
-      .toSorted((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
-  }, [pastEvents]);
+  const cutoff = subDays(new Date(), 30);
+  const trendEvents = pastEvents
+    .filter(e => !e.isCancelled && new Date(e.startingDateTime) >= cutoff)
+    .toSorted((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
 
   const quickLinks = [
     { title: t('browse.managePayments'), icon: Euro, path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
