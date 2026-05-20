@@ -9,13 +9,15 @@ import { useAddCommentMutation } from '@/tanstack/events';
 import { eventInThePast, EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { getInitials } from '@/utils';
 import { format } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, X } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
   const dialogs = useDialogs();
   const addCommentMutation = useAddCommentMutation(user);
   const { hasPerm } = useGrants();
+  const [replyingTo, setReplyingTo] = useState<FullComment | null>(null);
 
   const submit = (formEvent: React.FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
@@ -25,8 +27,11 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
     if (!commentValue) return;
 
     addCommentMutation.mutate(
-      { event, comment: commentValue, reply_to: null },
+      { event, comment: commentValue, reply_to: replyingTo },
       {
+        onSuccess: () => {
+          setReplyingTo(null);
+        },
         onError: () => {
           toast.error('Kommentar konnte nicht hinzugefügt werden.');
         },
@@ -64,6 +69,17 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
                       </span>
                     </div>
                     <p className="text-sm text-foreground/90 ">{comment.comment}</p>
+
+                    {/* Reply button */}
+                    {!eventInThePast(event) && hasPerm('event.comment') && (
+                      <button
+                        type="button"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={() => setReplyingTo(comment)}
+                      >
+                        Antworten
+                      </button>
+                    )}
 
                     {/* Nested Replies */}
                     {comment.replies && comment.replies.length > 0 && (
@@ -107,6 +123,18 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
 
         {/* Comment Input */}
         <form onSubmit={submit}>
+          {replyingTo && (
+            <div className="px-3 pt-2 flex items-center gap-1 text-xs text-muted-foreground">
+              <span>Antworte auf @{replyingTo.user?.displayName || replyingTo.user?.name}</span>
+              <button
+                type="button"
+                className="ml-1 hover:text-foreground transition-colors"
+                onClick={() => setReplyingTo(null)}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
           <div className="p-3 pb-0 border-t bg-background shrink-0 flex items-center gap-2">
             <Avatar>
               <AvatarImage src={user.avatarUrl || ""} />

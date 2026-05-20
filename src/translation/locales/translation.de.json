@@ -82,7 +82,15 @@
       "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
       "noGroupSelected": "Es ist keine Gruppe für dieses Event ausgewählt!",
       "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
-      "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen"
+      "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
+      "reminderBefore": "Erinnerung senden",
+      "reminderNone": "Keine",
+      "reminderPT30M": "30 Minuten vorher",
+      "reminderPT1H": "1 Stunde vorher",
+      "reminderPT6H": "6 Stunden vorher",
+      "reminderPT12H": "12 Stunden vorher",
+      "reminderPT24H": "24 Stunden vorher",
+      "reminderP2D": "2 Tage vorher"
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -111,7 +119,9 @@
     "startTime": "{{date, cccc}} um {{date, HH:mm}}",
     "secondaryTextStart": "{{start, HH:mm}}",
     "secondaryTextWithEnd": "- {{end, HH:mm}}",
-    "secondaryTextWithPlace": " am {{place}}"
+    "secondaryTextWithPlace": " am {{place}}",
+    "replyTo": "Antworte auf @{{name}}",
+    "reply": "Antworten"
   },
   "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
   "handover_key": "Abgeben",
