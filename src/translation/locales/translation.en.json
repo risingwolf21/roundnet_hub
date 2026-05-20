@@ -354,6 +354,28 @@
     },
     "history": {
       "title": "Admin Drink History"
+    },
+    "notify": {
+      "title": "Send Notification",
+      "recipients": "Recipients",
+      "targetGroup": "Group",
+      "targetUsers": "Individual users",
+      "selectGroup": "Select group",
+      "searchUsers": "Search users",
+      "recipientCount_one": "{{count}} recipient",
+      "recipientCount_other": "{{count}} recipients",
+      "topic": "Topic",
+      "selectTopic": "Select topic",
+      "noTopics": "No topics available",
+      "urgency": "Urgency",
+      "urgencyNormal": "Normal",
+      "urgencyHigh": "High",
+      "titleField": "Title",
+      "body": "Message",
+      "send": "Send",
+      "sending": "Sending…",
+      "sendTo": "Send to {{count}} recipient(s)",
+      "success": "Notification sent to {{count}} user(s)"
     }
   },
   "notifications": {

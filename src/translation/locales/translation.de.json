@@ -354,6 +354,28 @@
     },
     "history": {
       "title": "Admin Getränke Verlauf"
+    },
+    "notify": {
+      "title": "Benachrichtigung senden",
+      "recipients": "Empfänger",
+      "targetGroup": "Gruppe",
+      "targetUsers": "Einzelne Nutzer",
+      "selectGroup": "Gruppe auswählen",
+      "searchUsers": "Nutzer suchen",
+      "recipientCount_one": "{{count}} Empfänger",
+      "recipientCount_other": "{{count}} Empfänger",
+      "topic": "Thema",
+      "selectTopic": "Thema auswählen",
+      "noTopics": "Keine Themen verfügbar",
+      "urgency": "Priorität",
+      "urgencyNormal": "Normal",
+      "urgencyHigh": "Hoch",
+      "titleField": "Titel",
+      "body": "Nachricht",
+      "send": "Senden",
+      "sending": "Wird gesendet…",
+      "sendTo": "An {{count}} Empfänger senden",
+      "success": "Benachrichtigung an {{count}} Nutzer gesendet"
     }
   },
   "notifications": {

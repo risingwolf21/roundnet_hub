@@ -119,4 +119,30 @@ export const AdminUsersRepository = {
     if (error) throw error;
     return (data as any) || [];
   },
+
+  async notifyEmit(args: {
+    recipients: string[];
+    topic: string;
+    title: string;
+    body: string;
+    urgency: string;
+    scopeType: string;
+    scopeId: string;
+    sourceId: string;
+  }): Promise<number> {
+    const { data, error } = await supabase.rpc('notify_emit', {
+      p_recipients: args.recipients,
+      p_topic: args.topic,
+      p_title: args.title,
+      p_body: args.body,
+      p_data: {},
+      p_source_type: 'admin',
+      p_source_id: args.sourceId,
+      p_urgency: args.urgency,
+      p_scope_type: args.scopeType,
+      p_scope_id: args.scopeId,
+    });
+    if (error) throw error;
+    return (data ?? 0) as number;
+  },
 };
