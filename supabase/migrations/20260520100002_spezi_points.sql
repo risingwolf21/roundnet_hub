@@ -5,7 +5,13 @@ ALTER TABLE games.sets
   ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'normal',
   ADD COLUMN IF NOT EXISTS set_awarded boolean DEFAULT NULL;
 
--- Step 2: Recreate add_match_with_sets with optional spezi_set param
+-- Step 2: Drop old signature so the new one (with spezi_set) is unambiguous
+DROP FUNCTION IF EXISTS "games"."add_match_with_sets"(
+  "uuid", numeric, "uuid", numeric, "uuid", numeric, "uuid", numeric,
+  json, "uuid", "uuid", boolean, json, boolean
+);
+
+-- Recreate add_match_with_sets with optional spezi_set param
 CREATE OR REPLACE FUNCTION "games"."add_match_with_sets"(
   "player_1a" "uuid", "player_1a_rating" numeric,
   "player_2a" "uuid", "player_2a_rating" numeric,
