@@ -139,7 +139,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
           <MapPin className='size-4 shrink-0' />
           <span className='truncate'>
-            {place.name ?? 'Kein Ort angegeben'}
+            {place.name ?? t('events.item.noLocation')}
           </span>
         </div>
 

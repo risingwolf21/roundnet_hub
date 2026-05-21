@@ -139,8 +139,8 @@ const DrinkListScreen = () => {
                 });
                 if (result) {
                   insertDrink.mutate(result, {
-                    onSuccess: () => toast.success("Getränk erfolgreich hinzugefügt"),
-                    onError: (error) => toast.error("Beim hinzufügen ist ein Fehler aufgetreten. " + error.message)
+                    onSuccess: () => toast.success(t("drinks.addSuccess")),
+                    onError: (error) => toast.error(t("drinks.addError", { error: error.message }))
                   })
                 }
               }}>

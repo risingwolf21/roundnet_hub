@@ -18,6 +18,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { DialogProps, useDialogs } from "@/contexts/DialogsProvider"
 import { ColumnDef } from "@tanstack/react-table"
 import { ChevronDown } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { useGrants } from "../auth/GrantsContext"
 
 // const ErrorDisplay = ({ error, onRetry }: { error: any, onRetry: () => void }) => (
@@ -228,6 +229,7 @@ const getDefaults = (report: AnalyticsReportDef) => {
 };
 
 const AdminAnalytics = () => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
   const { user } = useGrants();
   const [selectedReport, setSelectedReport] = useState<AnalyticsReportDef>(REPORTS[0]);
@@ -282,7 +284,7 @@ const AdminAnalytics = () => {
 
   return <div>
     <AppBar
-      title="Admin Analysen"
+      title={t('admin.analytics.title')}
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom flex-col flex p-2 gap-2'>
@@ -310,11 +312,11 @@ const AdminAnalytics = () => {
               return (
                 <div key={input.id} className="grid grid-cols-2 gap-2">
                   <Field className=" w-44">
-                    <FieldLabel htmlFor="date-from">Von</FieldLabel>
+                    <FieldLabel htmlFor="date-from">{t('admin.analytics.from')}</FieldLabel>
                     <Popover>
                       <PopoverTrigger render={
                         <Button variant="outline" id="date-from" className="justify-start font-normal">
-                          {currentVal.from ? format(currentVal.from, "PPP") : <span>Pick a date</span>}
+                          {currentVal.from ? format(currentVal.from, "PPP") : <span>{t('admin.analytics.datePlaceholder')}</span>}
                         </Button>} />
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
@@ -328,11 +330,11 @@ const AdminAnalytics = () => {
                   </Field>
 
                   <Field className="w-44">
-                    <FieldLabel htmlFor="date-to">Bis</FieldLabel>
+                    <FieldLabel htmlFor="date-to">{t('admin.analytics.to')}</FieldLabel>
                     <Popover>
                       <PopoverTrigger render={
                         <Button variant="outline" id="date-to" className="justify-start font-normal">
-                          {currentVal.to ? format(currentVal.to, "PPP") : <span>Pick a date</span>}
+                          {currentVal.to ? format(currentVal.to, "PPP") : <span>{t('admin.analytics.datePlaceholder')}</span>}
                         </Button>} />
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
@@ -402,7 +404,7 @@ const AdminAnalytics = () => {
             onClick={handleRunQuery}
             disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
           >
-            Abrufen
+            {t('admin.analytics.fetch')}
           </Button>
         </ItemContent>
       </Item>
@@ -425,11 +427,12 @@ const AdminAnalytics = () => {
 }
 
 const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: AnalyticsReportDef[] }, AnalyticsReportDef | null>) => {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"drawer"}>
         <DialogHeader className="px-4">
-          <DialogTitle>Funktion auswählen</DialogTitle>
+          <DialogTitle>{t('admin.analytics.selectFunction')}</DialogTitle>
         </DialogHeader>
         <DialogBody>
           <div className="flex flex-col gap-2">

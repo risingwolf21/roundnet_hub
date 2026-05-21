@@ -1,12 +1,15 @@
 import pzLogo from '../images/pz_logo.svg';
 
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { useIsOffline } from '@/hooks/useIsOffline';
 import { useUserTrophies } from '@/tanstack/challenge';
 import { usePlayerLeaderboardEntry, usePlayerMatches } from '@/tanstack/games';
 import { useEloHistoryForPlayer } from '@/tanstack/player_data';
 import { useProfile } from '@/tanstack/user';
-import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff, X } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -89,6 +92,12 @@ const EloSparkline = ({ history }: { history: EloPoint[] }) => {
 };
 
 export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
+  const { t } = useTranslation();
+  const isOffline = useIsOffline();
+  const { user: currentUser } = useGrants();
+  const { data: currentUserProfile } = useProfile(currentUser.id);
+  const currentPlayerId = currentUserProfile?.player?.player ?? '';
+
   const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile(userId);
   const { data: trophies = [], isLoading: trophiesLoading, isError: trophiesError } = useUserTrophies(userId);
   const { data: leaderboardEntry, isLoading: leaderboardLoading, isError: leaderboardError } = usePlayerLeaderboardEntry(userId);
@@ -97,15 +106,35 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
   const { data: playerMatches = [], isLoading: matchesLoading, isError: matchesError } = usePlayerMatches(playerId);
   const { data: eloHistory = [], isLoading: eloLoading, isError: eloError } = useEloHistoryForPlayer(playerId);
 
+  const shared = useMemo(() => {
+    return playerMatches.filter(
+      (m) => m.rated && m.winner_side &&
+        (m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId ||
+          m.team_b_p1 === currentPlayerId || m.team_b_p2 === currentPlayerId)
+    )
+  }, [playerMatches, currentPlayerId]);
+
   const winRate = useMemo(() => {
-    const rated = playerMatches.filter((m) => m.rated && m.winner_side);
-    if (rated.length === 0) return null;
-    const wins = rated.filter((m) => {
-      const onTeamA = m.team_a_p1 === playerId || m.team_a_p2 === playerId;
-      return (onTeamA && m.winner_side === 'A') || (!onTeamA && m.winner_side === 'B');
+    if (shared.length === 0) return null;
+    const wins = shared.filter((m) => {
+      const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
+      return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
     }).length;
-    return { wins, total: rated.length, rate: Math.round((wins / rated.length) * 100) };
-  }, [playerMatches, playerId]);
+    return { wins, total: shared.length, rate: Math.round((wins / shared.length) * 100) };
+  }, [shared, currentPlayerId]);
+
+  const h2h = useMemo(() => {
+    if (!currentPlayerId || currentUser.id === userId || matchesLoading) return null;
+    if (shared.length === 0) return null;
+    const wins = shared.filter((m) => {
+      const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
+      return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
+    }).length;
+    const draws = shared.filter((m) => {
+      return m.winner_side == "draw";
+    }).length;
+    return { wins, losses: shared.length - wins - draws, draws };
+  }, [currentPlayerId, currentUser.id, userId, matchesLoading, shared]);
 
   const sortedEloHistory = useMemo(
     () => [...eloHistory].sort((a, b) => a.created_at.localeCompare(b.created_at)),
@@ -116,8 +145,8 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
 
   const rankStyle: Record<number, { color: string; label: string }> = {
     1: { color: 'text-yellow-500', label: '1. Platz' },
-    2: { color: 'text-slate-400',  label: '2. Platz' },
-    3: { color: 'text-amber-700',  label: '3. Platz' },
+    2: { color: 'text-slate-400', label: '2. Platz' },
+    3: { color: 'text-amber-700', label: '3. Platz' },
   };
 
   return (
@@ -127,6 +156,14 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
           <DialogClose render={<Button variant={"ghost"} size={"icon-lg"}><X /></Button>} />
         </DialogHeader>
         <DialogBody>
+
+          {/* Offline banner */}
+          {isOffline && (
+            <div className="bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground text-sm rounded-lg mb-2">
+              <WifiOff className="size-4 shrink-0" />
+              {t('profile.offline')}
+            </div>
+          )}
 
           {/* Profile header */}
           {profileLoading ? (
@@ -211,6 +248,18 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               </Item>
             ) : null}
 
+            {/* H2H tiles */}
+            {h2h !== null && (
+              <>
+                <Item variant={"outline"}>
+                  <ItemContent>
+                    <ItemTitle>{`${h2h.wins}W ${h2h.draws}D ${h2h.losses}L`}</ItemTitle>
+                    <ItemDescription>{t('profile.h2h.ratio')}</ItemDescription>
+                  </ItemContent>
+                </Item>
+              </>
+            )}
+
             {/* RG tiles (profile-sourced, shown after loading) */}
             {!profileLoading && !profileError && (
               <>
@@ -270,11 +319,10 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             <div className="mt-4 rounded-lg border p-3">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-muted-foreground">ELO Verlauf</span>
-                <span className={`text-sm font-medium ${
-                  sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                }`}>
+                <span className={`text-sm font-medium ${sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
+                  ? 'text-green-500'
+                  : 'text-red-500'
+                  }`}>
                   {sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating ? '+' : ''}
                   {(sortedEloHistory[sortedEloHistory.length - 1].new_rating - sortedEloHistory[0].new_rating).toFixed(0)}
                 </span>

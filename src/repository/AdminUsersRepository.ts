@@ -1,9 +1,8 @@
 import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase-generated.types';
+import { Database, Tables } from '@/types/supabase-generated.types';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Database } from '@/types/supabase-generated.types';
 
 export type RpcName = keyof Database['public']['Functions'];
 
@@ -118,5 +117,31 @@ export const AdminUsersRepository = {
     const { data, error } = await supabase.from(table as any).select(`id, ${labelField}`).limit(100);
     if (error) throw error;
     return (data as any) || [];
+  },
+
+  async notifyEmit(args: {
+    recipients: string[];
+    topic: string;
+    title: string;
+    body: string;
+    urgency: string;
+    scopeType: string;
+    scopeId: string;
+    sourceId: string;
+  }): Promise<number> {
+    const { data, error } = await supabase.schema("notifications").rpc('notify_emit', {
+      p_recipients: args.recipients,
+      p_topic: args.topic,
+      p_title: args.title,
+      p_body: args.body,
+      p_data: {},
+      p_source_type: 'admin',
+      p_source_id: args.sourceId,
+      p_urgency: args.urgency,
+      p_scope_type: args.scopeType,
+      p_scope_id: args.scopeId,
+    });
+    if (error) throw error;
+    return (data ?? 0) as number;
   },
 };

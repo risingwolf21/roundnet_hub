@@ -21,24 +21,27 @@ export const GamesRepository = {
     return result.data ?? [];
   },
 
-  async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
-    const [{ data: simpleUsers }, { data: players }] = await Promise.all([
+  async fetchAvailablePlayers(): Promise<(PlayerWithSimpleUser | Player)[]> {
+    const [{ data: simpleUsers }, { data: linkedPlayers }, { data: guestPlayers }] = await Promise.all([
       fetchSimpleUser(),
       supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null),
+      supabase.schema('games').from('players').select('*').is('linked_user_id', null),
     ]);
 
-    return _(players) // start sequence
-      .keyBy('player') // create a dictionary of the 1st array
-      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
-      .values() // turn the combined dictionary to array
+    const merged: PlayerWithSimpleUser[] = _(linkedPlayers)
+      .keyBy('player')
+      .merge(_.keyBy(simpleUsers, 'id'))
+      .values()
       .value()
-      .map(
-        (x) =>
-          ({
-            ...x,
-          }) as PlayerWithSimpleUser
-      )
-      .sort((x, y) => x.name.localeCompare(y.name));
+      .map((x) => ({ ...x }) as PlayerWithSimpleUser);
+
+    const guests: Player[] = guestPlayers ?? [];
+
+    return [...merged, ...guests].sort((x, y) => {
+      const nameX = 'name' in x ? x.name as string : x.display_name ?? '';
+      const nameY = 'name' in y ? y.name as string : y.display_name ?? '';
+      return nameX.localeCompare(nameY);
+    });
   },
 
   async reportScores(
@@ -98,6 +101,7 @@ export const GamesRepository = {
   },
 
   async fetchMatchWithDetails(matchId: string) {
+    // Single query: embed player rows via FK aliases to avoid a separate players fetch
     const { data: match, error } = await supabase
       .schema('games')
       .from('match')
@@ -105,7 +109,11 @@ export const GamesRepository = {
         *,
         sets(*),
         elo_calc_log(*),
-        elo_history!elo_history_match_fkey(*)
+        elo_history!elo_history_match_fkey(*),
+        a_player_1_info: players!a_player_1(*),
+        a_player_2_info: players!a_player_2(*),
+        b_player_1_info: players!b_player_1(*),
+        b_player_2_info: players!b_player_2(*)
       `)
       .eq('id', matchId)
       .maybeSingle();
@@ -113,24 +121,25 @@ export const GamesRepository = {
     if (error) throw error;
     if (!match) return null;
 
-    const playerIds = [match.a_player_1, match.a_player_2, match.b_player_1, match.b_player_2].filter(Boolean);
+    const playerInfos = [
+      match.a_player_1_info,
+      match.a_player_2_info,
+      match.b_player_1_info,
+      match.b_player_2_info,
+    ] as any[];
 
-    const { data: players } = await supabase
-      .schema('games')
-      .from('players')
-      .select('*')
-      .in('player', playerIds);
+    const userIds = playerInfos
+      .map((p) => p?.linked_user_id)
+      .filter((id): id is string => Boolean(id));
 
-    const userIds = players?.map(p => p.linked_user_id).filter(x => x !== null) || [];
+    const { data: users } = userIds.length > 0
+      ? await supabase.from('user').select('*').in('id', userIds)
+      : { data: [] as any[] };
 
-    const { data: users } = await supabase
-      .from('user')
-      .select('*')
-      .in('id', userIds);
-
-    const getUser = (playerId: string) => {
-      const player = players?.find(p => p.player === playerId) ?? null;
-      const user = users?.find(u => u.id === player?.linked_user_id) ?? null;
+    const getUser = (playerId: string | null) => {
+      if (!playerId) return { player: null, user: null };
+      const player = playerInfos.find((p) => p?.player === playerId) ?? null;
+      const user = users?.find((u) => u.id === player?.linked_user_id) ?? null;
       return { player, user };
     };
 
@@ -185,6 +194,7 @@ export const GamesRepository = {
     is_public: boolean;
     created_by?: string;
     player_names: { [key: string]: string };
+    spezi_set?: { team_a_score: number; team_b_score: number; set_awarded: boolean } | null;
   }): Promise<PostgrestSingleResponse<string>> {
     return supabase
       .schema('games')
@@ -203,6 +213,7 @@ export const GamesRepository = {
         is_public: params.is_public,
         created_by: params.created_by,
         player_names: params.player_names,
+        spezi_set: params.spezi_set ?? null,
       })
       .throwOnError();
   },

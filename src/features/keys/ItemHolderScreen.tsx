@@ -11,9 +11,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Spinner } from '@/components/ui/spinner';
 import { useDialogs } from '@/contexts/DialogsProvider';
-import { AlertCircle, AlertTriangleIcon, Info, Key, Loader2, Pencil, PencilOff, Plus, SearchX } from 'lucide-react';
+import { AlertCircle, AlertTriangleIcon, Info, Key, Pencil, PencilOff, Plus, SearchX } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
@@ -125,36 +127,30 @@ const ItemHolderScreen = () => {
             <Alert key={'alert'} className='p-2' variant="info">
               <Info />
               <AlertDescription>
-                Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
-                (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B.
-                verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
-                den Schlüssel verantwortlich!
+                {t('keys.screen.disclaimer')}
               </AlertDescription>
             </Alert>
 
-            {/* HIER GEÄNDERT: Lade-, Fehler- und Leerzustände */}
             {isLoading ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <Loader2 className="size-10 animate-spin text-muted-foreground" />
+              <div className="flex justify-center p-6 mt-12">
+                <Spinner className="size-10" />
               </div>
             ) : error ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <AlertCircle className="size-10 text-destructive mb-4" />
-                <h2 className="text-xl font-bold tracking-tight">Fehler beim Laden</h2>
-                <p className="text-muted-foreground mt-2 max-w-xs">
-                  Die Schlüssel konnten nicht geladen werden. Bitte versuche es später erneut.
-                </p>
-              </div>
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><AlertCircle className="text-destructive" /></EmptyMedia>
+                  <EmptyTitle>{t('keys.screen.loadError')}</EmptyTitle>
+                  <EmptyDescription>{t('keys.screen.loadErrorDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : keyHolders.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <div className="rounded-full bg-muted p-6 mb-4">
-                  <SearchX className="size-10 text-muted-foreground" />
-                </div>
-                <h2 className="text-xl font-bold tracking-tight">Keine Schlüssel gefunden</h2>
-                <p className="text-muted-foreground mt-2 max-w-xs">
-                  Es sind aktuell keine Schlüssel im System hinterlegt.
-                </p>
-              </div>
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
+                  <EmptyTitle>{t('keys.screen.empty')}</EmptyTitle>
+                  <EmptyDescription>{t('keys.screen.emptyDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <div className='flex flex-col gap-2'>
                 {keyHolders.map((x: FullItemHolder) => (
@@ -170,7 +166,7 @@ const ItemHolderScreen = () => {
                       <ItemTitle>{x.name}</ItemTitle>
                       <ItemDescription className="flex items-center gap-1.5">
                         {!x.full_current_holder && <AlertTriangleIcon size={14} />}
-                        <span>{x.full_current_holder?.name ?? "Nicht vergeben"}</span>
+                        <span>{x.full_current_holder?.name ?? t('keys.screen.noHolder')}</span>
                       </ItemDescription>
                     </ItemContent>
                     <ItemActions>
