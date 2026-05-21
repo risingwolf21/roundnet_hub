@@ -22,12 +22,14 @@ VALUES
   (tests.get_supabase_uid('test_partner'))
 ON CONFLICT DO NOTHING;
 
-INSERT INTO games.players (player, gender) VALUES 
-  (tests.get_supabase_uid('test_admin'), 'm'), -- WICHTIG: Admin als Spieler registrieren (als 4. Dummy)
-  (tests.get_supabase_uid('test_main_user'), 'm'),
-  (tests.get_supabase_uid('test_guest_1'), 'm'),
-  (tests.get_supabase_uid('test_guest_2'), 'm'),
-  (tests.get_supabase_uid('test_partner'), 'm')
+-- linked_user_id must be set for real users so merge_guest_player can resolve
+-- the player UUID via that column.  Guest players have linked_user_id = NULL.
+INSERT INTO games.players (player, linked_user_id, gender) VALUES
+  (tests.get_supabase_uid('test_admin'),     tests.get_supabase_uid('test_admin'),     'm'),
+  (tests.get_supabase_uid('test_main_user'), tests.get_supabase_uid('test_main_user'), 'm'),
+  (tests.get_supabase_uid('test_guest_1'),   NULL,                                     'm'),
+  (tests.get_supabase_uid('test_guest_2'),   NULL,                                     'm'),
+  (tests.get_supabase_uid('test_partner'),   tests.get_supabase_uid('test_partner'),   'm')
 ON CONFLICT DO NOTHING;
 
 -------------------------------------------------------------------------------
