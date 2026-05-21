@@ -324,13 +324,12 @@ export const EventRepository = {
       .from('event_bring_pledges')
       .delete()
       .eq('event', event)
-      .eq('user_id', user)
+      .eq('user', user)
       .in('item', items.filter((x) => x.quantity <= 0).map((x) => x.item_id));
     await supabase.from('event_bring_pledges').upsert(
       items
         .filter((x) => x.quantity > 0)
-        .map((x) => ({ event, user_id: user, qty: x.quantity, status: x.status, item: x.item_id })),
-      { onConflict: 'user_id, item' }
+        .map((x) => ({ event, user: user, qty: x.quantity, status: x.status, item: x.item_id }))
     );
   },
 
