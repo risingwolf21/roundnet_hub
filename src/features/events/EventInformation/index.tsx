@@ -427,7 +427,7 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                   value="comments"
                   className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                 >
-                  Kommentare ({comments.length})
+                  Kommentare ({comments.reduce((a, c) => a + c.replies.length + 1, 0)})
                 </TabsTrigger>
 
                 <Has feat={"games"}>
@@ -588,7 +588,7 @@ export const EventInformationError = () => {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <Button variant="outline" size="sm" onClick={() => navigate("events")}>
               Zurück zur Übersicht
             </Button>
           </EmptyContent>

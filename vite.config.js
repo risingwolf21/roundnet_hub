@@ -53,11 +53,6 @@ export default defineConfig(({ mode }) => {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
           maximumFileSizeToCacheInBytes: 3000000
         },
-        workbox: {
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          globPatterns: ['**/*'],
-        },
         devOptions: {
           enabled: ENABLE_PWA_DEV,
           type: 'module',

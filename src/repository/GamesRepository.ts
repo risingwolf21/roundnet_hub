@@ -21,24 +21,27 @@ export const GamesRepository = {
     return result.data ?? [];
   },
 
-  async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
-    const [{ data: simpleUsers }, { data: players }] = await Promise.all([
+  async fetchAvailablePlayers(): Promise<(PlayerWithSimpleUser | Player)[]> {
+    const [{ data: simpleUsers }, { data: linkedPlayers }, { data: guestPlayers }] = await Promise.all([
       fetchSimpleUser(),
       supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null),
+      supabase.schema('games').from('players').select('*').is('linked_user_id', null),
     ]);
 
-    return _(players) // start sequence
-      .keyBy('player') // create a dictionary of the 1st array
-      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
-      .values() // turn the combined dictionary to array
+    const merged: PlayerWithSimpleUser[] = _(linkedPlayers)
+      .keyBy('player')
+      .merge(_.keyBy(simpleUsers, 'id'))
+      .values()
       .value()
-      .map(
-        (x) =>
-          ({
-            ...x,
-          }) as PlayerWithSimpleUser
-      )
-      .sort((x, y) => x.name.localeCompare(y.name));
+      .map((x) => ({ ...x }) as PlayerWithSimpleUser);
+
+    const guests: Player[] = guestPlayers ?? [];
+
+    return [...merged, ...guests].sort((x, y) => {
+      const nameX = 'name' in x ? x.name as string : x.display_name ?? '';
+      const nameY = 'name' in y ? y.name as string : y.display_name ?? '';
+      return nameX.localeCompare(nameY);
+    });
   },
 
   async reportScores(
@@ -191,6 +194,7 @@ export const GamesRepository = {
     is_public: boolean;
     created_by?: string;
     player_names: { [key: string]: string };
+    spezi_set?: { team_a_score: number; team_b_score: number; set_awarded: boolean } | null;
   }): Promise<PostgrestSingleResponse<string>> {
     return supabase
       .schema('games')
@@ -209,6 +213,7 @@ export const GamesRepository = {
         is_public: params.is_public,
         created_by: params.created_by,
         player_names: params.player_names,
+        spezi_set: params.spezi_set ?? null,
       })
       .throwOnError();
   },

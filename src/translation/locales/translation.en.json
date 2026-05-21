@@ -70,7 +70,13 @@
   },
   "matches": {
     "leaderboard": "Leaderboard",
-    "leaderboardTooltip": "Change of index in the last 30 days: {{trend}}"
+    "leaderboardTooltip": "Change of index in the last 30 days: {{trend}}",
+    "spezi": {
+      "title": "Spezi (optional)",
+      "teamA": "Team A Spezi Points",
+      "teamB": "Team B Spezi Points",
+      "setAwarded": "Spezi set awarded"
+    }
   },
   "events": {
     "upcoming": "Upcoming",
@@ -85,7 +91,15 @@
       "meetingTimeBeforeStartTime": "The meetup time can not be after the start time",
       "noGroupSelected": "There is no group selected for this event",
       "startDateCannotBeNull": "The startDate of this event can not be empty",
-      "titleTooShort": "The title of this event needs at least 6 characters"
+      "titleTooShort": "The title of this event needs at least 6 characters",
+      "reminderBefore": "Send reminder",
+      "reminderNone": "None",
+      "reminderPT30M": "30 minutes before",
+      "reminderPT1H": "1 hour before",
+      "reminderPT6H": "6 hours before",
+      "reminderPT12H": "12 hours before",
+      "reminderPT24H": "24 hours before",
+      "reminderP2D": "2 days before"
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -130,6 +144,8 @@
     "item": {
       "noLocation": "No location specified"
     }
+    "replyTo": "Replying to @{{name}}",
+    "reply": "Reply"
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",
@@ -150,7 +166,8 @@
     "eventComments": "Event comments",
     "paymentPending": "Payment pending",
     "paymentRequest": "Payment requests",
-    "userRegistration": "User registrations"
+    "userRegistration": "User registrations",
+    "waitinglistPromoted": "Waiting list: Promoted"
   },
   "notification_actionMessage": "We'd like to show you notifications for the following categories.",
   "notification_updateMessage": "Update your push notification subscription preferences.",
