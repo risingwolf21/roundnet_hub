@@ -101,8 +101,10 @@ const MatchInformation = () => {
   }
 
   // 3. DATEN AUFBEREITEN
-  const setsAWon = match.sets.filter((x: any) => x.team_a_score > x.team_b_score).length ?? 0;
-  const setsBWon = match.sets.filter((x: any) => x.team_a_score < x.team_b_score).length ?? 0;
+  const normalSets = match.sets.filter((x: any) => x.type !== 'spezi');
+  const speziSet = match.sets.find((x: any) => x.type === 'spezi') ?? null;
+  const setsAWon = normalSets.filter((x: any) => x.team_a_score > x.team_b_score).length;
+  const setsBWon = normalSets.filter((x: any) => x.team_a_score < x.team_b_score).length;
 
   const matchMember = [
     match.player_1a?.player?.linked_user_id,
@@ -197,7 +199,7 @@ const MatchInformation = () => {
                     </div>
 
                     <div className='flex flex-row gap-4'>
-                      {match.sets.map((x: any, i: number) => (
+                      {normalSets.map((x: any, i: number) => (
                         <div key={i} className="flex flex-col gap-1 text-center">
                           <div className={cn('text-md', { "font-bold": x.team_a_score > x.team_b_score })}>{x.team_a_score}</div>
                           <div className={cn('text-md', { "font-bold": x.team_a_score < x.team_b_score })}>{x.team_b_score}</div>
@@ -205,6 +207,29 @@ const MatchInformation = () => {
                       ))}
                     </div>
                   </div>
+                  {speziSet && (
+                    <>
+                      <Separator className="my-1" />
+                      <div className='flex flex-row justify-between items-center'>
+                        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                          <span>Spezi</span>
+                          {speziSet.set_awarded && (
+                            <Badge variant="success" className="text-xs">Zugesprochen</Badge>
+                          )}
+                        </div>
+                        <div className='flex flex-row gap-4'>
+                          <div className="flex flex-col gap-1 text-center text-sm text-muted-foreground">
+                            <div className={cn({ "font-bold text-foreground": speziSet.team_a_score > speziSet.team_b_score })}>
+                              {speziSet.team_a_score}
+                            </div>
+                            <div className={cn({ "font-bold text-foreground": speziSet.team_a_score < speziSet.team_b_score })}>
+                              {speziSet.team_b_score}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </ItemContent>
             </Item>
