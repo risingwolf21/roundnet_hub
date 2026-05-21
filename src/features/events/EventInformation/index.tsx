@@ -588,7 +588,7 @@ export const EventInformationError = () => {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <Button variant="outline" size="sm" onClick={() => navigate("events")}>
               Zurück zur Übersicht
             </Button>
           </EmptyContent>

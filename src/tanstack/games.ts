@@ -74,6 +74,7 @@ export const useCreateMatch = () =>
       is_public,
       created_by,
       playerNamesMapping,
+      spezi_set,
     }: {
       sets: { team_a_score: number; team_b_score: number }[];
       team_a: {
@@ -95,6 +96,7 @@ export const useCreateMatch = () =>
       is_public: boolean;
       created_by?: string;
       playerNamesMapping: { [key: string]: string };
+      spezi_set?: { team_a_score: number; team_b_score: number; set_awarded: boolean } | null;
     }) => {
       const result = await GamesRepository.createMatchWithSets({
         sets,
@@ -105,6 +107,7 @@ export const useCreateMatch = () =>
         is_public,
         created_by,
         player_names: playerNamesMapping,
+        spezi_set,
       });
       return result.data;
     },

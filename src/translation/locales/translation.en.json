@@ -67,7 +67,13 @@
   },
   "matches": {
     "leaderboard": "Leaderboard",
-    "leaderboardTooltip": "Change of index in the last 30 days: {{trend}}"
+    "leaderboardTooltip": "Change of index in the last 30 days: {{trend}}",
+    "spezi": {
+      "title": "Spezi (optional)",
+      "teamA": "Team A Spezi Points",
+      "teamB": "Team B Spezi Points",
+      "setAwarded": "Spezi set awarded"
+    }
   },
   "events": {
     "upcoming": "Upcoming",
