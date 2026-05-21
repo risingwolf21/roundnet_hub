@@ -1,9 +1,8 @@
 set check_function_bodies = off;
 
--- Recreate merge_guest_player with a pre-step that ensures the target user
--- has a row in games.players before the match FK updates run. Without this,
--- merging into a user who never had a games.players row (e.g. registered
--- before the trg_user_to_player trigger) violates the match FK constraints.
+-- Recreate merge_guest_player to also re-point elo_history rows before
+-- deleting the guest player. Without this the DELETE fails with a 23503
+-- FK violation because elo_history.user still references the guest player.
 CREATE OR REPLACE FUNCTION games.merge_guest_player(target_user_id uuid, guest_player_id uuid)
  RETURNS void
  LANGUAGE plpgsql
@@ -42,14 +41,6 @@ BEGIN
         RAISE EXCEPTION 'Merge abgebrochen: Die Accounts haben in der Vergangenheit gegeneinander gespielt.';
     END IF;
 
-    -- 5. ENSURE TARGET HAS A PLAYER ROW
-    -- The target user may not yet be in games.players (e.g. registered before
-    -- trg_user_to_player existed). Without this the match FK updates below fail.
-    SELECT "displayName" INTO v_display_name FROM public.user WHERE id = target_user_id;
-    INSERT INTO games.players (player, ka_index, display_name, matches_played, effective_rating_cached)
-    VALUES (target_user_id, 1000, v_display_name, 0, games.calculate_effective_rating(1000, NULL, 0))
-    ON CONFLICT (player) DO NOTHING;
-
     -- 6. UPDATES: Match-Tabelle aktualisieren
     UPDATE games.match SET a_player_1 = target_user_id WHERE a_player_1 = guest_player_id;
     UPDATE games.match SET a_player_2 = target_user_id WHERE a_player_2 = guest_player_id;
@@ -62,7 +53,10 @@ BEGIN
     UPDATE games.elo_calc_log SET b1_user = target_user_id WHERE b1_user = guest_player_id;
     UPDATE games.elo_calc_log SET b2_user = target_user_id WHERE b2_user = guest_player_id;
 
-    -- 8. CLEANUP: Gast-Account löschen
+    -- 8. UPDATES: Elo-History aktualisieren
+    UPDATE games.elo_history SET "user" = target_user_id WHERE "user" = guest_player_id;
+
+    -- 9. CLEANUP: Gast-Account löschen
     DELETE FROM games.players WHERE player = guest_player_id;
 END;
 $function$;
