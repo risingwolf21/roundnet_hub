@@ -87,7 +87,7 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
   );
 };
 
-type PlayerSelection = PlayerWithSimpleUser | Player | null;
+export type PlayerSelection = PlayerWithSimpleUser | Player | null;
 
 const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string }>) => {
   const { eventId } = payload ?? {};
@@ -500,7 +500,9 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
               <Item key={"guestplayer"}>
                 <ItemMedia>
                   <Avatar className={"mr-2"}>
-                    <AvatarFallback className={"text-xs"}></AvatarFallback>
+                    <AvatarFallback className={"text-xs"}>
+                      <Plus className='size-4' />
+                    </AvatarFallback>
                   </Avatar>
                 </ItemMedia>
                 <ItemContent className='flex flex-row w-full'>
@@ -531,8 +533,12 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                 .map((user) => {
                   const displayName = 'name' in user ? user.name : user?.display_name ?? 'Unknown';
                   const avatarUrl = 'avatarUrl' in user ? user?.avatarUrl ?? user?.rg_avatar_url ?? '' : '';
+                  const disabled = payload.selectedPlayers.map(x => x.player).includes(user.player);
 
-                  return <Item key={user.player} onClick={() => onClose(user)}>
+                  const disabledStyles =
+                    "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50";
+
+                  return <Item data-disabled={disabled} key={user.player} onClick={() => !disabled && onClose(user)} className={disabledStyles}>
                     <ItemMedia>
                       <Avatar className={"mr-2"}>
                         <AvatarImage src={avatarUrl || undefined} alt={displayName || undefined} />

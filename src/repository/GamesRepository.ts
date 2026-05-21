@@ -21,13 +21,14 @@ export const GamesRepository = {
     return result.data ?? [];
   },
 
-  async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
-    const [{ data: simpleUsers }, { data: players }] = await Promise.all([
+  async fetchAvailablePlayers(): Promise<(PlayerWithSimpleUser | Player)[]> {
+    const [{ data: simpleUsers }, { data: linkedPlayers }, { data: guestPlayers }] = await Promise.all([
       fetchSimpleUser(),
       supabase.schema('games').from('players').select('*').not('linked_user_id', 'is', null),
+      supabase.schema('games').from('players').select('*').is('linked_user_id', null),
     ]);
 
-    return _(players) // start sequence
+    const merged: PlayerWithSimpleUser[] = _(linkedPlayers) // start sequence
       .keyBy('player') // create a dictionary of the 1st array
       .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
       .values() // turn the combined dictionary to array
@@ -37,8 +38,15 @@ export const GamesRepository = {
           ({
             ...x,
           }) as PlayerWithSimpleUser
-      )
-      .sort((x, y) => x.name.localeCompare(y.name));
+      );
+
+    const guests: Player[] = guestPlayers ?? [];
+
+    return [...merged, ...guests].sort((x, y) => {
+      const nameX = 'name' in x ? x.name as string : x.display_name ?? '';
+      const nameY = 'name' in y ? y.name as string : y.display_name ?? '';
+      return nameX.localeCompare(nameY);
+    });
   },
 
   async reportScores(
