@@ -92,7 +92,7 @@ type PlayerSelection = PlayerWithSimpleUser | Player | null;
 const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string }>) => {
   const { eventId } = payload ?? {};
   const [sets, setSets] = useState<MatchSet[]>([
-    { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
+    { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0, type: 'normal', set_awarded: null },
   ]);
   const { user } = useGrants();
 
@@ -345,6 +345,8 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                           match: '',
                           team_a_score: 0,
                           team_b_score: 0,
+                          type: 'normal',
+                          set_awarded: null,
                         },
                       ])
                     }
