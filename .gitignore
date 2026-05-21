@@ -43,3 +43,6 @@ package-lock.json
 # keep any existing test-results or Playwright report folders ignored
 **/playwright-report/
 **/test-results/
+
+# Claude Code local state
+.claude/

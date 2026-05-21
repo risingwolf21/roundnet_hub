@@ -1,13 +1,15 @@
 import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 import { EventRepository } from '@/repository/EventRepository';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
 import { durationToPostgresInterval, formatDateFromDatabaseNotNull, formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Duration, format, isAfter, isBefore } from 'date-fns';
 
 export const eventKeys = {
@@ -59,8 +61,22 @@ export const useEventMatches = (eventId: string) =>
     queryFn: () => GamesRepository.fetchGamesForEvent(eventId),
   });
 
-export const useComments = (eventId: string) =>
-  useQuery({
+export function useComments(eventId: string) {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`comments-${eventId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'event_comments', filter: `event=eq.${eventId}` },
+        () => qc.invalidateQueries({ queryKey: eventKeys.eventComments(eventId) })
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [eventId, qc]);
+
+  return useQuery({
     queryKey: eventKeys.eventComments(eventId),
     queryFn: async () => {
       const comments = await EventRepository.fetchComments(eventId);
@@ -75,6 +91,7 @@ export const useComments = (eventId: string) =>
       return mainComments;
     },
   });
+}
 
 export const useBringOverview = (eventId: string) =>
   useQuery<Tables<'event_bring_overview'>[]>({

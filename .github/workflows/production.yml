@@ -41,6 +41,78 @@ jobs:
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error
 
+  migrate-karlsruhe:
+    name: "Migrate Database Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [db-test]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Push unpublished migrations
+        run: supabase db push --db-url ${{ secrets.SUPABASE_CONNECTION_STRING }}
+
+  migrate-munich:
+    name: "Migrate Database Munich"
+    runs-on: ubuntu-latest
+    needs: [db-test]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Push unpublished migrations
+        run: supabase db push --db-url ${{ secrets.SUPABASE_CONNECTION_STRING }}
+
+  deploy-functions-karlsruhe:
+    name: "Deploy Edge Functions Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [db-test]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  deploy-functions-munich:
+    name: "Deploy Edge Functions Munich"
+    runs-on: ubuntu-latest
+    needs: [db-test]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --project-ref ${{ vars.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
   build-karlsruhe:
     name: "Build Karlsruhe"
     if: ${{ github.event_name != 'workflow_dispatch'
@@ -86,7 +158,7 @@ jobs:
 
   deploy-karlsruhe:
     runs-on: ubuntu-latest
-    needs: [build-karlsruhe, prepare]
+    needs: [build-karlsruhe, migrate-karlsruhe, prepare]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
@@ -162,7 +234,7 @@ jobs:
 
   deploy-munich:
     runs-on: ubuntu-latest
-    needs: [build-munich,prepare]
+    needs: [build-munich, migrate-munich, prepare]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Munich Roundnet' }}
