@@ -13,8 +13,8 @@ SELECT tests.create_supabase_user('test_guest_1');
 SELECT tests.create_supabase_user('test_guest_2');
 SELECT tests.create_supabase_user('test_partner');
 
-INSERT INTO public.user ("id") 
-VALUES 
+INSERT INTO public.user ("id")
+VALUES
   (tests.get_supabase_uid('test_admin')),
   (tests.get_supabase_uid('test_main_user')),
   (tests.get_supabase_uid('test_guest_1')),
@@ -22,15 +22,27 @@ VALUES
   (tests.get_supabase_uid('test_partner'))
 ON CONFLICT DO NOTHING;
 
--- linked_user_id must be set for real users so merge_guest_player can resolve
--- the player UUID via that column.  Guest players have linked_user_id = NULL.
+-- trg_user_to_player fires on the INSERT above and creates player rows with
+-- linked_user_id = auth_uid but a random gen_random_uuid() player PK.
+-- Remove those trigger-created rows so we can insert with known UUIDs that
+-- match what the match-insert statements below use.
+DELETE FROM games.players WHERE linked_user_id IN (
+  tests.get_supabase_uid('test_admin'),
+  tests.get_supabase_uid('test_main_user'),
+  tests.get_supabase_uid('test_guest_1'),
+  tests.get_supabase_uid('test_guest_2'),
+  tests.get_supabase_uid('test_partner')
+);
+
+-- Insert with explicit player UUIDs so match rows (which use the same UIDs)
+-- satisfy the FK constraint.  linked_user_id is set for real users so
+-- merge_guest_player can resolve the correct player PK via that column.
 INSERT INTO games.players (player, linked_user_id, gender) VALUES
   (tests.get_supabase_uid('test_admin'),     tests.get_supabase_uid('test_admin'),     'm'),
   (tests.get_supabase_uid('test_main_user'), tests.get_supabase_uid('test_main_user'), 'm'),
   (tests.get_supabase_uid('test_guest_1'),   NULL,                                     'm'),
   (tests.get_supabase_uid('test_guest_2'),   NULL,                                     'm'),
-  (tests.get_supabase_uid('test_partner'),   tests.get_supabase_uid('test_partner'),   'm')
-ON CONFLICT DO NOTHING;
+  (tests.get_supabase_uid('test_partner'),   tests.get_supabase_uid('test_partner'),   'm');
 
 -------------------------------------------------------------------------------
 -- 2. MOCKING: AUTH & BERECHTIGUNGEN
