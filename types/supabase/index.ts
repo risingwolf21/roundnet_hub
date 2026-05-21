@@ -1,11 +1,11 @@
 import { fetchGroupWithUsers } from '@/repository/AdminUsersRepository';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { fetchFullHistory } from '@/repository/DrinkRepository';
-import { fetchEvents } from '@/repository/EventRepository';
-import { fetchMatch, fetchUserMatches } from '@/repository/GamesRepository';
+import { fetchEventBringPledges, fetchEvents } from '@/repository/EventRepository';
+import { fetchMatch } from '@/repository/GamesRepository';
+import { fetchGroupUsers } from '@/repository/GroupsRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
-import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from '@/repository/UserRepository';
-import { fetchFullEventPledges } from '@/tanstack/events';
+import { fetchGroups, fetchSimpleUser } from '@/repository/UserRepository';
 import { Database, Enums } from '@/types/supabase-generated.types';
 import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
@@ -20,6 +20,7 @@ export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
 };
 
 declare global {
+  type EventTable = Tables<'events'>;
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
   type ChallengeStatsMeta = Tables<'challenge_stats_meta'>;
@@ -38,9 +39,9 @@ declare global {
   type Voucher = Tables<'vouchers'>;
   type Player = GamesTable<'players'>;
   type PlayerPublic = GamesTable<'players_public'>;
+  type LeaderboardEntry = GamesTable<'leaderboard'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
-  type Team = GamesTable<'teams'>;
   type PlayerWithSimpleUser = Player & { name: string; id: string; avatarUrl: string | null };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;
@@ -48,6 +49,7 @@ declare global {
   type GroupFeatures = Tables<'group_features'>;
   type GroupPermissions = Tables<'group_permissions'>;
   type EventTransformation = Tables<'event_transformations'>;
+  type UserMatchesView = GamesTable<'user_matches'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
@@ -58,15 +60,9 @@ declare global {
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
-  type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
   type FullMatch = QueryData<ReturnType<typeof fetchMatch>> extends Array<infer U> ? U : never;
-  type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
-  type FullEventPledges = QueryData<ReturnType<typeof fetchFullEventPledges>> extends Array<infer U> ? U : never;
-  type UserWithGroupsAndPlayerData = {
-    [P in keyof UserWithGroupsBase]: P extends 'groups'
-    ? UserWithGroupsBase['groups'][number]['group'][]
-    : UserWithGroupsBase[P];
-  } & { player_data: Player | null };
+  type FullEventPledges = QueryData<ReturnType<typeof fetchEventBringPledges>> extends Array<infer U> ? U : never;
+  type GroupUsers = QueryData<ReturnType<typeof fetchGroupUsers>> extends Array<infer U> ? U : never;
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;

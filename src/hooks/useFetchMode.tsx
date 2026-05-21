@@ -1,15 +1,16 @@
-import { useLocalStorageState } from '@toolpad/core';
+import useLocalStorageState from 'use-local-storage-state';
 
 const isValidFetchMode = (value: unknown): value is 'past' | 'upcoming' => value === 'past' || value === 'upcoming';
 
 export function useFetchMode(): ['past' | 'upcoming', (newMode: 'past' | 'upcoming') => void] {
-  const [mode, setMode] = useLocalStorageState<'past' | 'upcoming'>('fetchMode', 'upcoming', {
-    codec: {
-      parse: (value: unknown): 'past' | 'upcoming' => {
-        return isValidFetchMode(value) ? value : 'upcoming';
+  const [mode, setMode] = useLocalStorageState<'past' | 'upcoming'>('fetchMode', {
+    serializer: {
+      parse: (value) => {
+        if (isValidFetchMode(value)) return value;
+        return 'upcoming';
       },
-      stringify: (value) => value,
-    },
+      stringify: (value) => value as string,
+    }
   });
 
   // Fallback falls trotzdem `null` zurückkommt
