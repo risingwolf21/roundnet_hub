@@ -70,38 +70,53 @@ const BringItemsTab = ({ eventId }: { eventId: string }) => {
                 const pledged = item.pledged_qty ?? 0;
                 const required = item.required_qty ?? 0;
                 const myQty = pledgeMap[itemId] ?? 0;
+                const unit = item.unit ?? '';
+
+                const itemPledges = pledges.filter((p) => p.item?.id === itemId && (p.qty ?? 0) > 0);
+                const otherPledges = itemPledges.filter((p) => p.user?.id !== user?.id);
 
                 return (
-                  <div key={itemId} className="px-4 py-3 flex items-center gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.name}</p>
-                      {required > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('events.bringItems.pledged', {
-                            pledged,
-                            required,
-                            unit: item.unit ?? '',
-                          })}
-                        </p>
-                      )}
+                  <div key={itemId} className="px-4 py-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        {required > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('events.bringItems.pledged', { pledged, required, unit })}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Input
+                          type="number"
+                          min={0}
+                          value={myQty}
+                          onChange={(e) =>
+                            setPledgeMap((prev) => ({
+                              ...prev,
+                              [itemId]: Math.max(0, parseInt(e.target.value, 10) || 0),
+                            }))
+                          }
+                          className="w-20 text-right"
+                        />
+                        {unit && (
+                          <span className="text-sm text-muted-foreground w-8 truncate">{unit}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Input
-                        type="number"
-                        min={0}
-                        value={myQty}
-                        onChange={(e) =>
-                          setPledgeMap((prev) => ({
-                            ...prev,
-                            [itemId]: Math.max(0, parseInt(e.target.value, 10) || 0),
-                          }))
-                        }
-                        className="w-20 text-right"
-                      />
-                      {item.unit && (
-                        <span className="text-sm text-muted-foreground w-8 truncate">{item.unit}</span>
-                      )}
-                    </div>
+
+                    {otherPledges.length > 0 && (
+                      <div className="space-y-0.5 pl-1">
+                        {otherPledges.map((p) => {
+                          const name = p.user?.name ?? p.user?.displayName ?? '?';
+                          return (
+                            <p key={p.user?.id} className="text-xs text-muted-foreground">
+                              {name}: {p.qty} {unit}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })}
