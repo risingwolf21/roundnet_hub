@@ -6,16 +6,20 @@ import { useNavigate } from 'react-router';
 import { AppBar } from '@/components/ui/appbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item } from '@/components/ui/item';
+import { Spinner } from '@/components/ui/spinner';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import groupBy from 'lodash.groupby';
-import { AlertCircle, Loader2, Lock, Plus, SearchX, TriangleAlert } from 'lucide-react';
+import { AlertCircle, Lock, Plus, SearchX, TriangleAlert } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { v4 } from 'uuid';
 import { useGrants } from '../auth/GrantsContext';
 import ReportScore from './ReportScore';
 
 const GameList = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dialogs = useDialogs();
   const { user } = useGrants();
@@ -26,34 +30,32 @@ const GameList = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title="Spielliste"
+        title={t('games.list.title')}
         user={user}
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
           <div className="flex p-4 flex-col space-y-2">
             {isLoading ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <Loader2 className="size-10 animate-spin text-muted-foreground" />
+              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12">
+                <Spinner className="size-10" />
               </div>
             ) : error ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <AlertCircle className="size-10 text-destructive mb-4" />
-                <h2 className="text-xl font-bold tracking-tight">Fehler beim Laden</h2>
-                <p className="text-muted-foreground mt-2 max-w-xs">
-                  Die Spiele konnten nicht geladen werden. Bitte versuche es später erneut.
-                </p>
-              </div>
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><AlertCircle className="text-destructive" /></EmptyMedia>
+                  <EmptyTitle>{t('games.list.loadError')}</EmptyTitle>
+                  <EmptyDescription>{t('games.list.loadErrorDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : matches.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
-                <div className="rounded-full bg-muted p-6 mb-4">
-                  <SearchX className="size-10 text-muted-foreground" />
-                </div>
-                <h2 className="text-xl font-bold tracking-tight">Keine Spiele gefunden</h2>
-                <p className="text-muted-foreground mt-2 max-w-xs">
-                  Es gibt aktuell keine eingetragenen Spiele. Trage ein neues Spiel ein, um zu beginnen.
-                </p>
-              </div>
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
+                  <EmptyTitle>{t('games.list.empty')}</EmptyTitle>
+                  <EmptyDescription>{t('games.list.emptyDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
                 .sort(([key1], [key2]) => (isAfter(key1, key2) ? -1 : 1))
@@ -104,10 +106,10 @@ const GameList = () => {
                                   </div>
                                   <div className='flex justify-center flex-col'>
                                     {!x.rated && (
-                                      <Badge variant={"outline"}>Ungewertet</Badge>
+                                      <Badge variant={"outline"}>{t('games.list.unrated')}</Badge>
                                     )}
                                     {!x.is_public && (
-                                      <Badge variant={"outline"}><Lock className="mr-1 size-3" />Privat</Badge>
+                                      <Badge variant={"outline"}><Lock className="mr-1 size-3" />{t('games.list.private')}</Badge>
                                     )}
                                   </div>
                                 </div>
@@ -116,7 +118,7 @@ const GameList = () => {
                                     (sets.length === 0 && matchMember)
                                       ? <Button variant={"warning"}>
                                         <TriangleAlert className="mr-2 size-4" />
-                                        Scores eintragen</Button>
+                                        {t('games.list.enterScores')}</Button>
                                       : <>
                                         {
                                           sets.map((x) => <div key={v4()}>
@@ -149,7 +151,7 @@ const GameList = () => {
           <Button
             size="icon"
             className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={() => dialogs.open(ReportScore, { eventId: null })}
+            onClick={() => dialogs.open(ReportScore)}
           >
             <Plus className="h-6 w-6" />
           </Button>

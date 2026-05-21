@@ -8,6 +8,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { Skeleton } from '@/components/ui/skeleton';
 import { Json } from '@/types/supabase-generated.types';
 import { ChevronRight, Mail, MailOpen, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 function hasStringUrl(value: Json): value is { url: string } {
@@ -15,6 +16,7 @@ function hasStringUrl(value: Json): value is { url: string } {
 }
 
 const NotificationScreen = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
@@ -26,7 +28,7 @@ const NotificationScreen = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title="Benachrichtigungen"
+        title={t('notifications.screen.title')}
         user={user}
         actions={
           <Button disabled={notifications.length === 0} variant={"ghost"} size={"icon-lg"} onClick={() => {
@@ -66,7 +68,7 @@ const NotificationScreen = () => {
               <div className='flex h-[50vh] flex-col justify-center'>
                 <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
                   <MailOpen className="size-12 mb-4 opacity-20" />
-                  <p>Du hast keine neuen Benachrichtigungen.</p>
+                  <p>{t('notifications.screen.empty')}</p>
                 </div>
               </div>
             )}

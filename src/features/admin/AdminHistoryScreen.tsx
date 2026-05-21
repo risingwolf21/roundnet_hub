@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
@@ -9,6 +10,7 @@ import groupBy from 'lodash.groupby';
 import { useGrants } from '../auth/GrantsContext';
 
 const AdminHistoryScreen = () => {
+  const { t } = useTranslation();
   const { data: history, refetch, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteDrinkHistory();
   const { user } = useGrants();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -32,7 +34,7 @@ const AdminHistoryScreen = () => {
   return <div>
     <AppBar
       className='!border-b !shadow-sm'
-      title={"Admin Getränke Verlauf"}
+      title={t('admin.history.title')}
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>

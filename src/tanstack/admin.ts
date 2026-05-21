@@ -108,6 +108,20 @@ export const useConfirmPaymentMutation = () =>
     },
   });
 
+export const useNotifyEmitMutation = () =>
+  useMutation({
+    mutationFn: (args: {
+      recipients: string[];
+      topic: string;
+      title: string;
+      body: string;
+      urgency: string;
+      scopeType: string;
+      scopeId: string;
+      sourceId: string;
+    }) => AdminUsersRepository.notifyEmit(args),
+  });
+
 export const useUpdateUserMutation = () =>
   useMutation({
     meta: { suppressErrorToast: true },

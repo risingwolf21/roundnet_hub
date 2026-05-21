@@ -23,7 +23,9 @@
     "deletionSuccess": "Getränk erfolgreich gelöscht",
     "deletionError": "Beim löschen ist ein Fehler aufgetreten. {{error}} ",
     "updateSuccess": "Getränk erfolgreich aktualisiert",
-    "updateError": "Beim aktualisieren ist ein Fehler aufgetreten. {{error}} "
+    "updateError": "Beim aktualisieren ist ein Fehler aufgetreten. {{error}} ",
+    "addSuccess": "Getränk erfolgreich hinzugefügt",
+    "addError": "Beim Hinzufügen ist ein Fehler aufgetreten: {{error}}"
   },
   "attendees": "Teilnehmer",
   "browse": {
@@ -55,7 +57,8 @@
     "group_features": "Gruppen Features",
     "helpAndInformation": "Hilfe und Informationen",
     "appRefresh": "App aktualisieren",
-    "merge_accounts": "Account-Merge"
+    "merge_accounts": "Account-Merge",
+    "adminOverview": "Übersicht"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
@@ -126,6 +129,21 @@
     "secondaryTextStart": "{{start, HH:mm}}",
     "secondaryTextWithEnd": "- {{end, HH:mm}}",
     "secondaryTextWithPlace": " am {{place}}",
+    "list": {
+      "title": "Events Übersicht",
+      "past": "Vergangene Events",
+      "upcoming": "Kommende Events",
+      "empty": "Keine Events",
+      "emptyDescription": "Aktuell stehen keine Termine an.",
+      "joinGroup": "Gruppe beitreten",
+      "joinGroupHint": "Versuche einer Gruppe beizutreten um Events einzusehen",
+      "thisWeek": "Diese Woche",
+      "nextWeek": "Nächste Woche",
+      "reload": "Neu laden"
+    },
+    "item": {
+      "noLocation": "Kein Ort angegeben"
+    },
     "replyTo": "Antworte auf @{{name}}",
     "reply": "Antworten"
   },
@@ -207,5 +225,180 @@
   "errors": {
     "mutation": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
     "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu."
+  },
+  "games": {
+    "list": {
+      "title": "Spielliste",
+      "loadError": "Fehler beim Laden",
+      "loadErrorDescription": "Die Spiele konnten nicht geladen werden. Bitte versuche es später erneut.",
+      "empty": "Keine Spiele gefunden",
+      "emptyDescription": "Es gibt aktuell keine eingetragenen Spiele. Trage ein neues Spiel ein, um zu beginnen.",
+      "unrated": "Ungewertet",
+      "private": "Privat",
+      "enterScores": "Scores eintragen"
+    },
+    "history": {
+      "noGames": "Keine Spiele",
+      "noGamesDescription": "Für diesen Spieler sind noch keine Spiele eingetragen."
+    },
+    "leaderboard": {
+      "empty": "Noch keine Einträge"
+    }
+  },
+  "keys": {
+    "screen": {
+      "disclaimer": "Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B. verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für den Schlüssel verantwortlich!",
+      "loadError": "Fehler beim Laden",
+      "loadErrorDescription": "Die Schlüssel konnten nicht geladen werden. Bitte versuche es später erneut.",
+      "empty": "Keine Schlüssel gefunden",
+      "emptyDescription": "Es sind aktuell keine Schlüssel im System hinterlegt.",
+      "noHolder": "Nicht vergeben"
+    }
+  },
+  "profile": {
+    "account": {
+      "avatar": "Profilbild",
+      "uploadAvatar": "Avatar hochladen",
+      "displayName": "Anzeigename",
+      "firstName": "Vorname",
+      "firstNamePlaceholder": "Max",
+      "lastName": "Nachname",
+      "lastNamePlaceholder": "Mustermann",
+      "saveChanges": "Änderungen Speichern",
+      "logout": "Logout",
+      "nameTooShort": "Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein",
+      "nameIncomplete": "Du musst deinen vollen Name, mit Vor- und Nachname angeben",
+      "updateSuccess": "Profil erfolgreich aktualisiert",
+      "updateError": "Fehler beim Aktualisieren des Profils: {{error}}"
+    },
+    "password": {
+      "title": "Passwort ändern",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "placeholder": "••••••••••••••••",
+      "submit": "Neues Passwort setzen",
+      "mismatch": "Die Passwörter stimmen nicht überein.",
+      "showPassword": "Passwort anzeigen",
+      "hidePassword": "Passwort verbergen"
+    },
+    "playerzone": {
+      "useAsAvatar": "Dieses Bild als Profilbild verwenden",
+      "urlLabel": "Playerzone URL",
+      "urlPlaceholder": "https://playerzone.de/user/123",
+      "gender": "Geschlecht",
+      "genderPlaceholder": "Geschlecht auswählen",
+      "genderOpen": "Open",
+      "genderWomen": "Women",
+      "saveChanges": "Änderungen Speichern",
+      "rgId": "Roundnet Germany ID",
+      "rgIndex": "Roundnet Germany Index",
+      "internalIndex": "Interner Index",
+      "hideIndex": "Index verbergen?",
+      "hideIndexDescription": "Dein Index wird anderen Spielern verborgen. Für die Berechnung wird er aber weiterhin verwendet",
+      "invalidUrl": "Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.",
+      "noGender": "Du musst ein Geschlecht auswählen, damit dein Profil korrekt angezeigt wird.",
+      "updateError": "Playerzone Profil konnte nicht aktualisiert werden: {{error}}",
+      "updateSuccess": "Profil erfolgreich aktualisiert",
+      "avatarSuccess": "Profilbild erfolgreich aktualisiert",
+      "avatarError": "Fehler beim Laden des Profilbildes: {{error}}"
+    },
+    "calendar": {
+      "title": "Kalender",
+      "description": "Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.",
+      "sync": "Kalender synchronisieren"
+    },
+    "notifications": {
+      "notSupported": "Push-Benachrichtigungen nicht unterstützt",
+      "notSupportedDescription": "Dieser Browser unterstützt keine Push-Benachrichtigungen.",
+      "permission": "Berechtigung",
+      "registered": "Registriert",
+      "device": "Gerät",
+      "categoryEvents": "Veranstaltungen",
+      "categoryChallenges": "Challenges",
+      "categoryGames": "Spiele",
+      "categoryGroups": "Gruppen",
+      "categoryOther": "Sonstiges",
+      "installHintIos": "Für iOS Web Push die App über Teilen → 'Zum Home-Bildschirm hinzufügen' installieren.",
+      "installHintAndroid": "Für Android Web Push die App über 'Zum Home-Bildschirm hinzufügen' installieren.",
+      "deniedAlert": "Mitteilungen sind deaktiviert. Öffne die Einstellungen → Mitteilungen → App und erlaube Mitteilungen. Falls die App dort nicht erscheint: App deinstallieren, Seite in Safari öffnen, 'Zum Home-Bildschirm' hinzufügen und hier erneut aktivieren.",
+      "enable": "Benachrichtigungen aktivieren",
+      "registerDevice": "Gerät registrieren",
+      "rebind": "Neu koppeln",
+      "disable": "Keine Benachrichtigungen",
+      "vapidMissing": "VAPID Public Key fehlt."
+    },
+    "offline": "Du bist offline. Es werden gespeicherte Daten angezeigt.",
+    "h2h": {
+      "title": "Head-to-Head",
+      "ratio": "Siege (W), Unentschieden (D), Niederlagen (L)",
+      "wins": "H2H Siege",
+      "losses": "H2H Niederlagen"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Übersicht",
+      "pendingPayments": "Offene Zahlungen",
+      "pendingPaymentsDesc": "Keine ausstehenden Zahlungen",
+      "joinRequests": "Beitrittsanfragen",
+      "joinRequestsDesc": "Ausstehende Gruppenanfragen",
+      "lastTraining": "Letztes Training",
+      "lastTrainingDesc": "Anmeldungen",
+      "monthlyActivity": "Aktivität (Monat)",
+      "monthlyActivityDesc": "Nutzer mit mind. 1 Training diesen Monat",
+      "quickLinks": "Schnellzugriff",
+      "noEvent": "Kein Training gefunden",
+      "total": "Gesamt: {{amount}} €",
+      "attendanceTrend": "Trainings-Trend (30 Tage)",
+      "noTrendData": "Keine Daten der letzten 30 Tage"
+    },
+    "analytics": {
+      "title": "Admin Analysen",
+      "inactiveParticipants": "Inaktive Challenge Teilnehmer (Top Trainingsbesucher)",
+      "inactiveParticipantsDescription": "Zeigt User mit 0 Punkten in der Challenge, sortiert nach Trainingshäufigkeit.",
+      "selectChallenge": "Challenge auswählen",
+      "trainingPeriod": "Trainings-Zeitraum",
+      "trainingRegistrations": "Trainingsanmeldungen pro Nutzer (Zeitraum)",
+      "trainingRegistrationsDescription": "Wer war im gewählten Zeitraum am häufigsten beim Training?",
+      "period": "Zeitraum",
+      "drinkBookings": "Getränke Buchungen pro Nutzer (Zeitraum)",
+      "drinkBookingsDescription": "Wer hat die meisten Getränke konsumiert?",
+      "from": "Von",
+      "to": "Bis",
+      "datePlaceholder": "Datum wählen",
+      "fetch": "Abrufen",
+      "selectFunction": "Funktion auswählen"
+    },
+    "history": {
+      "title": "Admin Getränke Verlauf"
+    },
+    "notify": {
+      "title": "Benachrichtigung senden",
+      "recipients": "Empfänger",
+      "targetGroup": "Gruppe",
+      "targetUsers": "Einzelne Nutzer",
+      "selectGroup": "Gruppe auswählen",
+      "searchUsers": "Nutzer suchen",
+      "recipientCount_one": "{{count}} Empfänger",
+      "recipientCount_other": "{{count}} Empfänger",
+      "topic": "Thema",
+      "selectTopic": "Thema auswählen",
+      "noTopics": "Keine Themen verfügbar",
+      "urgency": "Priorität",
+      "urgencyNormal": "Normal",
+      "urgencyHigh": "Hoch",
+      "titleField": "Titel",
+      "body": "Nachricht",
+      "send": "Senden",
+      "sending": "Wird gesendet…",
+      "sendTo": "An {{count}} Empfänger senden",
+      "success": "Benachrichtigung an {{count}} Nutzer gesendet"
+    }
+  },
+  "notifications": {
+    "screen": {
+      "title": "Benachrichtigungen",
+      "empty": "Du hast keine neuen Benachrichtigungen."
+    }
   }
 }
