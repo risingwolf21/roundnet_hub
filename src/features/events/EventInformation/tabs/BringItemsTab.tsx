@@ -53,7 +53,7 @@ const BringItemsTab = ({ eventId }: { eventId: string }) => {
 
   return (
     <TabsContent value="bring-items" className="m-0">
-      <Card className="pt-0">
+      <Card className="pt-0 pb-0">
         <CardContent className="p-0">
           {(overviewLoading || pledgesLoading) ? (
             <div className="p-4 space-y-3">
@@ -106,11 +106,11 @@ const BringItemsTab = ({ eventId }: { eventId: string }) => {
                     </div>
 
                     {otherPledges.length > 0 && (
-                      <div className="space-y-0.5 pl-1">
+                      <div className="space-y-0.5">
                         {otherPledges.map((p) => {
                           const name = p.user?.name ?? p.user?.displayName ?? '?';
                           return (
-                            <p key={p.user?.id} className="text-xs text-muted-foreground">
+                            <p key={p.user?.id} className="text-md text-muted-foreground">
                               {name}: {p.qty} {unit}
                             </p>
                           );
