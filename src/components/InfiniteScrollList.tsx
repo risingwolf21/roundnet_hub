@@ -1,6 +1,5 @@
 import { PropsWithChildren, useEffect, useRef } from 'react';
 
-import List from '@mui/material/List';
 import { FetchNextPageOptions, InfiniteData, InfiniteQueryObserverResult } from '@tanstack/react-query';
 
 type InfiniteScrollListProps = PropsWithChildren & {
@@ -45,10 +44,10 @@ export const InfiniteScrollList = ({
 
   return (
     <div style={{ width: '100%' }}>
-      <List sx={{ overflowY: 'auto', pb: 10 }}>
+      <div className='overflow-y-auto pb-20'>
         {children}
         <div ref={loadMoreRef} style={{ height: 40 }} />
-      </List>
+      </div>
     </div>
   );
 };

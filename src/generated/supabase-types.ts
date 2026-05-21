@@ -7,6 +7,7 @@ export type Permission =
   | 'challenges.edit.own-group'
   | 'challenges.stats.read'
   | 'challenges.stats.write'
+  | 'challenge.create'
   | 'drinks.confirm.payments'
   | 'drinks.edit'
   | 'drinks.history.admin'
@@ -16,6 +17,7 @@ export type Permission =
   | 'drinks.select'
   | 'drinks.view.own-history'
   | 'drinks.view.own-payments'
+  | 'event.admin.view'
   | 'event.cancel'
   | 'event.comment'
   | 'event.create.constellations'
@@ -39,7 +41,9 @@ export type Permission =
   | 'users.manage'
   | 'admin.analytics.view'
   | 'games.create.guest-player'
-  | 'games.create.guest-player.with_index';
+  | 'games.create.guest-player.with_index'
+  | 'testlab'
+  | 'games.admin.merge_accounts';
 
 export type Feature =
   | 'challenges'

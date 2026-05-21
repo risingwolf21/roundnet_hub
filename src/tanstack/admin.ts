@@ -1,15 +1,12 @@
 import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
-import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
-import { fetchSimpleUser } from '@/repository/UserRepository';
+import { AdminUsersRepository, RpcName } from '@/repository/AdminUsersRepository';
+import { UserRepository } from '@/repository/UserRepository';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
-import { mapOperator, serializeFilterKey, serializePaginationKey, serializeSortKey } from '@/utils/mui-x-data-grid.utils';
-import { GridFilterModel } from '@mui/x-data-grid/models';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import { GridPaginationModel } from 'node_modules/@mui/x-data-grid/esm/models/gridPaginationProps';
-import { GridSortModel } from 'node_modules/@mui/x-data-grid/esm/models/gridSortModel';
+
+export type { RpcName };
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -20,24 +17,22 @@ export const adminKeys = {
   },
   simpleUsers: () => [...adminKeys.all, 'simpleUsers'] as const,
   logs: (pageKey: string, filterKey: string, sortKey: string) => [...adminKeys.all, 'logs', pageKey, filterKey, sortKey] as const,
-  analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to]
+  analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to],
+  unlinkedPlayers: () => [...adminKeys.all, 'unlinkedPlayers'],
+  tableOptions: (table: string) => [...adminKeys.all, 'tableOptions', table],
 };
+
+export const useUnlinkedPlayers = () =>
+  useQuery({
+    queryKey: adminKeys.unlinkedPlayers(),
+    queryFn: () => AdminUsersRepository.fetchUnlinkedPlayers(),
+  });
 
 export const useUsers = () =>
   useQuery({
     queryKey: adminKeys.simpleUsers(),
-    queryFn: async () => {
-      const result = await fetchSimpleUser().throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => UserRepository.fetchSimpleUsers(),
   });
-
-const cleanParams = (params: Record<string, any>) => {
-  return Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v !== null && v !== undefined && v !== '')
-  );
-};
 
 export const useAdminAnalytics = (
   rpc: RpcName | undefined,
@@ -48,47 +43,14 @@ export const useAdminAnalytics = (
   enabled: !!rpc && enabled,
   queryFn: async () => {
     if (!rpc) return [];
-
-    const { data, error } = await supabase.rpc(
-      rpc as any,
-      cleanParams(params) as any
-    );
-
-    if (error) {
-      throw error;
-    }
-
-    return data as any[];
+    return AdminUsersRepository.runAnalytics(rpc, params);
   }
 });
 
-export const useLogsList = ({ paginationModel, sortModel, filterModel }: { paginationModel: GridPaginationModel, sortModel?: GridSortModel, filterModel?: GridFilterModel }) =>
+export const useAnalyticsTableOptions = (table: string, labelField: string = 'name') =>
   useQuery({
-    queryKey: adminKeys.logs(serializePaginationKey(paginationModel), serializeFilterKey(filterModel), serializeSortKey(sortModel)),
-    queryFn: async () => {
-      let query = supabase
-        .schema('audit')
-        .from('log')
-        .select('*', { count: 'exact' })
-        .range(paginationModel.page * paginationModel.pageSize, paginationModel.page * paginationModel.pageSize + paginationModel.pageSize - 1);
-
-
-      (filterModel?.items ?? []).forEach((item) => {
-        if (!item.field || !item.operator || item.value === undefined) return;
-        query = mapOperator(query, item.field, item.operator as string, item.value);
-      });
-      (sortModel ?? []).forEach(({ field, sort }) => {
-        if (field && sort) query = query.order(field, { ascending: sort === 'asc', nullsFirst: false });
-      });
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      return { rows: (data ?? []), count: count ?? 0 };
-    },
+    queryKey: adminKeys.tableOptions(table),
+    queryFn: () => AdminUsersRepository.fetchTableOptions(table, labelField),
   });
 
 export const useAllUsersAsAdmin = () =>
@@ -108,31 +70,13 @@ export const useInfiniteDrinkHistory = () =>
 export const useAllPayments = () =>
   useQuery<FullPayment[]>({
     queryKey: adminKeys.payments.list(),
-    queryFn: async () => {
-      const response = await supabase
-        .from('payments')
-        .select(
-          'id, created_at, paymentState, amountToPay, userId: user, user (id, displayName, name, email), history (*)'
-        )
-        .eq('paymentState', 'Open' as PaymentState)
-        .order('displayName', { referencedTable: 'user', ascending: true })
-        .returns<FullPayment[]>();
-      return response.data ?? [];
-    },
+    queryFn: () => AdminUsersRepository.fetchOpenPayments(),
   });
 
 export const useConfirmPaymentMutation = () =>
   useMutation({
     mutationFn: async ({ payment }: { payment: FullPayment }) => {
-      const result = await supabase
-        .from('payments')
-        .update({ paymentState: 'Fulfilled' as PaymentState })
-        .eq('user', payment?.user?.id)
-        .eq('paymentState', 'Open' as PaymentState)
-        .select('*')
-        .single();
-
-      return result.data;
+      return AdminUsersRepository.confirmPayment(payment?.user?.id);
     },
     onMutate: async ({ payment }) => {
       await queryClient.cancelQueries({ queryKey: adminKeys.payments.list() });
@@ -144,7 +88,7 @@ export const useConfirmPaymentMutation = () =>
           if (x.user === payment.user.id) {
             return {
               ...x,
-              paymentState: 'FulFilled' as PaymentState,
+              paymentState: 'Fulfilled' as PaymentState,
             };
           }
           return x;
@@ -164,8 +108,23 @@ export const useConfirmPaymentMutation = () =>
     },
   });
 
+export const useNotifyEmitMutation = () =>
+  useMutation({
+    mutationFn: (args: {
+      recipients: string[];
+      topic: string;
+      title: string;
+      body: string;
+      urgency: string;
+      scopeType: string;
+      scopeId: string;
+      sourceId: string;
+    }) => AdminUsersRepository.notifyEmit(args),
+  });
+
 export const useUpdateUserMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: ({ update }: { update: UserEdited }) => {
       return AdminUsersRepository.updateUser(update);
     },

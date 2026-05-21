@@ -1,27 +1,23 @@
-import { BRANDING } from '@/utils';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 
-import Box from '@mui/material/Box';
+import { TENANT_LOGO } from '@/utils';
+import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from './ui/empty';
+import { Spinner } from './ui/spinner';
 
 export const LoadingScreen = () => {
-  return (
-    <Box
-      sx={{
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-        {BRANDING.icon}
-        <br></br>
-        {BRANDING.title}
-      </Typography>
-      <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
-    </Box>
-  );
+  return <div
+    className="w-[100dvw] h-[100dvh] justify-center align-center flex flex-col p-4"
+  >
+    <Empty className="border border-dashed flex-0">
+      <EmptyHeader>
+        <EmptyMedia variant="default">
+          <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 125, objectFit: 'contain' }} />
+        </EmptyMedia>
+        <EmptyTitle>Daten werden geladen</EmptyTitle>
+      </EmptyHeader>
+      <EmptyContent>
+        <Spinner className='size-8' />
+      </EmptyContent>
+    </Empty>
+
+  </div>
 };

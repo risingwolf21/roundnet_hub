@@ -73,8 +73,15 @@ function icsLocationLines(loc: any): string[] {
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
-  const userId = url.searchParams.get("userId");
-  if (!userId) return new Response("Missing userId", { status: 400 });
+
+  const pathParts = url.pathname.split("/");
+
+  const userId = pathParts[pathParts.length - 2];
+  const fileName = pathParts[pathParts.length - 1];
+
+  if (!userId || fileName !== "calendar.ics") {
+    return new Response("Not Found. Use format: /ical/<userId>/calendar.ics", { status: 404 });
+  }
 
   // Events laden (nur accepted). Optional: Zeitfenster begrenzen (z. B. -6 Monate bis +18 Monate)
   const { data: rows, error } = await supabase

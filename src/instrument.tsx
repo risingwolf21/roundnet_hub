@@ -42,6 +42,8 @@ Sentry.init({
         /Failed to fetch/,
         /Script .*service-worker\.js load failed/,
         /Invalid login credentials/,
+        'signal is aborted without reason',
+        'The operation was aborted',
       ],
     }),
   ],

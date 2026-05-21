@@ -3,7 +3,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -25,17 +25,60 @@ registerRoute(({ request, url }) => {
 }, createHandlerBoundToURL(SPA_INDEX));
 
 registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'images',
+  ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
+  new StaleWhileRevalidate({
+    cacheName: 'google-fonts',
     plugins: [
+      new ExpirationPlugin({ maxEntries: 20 }),
+    ],
+  })
+);
+
+registerRoute(
+  ({ url, request }) =>
+    url.origin.includes('supabase.co') &&
+    url.pathname.startsWith('/rest/v1/') &&
+    request.method === 'GET',
+  new NetworkFirst({
+    cacheName: 'supabase-api-cache',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50, // Cache maximal die letzten 50 API-Antworten
+        maxAgeSeconds: 24 * 60 * 60, // Lösche API-Cache nach 24 Stunden
+      }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
       }),
+    ],
+  })
+);
+
+registerRoute(
+  ({ url, request }) =>
+    url.origin.includes('supabase.co') &&
+    url.pathname.startsWith('/storage/v1/object/public/') &&
+    request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'supabase-images',
+    plugins: [
       new ExpirationPlugin({
-        maxEntries: 120,
-        maxAgeSeconds: 30 * 24 * 60 * 60,
+        maxEntries: 100,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Tage
       }),
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+    ],
+  })
+);
+
+registerRoute(
+  ({ request, url }) => request.destination === 'image' && !url.origin.includes('supabase.co'),
+  new CacheFirst({
+    cacheName: 'images',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 120, maxAgeSeconds: 30 * 24 * 60 * 60 }),
     ],
   })
 );

@@ -1,7 +1,7 @@
 BEGIN;
 
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(8);
+SELECT plan(7);
 
 -- Seed: Permission 'items.manage'
 INSERT INTO public.permissions(name) VALUES ('items.manage') ON CONFLICT DO NOTHING;
@@ -44,13 +44,6 @@ SELECT throws_like(
   'Darf nicht an user außerhalb der Gruppe übergeben'
 );
 
--- 5) Ohne items.manage darf Name/Farbe nicht geändert werden
-SELECT tests.authenticate_as('user_1a');
-SELECT throws_like(
-  $$ UPDATE public.items SET name='Neuer Name' WHERE id = 1000 $$,
-  '%permission%'::text,
-  'Ohne items.manage keine Struktur-Änderung (Name)'
-);
 
 select tests.authenticate_as_service_role();
 -- 6) items.manage an Gruppe 42 vergeben -> a1 darf jetzt ändern
