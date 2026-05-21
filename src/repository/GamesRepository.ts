@@ -28,17 +28,12 @@ export const GamesRepository = {
       supabase.schema('games').from('players').select('*').is('linked_user_id', null),
     ]);
 
-    const merged: PlayerWithSimpleUser[] = _(linkedPlayers) // start sequence
-      .keyBy('player') // create a dictionary of the 1st array
-      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
-      .values() // turn the combined dictionary to array
+    const merged: PlayerWithSimpleUser[] = _(linkedPlayers)
+      .keyBy('player')
+      .merge(_.keyBy(simpleUsers, 'id'))
+      .values()
       .value()
-      .map(
-        (x) =>
-          ({
-            ...x,
-          }) as PlayerWithSimpleUser
-      );
+      .map((x) => ({ ...x }) as PlayerWithSimpleUser);
 
     const guests: Player[] = guestPlayers ?? [];
 
