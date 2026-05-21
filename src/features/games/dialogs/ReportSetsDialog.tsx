@@ -27,6 +27,9 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
       ? ns.map((x, i) => ({ ...x, set_number: i + 1 }))
       : [{ id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: 1, match: payload.matchId, team_a_score: 0, team_b_score: 0, type: 'normal', set_awarded: null }];
   });
+  const [speziEnabled, setSpeziEnabled] = useState<boolean>(
+    () => !!payload.sets?.find(x => x.type === 'spezi')
+  );
   const [speziSet, setSpeziSet] = useState<MatchSet | null>(
     () => payload.sets?.find(x => x.type === 'spezi') ?? null
   );
@@ -110,58 +113,77 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
           </div>
           <Separator />
           <div className='px-4 py-3 flex flex-col gap-2'>
-            <div className='text-sm font-semibold'>Spezi (optional)</div>
-            <div className='flex flex-row gap-2'>
-              <div className='flex-1 flex flex-col gap-1'>
-                <span className='text-xs text-muted-foreground'>{payload.team_a_name}</span>
-                <Input
-                  type='number'
-                  min={0}
-                  value={speziSet?.team_a_score?.toString() ?? ''}
-                  placeholder='–'
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    if (raw === '') { setSpeziSet(null); return; }
-                    const val = Number(raw);
-                    setSpeziSet(prev => prev
-                      ? { ...prev, team_a_score: val }
-                      : { id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: normalSets.length + 1, match: payload.matchId, team_a_score: val, team_b_score: 0, type: 'spezi', set_awarded: speziSetAwarded }
-                    );
-                  }}
-                />
-              </div>
-              <div className='flex-1 flex flex-col gap-1'>
-                <span className='text-xs text-muted-foreground'>{payload.team_b_name}</span>
-                <Input
-                  type='number'
-                  min={0}
-                  value={speziSet?.team_b_score?.toString() ?? ''}
-                  placeholder='–'
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    if (raw === '') { setSpeziSet(null); return; }
-                    const val = Number(raw);
-                    setSpeziSet(prev => prev
-                      ? { ...prev, team_b_score: val }
-                      : { id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: normalSets.length + 1, match: payload.matchId, team_a_score: 0, team_b_score: val, type: 'spezi', set_awarded: speziSetAwarded }
-                    );
-                  }}
-                />
-              </div>
-            </div>
             <div className='flex items-center gap-2'>
               <Checkbox
-                id='dialog-spezi-awarded'
-                checked={speziSetAwarded}
+                id='dialog-spezi-enabled'
+                checked={speziEnabled}
                 onCheckedChange={(v) => {
-                  setSpeziSetAwarded(!!v);
-                  setSpeziSet(prev => prev ? { ...prev, set_awarded: !!v } : null);
+                  setSpeziEnabled(!!v);
+                  if (!v) {
+                    setSpeziSet(null);
+                    setSpeziSetAwarded(false);
+                  }
                 }}
               />
-              <label htmlFor='dialog-spezi-awarded' className='text-sm cursor-pointer'>
-                Spezi-Satz zugesprochen
+              <label htmlFor='dialog-spezi-enabled' className='text-sm font-medium cursor-pointer'>
+                Spezi-Punkte erfassen
               </label>
             </div>
+            {speziEnabled && (
+              <>
+                <div className='flex flex-row gap-2'>
+                  <div className='flex-1 flex flex-col gap-1'>
+                    <span className='text-xs text-muted-foreground'>{payload.team_a_name}</span>
+                    <Input
+                      type='number'
+                      min={0}
+                      value={speziSet?.team_a_score?.toString() ?? ''}
+                      placeholder='0'
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === '') { setSpeziSet(null); return; }
+                        const val = Number(raw);
+                        setSpeziSet(prev => prev
+                          ? { ...prev, team_a_score: val }
+                          : { id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: normalSets.length + 1, match: payload.matchId, team_a_score: val, team_b_score: 0, type: 'spezi', set_awarded: speziSetAwarded }
+                        );
+                      }}
+                    />
+                  </div>
+                  <div className='flex-1 flex flex-col gap-1'>
+                    <span className='text-xs text-muted-foreground'>{payload.team_b_name}</span>
+                    <Input
+                      type='number'
+                      min={0}
+                      value={speziSet?.team_b_score?.toString() ?? ''}
+                      placeholder='0'
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === '') { setSpeziSet(null); return; }
+                        const val = Number(raw);
+                        setSpeziSet(prev => prev
+                          ? { ...prev, team_b_score: val }
+                          : { id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: normalSets.length + 1, match: payload.matchId, team_a_score: 0, team_b_score: val, type: 'spezi', set_awarded: speziSetAwarded }
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Checkbox
+                    id='dialog-spezi-awarded'
+                    checked={speziSetAwarded}
+                    onCheckedChange={(v) => {
+                      setSpeziSetAwarded(!!v);
+                      setSpeziSet(prev => prev ? { ...prev, set_awarded: !!v } : null);
+                    }}
+                  />
+                  <label htmlFor='dialog-spezi-awarded' className='text-sm cursor-pointer'>
+                    Spezi-Satz zugesprochen
+                  </label>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <DialogFooter className="p-4 m-0 border-t">
@@ -172,7 +194,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
             <Button className="flex-1" onClick={async () => {
               const allSets = [
                 ...normalSets,
-                ...(speziSet ? [{ ...speziSet, set_awarded: speziSetAwarded }] : []),
+                ...(speziEnabled && speziSet ? [{ ...speziSet, set_awarded: speziSetAwarded }] : []),
               ];
               upsertSetsToMatch.mutate(
                 { sets: allSets },
