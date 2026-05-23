@@ -13,7 +13,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
-import { answerDeadlineExpired, eventInThePast } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, eventHasStarted } from '@/types/supabaseTypes';
 import { format } from 'date-fns';
 import { t } from 'i18next';
 import { AlertCircle, AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, RefreshCcw, SearchX, Shapes, X } from 'lucide-react';
@@ -183,7 +183,7 @@ const HomePage = () => {
                               updateAttendance.mutate({ user, event, newState: "Declined" })
                               e.stopPropagation();
                             }}
-                            disabled={event.isCancelled || eventInThePast(event)}
+                            disabled={event.isCancelled || eventHasStarted(event)}
                           >
                             {
                               updateAttendance.isPending ? <Spinner /> : <X className='size-5' />
@@ -198,7 +198,7 @@ const HomePage = () => {
                               updateAttendance.mutate({ user, event, newState })
                               e.stopPropagation();
                             }}
-                            disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
+                            disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event)}
                           >
                             {
                               updateAttendance.isPending ? <Spinner /> :
