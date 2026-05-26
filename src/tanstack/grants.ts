@@ -1,5 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
+import { GrantsRepository } from '@/repository/GrantsRepository';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -18,77 +18,41 @@ export const grantKeys = {
 export const useGroups = () => {
   return useQuery({
     queryKey: grantKeys.groups(),
-    queryFn: async () => {
-      const result = await supabase.from('event_groups_view').select('*').eq('role', 'admin');
-
-      return result?.data ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchAdminGroups(),
   });
 };
 
 export const usePermissions = () => {
   return useQuery({
     queryKey: grantKeys.permissions(),
-    queryFn: async () => {
-      const { data, error } = await supabase.from('permissions').select('name').order('name');
-      if (error) throw error;
-      return data?.map((x) => x.name) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchPermissions(),
   });
 };
 
 export const useFeatures = () => {
   return useQuery({
     queryKey: grantKeys.features(),
-    queryFn: async () => {
-      const { data, error } = await supabase.from('features').select('name').order('name');
-      if (error) throw error;
-      return data?.map((x) => x.name) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchFeatures(),
   });
 };
 
 export const useDirectUserGrants = () =>
   useQuery({
     queryKey: grantKeys.user(),
-    queryFn: async () => {
-      const result = await supabase.from('user_direct_grants').select('user:user(*)').throwOnError();
-
-      const users = new Map<string, User>();
-
-      result.data?.forEach((x) => !users.has(x.user.id) && users.set(x.user.id, x.user));
-
-      return [...users.values()];
-    },
+    queryFn: () => GrantsRepository.fetchUsersWithDirectGrants(),
   });
 
 export const useUserPermissions = (userId: string) => {
   return useQuery({
     queryKey: grantKeys.userPermissions(userId),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_direct_grants')
-        .select('*')
-        .eq('kind', 'perm')
-        .eq('user', userId);
-      if (error) throw error;
-      return data?.map((x) => x.key) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchUserPermissionGrants(userId),
   });
 };
 
 export const useUserFeatures = (userId: string) => {
   return useQuery({
     queryKey: grantKeys.userFeatures(userId),
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_direct_grants')
-        .select('*')
-        .eq('kind', 'feat')
-        .eq('user', userId);
-      if (error) throw error;
-      return data?.map((x) => x.key) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchUserFeatureGrants(userId),
   });
 };
 
@@ -96,14 +60,7 @@ export const useGroupPermissions = (groupId?: string) => {
   return useQuery({
     queryKey: grantKeys.groupPermissions(groupId),
     enabled: !!groupId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('group_permissions')
-        .select('group, permission')
-        .eq('group', groupId as string);
-      if (error) throw error;
-      return data?.map((x) => x.permission) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchGroupPermissions(groupId!),
   });
 };
 
@@ -111,15 +68,7 @@ export const useGroupFeatures = (groupId?: string) => {
   return useQuery({
     queryKey: grantKeys.groupFeatures(groupId),
     enabled: !!groupId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('group_features')
-        .select('group, feature')
-        .eq('group', groupId as string);
-      if (error && error.code === '42P01') return [];
-      if (error) throw error;
-      return data?.map((x) => x.feature) ?? [];
-    },
+    queryFn: () => GrantsRepository.fetchGroupFeatures(groupId!),
   });
 };
 
@@ -127,11 +76,7 @@ export const useGrantUserPermissions = () =>
   useMutation({
     mutationFn: async (args: { user: string; perms: string[]; feats: string[] }) => {
       const { user, perms = [], feats = [] } = args;
-      const result = await supabase
-        .rpc('grant_user_grants', { p_user: user, p_perms: perms, p_feats: feats })
-        .throwOnError();
-
-      return result.data;
+      return GrantsRepository.grantUserGrants(user, perms, feats);
     },
     onMutate: async (args: { user: string; perms: string[]; feats: string[] }) => {
       await queryClient.cancelQueries({ queryKey: grantKeys.all });
@@ -177,11 +122,7 @@ export const useRevokeUserPermissions = () =>
   useMutation({
     mutationFn: async (args: { user: string; perms: string[]; feats: string[] }) => {
       const { user, perms = [], feats = [] } = args;
-      const result = await supabase
-        .rpc('revoke_user_grants', { p_user: user, p_perms: perms, p_feats: feats })
-        .throwOnError();
-
-      return result.data;
+      return GrantsRepository.revokeUserGrants(user, perms, feats);
     },
     onMutate: async (args: { user: string; perms: string[]; feats: string[] }) => {
       await queryClient.cancelQueries({ queryKey: grantKeys.all });
@@ -227,11 +168,7 @@ export const useGrantGroupPermissions = () =>
   useMutation({
     mutationFn: async (args: { group: string; perms: string[]; feats: string[] }) => {
       const { group, perms = [], feats = [] } = args;
-      const result = await supabase
-        .rpc('grant_group_grants', { p_group: group, p_perms: perms, p_feats: feats })
-        .throwOnError();
-
-      return result.data;
+      return GrantsRepository.grantGroupGrants(group, perms, feats);
     },
     onMutate: async (args: { group: string; perms: string[]; feats: string[] }) => {
       await queryClient.cancelQueries({ queryKey: grantKeys.all });
@@ -276,11 +213,7 @@ export const useRevokeGroupPermissions = () =>
   useMutation({
     mutationFn: async (args: { group: string; perms: string[]; feats: string[] }) => {
       const { group, perms = [], feats = [] } = args;
-      const result = await supabase
-        .rpc('revoke_group_grants', { p_group: group, p_perms: perms, p_feats: feats })
-        .throwOnError();
-
-      return result.data;
+      return GrantsRepository.revokeGroupGrants(group, perms, feats);
     },
     onMutate: async (args: { group: string; perms: string[]; feats: string[] }) => {
       await queryClient.cancelQueries({ queryKey: grantKeys.all });

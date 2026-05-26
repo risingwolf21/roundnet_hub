@@ -1,24 +1,40 @@
-import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
-import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
-import { DialogProps } from '@toolpad/core';
-import Compressor from 'compressorjs';
-import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
-import React, { useState } from 'react';
-import { v4 as uuid } from 'uuid';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
-import Add from '@mui/icons-material/Add';
-import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
-import DeleteOutline from '@mui/icons-material/DeleteOutline';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import Remove from '@mui/icons-material/Remove';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
+import Compressor from 'compressorjs';
+import { format, isAfter, isBefore, isSameDay, isSameWeek } from 'date-fns';
+import React, { useRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { cn } from '@/lib/utils';
+import { BadgeCheck, Minus, Plus, Trash, TriangleAlert, UploadCloud } from 'lucide-react';
+import { CalendarDay, Modifiers } from 'react-day-picker';
+
+const DayButton = ({ children, modifiers, day, ...props }: {
+  day: CalendarDay;
+  modifiers: Modifiers;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+  return (
+    <CalendarDayButton day={day} modifiers={modifiers} {...props}
+      className={cn('', {
+        'bg-success !opacity-100': modifiers.booked
+      })}>
+      {modifiers.booked ? (
+        <BadgeCheck className="!h-6 !w-6 text-white" />
+      ) : (
+        children
+      )}
+    </CalendarDayButton>
+  )
+}
 
 type EnterPointDialogProps = {
   dates: string[];
@@ -26,30 +42,10 @@ type EnterPointDialogProps = {
   maxEntriesPerDay: number | null;
   comments_enabled?: boolean;
   category_enabled?: boolean;
+  category_options?: string[];
+  start_date?: string | null;
+  end_date?: string | null;
 };
-
-function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
-  const { highlightedDays = [], maxEntriesPerWeek = 0, day, outsideCurrentMonth, ...other } = props;
-
-  const isHighlighted = highlightedDays.filter((x) => isSameDay(x, day)).length > 0;
-  const isDisabled =
-    differenceInDays(day, new Date()) > 1 ||
-    isHighlighted ||
-    highlightedDays.filter((x) => isSameWeek(x, day)).length > maxEntriesPerWeek;
-
-  return (
-    <PickersDay
-      {...other}
-      outsideCurrentMonth={outsideCurrentMonth}
-      day={day}
-      sx={(theme) => ({
-        ...(isHighlighted && { backgroundColor: theme.palette.primary.main }),
-        ...(isHighlighted && { color: theme.palette.primary.contrastText }),
-      })}
-      disabled={isDisabled}
-    />
-  );
-}
 
 type EnterPointResult = {
   date: Date;
@@ -60,20 +56,23 @@ type EnterPointResult = {
   } | null;
   comment?: string;
   category?: string;
+  category_options?: string[];
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false, category_options = [], start_date = null, end_date = null },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
-  const [date, setDate] = useState<Date>(() => new Date());
-  const highlightedDays = dates.map((x) => formatDateFromDatabase(x));
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const [date, setDate] = useState<Date>();
+  const highlightedDays = dates.map((x) => formatDateFromDatabase(x)).filter(x => x !== null)
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(1);
   const [comment, setComment] = useState<string>();
   const [category, setCategory] = useState<string>();
+
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!event.target.files || event.target.files.length === 0) return;
@@ -102,136 +101,166 @@ const EnterPointDialog = ({
   };
 
   return (
-    <SwipeableDialog
-      title="Punkt hinzufügen"
+    <Dialog
       open={open}
-      onClose={() => onClose(null)}
-      minHeight={40}
-      actions={
-        <>
-          <Button onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
-          <Button onClick={() => onClose(null)}>Abbrechen</Button>
-        </>
-      }
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose(null);
+      }}
     >
-      <ListItem
-        secondaryAction={
-          (maxEntriesPerDay ?? 0) > 1 && (
-            <Box sx={{ mx: 2, width: '100%', display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                <IconButton
-                  disableRipple
-                  disabled={points <= 1}
-                  onClick={(event) => {
-                    setPoints(points - 1);
-                    event.stopPropagation();
+      <DialogContent variant={"drawer"} className="flex flex-col gap-0">
+        <DialogHeader className="p-4 pb-2 border-b text-left">
+          <DialogTitle>Punkt hinzufügen</DialogTitle>
+        </DialogHeader>
+
+        <div className='flex flex-col overflow-y-auto p-4 gap-6 flex-1'>
+
+          <div className="flex">
+            {(maxEntriesPerDay ?? 0) > 1 ? (
+              <div className='flex flex-row w-full justify-between items-center'>
+                <div>
+                  <div className='text-base font-medium'>Anzahl Punkte</div>
+                  <div className='text-sm text-muted-foreground'>Wie viele Punkte möchtest du eintragen?</div>
+                </div>
+                <div className='flex flex-row items-center gap-2'>
+                  <Button variant={"outline"} size="icon"
+                    disabled={points <= 1}
+                    onClick={(event) => {
+                      setPoints(points - 1);
+                      event.stopPropagation();
+                    }}>
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xl font-semibold w-8 text-center">{points}</span>
+                  <Button
+                    variant={"outline"} size="icon"
+                    disabled={maxEntriesPerDay !== null && points >= maxEntriesPerDay}
+                    onClick={(event) => {
+                      setPoints(points + 1);
+                      event.stopPropagation();
+                    }}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className='text-base'>Hiermit trägst du einen Punkt für diese Challenge ein</div>
+            )}
+          </div>
+
+          {comments_enabled && (
+            <Field>
+              <Input
+                className='text-base'
+                placeholder="Kommentar"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </Field>
+          )}
+
+          {category_enabled && category_options.length > 0 && (
+            <Field>
+              <Select modal={true} onValueChange={(val) => val && setCategory(val as string)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kategorie" className="text-base" />
+                </SelectTrigger>
+                <SelectContent className="p-0 pointer-events-auto z-[100]">
+                  <SelectGroup>
+                    {category_options.map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
+
+          <Field>
+            <Popover modal={true}>
+              <PopoverTrigger
+                render={
+                  <Button variant="outline" id="date-picker-simple" className="w-full justify-start font-normal text-base">
+                    {date ? format(date, "PPP") : <span>Datum wählen</span>}
+                  </Button>
+                }
+              />
+              <PopoverContent align="start"
+                className="w-auto p-0 pointer-events-auto z-[100]">
+                <Calendar
+                  required
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  defaultMonth={date}
+                  disabled={(day) => isAfter(day, new Date()) || highlightedDays.some((x) => isSameDay(x, day))
+                    || (maxEntriesPerWeek !== null && highlightedDays.filter((x) => isSameWeek(x, day, { weekStartsOn: 1 })).length >= maxEntriesPerWeek)}
+                  weekStartsOn={1}
+                  className="[--cell-size:--spacing(10)] md:[--cell-size:--spacing(12)]"
+                  modifiers={{
+                    booked: highlightedDays
                   }}
-                >
-                  <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-                </IconButton>
-                <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{points}</Typography>
-                <IconButton
-                  disableRipple
-                  disabled={maxEntriesPerDay !== null && points >= maxEntriesPerDay}
-                  onClick={(event) => {
-                    setPoints(points + 1);
-                    event.stopPropagation();
+                  components={{
+                    DayButton: DayButton
                   }}
-                >
-                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-                </IconButton>
-              </Box>
-            </Box>
-          )
-        }
-      >
-        {(maxEntriesPerDay ?? 0) > 1 ? (
-          <ListItemText primary="Anzahl Punkte" secondary="Wie viele Punkte möchtest du eintragen?" />
-        ) : (
-          <ListItemText primary="Hiermit trägst du einen Punkt für diese Challenge ein" />
-        )}
-      </ListItem>
+                />
+              </PopoverContent>
+            </Popover>
+          </Field>
 
-      {comments_enabled && (
-        <ListItem>
-          <TextField
-            fullWidth
-            variant="outlined"
-            label="Kommentar"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-        </ListItem>
-      )}
+          <div className='flex justify-center'>
+            {image ? (
+              <div className='flex gap-2'>
+                <Button variant="outline" className="relative">
+                  <input accept="image/*" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={onImageInputChange} />
+                  Change
+                </Button>
+                <Button variant="destructive" onClick={() => setImage(null)}>
+                  <Trash className="mr-2 h-4 w-4" />
+                  Remove
+                </Button>
+              </div>
+            ) : (
+              <div className='w-full'>
+                <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onImageInputChange} />
+                <Button type='button' variant='outline' onClick={() => inputRef.current?.click()} className='w-full flex items-center justify-center gap-2'>
+                  <UploadCloud className="h-5 w-5" />
+                  Bild hochladen
+                </Button>
+              </div>
+            )}
+          </div>
 
-      {category_enabled && (
-        <ListItem>
-          <TextField
-            fullWidth
-            variant="outlined"
-            label="Kategorie"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
-        </ListItem>
-      )}
+          {image && (
+            <div className='flex justify-center mt-2'>
+              <img src={image.dataUrl} alt="Selected" className='rounded-lg max-h-[200px] max-w-full object-contain border shadow-sm' />
+            </div>
+          )}
 
-      <DatePicker
-        sx={{
-          width: '100%',
-          p: 2,
-        }}
-        slots={{
-          day: ServerDay,
-        }}
-        slotProps={{
-          day: {
-            highlightedDays,
-            maxEntriesPerWeek,
-          } as unknown as PickersDayProps,
-        }}
-        label="Datum"
-        disableFuture
-        format="dd MMMM yyyy"
-        onChange={(val) => {
-          if (val) setDate(val);
-        }}
-        value={date}
-      />
+          {error && <Alert variant={"error"}>
+            <TriangleAlert />
+            <AlertTitle>Es ist ein Fehler aufgetreten</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>}
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-        {image ? (
-          <>
-            <Button
-              component="label"
-              sx={{ border: 'none', background: 'transparent', mr: 2 }}
-              startIcon={<EditOutlined />}
-            >
-              <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-              Change
-            </Button>
-            <Button startIcon={<DeleteOutline />} onClick={() => setImage(null)}>
-              Remove
-            </Button>
-          </>
-        ) : (
+        </div>
+
+        <DialogFooter className="p-4 border-t flex-shrink m-0">
           <Button
-            component="label"
-            sx={{ border: 'none', background: 'transparent' }}
-            startIcon={<AddPhotoAlternateOutlined />}
+            className="w-full text-base"
+            disabled={
+              !date ||
+              (start_date !== null && isBefore(new Date(start_date), date)) ||
+              (end_date !== null && isAfter(new Date(end_date), date))
+            }
+            onClick={() => date && onClose({ date, image, count: points, comment, category })}
           >
-            <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-            Add picture
+            Bestätigen
           </Button>
-        )}
-      </Box>
-      {image && (
-        <Box sx={{ m: 2, borderRadius: 2 }}>
-          <img src={image.dataUrl} width="100%" alt="Selected" style={{ borderRadius: '16px' }} />
-        </Box>
-      )}
-      {error && <Typography color="error">{error}</Typography>}
-    </SwipeableDialog>
+        </DialogFooter>
+      </DialogContent >
+    </Dialog >
   );
 };
 

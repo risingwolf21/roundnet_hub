@@ -1,9 +1,8 @@
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
-import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
+import { ChallengeRepository } from '@/repository/ChallengeRepository';
 import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
-import { dataURLtoFile, formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
+import { dataURLtoFile, formatSafeDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
@@ -20,23 +19,7 @@ export const challengeKeys = {
 export const useInfiniteChallengeStats = (challengeId: string, count: number = 20) =>
   useInfiniteQuery({
     queryKey: challengeKeys.challengeStats(challengeId),
-    queryFn: async ({ pageParam }) => {
-      const { data } = await supabase
-        .schema('public')
-        .from('challenge_stats')
-        .select('*, fullUser: user(*)')
-        .eq('challenge', challengeId)
-        .range(pageParam * count, pageParam * count + count - 1)
-        .order('created_at', { ascending: false })
-        .throwOnError();
-
-      const hasMore = (data?.length ?? 0) === count;
-
-      return {
-        data: data ?? [],
-        nextPage: hasMore ? pageParam + 1 : undefined,
-      };
-    },
+    queryFn: ({ pageParam }) => ChallengeRepository.fetchInfiniteChallengeStats(challengeId, count, pageParam),
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
   });
@@ -44,60 +27,53 @@ export const useInfiniteChallengeStats = (challengeId: string, count: number = 2
 export const useChallengeLeaderboard = (challengeId: string) =>
   useQuery({
     queryKey: challengeKeys.challengeLeaderboard(challengeId),
-    queryFn: async () => {
-      const result = await supabase
-        .from('challenge_user_points')
-        .select('*')
-        .eq('challenge', challengeId)
-        .returns<ChallengePointsView[]>()
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => ChallengeRepository.fetchLeaderboard(challengeId),
   });
 
 export const useChallenge = (challengeId: string) =>
   useQuery<Challenge | null>({
     queryKey: challengeKeys.challengeInformation(challengeId),
-    queryFn: async () => {
-      const result = await supabase.from('challenge').select('*').eq('id', challengeId).maybeSingle().throwOnError();
-
-      return result.data;
-    },
+    queryFn: () => ChallengeRepository.fetchChallenge(challengeId),
   });
 
 export const useChallenges = () =>
-  useQuery<ChallengeWithFullGroup[]>({
+  useQuery({
     queryKey: challengeKeys.list(),
-    queryFn: async () => {
-      const { data } = await fetchChallengeWithGroup()
-        .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
-        .order('name')
-        .throwOnError()
-        .returns<ChallengeWithFullGroup[]>();
+    queryFn: () => ChallengeRepository.fetchActiveChallenges(),
+  });
 
-      return data ?? [];
-    },
+export const useChallengePodiums = () =>
+  useQuery({
+    queryKey: [...challengeKeys.all, 'podiums'] as const,
+    queryFn: () => ChallengeRepository.fetchPodiums(),
+  });
+
+export const useUserTrophies = (userId: string) =>
+  useQuery({
+    queryKey: [...challengeKeys.all, 'podiums'] as const,
+    queryFn: () => ChallengeRepository.fetchPodiums(),
+    select: (podiums) =>
+      podiums
+        .flatMap((p) => {
+          const entry = p.podium.find((x) => x.user_id === userId);
+          if (!entry) return [];
+          return [{
+            challenge_id: p.challenge_id,
+            challenge_name: p.challenge_name,
+            end_date: p.end_date,
+            rank: entry.rank,
+            score: entry.score,
+          }];
+        })
+        .sort((a, b) => a.rank - b.rank),
+    enabled: !!userId,
   });
 
 export const useArchivedChallenges = () =>
   useInfiniteQuery({
     queryKey: challengeKeys.archivedList(),
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const { data } = await fetchChallengeWithGroup()
-        .not('end_date', 'is', null)
-        .lt('end_date', formatDateToDatabase(new Date()))
-        .order('end_date', { ascending: false })
-        .throwOnError()
-        .returns<ChallengeWithFullGroup[]>();
-
-      const hasMore = (data?.length ?? 0) === 20;
-
-      return {
-        data: data ?? [],
-        nextPage: hasMore ? pageParam + 1 : undefined,
-      };
-    },
+    queryFn: ({ pageParam = 0 }: { pageParam?: number }) =>
+      ChallengeRepository.fetchArchivedChallenges(pageParam),
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
   });
@@ -105,20 +81,12 @@ export const useArchivedChallenges = () =>
 export const useChallengeStatsForUser = (challengeId: string, user: User) =>
   useQuery<ChallengeStats[]>({
     queryKey: challengeKeys.challengeStatsForUser(challengeId, user.id),
-    queryFn: async () => {
-      const result = await supabase
-        .from('challenge_stats')
-        .select('*')
-        .eq('challenge', challengeId)
-        .eq('user', user.id)
-        .throwOnError();
-
-      return result.data ?? [];
-    },
+    queryFn: () => ChallengeRepository.fetchStatsForUser(challengeId, user.id),
   });
 
 export const useIncreasePointForUserMutation = (challengeId: string) =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({
       challenge,
       created_at,
@@ -138,30 +106,29 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       let image_url: string | null = null;
 
       if (image) {
-        const { data: uploadData, error } = await supabase.storage
-          .from('challenge')
-          .upload(`${challenge}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), { upsert: true });
+        const { data: uploadData, error } = await ChallengeRepository.uploadImage(
+          challenge,
+          image.fileName,
+          dataURLtoFile(image.dataUrl, image.fileName)
+        );
 
         if (uploadData?.path && !error) {
-          const { data } = supabase.storage.from('challenge').getPublicUrl(uploadData.path);
-          image_url = data?.publicUrl ?? null;
+          image_url = ChallengeRepository.getImageUrl(uploadData.path);
         }
       }
 
-      const result = await supabase
-        .rpc('increase_challenge_stats_count', {
-          amount: count,
-          challenge_id: challenge,
-          to_create_at: formatDateToDatabase(created_at)!,
-          image_url: image_url ?? '',
-          category,
-          comment,
-        })
-        .throwOnError();
+      const result = await ChallengeRepository.increasePointForUser({
+        challenge,
+        created_at,
+        image_url,
+        amount: count,
+        category,
+        comment,
+      });
 
       return { serverRow: result.data, image_url, imageFailedToUpload: !!image && !image_url };
     },
-    onMutate: async ({ user, count, challenge, created_at, image }) => {
+    onMutate: async ({ user, count, challenge, created_at, image, category, comment }) => {
       const challengeStatId = Date.now();
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
@@ -186,6 +153,10 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           user: user.id,
           id: -1,
           fullUser: user,
+          meta: {
+            category,
+            comment,
+          },
         } as ChallengeStatWithUser;
 
         queryClient.setQueryData<InfiniteData<{ data: ChallengeStatWithUser[]; nextPage: number | undefined }>>(
@@ -273,16 +244,9 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
 
 export const useUpdateChallengeMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({ challenge }: { challenge: TablesUpdate<'challenge'> }) => {
-      const result = await supabase
-        .from('challenge')
-        .update(challenge)
-        .eq('id', challenge.id ?? '')
-        .throwOnError();
-
-      console.log(result);
-
-      return result.data;
+      return ChallengeRepository.updateChallenge(challenge);
     },
     onMutate: async ({ challenge }) => {
       const previousChallenge = queryClient.getQueryData<Challenge>(challengeKeys.challengeInformation(challenge.id!));
@@ -320,26 +284,9 @@ export const useUpdateChallengeMutation = () =>
 
 export const useInsertChallengeMutation = () =>
   useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async (challenge: TablesInsert<'challenge'>) => {
-      const result = await supabase
-        .from('challenge')
-        .insert({
-          automated: challenge.automated,
-          name: challenge.name,
-          description: challenge.description,
-          end_date: challenge.end_date,
-          max_points_per_day: challenge.max_points_per_day,
-          max_points_per_week: challenge.max_points_per_week,
-          group: challenge.group,
-          comments_enabled: challenge.comments_enabled,
-          category_enabled: challenge.category_enabled,
-          show_all_members: challenge.show_all_members,
-        })
-        .select('*')
-        .single()
-        .throwOnError();
-
-      return result.data;
+      return ChallengeRepository.insertChallenge(challenge);
     },
     onError: (error, variables) => {
       captureException(error, {

@@ -1,23 +1,14 @@
 import { useFeatures, usePermissions } from '@/tanstack/grants';
 import { UseQueryResult } from '@tanstack/react-query';
-import { DialogProps } from '@toolpad/core';
 import React from 'react';
 
-import Close from '@mui/icons-material/Close';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Switch from '@mui/material/Switch';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
+import { Item, ItemContent } from '@/components/ui/item';
+import { Switch } from '@/components/ui/switch';
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { X } from 'lucide-react';
 
 export type GroupResult = {
   grantPerm: string[];
@@ -36,21 +27,29 @@ type GrantsEditorProps = {
 export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => {
   const { data: perms } = usePermissions();
   const { data: feats } = useFeatures();
-  const { data: currentPerms = [] } = payload.currentPermissions(payload.id);
-  const { data: currentFeats = [] } = payload.currentFeatures(payload.id);
+
+  const { data: currentPerms = [], isSuccess: isPermsSuccess } = payload.currentPermissions(payload.id);
+  const { data: currentFeats = [], isSuccess: isFeatsSuccess } = payload.currentFeatures(payload.id);
 
   const currentPermsSet = React.useMemo(() => new Set(currentPerms), [currentPerms]);
-  const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(new Set(currentPerms));
-
   const currentFeatSet = React.useMemo(() => new Set(currentFeats), [currentFeats]);
-  const [selectedFeats, setSelectedFeats] = React.useState<Set<string>>(new Set(currentFeats));
+
+  const [selectedPerms, setSelectedPerms] = React.useState<Set<string>>(new Set());
+  const [selectedFeats, setSelectedFeats] = React.useState<Set<string>>(new Set());
+
+  const initializedForId = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    setSelectedPerms(new Set(currentPerms));
-  }, [currentPerms]);
-  React.useEffect(() => {
-    setSelectedFeats(new Set(currentFeats));
-  }, [currentFeats]);
+    if (isPermsSuccess && isFeatsSuccess && initializedForId.current !== payload.id) {
+
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setSelectedPerms(new Set(currentPerms));
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setSelectedFeats(new Set(currentFeats));
+
+      initializedForId.current = payload.id;
+    }
+  }, [isPermsSuccess, isFeatsSuccess, currentPerms, currentFeats, payload.id]);
 
   const onTogglePerm = (key: string, checked: boolean) => {
     setSelectedPerms((prev) => {
@@ -76,77 +75,64 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
     });
   };
 
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
-        <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" onPointerDown={() => onClose(null)}>
-            <Close />
-          </IconButton>
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            {payload.title}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <DialogContent>
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            Permissions
-          </Typography>
-          <List dense>
-            {(perms || []).map((p) => (
-              <ListItem
-                key={p}
-                secondaryAction={
-                  <Switch edge="end" checked={selectedPerms.has(p)} onChange={(_, on) => onTogglePerm(p, on)} />
-                }
-              >
-                <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={p} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-        <Divider sx={{ my: 1 }} />
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            Features
-          </Typography>
-          <List dense>
-            {(feats || []).map((f) => (
-              <ListItem
-                key={f}
-                secondaryAction={
-                  <Switch edge="end" checked={selectedFeats.has(f)} onChange={(_, on) => onToggleFeat(f, on)} />
-                }
-              >
-                <ListItemText primaryTypographyProps={{ variant: 'body2' }} primary={f} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Box sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-          <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => onClose(null)}>
-            Abbrechen
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogHeader variant={"appbar"}>
+        <DialogTitle className="flex-1">{payload.title}</DialogTitle>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+            <X className="h-5 w-5" />
           </Button>
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{ ml: 1, mr: 2, mb: 2 }}
-            onClick={() =>
-              onClose({
-                grantPerm: [...selectedPerms].filter((k) => !currentPermsSet.has(k)),
-                revokePerm: [...currentPermsSet].filter((k) => !selectedPerms.has(k)),
-                grantFeat: [...selectedFeats].filter((k) => !currentFeatSet.has(k)),
-                revokeFeat: [...currentFeatSet].filter((k) => !selectedFeats.has(k)),
-              })
-            }
-          >
-            Bestätigen
+        } />
+      </DialogHeader>
+      <DialogBody>
+        <div className="text-sm font-semibold m-2">Permissions</div>
+        <div>
+          {(perms || []).map((p) => (
+            <Item key={p} className='odd:bg-muted/50'>
+              <ItemContent>
+                <Field orientation={"horizontal"}>
+                  <FieldContent>
+                    <FieldLabel htmlFor={p}>{p}</FieldLabel>
+                  </FieldContent>
+                  <Switch id={p} checked={selectedPerms.has(p)} onCheckedChange={(checked) => onTogglePerm(p, checked)} />
+                </Field>
+              </ItemContent>
+            </Item>
+
+          ))}
+        </div>
+
+        <div className="text-sm font-semibold m-2">Features</div>
+        <div>
+          {(feats || []).map((p) => (
+            <Item key={p} className='odd:bg-muted/50'>
+              <ItemContent>
+                <Field orientation={"horizontal"}>
+                  <FieldContent>
+                    <FieldLabel htmlFor={p}>{p}</FieldLabel>
+                  </FieldContent>
+                  <Switch id={p} checked={selectedFeats.has(p)} onCheckedChange={(checked) => onToggleFeat(p, checked)} />
+                </Field>
+              </ItemContent>
+            </Item>
+
+          ))}
+        </div>
+      </DialogBody>
+      <DialogFooter variant={"fullscreen"}>
+        <div className='flex w-full justify-even gap-4'>
+          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
+          <Button className="flex-1" onClick={() => onClose({
+            grantPerm: [...selectedPerms].filter((k) => !currentPermsSet.has(k)),
+            revokePerm: [...currentPermsSet].filter((k) => !selectedPerms.has(k)),
+            grantFeat: [...selectedFeats].filter((k) => !currentFeatSet.has(k)),
+            revokeFeat: [...currentFeatSet].filter((k) => !selectedFeats.has(k)),
+          })}>
+            Speichern
           </Button>
-        </Box>
-      </DialogActions>
-    </Dialog>
-  );
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 };

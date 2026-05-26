@@ -2,7 +2,9 @@ import * as React from 'react';
 
 function isChunkError(err: unknown) {
   const msg = (err as any)?.message ?? '';
-  return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|imported module/i.test(
+  // Match specific chunk/module loading errors, but avoid generic "Importing a module script failed" 
+  // which can be caused by other issues like API incompatibilities
+  return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|Importing .*chunk.*failed/i.test(
     msg
   );
 }
@@ -23,10 +25,18 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
               if (isChunkError(err) && n > 0) {
                 setTimeout(() => attempt(n - 1), delayMs);
               } else if (isChunkError(err)) {
+                // All retries exhausted and it's a chunk error
+                // Clear caches and reload the page to get fresh modules
                 try {
                   const keys = await caches?.keys?.();
                   await Promise.all((keys || []).map((k) => caches.delete(k)));
-                } catch {}
+                } catch (cacheErr) {
+                  // Silently handle cache API errors (especially on iOS Safari)
+                  // but still proceed with page reload
+                  console.warn('Failed to clear caches:', cacheErr);
+                }
+                // Reload the page to get fresh modules after cache clearing
+                window.location.reload();
               } else {
                 onFinalFail?.(err);
                 reject(err);

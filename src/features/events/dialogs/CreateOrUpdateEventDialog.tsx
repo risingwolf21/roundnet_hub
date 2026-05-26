@@ -1,62 +1,33 @@
-import DurationAdder from '@/components/DurationInput';
-import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useFetchMode } from '@/hooks/useFetchMode';
-import { Has } from '@/hooks/useGrants';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase, getDurationFrom } from '@/utils';
-import AccessTime from '@mui/icons-material/AccessTime';
-import Add from '@mui/icons-material/Add';
-import Article from '@mui/icons-material/Article';
-import Category from '@mui/icons-material/Category';
-import Close from '@mui/icons-material/Close';
-import Delete from '@mui/icons-material/Delete';
-import EventIcon from '@mui/icons-material/Event';
-import Group from '@mui/icons-material/Group';
-import Place from '@mui/icons-material/Place';
-import Remove from '@mui/icons-material/Remove';
-import SyncIcon from '@mui/icons-material/Sync';
-import SyncProblemIcon from '@mui/icons-material/SyncProblem';
-import TimelapseIcon from '@mui/icons-material/Timelapse';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Divider from '@mui/material/Divider';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DialogProps, useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
+import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '@/utils';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet, FieldTitle } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { TimePicker } from '@/components/ui/time-picker';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { Has } from '@/hooks/useGrants';
+import { cn } from '@/lib/utils';
 import { add, Duration, format, isAfter, set } from 'date-fns';
+import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
+import { CalendarSync, CalendarX2, Map, Pencil, Trash2, X } from 'lucide-react';
 import { FormEvent, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
-import { SelectGroupDialog } from './SelectGroupDialog';
 
 const DEFAULT_DURATION: Duration = { hours: 2 };
 
@@ -82,24 +53,42 @@ type CreateEventProps = {
   items?: BringItems[];
 };
 
+const ITEMS: {
+  value: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe" | null
+  label: string
+}[] = [
+    {
+      value: "mtvStorage",
+      label: "MTV Keller"
+    },
+    {
+      value: "mtvGym",
+      label: "MTV Gym"
+    },
+    {
+      value: "mtvGymPalazzo",
+      label: "MTV Gym und Palazzo"
+    },
+    {
+      value: "goethe",
+      label: "Goethe Gymnasium"
+    },
+    {
+      value: null,
+      label: "Nichts gewählt"
+    }
+  ]
+
 export const CreateOrUpdateEventDialog = ({
   payload: { event, eventGroup, option, items = [] },
   open,
   onClose,
 }: DialogProps<CreateEventProps>) => {
-  const notifications = useNotifications();
   const [fetchMode] = useFetchMode();
-  const dialogs = useDialogs();
-  const { t } = useTranslation();
   const { user } = useGrants();
+  const dialogs = useDialogs();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
-  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(
-    null
-  );
-  const [duration, setDuration] = useState<Duration>(() =>
-    event ? (getDurationFrom(event.startingDateTime, event.endDateTime) ?? DEFAULT_DURATION) : DEFAULT_DURATION
-  );
   const [bringItems, setBringItems] = useState(items);
   const ref = useRef<HTMLFormElement>(null);
 
@@ -111,6 +100,7 @@ export const CreateOrUpdateEventDialog = ({
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
@@ -127,8 +117,6 @@ export const CreateOrUpdateEventDialog = ({
       const changes = differenceWith(edited_event_pairs, event_pairs, isEqual);
 
       const eventChanges = fromPairs(changes) as TablesUpdate<'events'>;
-
-      console.log('Event changes', edited_event.id, eventChanges);
 
       if (!edited_event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
@@ -161,7 +149,7 @@ export const CreateOrUpdateEventDialog = ({
           },
           {
             onError: (error) =>
-              notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
+              toast.error('Event konnte nicht erstellt werden: ' + error.message),
             onSuccess: () => {
               onClose();
             },
@@ -169,783 +157,870 @@ export const CreateOrUpdateEventDialog = ({
         );
       } else if (option === 'UpdateSingle') {
         updateSingleEvent.mutate(
-          { eventChanges, id: edited_event.id ?? '', currentUser: user },
+          {
+            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
+            id: edited_event.id ?? '',
+            currentUser: user,
+            items: bring_items,
+          },
           {
             onError: (error) =>
-              notifications.show('Event konnte nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
+              toast.error('Event konnte nicht aktualisiert werden: ' + error.message),
             onSuccess: () => onClose(),
           }
         );
       } else if (option === 'UpdateRecurrence') {
+        const recurrenceItems = bring_items.map(({ name, required_qty, unit, notes, sort_order }) => ({
+          name,
+          required_qty,
+          unit,
+          notes,
+          sort_order,
+        }));
         updateRecurrenceEvents.mutate(
-          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime, currentUser: user },
+          {
+            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
+            key: editedEvent.key,
+            startingDateTime: editedEvent.startingDateTime,
+            currentUser: user,
+            items: recurrenceItems,
+          },
           {
             onError: (error) =>
-              notifications.show('Events konnten nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
+              toast.error('Events konnten nicht aktualisiert werden: ' + error.message),
             onSuccess: () => onClose(),
           }
         );
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-      notifications.show(message, { severity: 'error' });
+      toast.error(message);
     }
-  };
-
-  function SetViewOnClick({ place }: { place: PlaceType }) {
-    const map = useMap();
-    map.setView({ lat: place.lat, lng: place.lon }, map.getZoom());
-
-    return null;
   }
 
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose()}>
-      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose()}>
-            <Close />
-          </IconButton>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            {`Event ${event ? 'bearbeiten' : 'erstellen'}`}
-          </Typography>
-          <Button
-            autoFocus
-            color="inherit"
-            onClick={() => {
-              if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }}
-          >
-            Speichern
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
-        <List>
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title'}>
-            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-              <EventIcon />
-            </ListItemAvatar>
-            <TextField
-              size="small"
-              fullWidth
-              label="Event-Titel"
-              value={editedEvent.title}
-              onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
-            />
-          </ListItem>
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'eventDescription'}>
-            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-              <Article />
-            </ListItemAvatar>
-            <TextField
-              size="small"
-              fullWidth
-              multiline
-              value={editedEvent.description}
-              onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
-              label="Beschreibung"
-            />
-          </ListItem>
-
-          <ListItemButton
-            sx={{ py: 0, mb: 1 }}
-            onClick={async () => {
-              const result = await dialogs.open(SelectGroupDialog);
-              if (result) {
-                setSelectedGroup(result);
-                setEditedEvent({
-                  ...editedEvent,
-                  group: result.id,
-                });
-              }
-            }}
-            key={'group'}
-          >
-            <ListItemAvatar>{selectedGroup && <Group sx={{ color: selectedGroup.color }} />}</ListItemAvatar>
-            <ListItemText
-              primary={selectedGroup?.name ?? 'Keine Gruppe gewählt'}
-              secondary={selectedGroup?.description}
-            />
-          </ListItemButton>
-
-          <Divider sx={{ mb: 2 }} />
-
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'startDate'}>
-            <ListItemAvatar>
-              <AccessTime />
-            </ListItemAvatar>
-
-            <DatePicker
-              slotProps={{ textField: { error: false, size: 'small' } }}
-              sx={{ width: '100%' }}
-              label="Datum"
-              disablePast
-              format="dd MMMM yyyy"
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  startingDateTime: formatDateToDatabase(
-                    set(new Date(editedEvent.startingDateTime), {
-                      date: val.getDate(),
-                      year: val.getFullYear(),
-                      month: val.getMonth(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, duration)),
-                });
-              }}
-              value={formatDateFromDatabase(editedEvent.startingDateTime)}
-            />
-          </ListItem>
-
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'startTime'}>
-            <ListItemAvatar />
-
-            <TimePicker
-              slotProps={{ textField: { error: false, size: 'small' } }}
-              sx={{ width: '100%' }}
-              views={['hours', 'minutes']}
-              ampm={false}
-              label="Startzeit"
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  startingDateTime: formatDateToDatabase(
-                    set(new Date(editedEvent.startingDateTime), {
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={formatDateFromDatabase(editedEvent.startingDateTime)}
-            />
-          </ListItem>
-
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'meetingTime'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.meetingDateTime !== null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    meetingDateTime: editedEvent.meetingDateTime !== null ? null : formatDateToDatabase(new Date()),
-                  })
-                }
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"fullscreen"}>
+      <DialogHeader variant={"appbar"}>
+        <DialogTitle className={"flex-1"}>{`Event ${event ? 'bearbeiten' : 'erstellen'}`}</DialogTitle>
+        <DialogClose render={<Button variant={"ghost"}>
+          <X />
+        </Button>} />
+      </DialogHeader>
+      <DialogBody className='p-0'>
+        <form ref={ref} onSubmit={handleSubmit} noValidate className='flex flex-col gap-2'>
+          <FieldSet className='p-2'>
+            <Field className='gap-1'>
+              <FieldLabel htmlFor='event-title'>Event-Titel</FieldLabel>
+              <Input
+                id="event-title"
+                name="event-title"
+                placeholder="Titel"
+                className='w-full'
+                value={editedEvent.title}
+                onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
+                required
               />
-            </ListItemAvatar>
+            </Field>
 
-            <TimePicker
-              slotProps={{ textField: { error: false, size: 'small' } }}
-              disabled={editedEvent.meetingDateTime === null}
-              sx={{ width: '100%' }}
-              views={['hours', 'minutes']}
-              ampm={false}
-              maxTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              label="Treffpunkt"
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  meetingDateTime: formatDateToDatabase(
-                    set(new Date(editedEvent.startingDateTime), {
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={editedEvent.meetingDateTime ? formatDateFromDatabase(editedEvent.meetingDateTime) : null}
-            />
-          </ListItem>
-
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 1 }} key={'endDateTimeDurr'}>
-            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-              <TimelapseIcon />
-            </ListItemAvatar>
-            <DurationAdder
-              duration={duration}
-              durationChanged={(d) => {
-                setDuration(d);
-                setEditedEvent({
-                  ...editedEvent,
-                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d)),
-                });
-              }}
-            />
-          </ListItem>
-
-          <ListItem
-            onClick={() => setDialogOpen('places')}
-            key={'searchPlace'}
-            secondaryAction={
-              place ? (
-                <IconButton
-                  onClick={(e) => {
-                    setEditedEvent({ ...editedEvent, place: null });
-                    e.stopPropagation();
-                  }}
-                >
-                  <Close />
-                </IconButton>
-              ) : undefined
-            }
-          >
-            <ListItemAvatar>
-              <Place />
-            </ListItemAvatar>
-            {place ? (
-              <ListItemText primary={place.name} secondary={place.description} />
-            ) : (
-              <ListItemText primary={'Standort'} />
-            )}
-          </ListItem>
-          <ListItem
-            dense
-            sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }}
-            onClick={() => setDialogOpen('places')}
-            key={'searchPlaceMap'}
-          >
-            <ListItemAvatar></ListItemAvatar>
-            {place && (
-              <ListItemText>
-                <Box sx={{ width: '100%', height: '150px' }}>
-                  <MapContainer
-                    center={[place.lat, place.lon]}
-                    zoom={15}
-                    dragging={false}
-                    doubleClickZoom={false}
-                    scrollWheelZoom={false}
-                    attributionControl={false}
-                    zoomControl={false}
-                    style={{ width: '100%', height: '150px', borderRadius: '16px' }}
-                  >
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <SetViewOnClick place={place} />
-                    <Marker position={[place.lat, place.lon]} interactive={false} />
-                  </MapContainer>
-                </Box>
-              </ListItemText>
-            )}
-          </ListItem>
-
-          <Divider />
-
-          <ListItem dense onClick={() => setDialogOpen('repeat')} key={'recurrence'}>
-            <ListItemAvatar>
-              <SyncIcon />
-            </ListItemAvatar>
-            <ListItemText primary={'Wiederholung'} secondary={editedEvent.recurrence} />
-          </ListItem>
-
-          <ListItem dense onClick={() => setDialogOpen('stopRepeat')} key={'stopRecurrence'}>
-            <ListItemAvatar>
-              <SyncProblemIcon />
-            </ListItemAvatar>
-            <ListItemText
-              primary={'Wiederholung stoppen'}
-              secondary={!editedEvent.recurrenceEnd ? 'Niemals' : format(editedEvent.recurrenceEnd, 'dd MMM yyyy')}
-            />
-          </ListItem>
-
-          <Divider sx={{ mb: 2 }} />
-
-          <ListItem sx={{ py: 0, mb: 2 }} key={'answerDeadline'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.answerDeadline !== null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    answerDeadline: editedEvent.answerDeadline
-                      ? null
-                      : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
-                  })
-                }
+            <Field className='gap-1'>
+              <FieldLabel htmlFor='event-description'>Event-Beschreibung</FieldLabel>
+              <Textarea
+                id="event-description"
+                name="event-description"
+                placeholder="Beschreibung"
+                className='w-full'
+                value={editedEvent.description}
+                onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
+                required
               />
-            </ListItemAvatar>
+            </Field>
 
-            <DateTimePicker
-              slotProps={{ textField: { error: false, size: 'small', fullWidth: true } }}
-              disabled={editedEvent.answerDeadline === null}
-              label="Answer deadline"
-              disablePast
-              ampm={false}
-              maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              format={'dd MMMM yyyy HH:mm'}
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  answerDeadline: formatDateToDatabase(
-                    set(new Date(editedEvent.answerDeadline ?? ''), {
-                      date: val.getDate(),
-                      year: val.getFullYear(),
-                      month: val.getMonth(),
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={editedEvent.answerDeadline ? formatDateFromDatabase(editedEvent.answerDeadline) : null}
-            />
-          </ListItem>
-
-          {/* <ListItem sx={{ py: 0, mb: 2 }} key={'answerStart'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.answerStart !== null}
-                onChange={() =>
+            <Field className='gap-1'>
+              <FieldLabel htmlFor='event-group'>Event-Gruppe</FieldLabel>
+              <Item variant={"outline"} onClick={async () => {
+                const result = await dialogs.selectGroup();
+                if (result) {
+                  setSelectedGroup(result);
                   setEditedEvent({
                     ...editedEvent,
-                    answerStart: editedEvent.answerStart
-                      ? null
-                      : formatDateToDatabase(
-                        set(Date.now(), {
+                    group: result.id,
+                  });
+                }
+              }}>
+                <ItemTitle>
+                  {
+                    selectedGroup?.name ?? "Keine Gruppe gewählt"
+                  }
+                </ItemTitle>
+              </Item>
+            </Field>
+          </FieldSet>
+
+          <FieldSeparator />
+
+          <FieldSet className='p-2'>
+            <FieldLegend className='font-semibold'>Datum-und Uhrzeiten</FieldLegend>
+            <FieldGroup className='flex-row'>
+              <Field>
+                <FieldLabel htmlFor="event-startdate">Startdatum</FieldLabel>
+                <DatePicker
+                  id='event-startdate'
+                  placeholder='Datum'
+                  onValueChange={(val) => {
+                    if (!val) return;
+                    setEditedEvent({
+                      ...editedEvent,
+                      startingDateTime: formatDateToDatabase(
+                        set(new Date(editedEvent.startingDateTime), {
+                          date: val.getDate(),
+                          year: val.getFullYear(),
+                          month: val.getMonth(),
                           seconds: 0,
                           milliseconds: 0,
                         })
                       ),
-                  })
-                }
-              />
-            </ListItemAvatar>
+                    });
+                  }}
+                  value={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined} />
+              </Field>
 
-            <DateTimePicker
-              slotProps={{ textField: { error: false, size: "small", fullWidth: true } }}
-              disabled={editedEvent.answerStart === null}
-              label="Answer start"
-              disablePast
-              ampm={false}
-              maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              format={'dd MMMM yyyy HH:mm'}
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  answerStart: formatDateToDatabase(
-                    set(new Date(editedEvent.answerStart ?? ''), {
-                      date: val.getDate(),
-                      year: val.getFullYear(),
-                      month: val.getMonth(),
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={editedEvent.answerStart ? formatDateFromDatabase(editedEvent.answerStart) : null}
-            />
-          </ListItem> */}
+              <Field>
+                <FieldLabel htmlFor="event-starttime">Uhrzeit</FieldLabel>
+                <TimePicker
+                  id="event-starttime"
+                  placeholder="12:30"
+                  value={editedEvent?.startingDateTime ? new Date(editedEvent.startingDateTime) : undefined}
+                  onValueChange={(newDate) => {
+                    if (!newDate) return;
 
-          <Divider sx={{ mb: 1 }} />
+                    const dbFormattedDate = formatDateToDatabase(newDate);
 
-          <ListItem
-            sx={{ py: 0, mb: 1 }}
-            key={'maxAttendees'}
-            secondaryAction={
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0 && (
-                  <>
-                    <IconButton
-                      disableRipple
-                      onClick={(event) => {
-                        setEditedEvent({
-                          ...editedEvent,
-                          maxAttendees:
-                            editedEvent.maxAttendees !== null && editedEvent.maxAttendees - 1 > 0
-                              ? editedEvent.maxAttendees - 1
-                              : null,
-                        });
-                        event.stopPropagation();
-                      }}
-                    >
-                      <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
-                    </IconButton>
-                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-                      {editedEvent.maxAttendees}
-                    </Typography>
-                  </>
-                )}
-                <IconButton
-                  disableRipple
-                  onClick={(event) => {
                     setEditedEvent({
                       ...editedEvent,
-                      maxAttendees: editedEvent.maxAttendees !== null ? editedEvent.maxAttendees + 1 : 1,
+                      startingDateTime: dbFormattedDate,
                     });
-                    event.stopPropagation();
                   }}
-                >
-                  <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
-                </IconButton>
-              </Box>
-            }
-          >
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.maxAttendees !== null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    maxAttendees: editedEvent.maxAttendees === null ? 1 : null,
-                  })
-                }
-              />
-            </ListItemAvatar>
+                />
+              </Field>
+            </FieldGroup>
 
-            <ListItemText primary={'Maximale Teilnehmerzahl'} />
-          </ListItem>
+            <FieldGroup className='flex-row'>
+              <Field>
+                <FieldLabel htmlFor="event-enddate">Enddatum</FieldLabel>
+                <DatePicker
+                  id='event-enddate'
+                  placeholder='Datum'
+                  onValueChange={(val) => {
+                    if (!val) return;
+                    setEditedEvent({
+                      ...editedEvent,
+                      endDateTime: formatDateToDatabase(
+                        set(new Date(editedEvent.endDateTime), {
+                          date: val.getDate(),
+                          year: val.getFullYear(),
+                          month: val.getMonth(),
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      )
+                    });
+                  }}
+                  value={formatDateFromDatabase(editedEvent.endDateTime) ?? undefined} />
+              </Field>
 
-          <Has feat={'events.trials'}>
-            <ListItem
-              sx={{ py: 0, mb: 1 }}
-              key={'max_trial_attendees'}
-              secondaryAction={
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  {editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees >= 0 && (
-                    <>
-                      <IconButton
-                        disableRipple
-                        onClick={(event) => {
-                          setEditedEvent({
-                            ...editedEvent,
-                            max_trial_attendees:
-                              editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees - 1 > 0
-                                ? editedEvent.max_trial_attendees - 1
-                                : null,
-                          });
-                          event.stopPropagation();
-                        }}
-                      >
-                        <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
-                      </IconButton>
-                      <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-                        {editedEvent.max_trial_attendees}
-                      </Typography>
-                    </>
-                  )}
-                  <IconButton
-                    disableRipple
-                    onClick={(event) => {
+              <Field>
+                <FieldLabel htmlFor="event-endtime">Uhrzeit</FieldLabel>
+                <TimePicker
+                  id="event-endtime"
+                  placeholder="12:30"
+                  value={editedEvent?.endDateTime ? new Date(editedEvent.endDateTime) : undefined}
+                  onValueChange={(newDate) => {
+                    if (!newDate) return;
+
+                    setEditedEvent({
+                      ...editedEvent,
+                      endDateTime: formatDateToDatabase(set(editedEvent.endDateTime, {
+                        hours: newDate.getHours(),
+                        minutes: newDate.getMinutes()
+                      })
+                      )
+                    });
+                  }}
+                />
+              </Field>
+            </FieldGroup>
+
+
+            <FieldGroup className='flex-col gap-2'>
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="event-meetingdatetime-enabled"
+                  checked={editedEvent.meetingDateTime !== null}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      const newDate = new Date();
                       setEditedEvent({
                         ...editedEvent,
-                        max_trial_attendees:
-                          editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
+                        meetingDateTime: formatDateToDatabase(set(editedEvent.startingDateTime, {
+                          hours: newDate.getHours(),
+                          minutes: newDate.getMinutes()
+                        })),
                       });
-                      event.stopPropagation();
-                    }}
-                  >
-                    <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
-                  </IconButton>
-                </Box>
-              }
-            >
-              <ListItemAvatar>
-                <Checkbox
-                  sx={{ pl: 0 }}
-                  checked={editedEvent.max_trial_attendees !== null}
-                  onChange={() =>
-                    setEditedEvent({
-                      ...editedEvent,
-                      max_trial_attendees: editedEvent.max_trial_attendees === null ? 1 : null,
-                    })
-                  }
-                />
-              </ListItemAvatar>
-
-              <ListItemText primary={'Maximale Probe-Teilnehmerzahl'} />
-            </ListItem>
-          </Has>
-
-          <Divider sx={{ mb: 1 }} />
-
-          <Has feat={'items'}>
-            <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
-              <ListItemAvatar>
-                <Checkbox
-                  sx={{ pl: 0 }}
-                  checked={editedEvent.required_item !== null}
-                  onChange={() =>
-                    setEditedEvent({
-                      ...editedEvent,
-                      required_item: editedEvent.required_item === null ? 'mtvStorage' : null,
-                    })
-                  }
-                />
-              </ListItemAvatar>
-              <Select
-                size="small"
-                label={'Benötigter Schlüssel'}
-                disabled={editedEvent.required_item === null}
-                fullWidth
-                value={editedEvent.required_item ?? 'none'}
-                onChange={(e) => {
-                  if (e.target.value === 'none') setEditedEvent({ ...editedEvent, required_item: null });
-                  else setEditedEvent({ ...editedEvent, required_item: e.target.value as Enums<'ItemType'> });
-                }}
-              >
-                <MenuItem value={'goethe'}>Goethe Schlüssel</MenuItem>
-                <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
-                <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
-                <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
-                <MenuItem value={'none'}>Keiner</MenuItem>
-              </Select>
-            </ListItem>
-          </Has>
-          <Has feat={'games'}>
-            <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
-              <ListItemAvatar>
-                <Checkbox
-                  sx={{ pl: 0 }}
-                  checked={editedEvent.constellations_enabled}
-                  onChange={() =>
-                    setEditedEvent({
-                      ...editedEvent,
-                      constellations_enabled: !editedEvent.constellations_enabled,
-                    })
-                  }
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={'Konstellationen aktiviert'}
-                secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
-              />
-            </ListItem>
-          </Has>
-          <ListItem
-            dense
-            sx={{ pt: 0, pb: 0, mb: 2 }}
-            key={'pledges'}
-            onClick={() => {
-              setDialogOpen('bring_items');
-            }}
-          >
-            <ListItemAvatar>
-              <Category />
-            </ListItemAvatar>
-            <ListItemText
-              primary={'Gegenstände mitbringen'}
-              secondary={bringItems.map((x) => (
-                <Chip key={x.id} sx={{ mr: 1 }} size="small" label={`${x.required_qty}x ${x.name}`} />
-              ))}
-            />
-          </ListItem>
-        </List>
-      </Box>
-      <SwipeableDialog
-        title="Gegenstände mitbringen"
-        open={dialogOpen === 'bring_items'}
-        onClose={() => setDialogOpen(null)}
-      >
-        <List>
-          {bringItems.map((item, index) => (
-            <ListItem divider key={item.created_at}>
-              <ListItemAvatar>
-                <IconButton
-                  onClick={() => {
-                    const newItems = [...bringItems];
-                    newItems.splice(index, 1);
-                    setBringItems(newItems);
+                    } else {
+                      setEditedEvent({
+                        ...editedEvent,
+                        meetingDateTime: null
+                      });
+                    }
                   }}
+                />
+                <FieldLabel
+                  htmlFor="event-meetingdatetime-enabled"
+                  className="font-normal"
                 >
-                  <Delete />
-                </IconButton>
-              </ListItemAvatar>
-              <TextField
-                fullWidth
-                variant="outlined"
-                label="Gegenstand"
-                value={item.name}
-                onChange={(e) => {
-                  const newItems = [...bringItems];
-                  newItems[index].name = e.target.value;
-                  setBringItems(newItems);
-                }}
-                sx={{ mr: 2 }}
-                margin="normal"
-              />
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {item.required_qty && item.required_qty > 0 && (
-                  <>
-                    <IconButton
-                      disableRipple
-                      onClick={(event) => {
-                        const newItems = [...bringItems];
-                        newItems[index].required_qty = Math.max(1, (newItems[index].required_qty ?? 0) - 1);
-                        setBringItems(newItems);
-                        event.stopPropagation();
-                      }}
-                    >
-                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-                    </IconButton>
-                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-                      {item.required_qty}
-                    </Typography>
-                  </>
-                )}
-                <IconButton
-                  disableRipple
-                  onClick={(event) => {
-                    const newItems = [...bringItems];
-                    newItems[index].required_qty = (newItems[index].required_qty ?? 0) + 1;
-                    setBringItems(newItems);
-                    event.stopPropagation();
+                  Treffpunkt vor dem Training
+                </FieldLabel>
+              </Field>
+              <Field className={cn("", {
+                "hidden": editedEvent.meetingDateTime === null
+              })}>
+                <TimePicker
+                  id="event-meetingdatetime"
+                  placeholder="12:30"
+                  value={editedEvent?.meetingDateTime ? new Date(editedEvent.meetingDateTime) : undefined}
+                  onValueChange={(newDate) => {
+                    if (!newDate) return;
+
+                    setEditedEvent({
+                      ...editedEvent,
+                      meetingDateTime: formatDateToDatabase(set(editedEvent.startingDateTime, {
+                        hours: newDate.getHours(),
+                        minutes: newDate.getMinutes()
+                      })),
+                    });
                   }}
-                >
-                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-                </IconButton>
-              </Box>
-            </ListItem>
-          ))}
-          <ListItem
-            onClick={() => {
-              setBringItems([
-                ...bringItems,
+                />
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+
+          <FieldSeparator />
+
+          <FieldSet className='p-2'>
+            <FieldLegend className='font-semibold'>Standort</FieldLegend>
+            <Item variant={"outline"}>
+              <ItemContent>
                 {
-                  name: '',
-                  required_qty: 1,
-                  created_at: formatDateToDatabase(Date.now()),
-                  created_by: user.id,
-                  event: editedEvent.id,
-                  sort_order: 0,
-                  id: '',
-                  notes: '',
-                  unit: 'Stk.',
-                },
-              ]);
-            }}
-          >
-            <ListItemAvatar>
-              <IconButton>
-                <Add />
-              </IconButton>
-            </ListItemAvatar>
-            <ListItemText primary={'Gegenstand hinzufügen'} />
-          </ListItem>
-        </List>
-      </SwipeableDialog>
-      <Dialog open={dialogOpen === 'repeat'} onClose={() => setDialogOpen(null)}>
-        <DialogTitle>Wiederholung</DialogTitle>
-        <DialogContent>
-          <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <RadioGroup
-              aria-labelledby="demo-radio-buttons-group-label"
-              value={editedEvent.recurrence}
-              onChange={(e) => {
-                setEditedEvent({ ...editedEvent, recurrence: e.target.value as EventRecurrence });
-                setDialogOpen(null);
-              }}
-              name="radio-buttons-group"
-            >
-              {Array.from<{ value: EventRecurrence; label: string }>([
-                { value: 'None', label: 'Gar nicht' },
-                { value: 'Weekly', label: 'Wöchentlich' },
-                { value: 'Fortnightly', label: 'Alle 2 Wochen' },
-                { value: 'Monthly', label: 'Monatlich' },
-              ]).map((item) => (
-                <FormControlLabel value={item.value} control={<Radio />} label={item.label} key={item.value} />
-              ))}
-            </RadioGroup>
-          </FormControl>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={dialogOpen === 'stopRepeat'} onClose={() => setDialogOpen(null)}>
-        <DialogTitle>Wiederholung</DialogTitle>
-        <DialogContent>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={editedEvent.recurrenceEnd === null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    recurrenceEnd: editedEvent.recurrenceEnd
-                      ? null
-                      : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
-                  })
+                  place ? <>
+                    <ItemTitle className='truncate'>{place.name}</ItemTitle>
+                    <ItemDescription className='truncate'>{place?.description}</ItemDescription>
+                  </>
+                    : <ItemTitle>Kein Standort gewählt</ItemTitle>
                 }
-              />
-            }
-            label="Niemals"
-          />
+              </ItemContent>
+              <ItemActions>
+                {
+                  place && <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                    const result = await dialogs.open(SearchPlacesDialog);
+                    if (result) {
+                      setEditedEvent({
+                        ...editedEvent,
+                        place: JSON.stringify({
+                          name: result.name,
+                          description: result.description,
+                          lat: result.lat,
+                          lon: result.lon,
+                        }),
+                      });
+                    }
+                  }}>
+                    <Pencil />
+                  </Button>
+                }
+                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                  if (place !== null) {
+                    setEditedEvent({ ...editedEvent, place: null })
+                  } else {
+                    const result = await dialogs.open(SearchPlacesDialog);
+                    if (result) {
+                      setEditedEvent({
+                        ...editedEvent,
+                        place: JSON.stringify({
+                          name: result.name,
+                          description: result.description,
+                          lat: result.lat,
+                          lon: result.lon,
+                        }),
+                      });
+                    }
+                  }
+                }}>
+                  {
+                    place ? <Trash2 /> : <Map />
+                  }
+                </Button>
+              </ItemActions>
+            </Item>
+          </FieldSet>
 
-          <DatePicker
-            sx={{ mt: 2, mb: 2, width: '100%' }}
-            label="Start"
-            disabled={editedEvent.recurrenceEnd === null}
-            onChange={(val) => {
-              if (!val) return;
-              setEditedEvent({
-                ...editedEvent,
-                recurrenceEnd: formatDateToDatabase(
-                  set(editedEvent.recurrenceEnd ? new Date(editedEvent.recurrenceEnd) : Date.now(), {
+          <FieldSeparator />
+
+          <FieldSet className='p-2'>
+            <FieldLegend className='font-semibold'>Wiederholung</FieldLegend>
+
+            <FieldLabel htmlFor="switch-notifications">
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>Wiederholung</FieldTitle>
+                  <FieldDescription>
+                    {nameOfRecurrence(editedEvent.recurrence)}
+                  </FieldDescription>
+                  {
+                    editedEvent.recurrenceEnd && <FieldDescription>
+                      Endet: {format(editedEvent.recurrenceEnd, "dd.MM.yyyy HH:mm")}
+                    </FieldDescription>
+                  }
+                </FieldContent>
+                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                  const result = await dialogs.selectSingleOption<EventRecurrence>([
+                    { value: 'None', label: 'Keine Wiederholung' },
+                    { value: 'Weekly', label: 'Wöchentlich' },
+                    { value: 'Fortnightly', label: 'Alle 2 Wochen' },
+                    { value: 'Monthly', label: 'Monatlich' },
+                  ], editedEvent.recurrence);
+                  if (result) {
+                    setEditedEvent({ ...editedEvent, recurrence: result, ...(result === "None" && { recurrenceEnd: null }) })
+                  }
+                }}>
+                  <CalendarSync />
+                </Button>
+                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                  const result = await dialogs.open(SelectRecurrenceEndDialog, formatDateFromDatabase(editedEvent.recurrenceEnd));
+                  if (result && result !== "unset")
+                    setEditedEvent({ ...editedEvent, recurrenceEnd: formatDateToDatabase(result) })
+                  else if (result === 'unset')
+                    setEditedEvent({ ...editedEvent, recurrenceEnd: null })
+
+                }}>
+                  <CalendarX2 />
+                </Button>
+              </Field>
+            </FieldLabel>
+
+          </FieldSet>
+
+          <FieldSeparator />
+
+          <FieldSet className='p-2'>
+            <FieldLegend className='font-semibold'>Optionale Felder</FieldLegend>
+            <FieldGroup className='flex flex-row items-end gap-4'>
+              <Field className='flex-1'>
+                <FieldLabel htmlFor="event-signupstartdate">Anmeldestart</FieldLabel>
+                <DatePicker
+                  id='event-signupstartdate'
+                  placeholder='Datum'
+                  className='w-full'
+                  onValueChange={(val) => {
+                    if (!val) return;
+                    setEditedEvent({
+                      ...editedEvent,
+                      answerDeadline: formatDateToDatabase(
+                        set(editedEvent.answerDeadline ? new Date(editedEvent.answerDeadline) : new Date(), {
+                          date: val.getDate(),
+                          year: val.getFullYear(),
+                          month: val.getMonth(),
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
+                    });
+                  }}
+                  value={formatDateFromDatabase(editedEvent.answerDeadline) ?? undefined} />
+              </Field>
+
+              <Field className='w-24'>
+                <FieldLabel htmlFor="event-signupstarttime" className='hidden'>Uhrzeit</FieldLabel>
+                <TimePicker
+                  id="event-signupstarttime"
+                  className='!w-24'
+                  placeholder="12:30"
+                  value={editedEvent?.answerDeadline ? new Date(editedEvent.answerDeadline) : undefined}
+                  onValueChange={(newDate) => {
+                    if (!newDate) return;
+
+                    const dbFormattedDate = formatDateToDatabase(newDate);
+
+                    setEditedEvent({
+                      ...editedEvent,
+                      answerDeadline: dbFormattedDate,
+                    });
+                  }}
+                />
+              </Field>
+
+              <Button className='flex-none min-w-0' variant={"outline"} onClick={() => {
+                setEditedEvent({
+                  ...editedEvent,
+                  answerDeadline: null
+                })
+              }}>
+                <Trash2 />
+              </Button>
+            </FieldGroup>
+
+            <FieldLabel>
+              <Field>
+                <FieldLabel htmlFor="event-maxattendees">Maximale Teilnehmeranzahl</FieldLabel>
+                <Field orientation={"horizontal"}>
+                  <Input
+                    type='number'
+                    disabled={editedEvent.maxAttendees === null}
+                    value={editedEvent.maxAttendees?.toFixed(0) ?? 0}
+                    onChange={(e) => {
+                      const parsed = Number.parseInt(e.target.value);
+                      if (Number.isNaN(parsed)) {
+                        setEditedEvent({
+                          ...editedEvent, maxAttendees: 0
+                        })
+                      } else {
+                        setEditedEvent({
+                          ...editedEvent,
+                          maxAttendees: parsed < 0 ? 0 : parsed
+                        })
+                      }
+                    }}
+                  />
+                  <Switch
+                    checked={typeof editedEvent.maxAttendees === 'number'}
+                    onCheckedChange={(val) => {
+                      setEditedEvent({
+                        ...editedEvent,
+                        maxAttendees: val ? 0 : null
+                      })
+                    }}
+                  />
+                </Field>
+              </Field>
+            </FieldLabel>
+
+            <Has feat={"events.trials"}>
+              <FieldLabel>
+                <Field>
+                  <FieldLabel htmlFor="event-max_trial_attendees">Maximale Probeteilnehmer</FieldLabel>
+                  <Field orientation={"horizontal"}>
+                    <Input
+                      type='number'
+                      disabled={editedEvent.max_trial_attendees === null}
+                      value={editedEvent.max_trial_attendees?.toFixed(0) ?? 0}
+                      onChange={(e) => {
+                        const parsed = Number.parseInt(e.target.value);
+                        if (Number.isNaN(parsed)) {
+                          setEditedEvent({
+                            ...editedEvent, max_trial_attendees: 0
+                          })
+                        } else {
+                          setEditedEvent({
+                            ...editedEvent,
+                            max_trial_attendees: parsed < 0 ? 0 : parsed
+                          })
+                        }
+                      }}
+                    />
+                    <Switch
+                      checked={typeof editedEvent.max_trial_attendees === 'number'}
+                      onCheckedChange={(val) => {
+                        setEditedEvent({
+                          ...editedEvent,
+                          max_trial_attendees: val ? 0 : null
+                        })
+                      }}
+                    />
+                  </Field>
+                </Field>
+              </FieldLabel>
+            </Has>
+
+            <Has feat={"items"}>
+              <FieldLabel>
+                <Field>
+                  <FieldLabel htmlFor="event-required-item">Benötigter Gegenstand</FieldLabel>
+                  <Field orientation={"horizontal"}>
+                    <Select items={ITEMS} value={editedEvent.required_item} onValueChange={(val) => setEditedEvent({
+                      ...editedEvent,
+                      required_item: val
+                    })}>
+                      <SelectTrigger className="w-full" disabled={editedEvent.required_item === null}>
+                        <SelectValue placeholder={"Gegenstand auswählen"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {
+                          ITEMS.map(x => (
+                            <SelectItem key={x.value} value={x.value} >{x.label}</SelectItem>
+                          ))
+                        }
+                      </SelectContent>
+                    </Select>
+                    <Switch
+                      checked={typeof editedEvent.required_item === "string"}
+                      onCheckedChange={(val) => {
+                        setEditedEvent({
+                          ...editedEvent,
+                          required_item: val ? 'mtvGym' : null
+                        })
+                      }}
+                    />
+                  </Field>
+                </Field>
+              </FieldLabel>
+            </Has>
+
+            <Has feat={"games"}>
+              <FieldLabel>
+                <Field orientation={"horizontal"}>
+                  <FieldContent className='w-full'>
+                    <FieldLabel>
+                      Konstellationen aktiviert
+                    </FieldLabel>
+                    <FieldDescription>
+                      Soll es möglich sein für Trainer, Konstellationen zu erstellen?
+                    </FieldDescription>
+                  </FieldContent>
+                  <Switch
+                    id='event-constellations_enabled'
+                    checked={editedEvent.constellations_enabled}
+                    onCheckedChange={(val) => {
+                      setEditedEvent({
+                        ...editedEvent,
+                        constellations_enabled: val
+                      })
+                    }}
+                  />
+                </Field>
+              </FieldLabel>
+            </Has>
+
+            <FieldLabel>
+              <Field orientation={"horizontal"}>
+                <FieldContent className='w-full'>
+                  <FieldLabel>
+                    Gegenstände mitbringen
+                  </FieldLabel>
+                  <FieldDescription>
+                    {
+                      bringItems.map((x) => (
+                        <Badge key={x.id}>{`${x.required_qty}x ${x.name}`}</Badge>
+                      ))
+                    }
+                  </FieldDescription>
+                </FieldContent>
+                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                  const result = await dialogs.open(PledgesDialog, {
+                    bringItems: bringItems,
+                    eventId: editedEvent.id,
+                    user: user
+                  });
+                  setBringItems(result ?? [])
+                }}>
+                  <Pencil />
+                </Button>
+              </Field>
+            </FieldLabel>
+          </FieldSet>
+        </form>
+      </DialogBody>
+      <DialogFooter variant={"fullscreen"}>
+        <Button
+          onClick={() => {
+            if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }}
+        >
+          Speichern
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog >
+
+
+  //     <Dialog open={dialogOpen === 'repeat'} onClose={() => setDialogOpen(null)}>
+  //       <DialogTitle>Wiederholung</DialogTitle>
+  //       <DialogContent>
+  //         <FormControl sx={{ m: 1, minWidth: 120 }}>
+  //           <RadioGroup
+  //             aria-labelledby="demo-radio-buttons-group-label"
+  //             value={editedEvent.recurrence}
+  //             onChange={(e) => {
+  //               setEditedEvent({ ...editedEvent, recurrence: e.target.value as EventRecurrence });
+  //               setDialogOpen(null);
+  //             }}
+  //             name="radio-buttons-group"
+  //           >
+  //             {Array.from<{ value: EventRecurrence; label: string }>([
+  //               { value: 'None', label: 'Gar nicht' },
+  //               { value: 'Weekly', label: 'Wöchentlich' },
+  //               { value: 'Fortnightly', label: 'Alle 2 Wochen' },
+  //               { value: 'Monthly', label: 'Monatlich' },
+  //             ]).map((item) => (
+  //               <FormControlLabel value={item.value} control={<Radio />} label={item.label} key={item.value} />
+  //             ))}
+  //           </RadioGroup>
+  //         </FormControl>
+  //       </DialogContent>
+  //     </Dialog>
+
+  //     <Dialog open={dialogOpen === 'stopRepeat'} onClose={() => setDialogOpen(null)}>
+  //       <DialogTitle>Wiederholung</DialogTitle>
+  //       <DialogContent>
+  //         <FormControlLabel
+  //           control={
+  //             <Checkbox
+  //               checked={editedEvent.recurrenceEnd === null}
+  //               onChange={() =>
+  //                 setEditedEvent({
+  //                   ...editedEvent,
+  //                   recurrenceEnd: editedEvent.recurrenceEnd
+  //                     ? null
+  //                     : formatDateToDatabase(
+  //                       set(Date.now(), {
+  //                         seconds: 0,
+  //                         milliseconds: 0,
+  //                       })
+  //                     ),
+  //                 })
+  //               }
+  //             />
+  //           }
+  //           label="Niemals"
+  //         />
+
+  //         <DatePicker
+  //           sx={{ mt: 2, mb: 2, width: '100%' }}
+  //           label="Start"
+  //           disabled={editedEvent.recurrenceEnd === null}
+  //           onChange={(val) => {
+  //             if (!val) return;
+  //             setEditedEvent({
+  //               ...editedEvent,
+  //               recurrenceEnd: formatDateToDatabase(
+  //                 set(editedEvent.recurrenceEnd ? new Date(editedEvent.recurrenceEnd) : Date.now(), {
+  //                   date: val.getDate(),
+  //                   year: val.getFullYear(),
+  //                   month: val.getMonth(),
+  //                   hours: 0,
+  //                   minutes: 0,
+  //                   seconds: 0,
+  //                   milliseconds: 0,
+  //                 })
+  //               ),
+  //             });
+  //           }}
+  //           value={editedEvent.recurrenceEnd ? formatDateFromDatabase(editedEvent.recurrenceEnd) : null}
+  //         />
+
+  //         <Typography>Es werden Termine erstellt bis einschließlich diesem Tag. Alles danach entfällt</Typography>
+  //       </DialogContent>
+  //       <DialogActions>
+  //         <Button onClick={() => setDialogOpen(null)}>Bestätigen</Button>
+  //       </DialogActions>
+  //     </Dialog>
+
+  //     <SearchPlacesDialog
+  //       open={dialogOpen === 'places'}
+  //       handleClose={() => setDialogOpen(null)}
+  //       placeSelected={(place) => {
+  //         setEditedEvent({
+  //           ...editedEvent,
+  //           place: JSON.stringify({
+  //             name: place.name,
+  //             description: place.description,
+  //             lat: place.lat,
+  //             lon: place.lon,
+  //           }),
+  //         });
+  //         setDialogOpen(null);
+  //       }}
+  //     />
+  //   </Dialog>
+  // );
+};
+
+const SelectRecurrenceDialog = ({ open, onClose }: DialogProps<undefined, EventRecurrence | null>) => (
+  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent >
+      <div className={"pt-8 flex flex-col gap-4"}>
+        {Array.from<{ value: EventRecurrence; label: string }>([
+          { value: 'None', label: 'Gar nicht' },
+          { value: 'Weekly', label: 'Wöchentlich' },
+          { value: 'Fortnightly', label: 'Alle 2 Wochen' },
+          { value: 'Monthly', label: 'Monatlich' },
+        ]).map((item) => (
+          <Item key={item.value} variant={"outline"} onClick={() => onClose(item.value)}>
+            <ItemContent>
+              <ItemTitle>{item.label}</ItemTitle>
+            </ItemContent>
+          </Item>
+        ))}
+      </div>
+    </DialogContent>
+  </Dialog>
+)
+
+const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date | null, Date | 'unset' | null>) => {
+
+  const [date, setDate] = useState(payload);
+
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent>
+      <div className={"pt-8 flex flex-col gap-4"}>
+        <FieldSet>
+          <FieldLegend>Wiederholungsende</FieldLegend>
+          <FieldDescription>Bis wann soll die Wiederholung fortgesetzt werden?</FieldDescription>
+          <FieldGroup className='flex-row'>
+            <Field>
+              <FieldLabel htmlFor="date">Datum</FieldLabel>
+              <DatePicker
+                id='date'
+                placeholder='Datum'
+                onValueChange={(val) => {
+                  if (!val) return;
+                  setDate(set(date ?? new Date(), {
                     date: val.getDate(),
                     year: val.getFullYear(),
                     month: val.getMonth(),
-                    hours: 0,
-                    minutes: 0,
                     seconds: 0,
                     milliseconds: 0,
-                  })
-                ),
-              });
-            }}
-            value={editedEvent.recurrenceEnd ? formatDateFromDatabase(editedEvent.recurrenceEnd) : null}
-          />
+                  }))
+                }}
+                value={date ?? undefined} />
+            </Field>
 
-          <Typography>Es werden Termine erstellt bis einschließlich diesem Tag. Alles danach entfällt</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(null)}>Bestätigen</Button>
-        </DialogActions>
-      </Dialog>
+            <Field>
+              <FieldLabel htmlFor="time">Uhrzeit</FieldLabel>
+              <TimePicker
+                id="time"
+                placeholder="12:30"
+                value={date ?? undefined}
+                onValueChange={(val) => {
+                  if (!val) return;
+                  setDate(set(date ?? new Date(), {
+                    hours: val.getHours(),
+                    minutes: val.getMinutes(),
+                    seconds: 0,
+                    milliseconds: 0,
+                  }))
+                }}
+              />
+            </Field>
+          </FieldGroup>
+        </FieldSet>
 
-      <SearchPlacesDialog
-        open={dialogOpen === 'places'}
-        handleClose={() => setDialogOpen(null)}
-        placeSelected={(place) => {
-          setEditedEvent({
-            ...editedEvent,
-            place: JSON.stringify({
-              name: place.name,
-              description: place.description,
-              lat: place.lat,
-              lon: place.lon,
-            }),
-          });
-          setDialogOpen(null);
-        }}
-      />
-    </Dialog>
-  );
+        <Button onClick={() => onClose(date)}>
+          Speichern
+        </Button>
+
+        <Button disabled={!date} variant={"outline"} onClick={() => onClose('unset')}>
+          <Trash2 />
+          Wiederholungsende löschen
+        </Button>
+      </div>
+    </DialogContent>
+  </Dialog>
+}
+
+type BringItem = {
+  created_at: string;
+  created_by: string | null;
+  event: string;
+  id: string;
+  name: string;
+  notes: string | null;
+  required_qty: number | null;
+  sort_order: number;
+  unit: string;
 };
+
+type Props = {
+  bringItems: BringItem[]
+  user: User
+  eventId: string
+}
+
+export const PledgesDialog = ({ open, onClose, payload: { bringItems, user, eventId } }: DialogProps<Props, BringItem[]>) => {
+
+  const [items, setItems] = useState(bringItems);
+
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(items)}>
+    <DialogContent variant={"drawer"}>
+      <DialogHeader className='px-4'>
+        <DialogTitle>Gegenstände mitbringen</DialogTitle>
+      </DialogHeader>
+      <DialogBody>
+        <div className='flex flex-col gap-2'>
+          {
+            items.map((item, index) => (
+              <Item variant={"outline"} key={item.id}>
+                <ItemContent className='flex flex-1 flex-row'>
+                  <Input
+                    className='flex-grow'
+                    placeholder="Gegenstand"
+                    value={item.name}
+                    onChange={(e) => {
+                      const newItems = [...items];
+                      newItems[index].name = e.target.value;
+                      setItems(newItems);
+                    }} />
+                  <Input
+                    className='flex-none w-24'
+                    type="number"
+                    placeholder="Anzahl"
+                    value={item.required_qty ?? 0}
+                    onChange={(e) => {
+                      const parsed = Number.parseInt(e.target.value);
+                      const newItems = [...items];
+                      if (Number.isNaN(parsed)) {
+                        newItems[index].required_qty = 0;
+                      } else {
+                        newItems[index].required_qty = parsed < 0 ? 0 : parsed;
+                      }
+
+                      setItems(newItems);
+                    }} />
+                  <Button
+                    className='flex-shrink'
+                    variant={"outline"} onClick={() => {
+                      const newItems = [...items];
+                      newItems.splice(index, 1);
+                      setItems(newItems);
+                    }}>
+                    <Trash2 />
+                  </Button>
+                </ItemContent>
+              </Item>
+            ))
+          }
+
+        </div>
+      </DialogBody>
+      <DialogFooter variant={"fullscreen"}>
+        <Button onClick={() => {
+          setItems([
+            ...items,
+            {
+              name: '',
+              required_qty: 1,
+              created_at: formatDateToDatabase(Date.now()),
+              created_by: user.id,
+              event: eventId,
+              sort_order: 0,
+              id: '',
+              notes: '',
+              unit: 'Stk.',
+            },
+          ]);
+        }}>
+          Hinzufügen
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+
+  </Dialog>
+}

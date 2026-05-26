@@ -1,0 +1,362 @@
+'use client'
+
+import { AlertTriangle, Table, X } from 'lucide-react'
+import { useCallback, useMemo, useState } from 'react'
+import { z, type ZodTypeAny } from 'zod'
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AppBar } from '@/components/ui/appbar'
+import { Button } from '@/components/ui/button'
+import { DataTable, FilterCondition } from '@/components/ui/data-table'
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
+import { useGrants } from '@/features/auth/GrantsContext'
+import { supabase } from '@/lib/supabase'
+import { formatDateFromDatabaseNotNull, formatDateToDatabase, groupBy } from '@/utils'
+import { useQuery } from '@tanstack/react-query'
+import { ColumnFiltersState, PaginationState, SortingState } from '@tanstack/react-table'
+import { generateColumnsFromMetadata, TableMetadata, useListTables, useTableMutations } from '../hooks/use-tables'
+import { DynamicForm } from './dynamic-form'
+
+// Helper to generate a Zod schema from the table's column definitions
+function generateZodSchema(table: TableMetadata): z.ZodObject<any, any, any> {
+  if (!table || !table.columns) {
+    return z.object({})
+  }
+
+  const shape: Record<string, ZodTypeAny> = {}
+  for (const column of table.columns) {
+    // We can only edit updatable columns that are not generated
+
+    let fieldSchema: ZodTypeAny
+    const dataType = column.format.toLowerCase()
+
+    if (dataType.includes('array')) {
+      fieldSchema = z.array(z.any())
+    } else if (dataType.includes('int') || dataType.includes('numeric')) {
+      fieldSchema = z.number()
+    } else if (dataType.includes('bool')) {
+      fieldSchema = z.boolean()
+    } else if (column.enums && column.enums.length > 0) {
+      fieldSchema = z.enum(column.enums as [string, ...string[]])
+    } else if (column.format === 'timestamptz' || column.format === 'timestamp') {
+      fieldSchema = z.preprocess((arg) => {
+        if (typeof arg === "string") return formatDateFromDatabaseNotNull(arg);
+        return arg;
+      }, z.date())
+    } else {
+      fieldSchema = z.string()
+    }
+
+    if (column.is_nullable) {
+      fieldSchema = fieldSchema.nullish()
+    }
+
+    shape[column.name] = fieldSchema
+  }
+  return z.object(shape)
+}
+
+type EditRowViewProps = {
+  table: TableMetadata
+  row: any
+  onSuccess: () => void
+}
+
+function EditRowView({ payload: {
+  table,
+  row,
+  onSuccess,
+}, open, onClose }: DialogProps<EditRowViewProps>) {
+  const { updateRow } = useTableMutations(table);
+  const formSchema = useMemo(() => generateZodSchema(table), [table]);
+
+  const columnInfo = useMemo(() => {
+    if (!table || !table.columns) return {}
+
+    const info: Record<string, any> = {}
+    for (const column of table.columns) {
+
+      const dataType = column.format.toLowerCase()
+      const displayType =
+        dataType === 'user-defined' &&
+          column.enums &&
+          Array.isArray(column.enums) &&
+          column.enums.length > 0
+          ? 'enum'
+          : dataType
+
+      info[column.name] = {
+        data_type: displayType,
+        is_nullable: column.is_nullable,
+      }
+    }
+    return info
+  }, [table])
+
+  const handleFormSubmit = useCallback(
+    async (formData: any) => {
+      const pkNames = table.primary_keys.map(pk => pk.name);
+
+      const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
+        const column = table.columns.find(c => c.name === key);
+        if (value instanceof Date) {
+          acc[key] = formatDateToDatabase(value);
+        } else if (value === '' && column?.is_nullable) {
+          // Restore null for empty nullable fields (e.g. FK UUIDs that were null)
+          acc[key] = null;
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as any);
+
+      const hasValueChanged = (key: string, original: any, cleaned: any): boolean => {
+        const column = table.columns.find(c => c.name === key);
+        if (column?.format === 'timestamptz' || column?.format === 'timestamp') {
+          // Compare as milliseconds to avoid format string differences
+          const originalMs = original ? new Date(original).getTime() : null;
+          const cleanedMs = cleaned ? new Date(cleaned).getTime() : null;
+          return originalMs !== cleanedMs;
+        }
+        return (original ?? null) !== (cleaned ?? null);
+      };
+
+      const changedFields = Object.fromEntries(
+        Object.entries(cleanedData).filter(([key, value]) =>
+          pkNames.includes(key) || hasValueChanged(key, row[key], value)
+        )
+      );
+
+      console.log('changedFields', changedFields);
+
+      try {
+        await updateRow.mutateAsync(changedFields);
+        onSuccess();
+        onClose();
+      } catch (e) {
+        // Fehler-Handling erfolgt im Hook via Toast
+      }
+    },
+    [row, table, updateRow, onSuccess, onClose]
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent variant={"fullscreen"}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className={"flex-1"}>
+            Editing row in {table.name}
+          </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody>
+          <DynamicForm
+            schema={formSchema}
+            initialValues={row}
+            onSubmit={handleFormSubmit}
+            columnInfo={columnInfo}
+            isLoading={updateRow.isPending}
+            relationships={table.relationships}
+            primaryKeyNames={table.primary_keys.map(pk => pk.name)}
+          />
+        </DialogBody>
+      </DialogContent>
+    </Dialog >
+  )
+}
+
+type TableRecordsViewProps = {
+  table: TableMetadata
+}
+
+function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<TableRecordsViewProps>) {
+  const dialogs = useDialogs();
+
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 40 })
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const columns = useMemo(() => generateColumnsFromMetadata(table), [table])
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['table-data', table.schema, table.name, sorting, pagination, columnFilters], // Konsistenter Key
+    queryFn: async () => {
+      let query = supabase
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .schema(table.schema)
+        // @ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
+        .from(table.name)
+        .select('*', { count: 'exact' })
+
+      if (sorting.length > 0) {
+        sorting.forEach(sort => {
+          query = query.order(sort.id, { ascending: !sort.desc })
+        })
+      }
+
+      const advancedFilter = columnFilters.find(f => f.id === "advanced_filters");
+
+      if (advancedFilter && Array.isArray(advancedFilter.value)) {
+        advancedFilter.value.forEach((cond: FilterCondition) => {
+          if (cond.value === "" && cond.operator !== "is") return;
+
+          const column = cond.column;
+          const val = cond.value;
+          const isTimestampCol = cond.data_type === 'timestamptz' || cond.data_type === 'timestamp';
+          const isValidTimestampVal = !isTimestampCol || !Number.isNaN(new Date(val).getTime());
+
+          switch (cond.operator) {
+            // COMPARISON
+            case 'eq': if (isValidTimestampVal) query = query.eq(column, val); break;
+            case 'neq': if (isValidTimestampVal) query = query.neq(column, val); break;
+            case 'gt': if (isValidTimestampVal) query = query.gt(column, val); break;
+            case 'lt': if (isValidTimestampVal) query = query.lt(column, val); break;
+            case 'gte': if (isValidTimestampVal) query = query.gte(column, val); break;
+            case 'lte': if (isValidTimestampVal) query = query.lte(column, val); break;
+
+            // PATTERN MATCHING
+            case 'like': query = query.like(column, `%${val}%`); break;
+            case 'ilike': query = query.ilike(column, `%${val}%`); break;
+
+            // SET & NULL CHECKS
+            case 'in': {
+              const list = val.split(',').map(s => s.trim());
+              query = query.in(column, list);
+              break;
+            }
+
+            case 'is':
+              if (val.toLowerCase() === "null") query = query.is(column, null);
+              else if (val.toLowerCase() === "true") query = query.is(column, true);
+              else if (val.toLowerCase() === "false") query = query.is(column, false);
+              break;
+          }
+        });
+      }
+
+      const from = pagination.pageIndex * pagination.pageSize
+      const to = from + pagination.pageSize - 1
+      query = query.range(from, to)
+
+      const { data, error, count } = await query
+      if (error) throw error
+      return { data, count }
+    },
+  });
+
+  const handleRowClick = (row: any) => dialogs.open(EditRowView, { table, row, onSuccess: () => { } })
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className={"flex-1"}>
+            {`${table.schema}.${table.name}`}
+          </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody className='p-2'>
+          <DataTable
+            columns={columns}
+            data={data?.data || []}
+            rowCount={data?.count || 0}
+            onRowClick={handleRowClick}
+            sorting={sorting}
+            onSortingChange={setSorting}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={setColumnFilters}
+            isLoading={isLoading}
+          />
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const DatabaseManager = () => {
+  const { user } = useGrants();
+  const dialogs = useDialogs();
+  const { data: tables = [], isLoading, isError } = useListTables()
+
+  const handleTableClick = (table: TableMetadata) => {
+    dialogs.open(TableRecordsView, { table })
+  }
+
+  return (
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title={"Datenbank Manager"}
+        user={user}
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <div className="p-4 pt-4 lg:p-8 lg:pt-8">
+
+          {isError && (
+            <Alert variant="destructive" className="mt-8">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error loading tables</AlertTitle>
+              <AlertDescription>There was a problem loading your database tables.</AlertDescription>
+            </Alert>
+          )}
+
+          {isLoading && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          )}
+
+          {tables && tables.length > 0 ? (
+            <div>
+              {groupBy(tables, (x: TableMetadata) => x.schema).entries().map(([key, groupedTables]) => (
+                <div key={key}>
+                  <div className='text-base font-bold'>{key}</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {
+                      groupedTables.map(table => <Button
+                        variant="outline"
+                        key={table.name}
+                        size="lg"
+                        className="flex-row justify-between text-left"
+                        onClick={() => handleTableClick(table)}
+                      >
+                        <Table className="h-4 w-4 text-muted-foreground" />
+                        <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
+                        <div className="text-sm text-muted-foreground font-mono shrink-0">
+                          {table.live_rows_estimate} rows
+                        </div>
+                      </Button>)
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : !isLoading && (!tables || tables.length === 0) ? (
+            <Alert className="mt-8">
+              <Table className="h-4 w-4" />
+              <AlertTitle>No database tables</AlertTitle>
+              <AlertDescription>Create tables to store and organize your data.</AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+      </main>
+    </div>
+  )
+}
+
+export default DatabaseManager;
