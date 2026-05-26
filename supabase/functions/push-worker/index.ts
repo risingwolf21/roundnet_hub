@@ -308,9 +308,10 @@ async function processJob(job: NotificationOutbox) {
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
-          // Extract status code from various possible locations in the error object
-          // web-push library may store it in different places depending on the error type
-          const status = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode ?? 0;
+          // Extract status code and coerce to number — the Deno HTTP layer may return
+          // the status as a string (e.g. "410"), which breaks strict === comparisons.
+          const rawStatus = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode;
+          const status = Number(rawStatus) || 0;
 
           allSent = false;
           const msg = e?.message ?? "send error";
