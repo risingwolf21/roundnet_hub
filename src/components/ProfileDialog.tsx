@@ -178,9 +178,9 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 <AvatarFallback>{profile?.displayName ? profile.displayName[0] : 'U'}</AvatarFallback>
               </Avatar>
               <div className='text-2xl mt-4'>{profile?.displayName}</div>
-              {profile?.user?.last_sign_in_at && (
+              {profile?.user?.last_seen_at && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {t('profile.lastSeenAt', { date: new Date(profile.user.last_sign_in_at) })}
+                  {t('profile.lastSeenAt', { date: new Date(profile.user.last_seen_at) })}
                 </p>
               )}
             </div>

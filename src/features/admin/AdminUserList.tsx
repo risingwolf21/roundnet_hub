@@ -64,9 +64,9 @@ const AdminUserList = () => {
                   <div>
                     <div>{user.name}</div>
                     <div className="text-xs text-muted-foreground">{user.email}</div>
-                    {user.last_sign_in_at && (
+                    {user.last_seen_at && (
                       <div className="text-xs text-muted-foreground">
-                        {t('user.lastActive', { date: new Date(user.last_sign_in_at) })}
+                        {t('user.lastActive', { date: new Date(user.last_seen_at) })}
                       </div>
                     )}
                   </div>
