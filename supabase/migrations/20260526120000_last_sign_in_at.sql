@@ -1,9 +1,11 @@
--- Add last_sign_in_at column to public.user to mirror auth.users without exposing auth schema
+-- last_seen_at mirrors the most recent auth.sessions.updated_at for a user.
+-- auth.sessions.updated_at is refreshed on every token refresh, so this tracks
+-- real app activity rather than just explicit sign-ins.
 ALTER TABLE public."user"
-  ADD COLUMN IF NOT EXISTS last_sign_in_at timestamptz NULL;
+  ADD COLUMN IF NOT EXISTS last_seen_at timestamptz NULL;
 
--- Mirror function: fires when auth.users.last_sign_in_at changes (e.g. on every sign-in)
-CREATE OR REPLACE FUNCTION public.trg_sync_last_sign_in_at()
+-- Mirror function: fires on every session INSERT or UPDATE (token refresh)
+CREATE OR REPLACE FUNCTION public.trg_sync_session_last_seen()
   RETURNS trigger
   LANGUAGE plpgsql
   SECURITY DEFINER
@@ -11,22 +13,25 @@ CREATE OR REPLACE FUNCTION public.trg_sync_last_sign_in_at()
 AS $function$
 BEGIN
   UPDATE public."user"
-     SET last_sign_in_at = NEW.last_sign_in_at
-   WHERE id = NEW.id;
+     SET last_seen_at = NEW.updated_at
+   WHERE id = NEW.user_id
+     AND (last_seen_at IS NULL OR NEW.updated_at > last_seen_at);
   RETURN NEW;
 END;
 $function$;
 
-DROP TRIGGER IF EXISTS on_auth_user_updated_last_sign_in ON auth.users;
-CREATE TRIGGER on_auth_user_updated_last_sign_in
-  AFTER UPDATE OF last_sign_in_at ON auth.users
+DROP TRIGGER IF EXISTS on_auth_session_updated ON auth.sessions;
+CREATE TRIGGER on_auth_session_updated
+  AFTER INSERT OR UPDATE ON auth.sessions
   FOR EACH ROW
-  WHEN (NEW.last_sign_in_at IS DISTINCT FROM OLD.last_sign_in_at)
-  EXECUTE FUNCTION public.trg_sync_last_sign_in_at();
+  EXECUTE FUNCTION public.trg_sync_session_last_seen();
 
--- Backfill existing users
+-- Backfill: take the most recent session per user
 UPDATE public."user" u
-   SET last_sign_in_at = a.last_sign_in_at
-  FROM auth.users a
- WHERE a.id = u.id
-   AND a.last_sign_in_at IS NOT NULL;
+   SET last_seen_at = s.last_seen
+  FROM (
+    SELECT user_id, MAX(updated_at) AS last_seen
+      FROM auth.sessions
+     GROUP BY user_id
+  ) s
+ WHERE s.user_id = u.id;

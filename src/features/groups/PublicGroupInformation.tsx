@@ -332,9 +332,9 @@ const PublicGroupInformation = () => {
                             <ItemTitle>{x.user.name}</ItemTitle>
                             <ItemDescription>
                               {x.user.email}
-                              {x.user.last_sign_in_at && (
+                              {x.user.last_seen_at && (
                                 <span className="ml-2 text-xs">
-                                  · {t('user.lastActive', { date: new Date(x.user.last_sign_in_at) })}
+                                  · {t('user.lastActive', { date: new Date(x.user.last_seen_at) })}
                                 </span>
                               )}
                             </ItemDescription>
