@@ -1,60 +1,34 @@
-import { DialogProps } from '@toolpad/core';
-import { useState } from 'react';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { CreateEventOption } from '../types';
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import DialogContent from '@mui/material/DialogContent';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
+import { DialogProps } from '@/contexts/DialogsProvider';
 
 export const EditEventOptionsDialog = ({
-  payload,
   open,
   onClose,
 }: DialogProps<undefined, null | CreateEventOption>) => {
-  const [saveEventOption, setSaveEventOption] = useState<CreateEventOption>('UpdateSingle');
 
-  return (
-    <SwipeableDialog open={open} onClose={() => onClose(null)} title={'Event aktualisieren'}>
-      <DialogContent>
-        <FormControl sx={{ m: 1, minWidth: 120 }}>
-          <RadioGroup
-            aria-labelledby="demo-radio-buttons-group-label"
-            value={saveEventOption}
-            onChange={(e) => {
-              setSaveEventOption(e.target.value as CreateEventOption);
-            }}
-            name="radio-buttons-group"
-          >
-            <FormControlLabel
-              value={'UpdateSingle'}
-              control={<Radio />}
-              label={'Nur dieses Event aktualisieren'}
-              key={'UpdateSingle'}
-            />
-            <FormControlLabel
-              value={'UpdateRecurrence'}
-              control={<Radio />}
-              label={'Dieses und alle folgenden Events aktualisieren'}
-              key={'UpdateRecurrence'}
-            />
-          </RadioGroup>
-        </FormControl>
-      </DialogContent>
-      <Box
-        sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1, position: 'absolute', left: 0, right: 0, bottom: 0 }}
-      >
-        <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => onClose(null)}>
-          Abbrechen
-        </Button>
-        <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={() => onClose(saveEventOption)}>
-          Bestätigen
-        </Button>
-      </Box>
-    </SwipeableDialog>
-  );
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"drawer"}>
+      <DialogHeader className='px-4'>
+        <DialogTitle>Event aktualisieren</DialogTitle>
+      </DialogHeader>
+      <DialogBody>
+        <div className='flex flex-col gap-2'>
+          <Item variant={"outline"} onClick={() => onClose("UpdateSingle")}>
+            <ItemContent>
+              <ItemTitle>Nur dieses Event aktualisieren</ItemTitle>
+            </ItemContent>
+          </Item>
+
+          <Item variant={"outline"} onClick={() => onClose("UpdateRecurrence")}>
+            <ItemContent>
+              <ItemTitle>Dieses und alle folgenden Events aktualisieren</ItemTitle>
+            </ItemContent>
+          </Item>
+        </div>
+      </DialogBody>
+    </DialogContent>
+  </Dialog>
 };

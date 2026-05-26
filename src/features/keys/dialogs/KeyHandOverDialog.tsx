@@ -1,52 +1,66 @@
-import { TFunction } from 'i18next';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
+import { t } from 'i18next';
 
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { getInitials } from '@/utils';
 
 type KeyHandOverDialogProps = {
-  user: User;
+  itemHolder: FullItemHolder;
   selectedUser: User | null;
-  selectedKeyHolder: FullItemHolder | null;
-  t: TFunction;
-  setSelectedUser: (user: User | null) => void;
-  confirmKeyHandOver: () => void;
 };
 
 export const KeyHandOverDialog = ({
-  user,
-  selectedUser,
-  t,
-  selectedKeyHolder,
-  setSelectedUser,
-  confirmKeyHandOver,
-}: KeyHandOverDialogProps) => {
-  return (
-    <SwipeableDialog
-      open={selectedUser !== null}
-      setOpen={() => {}}
-      onClose={() => setSelectedUser(null)}
-      title={t('keyHandOver')}
-      actions={
-        <>
-          <Button onClick={() => setSelectedUser(null)}>{t('cancel')}</Button>
-          <Button onClick={confirmKeyHandOver} autoFocus>
+  payload: {
+    selectedUser,
+    itemHolder
+  },
+  open,
+  onClose
+}: DialogProps<KeyHandOverDialogProps, boolean>) => {
+
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(false)}>
+    <DialogContent variant={"drawer"} showCloseButton={false}>
+      <DialogHeader className='my-2 mx-4'>
+        <DialogTitle className={"font-bold text-lg"}>
+          {t('keyHandOver')}
+        </DialogTitle>
+      </DialogHeader>
+      {
+        selectedUser && <div className='flex flex-row justify-center'>
+          <Avatar className="size-20">
+            {
+              selectedUser.avatarUrl
+                ? <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name ?? "User Avatar"} />
+                : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(selectedUser.name ?? "User")}</AvatarFallback>
+            }
+          </Avatar>
+        </div>
+      }
+      <div className='text-base m-4'>
+        {
+          selectedUser ?
+            selectedUser?.id === itemHolder.full_current_holder?.id
+              ? t('confirmKeyTaken', {
+                keyName: itemHolder.name,
+                userName: itemHolder?.full_current_holder?.displayName ?? '',
+              })
+              : t('confirmKeyHandover', {
+                keyName: itemHolder.name,
+                userName: selectedUser.name ?? '',
+              })
+            : t('confirmKeyTakenFromNull', { keyName: itemHolder.name })
+        }
+      </div>
+      <DialogFooter>
+        <div className='px-4 pb-4 flex justify-between'>
+          <Button variant={"outline"} onClick={() => onClose(false)}>{t('cancel')}</Button>
+          <Button onClick={() => onClose(true)} autoFocus>
             {t('confirm')}
           </Button>
-        </>
-      }
-    >
-      <Typography m={2}>
-        {selectedUser?.id === user.id
-          ? t('confirmKeyTaken', {
-              keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-            })
-          : t('confirmKeyHandover', {
-              keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-            })}
-      </Typography>
-    </SwipeableDialog>
-  );
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 };

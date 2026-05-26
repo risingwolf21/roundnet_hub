@@ -2,6 +2,8 @@ import { Duration, format, intervalToDuration, parse } from 'date-fns';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
+export const SUPABASE_PROJECT_REF = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
   'munich-roundnet': RoundnetMunichLogo,
@@ -12,11 +14,11 @@ const iconMap = {
   'munich-roundnet': '🏐',
 };
 
-const logo = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
+export const TENANT_LOGO = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
 const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap) || 'roundnet-karlsruhe'];
 
 export const BRANDING = {
-  logo: <img src={logo} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
+  logo: <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
   title: import.meta.env.VITE_WEBSITE_NAME,
   icon: icon,
 };
@@ -260,3 +262,11 @@ export function postgresIntervalToDuration(interval: string): Duration {
 
   return d;
 }
+
+export const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+};

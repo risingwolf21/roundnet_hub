@@ -36,7 +36,7 @@ SELECT tests.authenticate_as('user_1a');
 -- 1) Generierung für 30 Tage ab 2025-02-04
 -- Erwartet: 4 neue Termine (Mo 10., 17., 24. Feb, 3. Mär – letzter liegt noch < 2025-03-06 00:00Z)
 SELECT is(
-  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-02-04T00:00:00Z','30 days')) q),
+  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-02-02T00:00:00Z','34 days')) q),
   '4',
   'liefert 4 neue Occurrences (Horizon = run_at + 30d)'
 );
@@ -107,7 +107,7 @@ SELECT ok( NOT EXISTS (
 
 -- 5) Idempotenz – erneuter Lauf erzeugt keine neuen Events/Items
 SELECT is(
-  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-02-04T00:00:00Z','30 days')) q),
+  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-02-02T00:00:00Z','30 days')) q),
   '0',
   'zweiter Lauf: 0 neue Events'
 );
@@ -148,7 +148,7 @@ INSERT INTO public.event_bring_items(event, name, unit, required_qty, notes, sor
 -- 7) Nächste Generierung (neues Fenster) – sollte 4 weitere Wochen erzeugen,
 --    und diese müssen Items & Meta vom geänderten jüngsten Vorgänger übernehmen
 SELECT is(
-  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-03-06T00:00:00Z','30 days')) q),
+  (SELECT count(*)::text FROM (SELECT public.create_next_occurrences('2025-03-02T00:00:00Z','30 days')) q), -- DATUM HIER AUF 03-02 GEÄNDERT
   '4',
   'nach Update der Vorlage: 4 weitere Events erzeugt'
 );

@@ -1,18 +1,29 @@
 import { captureException } from '@sentry/react';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
+import { t } from 'i18next';
+import { toast } from 'sonner';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000, // 1 min für „upcoming“
-      gcTime: 5 * 60_000,
+      staleTime: 60_000,
+      gcTime: 1000 * 60 * 60 * 24,
       refetchOnWindowFocus: false,
       retry: 1,
+      networkMode: 'offlineFirst',
     },
-    mutations: { retry: 1 },
+    mutations: {
+      retry: 1,
+      networkMode: 'offlineFirst',
+    },
   },
   mutationCache: new MutationCache({
     onError: (err, variables, context, mutation) => {
+      if (!mutation.meta?.suppressErrorToast) {
+        toast.error(t('errors.mutation'));
+      }
       captureException(err, (scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,
@@ -32,6 +43,7 @@ export const queryClient = new QueryClient({
   }),
   queryCache: new QueryCache({
     onError: (err, query) => {
+      toast.error(t('errors.query'));
       captureException(err, (scope) => {
         scope.setContext('query', { queryHash: query.queryHash });
         return scope;
@@ -40,12 +52,20 @@ export const queryClient = new QueryClient({
   }),
 });
 
-// This code is only for TypeScript
+const localStoragePersister = createAsyncStoragePersister({
+  storage: window.localStorage,
+});
+
+persistQueryClient({
+  queryClient,
+  persister: localStoragePersister,
+  maxAge: 1000 * 60 * 60 * 24,
+});
+
 declare global {
   interface Window {
     __TANSTACK_QUERY_CLIENT__: import('@tanstack/query-core').QueryClient;
   }
 }
 
-// This code is for all users
 window.__TANSTACK_QUERY_CLIENT__ = queryClient;

@@ -2,6 +2,15 @@
 SELECT
   plan (0);
 
+-- Löscht pgTAP aus dem extensions-Schema
+DROP EXTENSION IF EXISTS "pgtap" CASCADE;
+
+-- Löscht die Basejump Test-Helper aus dem public-Schema
+DROP EXTENSION IF EXISTS "basejump-supabase_test_helpers" CASCADE;
+
+-- Löscht supabase-dbdev aus dem public-Schema
+DROP EXTENSION IF EXISTS "supabase-dbdev" CASCADE;
+
 -- -----------------------------
 -- Gruppen & Relationen
 -- -----------------------------

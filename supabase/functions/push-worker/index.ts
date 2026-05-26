@@ -308,56 +308,28 @@ async function processJob(job: NotificationOutbox) {
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
-          // Extract status code from various possible locations in the error object
-          // web-push library may store it in different places depending on the error type
-          const status = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode ?? 0;
-
-          // Extract comprehensive diagnostic information
-          const errorDetails: any = {
-            message: e?.message ?? "send error",
-            statusCode: status,
-            errorName: e?.name,
-            errorStack: e?.stack,
-            endpoint: sub.endpoint,
-            jobId: job.id,
-            subId: sub.id,
-            rawErrorBody: e?.body,
-            rawErrorHeaders: e?.headers,
-            rawErrorResponse: e?.response,
-          };
-
-          // If this is the "Received unexpected response code" error, capture full error object
-          if (e?.message?.includes("Received unexpected response code")) {
-            errorDetails.fullError = JSON.stringify(e, Object.getOwnPropertyNames(e));
-          }
-
-          // Capture exception with additional context
-          Sentry.captureException(e, {
-            extra: errorDetails,
-            tags: {
-              pushErrorType: e?.name || 'unknown',
-              statusCode: String(status),
-              errorCategory: status >= 400 && status < 500 ? 'client_error' : status >= 500 ? 'server_error' : 'unknown',
-            },
-          });
+          // Extract status code and coerce to number — the Deno HTTP layer may return
+          // the status as a string (e.g. "410"), which breaks strict === comparisons.
+          const rawStatus = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode;
+          const status = Number(rawStatus) || 0;
 
           allSent = false;
           const msg = e?.message ?? "send error";
-          
+
           // Categorize errors and handle appropriately:
           // 400-403: Invalid VAPID/auth, malformed request → permanent failure, revoke subscription
-          // 404/410: Endpoint gone → revoke subscription
+          // 404/410: Endpoint gone/expired → revoke subscription (expected; no Sentry noise)
           // 429: Rate limit → retry with backoff
           // 500-599: Server error → retry with backoff
-          // Other: Unknown error → retry with backoff but log
-          
+          // Other: Unknown error → retry with backoff and report to Sentry
+
           if (status === 400 || status === 401 || status === 403) {
             // Permanent authentication/authorization failures - revoke subscription
             await revokeSubscription(sub.id);
             await markTargetSkipped(job.id, sub.id, status, msg);
             results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "auth_failure" });
           } else if (status === 404 || status === 410) {
-            // Endpoint gone → revoke + skip
+            // Endpoint gone or subscription expired — expected outcome, revoke and move on
             await revokeSubscription(sub.id);
             await markTargetSkipped(job.id, sub.id, status, msg);
             results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "endpoint_gone" });
@@ -372,7 +344,26 @@ async function processJob(job: NotificationOutbox) {
             await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
             results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "server_error" });
           } else {
-            // Unknown error or no status code - retry with backoff
+            // Truly unexpected: capture to Sentry for investigation
+            Sentry.captureException(e, {
+              extra: {
+                message: msg,
+                statusCode: status,
+                errorName: e?.name,
+                errorStack: e?.stack,
+                endpoint: sub.endpoint,
+                jobId: job.id,
+                subId: sub.id,
+                rawErrorBody: e?.body,
+                rawErrorHeaders: e?.headers,
+                fullError: JSON.stringify(e, Object.getOwnPropertyNames(e)),
+              },
+              tags: {
+                pushErrorType: e?.name || 'unknown',
+                statusCode: String(status),
+                errorCategory: 'unknown',
+              },
+            });
             const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
             await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
             results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "unknown_error" });

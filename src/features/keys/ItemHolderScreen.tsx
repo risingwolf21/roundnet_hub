@@ -1,62 +1,45 @@
 import { Has } from '@/hooks/useGrants';
 import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
 import { captureException } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import Layout from '../../components/layout/Layout';
-import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { useGrants } from '../auth/GrantsContext';
-import { ItemHolderItem } from './components/ItemHolderItem';
-import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
-import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
-import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
-import { SearchUserDialog } from './dialogs/SearchUserDialog';
 
-import AddOutlined from '@mui/icons-material/AddOutlined';
-import EditOffOutlined from '@mui/icons-material/EditOffOutlined';
-import EditOutlined from '@mui/icons-material/EditOutlined';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
-import List from '@mui/material/List';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Spinner } from '@/components/ui/spinner';
+import { useDialogs } from '@/contexts/DialogsProvider';
+import { AlertCircle, AlertTriangleIcon, Info, Key, Pencil, PencilOff, Plus, SearchX } from 'lucide-react';
+import { toast } from 'sonner';
+import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
+import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
 const ItemHolderScreen = () => {
-  const [searchUserOpen, setSearchUserOpen] = useState(false);
-  const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
-  const [isEditingMode, setEditingMode] = useState(false);
-  const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
-  const [searchParams] = useSearchParams();
+  const [toggleEdit, setToggleEdit] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const actionProcessed = useRef(false);
 
-  const notifications = useNotifications();
   const dialogs = useDialogs();
   const { user, hasPerm } = useGrants();
   const { t } = useTranslation();
 
   const handoverKeyMutation = useHandoverKeyMutation();
-  const { data: keyHolders = [], isLoading, refetch } = useAllItems();
 
-  const selectKeyToHandOver = useCallback((key: FullItemHolder) => {
-    setSearchUserOpen(true);
-    setSelectedKeyHolder(key);
-  }, []);
-
-  const selectKeyToReceive = useCallback(
-    (key: FullItemHolder) => {
-      setSelectedKeyHolder(key);
-      setSelectedUser(user);
-    },
-    [user]
-  );
+  const { data: keyHolders = [], isLoading, error, refetch } = useAllItems();
 
   useEffect(() => {
     if (!hasPerm('items.update.holder')) return;
+
+    if (actionProcessed.current) return;
+
     const type = searchParams.get('type');
     const key = searchParams.get('key');
     if (!key || !type) {
@@ -66,119 +49,206 @@ const ItemHolderScreen = () => {
     const keyHolder = keyHolders.find((x) => x.id === keyId);
     if (!keyHolder) return;
 
-    if (type === 'handover') {
-      selectKeyToHandOver(keyHolder);
-    }
-    if (type === 'take') {
-      selectKeyToReceive(keyHolder);
-    }
-  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver, hasPerm]);
+    actionProcessed.current = true;
 
-  const userSelected = (user: User) => {
-    setSearchUserOpen(false);
-    setSelectedUser(user);
-  };
+    setSearchParams((prev) => {
+      const nextParams = new URLSearchParams(prev);
+      nextParams.delete('type');
+      nextParams.delete('key');
+      return nextParams;
+    }, { replace: true });
 
-  const confirmKeyHandOver = () => {
-    if (!selectedKeyHolder || !selectedUser) {
-      notifications.show(t('keyHandOverError', { error: '' }), { severity: 'error' });
-      return;
-    }
-    handoverKeyMutation.mutate(
-      { keyHolder: selectedKeyHolder, user: selectedUser },
-      {
-        onSuccess: () => setSelectedUser(null),
-        onError: (error) => {
-          captureException(error);
-          notifications.show(t('keyHandOverError', { error: error.message }), { severity: 'error' });
-        },
+    const processAction = async () => {
+      let targetUser = null;
+
+      if (type === 'handover') {
+        targetUser = await dialogs.selectSingleUser([user.id, keyHolder.current_holder ?? ""]);
+        if (!targetUser) return;
+      } else if (type === 'take') {
+        targetUser = user;
+      } else {
+        return;
       }
-    );
-  };
+
+      const result = await dialogs.open(KeyHandOverDialog, {
+        itemHolder: keyHolder,
+        selectedUser: targetUser
+      });
+
+      if (result) {
+        handoverKeyMutation.mutate(
+          { keyHolder: keyHolder, user: targetUser },
+          {
+            onError: (error) => {
+              captureException(error);
+              toast.error(t('keyHandOverError', { error: error.message }));
+            },
+          }
+        );
+      }
+    };
+
+    processAction();
+  }, [searchParams, keyHolders, user, hasPerm, dialogs, handoverKeyMutation, t, setSearchParams]);
 
   return (
-    <Layout>
-      <LoadingIndicator loading={isLoading} />
-      <List sx={{ width: '100%', pb: 10 }}>
-        <Alert key={'alert'} sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
-          Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
-          (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B.
-          verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
-          den Schlüssel verantwortlich!
-        </Alert>
-        {keyHolders.map((x: FullItemHolder) => (
-          <ItemHolderItem
-            key={x.id}
-            x={x}
-            t={t}
-            user={user}
-            isEditingMode={isEditingMode}
-            setItemToEdit={setItemToEdit}
-            setAddOrUpdateKeysOpen={setAddOrUpdateKeysOpen}
-            openHistoryDialog={async () => {
-              await dialogs.open(ItemHistoryDialog, x);
-            }}
-            {...(hasPerm('items.update.holder')
-              ? {
-                  selectKeyToHandOver,
-                  selectKeyToReceive,
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title={t("browse.keys")}
+        user={user}
+        actions={
+          <>
+            <Has perm={"drinks.edit"}>
+              <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
+                dialogs.open(EditOrAddItemDialog, {
+                  itemToEdit: EMPTY_KEY
+                });
+              }}>
+                <Plus />
+              </Button>
+            </Has>
+            <Has perm={"drinks.edit"}>
+              <Button size={"icon-lg"} variant={"ghost"} onClick={() => setToggleEdit(!toggleEdit)}>
+                {
+                  toggleEdit ? <PencilOff /> : <Pencil />
                 }
-              : {})}
-          />
-        ))}
-      </List>
-
-      <Has perm={'items.manage'}>
-        <Box
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            display: 'flex',
-            flexDirection: 'row',
-          }}
-        >
-          <Fab
-            sx={{ background: 'primary.light', mr: 2 }}
-            onClick={() => {
-              setItemToEdit(EMPTY_KEY);
-              setAddOrUpdateKeysOpen(true);
-            }}
-          >
-            <AddOutlined sx={{ color: '#fff' }} />
-          </Fab>
-          <Fab sx={{ background: 'primary.light' }} onClick={() => setEditingMode(!isEditingMode)}>
-            {isEditingMode ? <EditOffOutlined sx={{ color: '#fff' }} /> : <EditOutlined sx={{ color: '#fff' }} />}
-          </Fab>
-        </Box>
-      </Has>
-
-      <SearchUserDialog
-        open={searchUserOpen}
-        handleClose={() => setSearchUserOpen(false)}
-        user={user}
-        onUserSelected={userSelected}
+              </Button>
+            </Has>
+          </>
+        }
       />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh
+          onRefresh={() => {
+            refetch();
+          }}>
+          <div className='flex flex-col gap-2 p-2'>
+            <Alert key={'alert'} className='p-2' variant="info">
+              <Info />
+              <AlertDescription>
+                {t('keys.screen.disclaimer')}
+              </AlertDescription>
+            </Alert>
 
-      <KeyHandOverDialog
-        user={user}
-        selectedUser={selectedUser}
-        selectedKeyHolder={selectedKeyHolder}
-        t={t}
-        setSelectedUser={setSelectedUser}
-        confirmKeyHandOver={confirmKeyHandOver}
-      />
+            {isLoading ? (
+              <div className="flex justify-center p-6 mt-12">
+                <Spinner className="size-10" />
+              </div>
+            ) : error ? (
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><AlertCircle className="text-destructive" /></EmptyMedia>
+                  <EmptyTitle>{t('keys.screen.loadError')}</EmptyTitle>
+                  <EmptyDescription>{t('keys.screen.loadErrorDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : keyHolders.length === 0 ? (
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
+                  <EmptyTitle>{t('keys.screen.empty')}</EmptyTitle>
+                  <EmptyDescription>{t('keys.screen.emptyDescription')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : (
+              <div className='flex flex-col gap-2'>
+                {keyHolders.map((x: FullItemHolder) => (
+                  <Item key={x.id_uuid} className='w-full' variant={"outline"}>
+                    <ItemMedia>
+                      <Avatar className={`w-10 h-10 rounded-md`}>
+                        <AvatarFallback style={{ color: x.color }}>
+                          <Key />
+                        </AvatarFallback>
+                      </Avatar>
+                    </ItemMedia>
+                    <ItemContent>
+                      <ItemTitle>{x.name}</ItemTitle>
+                      <ItemDescription className="flex items-center gap-1.5">
+                        {!x.full_current_holder && <AlertTriangleIcon size={14} />}
+                        <span>{x.full_current_holder?.name ?? t('keys.screen.noHolder')}</span>
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      {
+                        toggleEdit ?
+                          (
+                            <Has perm={"items.manage"}>
+                              <Button variant={"outline"} size={"icon-sm"} onClick={() => {
+                                dialogs.open(EditOrAddItemDialog, {
+                                  itemToEdit: x
+                                });
+                              }}>
+                                <Pencil />
+                              </Button>
+                            </Has>
+                          ) : (
+                            <Has perm={'items.update.holder'}>
+                              {
+                                x.full_current_holder?.id === user.id ? (
+                                  <Button
+                                    onClick={async () => {
+                                      const selectedUser = await dialogs.selectSingleUser([user.id, x.full_current_holder?.id ?? ""]);
+                                      if (!selectedUser)
+                                        return;
 
-      <EditOrAddItemDialog
-        open={addOrUpdateKeysOpen}
-        handleClose={() => {
-          setAddOrUpdateKeysOpen(false);
-          setEditingMode(false);
-          refetch();
-        }}
-        itemToEdit={itemToEdit}
-      />
-    </Layout>
+                                      const result = await dialogs.open(KeyHandOverDialog, {
+                                        itemHolder: x,
+                                        selectedUser: selectedUser
+                                      });
+                                      if (result) {
+                                        handoverKeyMutation.mutate(
+                                          { keyHolder: x, user: selectedUser },
+                                          {
+                                            onError: (error) => {
+                                              captureException(error);
+                                              toast.error(t('keyHandOverError', { error: error.message }));
+                                            },
+                                          }
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {t('handover_key')}
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    onClick={async () => {
+
+                                      const result = await dialogs.open(KeyHandOverDialog, {
+                                        itemHolder: x,
+                                        selectedUser: x.full_current_holder
+                                      });
+                                      if (result) {
+                                        handoverKeyMutation.mutate(
+                                          { keyHolder: x, user: user },
+                                          {
+                                            onError: (error) => {
+                                              captureException(error);
+                                              toast.error(t('keyHandOverError', { error: error.message }));
+                                            },
+                                          }
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {t('take_key')}
+                                  </Button>
+                                )
+                              }
+                            </Has>
+                          )
+                      }
+                    </ItemActions>
+                  </Item>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </PullToRefresh>
+      </main>
+    </div >
   );
 };
 

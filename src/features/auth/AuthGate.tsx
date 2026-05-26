@@ -46,9 +46,9 @@ export const AuthGate = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isInitialLoading = !isAuthRestored || (!!session && isFetching);
+  const isInitialLoading = !isAuthRestored || (!!session && !currentUser && isFetching);
 
-  if (isInitialLoading) return <LoadingScreen />;
+  if (isInitialLoading) return <LoadingScreen />
 
   return (
     <ApplicationContext

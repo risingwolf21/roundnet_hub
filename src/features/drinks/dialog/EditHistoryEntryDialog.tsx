@@ -1,129 +1,73 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { ImageIcon, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullHistoryUpdate } from '../types';
 
-import Add from '@mui/icons-material/Add';
-import LocalDrink from '@mui/icons-material/LocalDrink';
-import Remove from '@mui/icons-material/Remove';
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import DialogContent from '@mui/material/DialogContent';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
+const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<FullHistory, FullHistoryUpdate | null>) => {
+  const [newCount, setNewCount] = useState<number>(entry.count);
 
-type Props = {
-  open: boolean;
-  setOpen: () => void;
-  handleClose: () => any;
-  entry: FullHistory | null;
-  handleSubmit: (newEntry: FullHistoryUpdate) => any;
-};
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"drawer"}>
+      <DialogHeader variant={"default"}>
+        <DialogTitle className={"px-4"}>Getränk bearbeiten</DialogTitle>
+      </DialogHeader>
+      <DialogBody>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-const EditHistoryEntryDialog = ({ open, handleClose, setOpen, entry, handleSubmit }: Props) => {
-  const [newCount, setNewCount] = useState<number>(0);
-  const [prevEntry, setPrevEntry] = useState(entry);
-
-  if (entry?.id !== prevEntry?.id) {
-    setNewCount(entry?.count ?? 0);
-    setPrevEntry(entry);
-  }
-
-  if (!entry) return;
-
-  return (
-    <SwipeableDialog title="Getränk bearbeiten" open={open} setOpen={setOpen} onClose={handleClose}>
-      <DialogContent sx={{ pl: 0, pr: 0 }}>
-        <Box sx={{ width: '100%' }}>
-          <List sx={{ width: '100%' }}>
-            <ListItem>
-              <ListItemAvatar>
-                <Avatar>
-                  {entry.drink?.imageUrl ? (
-                    <img src={entry?.drink?.imageUrl} alt="logo" width={40} height={40} />
-                  ) : (
-                    <LocalDrink />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={entry.drink?.name} secondary={entry.drink?.price + ' €'} />
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {newCount > 0 && (
+          <Item>
+            <ItemMedia>
+              <Avatar className="size-10">
+                <AvatarImage src={entry.drink.imageUrl ?? undefined} />
+                <AvatarFallback>
+                  <ImageIcon className="text-muted-foreground/50" />
+                </AvatarFallback>
+              </Avatar>
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{entry.drink.name}</ItemTitle>
+              <ItemDescription>{(entry.drink.price ?? 0).toFixed()} €</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <div className='flex flex-row items-center gap-2'>
+                {
+                  newCount > 0 &&
                   <>
-                    <IconButton disableRipple onClick={() => setNewCount(newCount - 1)}>
-                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-                    </IconButton>
-                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{newCount}</Typography>
+                    <Button variant={"outline"} size="icon"
+                      onClick={() => setNewCount(newCount - 1)}>
+                      <Minus className="size-4" />
+                    </Button>
+                    <span className="text-xl font-semibold w-8 text-center">{newCount}</span>
                   </>
-                )}
-                <IconButton disableRipple onClick={() => setNewCount(newCount + 1)}>
-                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-                </IconButton>
-              </Box>
-            </ListItem>
-            <Divider />
-            <ListItem
-              key={'totalAmount'}
-              secondaryAction={
-                <Typography sx={{ fontWeight: 'bold' }}>{newCount * (entry.drink?.price ?? 1) + ' €'}</Typography>
-              }
-            >
-              <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={'Gesamtkosten'} />
-            </ListItem>
-          </List>
-        </Box>
-      </DialogContent>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexGrow: 1,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        <Button
-          variant="outlined"
-          fullWidth
-          sx={{
-            ml: 2,
-            mr: 1,
-            mb: 2,
-            borderRadius: '50px !important',
-            fontSize: '16px',
-            fontFamily: 'sans-serif',
-            lineSpacing: '24px',
-          }}
-          onClick={() => handleSubmit({ ...entry, count: newCount, newCount })}
-        >
-          Abbrechen
-        </Button>
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{
-            ml: 1,
-            mr: 2,
-            mb: 2,
-            borderRadius: '50px !important',
-            fontSize: '16px',
-            fontFamily: 'sans-serif',
-            lineSpacing: '24px',
-          }}
-          onClick={handleClose}
-          autoFocus
-        >
-          Bestätigen
-        </Button>
-      </Box>
-    </SwipeableDialog>
-  );
+                }
+                <Button
+                  variant={"outline"} size="icon"
+                  onClick={() => setNewCount(newCount + 1)}>
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+            </ItemActions>
+          </Item>
+        </div>
+      </DialogBody>
+      <DialogFooter className="p-4 border-t flex-shrink m-0">
+        <div className='flex w-full justify-even gap-4'>
+          <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
+            Abbrechen
+          </Button>
+          <Button className="flex-1" onClick={() => onClose({
+            ...entry,
+            count: newCount, newCount,
+            amount: newCount * (entry.drink.price ?? 0)
+          })}>
+            Speichern
+          </Button>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>;
 };
 export default EditHistoryEntryDialog;

@@ -27,7 +27,7 @@ Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 Deno.serve(async (_req: Request) => {
   try {
 
-    const { data: created_events, error } = await supabase
+    const { error } = await supabase
       .rpc('create_next_occurrences', {
         p_run_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
         p_horizon: '30 days',
@@ -36,14 +36,6 @@ Deno.serve(async (_req: Request) => {
 
     if (error) {
       throw error;
-    }
-
-    for (const event of created_events) {
-      Sentry.captureMessage('event_created', (context: Sentry.Scope) => {
-        context.setExtra("origin", "edge_function");
-        context.setExtra("event", JSON.stringify(event, null, 2))
-        return context;
-      })
     }
 
     // Return the response with the correct content type header
