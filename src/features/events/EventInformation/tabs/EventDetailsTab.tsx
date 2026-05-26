@@ -19,9 +19,10 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { PlaceType } from '../../types';
+
+const EventLocationMap = lazy(() => import('./EventLocationMap'));
 
 const iconMap: Record<string, LucideIcon> = {
   "01d": Sun,
@@ -161,19 +162,13 @@ const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView;
                       Route hierher planen
                     </div>
                   </div>
-                  <MapContainer
-                    style={{ width: '100%', height: '100%', borderRadius: '16px', zIndex: 10 }}
-                    center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                    zoom={15}
-                    dragging={false}
-                    doubleClickZoom={false}
-                    scrollWheelZoom={false}
-                    attributionControl={false}
-                    zoomControl={false}
-                  >
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <Marker position={[selectedEventPlace.lat, selectedEventPlace.lon]} interactive={false} />
-                  </MapContainer>
+                  <Suspense fallback={<div className="h-full w-full bg-muted animate-pulse rounded-2xl" />}>
+                    <EventLocationMap
+                      lat={selectedEventPlace.lat}
+                      lon={selectedEventPlace.lon}
+                      style={{ width: '100%', height: '100%', borderRadius: '16px', zIndex: 10 }}
+                    />
+                  </Suspense>
                 </a>
               </div>
             </>

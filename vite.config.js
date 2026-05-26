@@ -92,6 +92,20 @@ export default defineConfig(({ mode }) => {
       target: 'es2020',
       sourcemap: false,
       outDir: 'build', // CRA's default build output
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('react-dom') || id.includes('/react/') || id.includes('react-router') || id.includes('scheduler')) return 'vendor-react';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('@sentry')) return 'vendor-sentry';
+            if (id.includes('i18next') || id.includes('react-i18next')) return 'vendor-i18n';
+            if (id.includes('@tanstack')) return 'vendor-query';
+            if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-leaflet';
+            if (id.includes('@emotion') || id.includes('@base-ui') || id.includes('date-fns') || id.includes('react-day-picker')) return 'vendor-ui';
+          },
+        },
+      },
     },
     test: {
       globals: true,

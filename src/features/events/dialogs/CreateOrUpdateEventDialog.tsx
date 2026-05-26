@@ -1,3 +1,4 @@
+import React from 'react';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
@@ -27,7 +28,7 @@ import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
-import SearchPlacesDialog from './SearchPlacesDialog';
+const SearchPlacesDialog = React.lazy(() => import('./SearchPlacesDialog'));
 
 const DEFAULT_DURATION: Duration = { hours: 2 };
 

@@ -1,6 +1,5 @@
 
 import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
-import Compressor from 'compressorjs';
 import { format, isAfter, isBefore, isSameDay, isSameWeek } from 'date-fns';
 import React, { useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
@@ -85,6 +84,7 @@ const EnterPointDialog = ({
     }
 
     const fileName = uuid() + '.jpg';
+    const { default: Compressor } = await import('compressorjs');
     new Compressor(dataURLtoFile(imageDataUrl, fileName), {
       convertSize: 1000000, // 1 MB
       success: async (file) => {
