@@ -43,7 +43,7 @@ BEGIN
           SELECT 1 FROM public.event_attendance_user_mapping eaum
           WHERE eaum.event = v_event.id
             AND eaum."user" = gum."user"
-            AND eaum.state NOT IN ('Pending', 'Waiting', 'WaitingAsTrial')
+            AND eaum.state NOT IN ('Unanswered', 'Waiting', 'WaitingAsTrial')
         )
     LOOP
       PERFORM notifications.enqueue_notification(
