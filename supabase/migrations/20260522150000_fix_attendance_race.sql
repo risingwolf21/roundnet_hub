@@ -80,6 +80,7 @@ CREATE OR REPLACE FUNCTION public.auto_promote_from_waitinglist()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path TO 'public', 'notifications', 'pg_temp'
 AS $$
 DECLARE
   v_max_attendees integer;
@@ -121,8 +122,8 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Find oldest waiting user
-  SELECT user, state
+  -- Find oldest waiting user; "user" must be quoted (reserved word)
+  SELECT "user"::uuid, state
   INTO v_next_user, v_next_state
   FROM public.event_attendance_user_mapping
   WHERE event = NEW.event
@@ -142,16 +143,16 @@ BEGIN
   END,
   "lastUpdate" = now()
   WHERE event = NEW.event
-    AND "user" = v_next_user;
+    AND "user" = v_next_user::text;
 
   -- Send notification
   PERFORM notifications.enqueue_notification(
-    p_user    := v_next_user,
-    p_title   := 'Du bist aufgerückt!',
-    p_body    := 'Ein Platz wurde frei. Du bist von der Warteliste auf die Teilnehmerliste gerutscht.',
-    p_topic   := 'event.waitinglist.promoted',
+    p_user        := v_next_user,
+    p_title       := 'Du bist aufgerückt!',
+    p_body        := 'Ein Platz wurde frei. Du bist von der Warteliste auf die Teilnehmerliste gerutscht.',
+    p_topic       := 'event.waitinglist.promoted',
     p_source_type := 'event',
-    p_source_id   := NEW.event::text
+    p_source_id   := NEW.event
   );
 
   RETURN NEW;
