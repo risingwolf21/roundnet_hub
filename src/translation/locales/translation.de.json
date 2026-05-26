@@ -272,6 +272,9 @@
       "noHolder": "Nicht vergeben"
     }
   },
+  "user": {
+    "lastActive": "Aktiv {{ date, ago }}"
+  },
   "profile": {
     "account": {
       "avatar": "Profilbild",
@@ -344,6 +347,7 @@
       "disable": "Keine Benachrichtigungen",
       "vapidMissing": "VAPID Public Key fehlt."
     },
+    "lastSeenAt": "Zuletzt aktiv {{ date, ago }}",
     "offline": "Du bist offline. Es werden gespeicherte Daten angezeigt.",
     "h2h": {
       "title": "Head-to-Head",

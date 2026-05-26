@@ -17,6 +17,7 @@ interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
   onSearchChange?: (value: string) => void;
   actions?: React.ReactNode;
   primaryAction?: React.ReactNode | "back" | "default";
+  navigateBackPath?: string;
   withScrollEffect?: boolean;
   user?: User; // Ersetze User durch deinen echten Typen
 }
@@ -29,6 +30,7 @@ export function AppBar({
   searchValue,
   onSearchChange,
   primaryAction = "default",
+  navigateBackPath,
   actions,
   withScrollEffect = true,
   className,
@@ -67,7 +69,7 @@ export function AppBar({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={() => navigateBackPath ? navigate(navigateBackPath) : navigate(-1)}
               className="shrink-0 rounded-full -ml-1 text-foreground"
             >
               <ArrowLeft className="h-5 w-5" />

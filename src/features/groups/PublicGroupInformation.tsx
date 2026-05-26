@@ -18,6 +18,7 @@ import { captureException } from "@sentry/react";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { v4 } from "uuid";
@@ -38,7 +39,7 @@ const roleWeights: Record<string, number> = {
 };
 
 const PublicGroupInformation = () => {
-
+  const { t } = useTranslation();
   const { groupId } = useParams();
   const { user } = useGrants();
   const dialogs = useDialogs();
@@ -179,6 +180,7 @@ const PublicGroupInformation = () => {
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         primaryAction="back"
+        navigateBackPath="/training"
         user={user}
         actions={
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
@@ -329,7 +331,14 @@ const PublicGroupInformation = () => {
                           </ItemMedia>
                           <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
                             <ItemTitle>{x.user.name}</ItemTitle>
-                            <ItemDescription>{x.user.email}</ItemDescription>
+                            <ItemDescription>
+                              {x.user.email}
+                              {x.user.last_seen_at && (
+                                <span className="ml-2 text-xs">
+                                  · {t('user.lastActive', { date: new Date(x.user.last_seen_at) })}
+                                </span>
+                              )}
+                            </ItemDescription>
                           </ItemContent>
                           <ItemActions>
                             {

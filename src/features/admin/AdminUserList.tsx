@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -13,6 +14,7 @@ import { useGrants } from '../auth/GrantsContext';
 import EditUserDialog from './dialogs/EditUserDialog';
 
 const AdminUserList = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const [searchString, setSearchString] = useState('');
@@ -62,6 +64,11 @@ const AdminUserList = () => {
                   <div>
                     <div>{user.name}</div>
                     <div className="text-xs text-muted-foreground">{user.email}</div>
+                    {user.last_seen_at && (
+                      <div className="text-xs text-muted-foreground">
+                        {t('user.lastActive', { date: new Date(user.last_seen_at) })}
+                      </div>
+                    )}
                   </div>
                 </ItemContent>
                 <ItemActions>

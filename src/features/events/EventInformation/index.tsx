@@ -244,6 +244,7 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
         className='!border-b !shadow-sm'
         title={"Eventdetails"}
         primaryAction="back"
+        navigateBackPath="/training"
         user={user}
         actions={
           <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
@@ -261,6 +262,8 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                           ...event,
                           items_enabled: false,
                           group: event.group?.id ?? null,
+                          reminder_before: null,
+                          reminder_sent_at: null,
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
