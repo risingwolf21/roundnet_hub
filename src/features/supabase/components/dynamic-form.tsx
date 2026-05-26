@@ -508,12 +508,14 @@ export function DynamicForm<T extends z.ZodRawShape = z.ZodRawShape>({
                                 if (Array.isArray(parsed)) {
                                   field.onChange(parsed)
                                 } else {
-                                  // If it's not an array, treat as invalid input
-                                  field.onChange(value)
+                                  // Parsed but not an array — reset to empty array to
+                                  // prevent a non-array string reaching the DB column
+                                  field.onChange([])
                                 }
                               } catch {
-                                // Invalid JSON, keep the string value to show error
-                                field.onChange(value)
+                                // Invalid JSON — reset to empty array so the field
+                                // stays in a valid state and doesn't send garbage to Supabase
+                                field.onChange([])
                               }
                             }
                           }}

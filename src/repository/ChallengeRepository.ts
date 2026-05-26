@@ -116,7 +116,7 @@ export const ChallengeRepository = {
     const sanitized: TablesUpdate<'challenge'> = {
       ...update,
       ...(update.category_options !== undefined && {
-        category_options: Array.isArray(update.category_options) ? update.category_options : [],
+        category_options: Array.isArray(update.category_options) ? update.category_options.filter((s) => s !== '') : [],
       }),
     };
     const result = await supabase
@@ -140,7 +140,7 @@ export const ChallengeRepository = {
         group: challenge.group,
         comments_enabled: challenge.comments_enabled,
         category_enabled: challenge.category_enabled,
-        category_options: Array.isArray(challenge.category_options) ? challenge.category_options : [],
+        category_options: Array.isArray(challenge.category_options) ? challenge.category_options.filter((s) => s !== '') : [],
         show_all_members: challenge.show_all_members,
       })
       .select('*')
