@@ -1,65 +1,60 @@
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren, useEffect } from 'react';
+import { PropsWithChildren } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
 import { supabase } from './lib/supabase';
+import { toast } from 'sonner';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
-  const { updateServiceWorker } = useRegisterSW({
+  useRegisterSW({
     immediate: true,
     onRegistered: (registration) => {
       if (!registration) return;
 
-      const updateSW = async () => {
-        try {
+      // Cheap SW update check: browser byte-compares the SW script, no DB needed.
+      // With self.skipWaiting() in the SW, a new SW activates immediately after
+      // installing, firing controllerchange → index.tsx reloads the page.
+      const triggerSwUpdate = () => registration.update().catch(() => {});
 
+      // Full check: confirm a new deployment exists before triggering an update.
+      const checkDeploymentHash = async () => {
+        try {
           const { data } = await supabase
             .from('app_config')
             .select('value')
             .eq('key', 'latest_deployment_hash')
             .single();
 
-          const currentLocalHash = import.meta.env.VITE_GIT_COMMIT;
-
-          if (data && data.value !== currentLocalHash) {
-            await registration.update();
-
-            if (registration.waiting) {
-              updateServiceWorker(true);
-            }
+          if (data?.value && data.value !== import.meta.env.VITE_GIT_COMMIT) {
+            triggerSwUpdate();
           }
-        } catch (error) {
-          console.debug('ServiceWorker update check failed:', error);
+        } catch {
+          // Offline or DB unavailable — ignore
         }
       };
 
-      setInterval(updateSW, 60_000);
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          updateSW();
-        }
+      // Alert the user before the imminent reload caused by SW activation.
+      registration.addEventListener('updatefound', () => {
+        toast.info('Neue Version verfügbar', {
+          description: 'Die App wird jetzt auf die neueste Version aktualisiert.',
+          duration: 3000,
+        });
       });
 
-      document.addEventListener('focus', updateSW);
+      // Fast path: SW byte-check on every tab focus (no DB round-trip).
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') triggerSwUpdate();
+      });
+      window.addEventListener('focus', triggerSwUpdate);
 
-      updateSW();
+      // Slow path: confirm deployment via DB hash every 60s.
+      setInterval(checkDeploymentHash, 60_000);
+      checkDeploymentHash();
     },
   });
 
-  useEffect(() => {
-    const handleControllerChange = () => {
-      window.location.reload();
-    };
-
-    navigator.serviceWorker?.addEventListener('controllerchange', handleControllerChange);
-
-    return () => {
-      navigator.serviceWorker?.removeEventListener('controllerchange', handleControllerChange);
-    };
-  }, []);
-
+  // controllerchange → window.location.reload() is handled in index.tsx.
   return children;
 };
 

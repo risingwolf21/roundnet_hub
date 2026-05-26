@@ -39,6 +39,7 @@ import {
   MapPin,
   Megaphone,
   Pencil,
+  ShoppingBag,
   SquareArrowRightExit,
   Trash2,
   Volleyball,
@@ -55,6 +56,7 @@ import { DeleteEventDialog } from "../dialogs/DeleteEventDialog";
 import { EditEventOptionsDialog } from "../dialogs/EditEventOptionsDialog";
 import { PlaceType } from '../types';
 import AttendanceTab from "./tabs/AttendanceTab";
+import BringItemsTab from "./tabs/BringItemsTab";
 import CommentsTab from "./tabs/CommentsTab";
 import EventDetailsTab, { EventWeatherData } from "./tabs/EventDetailsTab";
 import MatchesTab from "./tabs/MatchesTab";
@@ -427,7 +429,7 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                   value="comments"
                   className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                 >
-                  Kommentare ({comments.length})
+                  Kommentare ({comments.reduce((a, c) => a + c.replies.length + 1, 0)})
                 </TabsTrigger>
 
                 <Has feat={"games"}>
@@ -438,12 +440,23 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                     Spiele ({matches.length})
                   </TabsTrigger>
                 </Has>
+
+                {allItems.length > 0 && (
+                  <TabsTrigger
+                    value="bring-items"
+                    className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5 gap-1.5"
+                  >
+                    <ShoppingBag className="size-4" />
+                    Mitbringen
+                  </TabsTrigger>
+                )}
               </TabsList>
               <div className="pt-4">
                 <EventDetailsTab event={event} selectedEventPlace={selectedEventPlace} />
                 <AttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} />
                 <CommentsTab event={event} user={user} comments={comments} />
                 <MatchesTab matches={matches} event={event} />
+                {allItems.length > 0 && <BringItemsTab eventId={event.id} />}
               </div>
             </Tabs>
           </div>
@@ -588,7 +601,7 @@ export const EventInformationError = () => {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+            <Button variant="outline" size="sm" onClick={() => navigate("events")}>
               Zurück zur Übersicht
             </Button>
           </EmptyContent>

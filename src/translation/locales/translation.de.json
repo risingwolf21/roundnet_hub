@@ -70,7 +70,13 @@
   },
   "matches": {
     "leaderboard": "Rangliste",
-    "leaderboardTooltip": "Veränderung des Index in den letzten 30 Tagen: {{trend}}"
+    "leaderboardTooltip": "Veränderung des Index in den letzten 30 Tagen: {{trend}}",
+    "spezi": {
+      "title": "Spezi (optional)",
+      "teamA": "Team A Spezi-Punkte",
+      "teamB": "Team B Spezi-Punkte",
+      "setAwarded": "Spezi-Satz zugesprochen"
+    }
   },
   "events": {
     "upcoming": "Anstehende",
@@ -93,7 +99,15 @@
       "reminderPT30M": "30 Minuten vorher",
       "reminderPT6H": "6 Stunden vorher",
       "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
-      "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen"
+      "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
+      "reminderBefore": "Erinnerung senden",
+      "reminderNone": "Keine",
+      "reminderPT30M": "30 Minuten vorher",
+      "reminderPT1H": "1 Stunde vorher",
+      "reminderPT6H": "6 Stunden vorher",
+      "reminderPT12H": "12 Stunden vorher",
+      "reminderPT24H": "24 Stunden vorher",
+      "reminderP2D": "2 Tage vorher"
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -116,6 +130,15 @@
       "declined_other": "{{count}} Absagen",
       "commentTimeAgo": "vor {{time}}"
     },
+    "bringItems": {
+      "tab": "Mitbringen",
+      "empty": "Keine Mitbringe-Gegenstände für dieses Event",
+      "save": "Zusagen speichern",
+      "pledged": "{{pledged}} von {{required}} {{unit}} zugesagt",
+      "myPledge": "Meine Zusage",
+      "saveSuccess": "Zusagen gespeichert",
+      "saveError": "Fehler beim Speichern"
+    },
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
@@ -137,7 +160,9 @@
     },
     "item": {
       "noLocation": "Kein Ort angegeben"
-    }
+    },
+    "replyTo": "Antworte auf @{{name}}",
+    "reply": "Antworten"
   },
   "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
   "handover_key": "Abgeben",
@@ -158,7 +183,8 @@
     "eventComments": "Event Kommentare",
     "paymentPending": "Zahlung wartend",
     "paymentRequest": "Zahlungsaufforderung",
-    "userRegistration": "Benutzer Registierung"
+    "userRegistration": "Benutzer Registierung",
+    "waitinglistPromoted": "Warteliste: Aufgerückt"
   },
   "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
   "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",

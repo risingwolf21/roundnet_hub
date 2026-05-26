@@ -25,8 +25,10 @@ export const GroupsRepository = {
   async fetchSingleGroupWithUsers(groupId?: string): Promise<GroupWithUserMappings | null> {
     if (!groupId) return null;
 
-    const { data: group } = await supabase.from('event_groups_view').select('*').eq('id', groupId).single();
-    const { data } = await fetchGroupWithUsers().eq('id', groupId).maybeSingle().throwOnError();
+    const [{ data: group }, { data }] = await Promise.all([
+      supabase.from('event_groups_view').select('*').eq('id', groupId).single(),
+      fetchGroupWithUsers().eq('id', groupId).maybeSingle().throwOnError(),
+    ]);
 
     if (!group || !data) return null;
 

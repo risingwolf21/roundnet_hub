@@ -4,6 +4,7 @@ import { v4 as uuid, v4 } from 'uuid';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -86,12 +87,12 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
   );
 };
 
-type PlayerSelection = PlayerWithSimpleUser | Player | null;
+export type PlayerSelection = PlayerWithSimpleUser | Player | null;
 
 const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string }>) => {
   const { eventId } = payload ?? {};
   const [sets, setSets] = useState<MatchSet[]>([
-    { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
+    { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0, type: 'normal', set_awarded: null },
   ]);
   const { user } = useGrants();
 
@@ -99,6 +100,10 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
 
   const [rating_enabled, setRatingEnabled] = useState(true);
   const [is_public, setIsPublic] = useState(true);
+  const [speziEnabled, setSpeziEnabled] = useState(false);
+  const [speziA, setSpeziA] = useState<string>('');
+  const [speziB, setSpeziB] = useState<string>('');
+  const [speziSetAwarded, setSpeziSetAwarded] = useState(false);
   const [player1a, setPlayer1a] = useState<PlayerSelection>(null);
   const [player2a, setPlayer2a] = useState<PlayerSelection>(null);
   const [player1b, setPlayer1b] = useState<PlayerSelection>(null);
@@ -175,6 +180,12 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
       playerNamesMapping[p.id] = p.name;
     });
 
+    const speziANum = speziA !== '' ? parseInt(speziA, 10) : null;
+    const speziBNum = speziB !== '' ? parseInt(speziB, 10) : null;
+    const speziSet = (speziANum !== null || speziBNum !== null)
+      ? { team_a_score: speziANum ?? 0, team_b_score: speziBNum ?? 0, set_awarded: speziSetAwarded }
+      : null;
+
     createMatch.mutate(
       {
         sets,
@@ -196,7 +207,8 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
         is_public: is_public,
         created_by: user?.id,
         playerNamesMapping,
-        event: eventId
+        event: eventId,
+        spezi_set: speziSet,
       },
       {
         onSuccess: () => onClose(),
@@ -334,6 +346,8 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                           match: '',
                           team_a_score: 0,
                           team_b_score: 0,
+                          type: 'normal',
+                          set_awarded: null,
                         },
                       ])
                     }
@@ -344,6 +358,66 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
               </ItemContent>
             </Item>
 
+
+            <Item variant={"outline"}>
+              <ItemContent>
+                <div className="flex flex-col gap-3 w-full">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="spezi-enabled"
+                      checked={speziEnabled}
+                      onCheckedChange={(v) => {
+                        setSpeziEnabled(!!v);
+                        if (!v) {
+                          setSpeziA('');
+                          setSpeziB('');
+                          setSpeziSetAwarded(false);
+                        }
+                      }}
+                    />
+                    <label htmlFor="spezi-enabled" className="text-sm font-medium cursor-pointer">
+                      Spezi-Punkte erfassen
+                    </label>
+                  </div>
+                  {speziEnabled && (
+                    <>
+                      <div className="flex gap-4">
+                        <div className="flex-1 flex flex-col gap-1">
+                          <span className="text-xs text-muted-foreground">Team A Spezi-Punkte</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={speziA}
+                            onChange={(e) => setSpeziA(e.target.value)}
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="flex-1 flex flex-col gap-1">
+                          <span className="text-xs text-muted-foreground">Team B Spezi-Punkte</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={speziB}
+                            onChange={(e) => setSpeziB(e.target.value)}
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="spezi-set-awarded"
+                          checked={speziSetAwarded}
+                          onCheckedChange={(v) => setSpeziSetAwarded(!!v)}
+                        />
+                        <label htmlFor="spezi-set-awarded" className="text-sm cursor-pointer">
+                          Spezi-Satz zugesprochen
+                        </label>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </ItemContent>
+            </Item>
 
             <Item variant={"outline"}>
               <ItemContent>
@@ -426,7 +500,9 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
               <Item key={"guestplayer"}>
                 <ItemMedia>
                   <Avatar className={"mr-2"}>
-                    <AvatarFallback className={"text-xs"}></AvatarFallback>
+                    <AvatarFallback className={"text-xs"}>
+                      <Plus className='size-4' />
+                    </AvatarFallback>
                   </Avatar>
                 </ItemMedia>
                 <ItemContent className='flex flex-row w-full'>
@@ -457,8 +533,12 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                 .map((user) => {
                   const displayName = 'name' in user ? user.name : user?.display_name ?? 'Unknown';
                   const avatarUrl = 'avatarUrl' in user ? user?.avatarUrl ?? user?.rg_avatar_url ?? '' : '';
+                  const disabled = payload.selectedPlayers.map(x => x.player).includes(user.player);
 
-                  return <Item key={user.player} onClick={() => onClose(user)}>
+                  const disabledStyles =
+                    "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50";
+
+                  return <Item data-disabled={disabled} key={user.player} onClick={() => !disabled && onClose(user)} className={disabledStyles}>
                     <ItemMedia>
                       <Avatar className={"mr-2"}>
                         <AvatarImage src={avatarUrl || undefined} alt={displayName || undefined} />
