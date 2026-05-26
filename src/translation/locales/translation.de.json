@@ -122,6 +122,15 @@
       "declined_other": "{{count}} Absagen",
       "commentTimeAgo": "vor {{time}}"
     },
+    "bringItems": {
+      "tab": "Mitbringen",
+      "empty": "Keine Mitbringe-Gegenstände für dieses Event",
+      "save": "Zusagen speichern",
+      "pledged": "{{pledged}} von {{required}} {{unit}} zugesagt",
+      "myPledge": "Meine Zusage",
+      "saveSuccess": "Zusagen gespeichert",
+      "saveError": "Fehler beim Speichern"
+    },
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",

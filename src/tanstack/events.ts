@@ -679,12 +679,18 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
     mutationFn: async ({
       eventChanges,
       id,
+      items,
     }: {
       id: string;
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
+      items?: Array<{ id?: string | null; name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>;
     }) => {
-      return EventRepository.updateSingleEvent(id, eventChanges);
+      const result = await EventRepository.updateSingleEvent(id, eventChanges);
+      if (items !== undefined) {
+        await EventRepository.syncEventBringItems(id, items);
+      }
+      return result;
     },
     onMutate: async ({ eventChanges, id }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
@@ -735,6 +741,9 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
       queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.id) });
+      if (variables.items !== undefined) {
+        queryClient.invalidateQueries({ queryKey: eventKeys.eventBringOverview(variables.id) });
+      }
     },
   });
 };
@@ -745,13 +754,20 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
       eventChanges,
       key,
       startingDateTime,
+      items,
     }: {
       key: string;
       startingDateTime: string;
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
+      items?: Array<{ name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>;
     }) => {
-      return EventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
+      const results = await EventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
+      if (items !== undefined) {
+        const eventIds = results.map(r => r.data?.id).filter((id): id is string => !!id);
+        await Promise.all(eventIds.map(id => EventRepository.syncEventBringItems(id, items)));
+      }
+      return results;
     },
     onMutate: async ({ eventChanges, key, startingDateTime }) => {
       await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });

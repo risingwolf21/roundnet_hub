@@ -324,19 +324,43 @@ export const EventRepository = {
       .from('event_bring_pledges')
       .delete()
       .eq('event', event)
-      .eq('user_id', user)
+      .eq('user', user)
       .in('item', items.filter((x) => x.quantity <= 0).map((x) => x.item_id));
     await supabase.from('event_bring_pledges').upsert(
       items
         .filter((x) => x.quantity > 0)
-        .map((x) => ({ event, user_id: user, qty: x.quantity, status: x.status, item: x.item_id })),
-      { onConflict: 'user_id, item' }
+        .map((x) => ({ event, user: user, qty: x.quantity, status: x.status, item: x.item_id }))
     );
   },
 
   async insertEventWithBringItems(p_event: TablesInsert<'events'>, p_items: { name: string; required_qty: number; unit: string; notes: string | null; sort_order: number }[]) {
     const result = await supabase.rpc('insert_event_with_bring_items', { p_event, p_items }).throwOnError();
     return result.data;
+  },
+
+  async syncEventBringItems(
+    eventId: string,
+    items: Array<{ id?: string | null; name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>
+  ) {
+    const keepIds = items.filter(x => x.id).map(x => x.id!);
+    if (keepIds.length > 0) {
+      await supabase.from('event_bring_items').delete().eq('event', eventId).not('id', 'in', `(${keepIds.join(',')})`);
+    } else {
+      await supabase.from('event_bring_items').delete().eq('event', eventId);
+    }
+    if (items.length > 0) {
+      await supabase.from('event_bring_items').upsert(
+        items.map((item, i) => ({
+          ...(item.id ? { id: item.id } : {}),
+          event: eventId,
+          name: item.name,
+          required_qty: item.required_qty ?? 0,
+          unit: item.unit || 'Stk.',
+          notes: item.notes ?? null,
+          sort_order: item.sort_order ?? i,
+        }))
+      );
+    }
   },
 
   async updateSingleEvent(id: string, eventChanges: TablesUpdate<'events'>) {
