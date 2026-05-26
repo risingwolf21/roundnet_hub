@@ -8,7 +8,7 @@ ALTER TABLE public.events
     CHECK (reminder_before IS NULL OR reminder_before::interval IS NOT NULL);
 
 -- 2. Notification topic
-INSERT INTO notifications.notification_topics (topic, scope_type, label, enabled)
+INSERT INTO notifications.notification_topics (topic, scope_type, description, default_enabled)
 VALUES ('event.answer_deadline.reminder', 'event', 'Erinnerung: Anmeldeschluss naht', true)
 ON CONFLICT (topic) DO NOTHING;
 
