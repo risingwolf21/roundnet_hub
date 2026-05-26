@@ -1,3 +1,5 @@
+import { formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { useState } from 'react';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
@@ -62,6 +64,11 @@ const AdminUserList = () => {
                   <div>
                     <div>{user.name}</div>
                     <div className="text-xs text-muted-foreground">{user.email}</div>
+                    {user.last_sign_in_at && (
+                      <div className="text-xs text-muted-foreground">
+                        Aktiv {formatDistanceToNow(new Date(user.last_sign_in_at), { addSuffix: true, locale: de })}
+                      </div>
+                    )}
                   </div>
                 </ItemContent>
                 <ItemActions>
