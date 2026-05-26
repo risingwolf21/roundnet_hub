@@ -19,8 +19,10 @@ CREATE INDEX IF NOT EXISTS idx_eaum_event_state ON public.event_attendance_user_
 -- event_comments: every comments tab
 CREATE INDEX IF NOT EXISTS idx_event_comments_event ON public.event_comments (event);
 
--- notifications: unread badge on every page load
-CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications ("user");
+-- notifications.notifications: unread badge on every page load
+-- (public.notifications was dropped in 20251118135526; existing indexes on this
+--  column were already created in 20260414063842_advisor_fixes.sql)
+CREATE INDEX IF NOT EXISTS idx_notifications_notifications_user ON notifications.notifications ("user");
 
 -- ============================================================
 -- High value: FK columns frequently used in queries
