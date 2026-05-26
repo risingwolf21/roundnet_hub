@@ -543,12 +543,38 @@ export const CreateOrUpdateEventDialog = ({
               <Button className='flex-none min-w-0' variant={"outline"} onClick={() => {
                 setEditedEvent({
                   ...editedEvent,
-                  answerDeadline: null
+                  answerDeadline: null,
+                  reminder_before: null,
                 })
               }}>
                 <Trash2 />
               </Button>
             </FieldGroup>
+
+            {editedEvent.answerDeadline && (
+              <FieldGroup className='flex flex-row items-center gap-3'>
+                <FieldLabel className='shrink-0 w-32 text-sm'>{t('events.creation.reminderBefore')}</FieldLabel>
+                <Select
+                  value={editedEvent.reminder_before ?? ''}
+                  onValueChange={(v) =>
+                    setEditedEvent((prev) => ({ ...prev, reminder_before: v || null }))
+                  }
+                >
+                  <SelectTrigger className='flex-1'>
+                    <SelectValue placeholder={t('events.creation.reminderNone')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">{t('events.creation.reminderNone')}</SelectItem>
+                    <SelectItem value="PT30M">{t('events.creation.reminderPT30M')}</SelectItem>
+                    <SelectItem value="PT1H">{t('events.creation.reminderPT1H')}</SelectItem>
+                    <SelectItem value="PT6H">{t('events.creation.reminderPT6H')}</SelectItem>
+                    <SelectItem value="PT12H">{t('events.creation.reminderPT12H')}</SelectItem>
+                    <SelectItem value="PT24H">{t('events.creation.reminderPT24H')}</SelectItem>
+                    <SelectItem value="P2D">{t('events.creation.reminderP2D')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldGroup>
+            )}
 
             <FieldLabel>
               <Field>
