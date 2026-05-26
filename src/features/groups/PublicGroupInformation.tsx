@@ -180,6 +180,7 @@ const PublicGroupInformation = () => {
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         primaryAction="back"
+        navigateBackPath="/training"
         user={user}
         actions={
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
