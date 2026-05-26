@@ -1,62 +1,66 @@
-import { supabase } from '@/lib/supabase';
-import { SupabaseUserRepository } from '@/repository/UserRepository';
+import { GrantsRepository } from '@/repository/GrantsRepository';
+import { UserRepository } from '@/repository/UserRepository';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
+import _ from 'lodash';
 
 export const authKeys = {
   all: ['auth'] as const,
   currentUser: (userId?: string) => [...authKeys.all, 'current-user', userId] as const,
-  currentUserGrants: (userId: string) => [...authKeys.all, 'current-user', userId, 'grants'] as const,
+  currentUserGrants: (userId: string | undefined | null) => [...authKeys.all, 'current-user', userId, 'grants'] as const,
 };
 
 export const useCurrentUser = (session: Session | null) =>
   useQuery({
     queryKey: authKeys.currentUser(session?.user.id),
-    enabled: !!session,
+    enabled: !!session?.user.id,
+    staleTime: Infinity,
     queryFn: async () => {
       if (!session) return null;
+      setUser({ email: session.user.email, id: session.user.id, ...(_.omit(session.user, ['id', 'email'])) });
       const [{ data: user, error }, groups] = await Promise.all([
-        SupabaseUserRepository.fetchUser(session.user.id),
-        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
+        UserRepository.fetchUser(session.user.id),
+        UserRepository.fetchGroupsForUser(session.user.id),
       ]);
       if (error) {
         captureException(error);
-        return null;
+        throw error;
       }
 
       const userData: UserWithGroups = {
         ...user,
         groups,
       };
-      setUser({ email: userData.email, id: userData.id, username: userData.name });
       return userData;
     },
   });
 
-export const useCurrentUserGrants = (userId: string) =>
+export const useCurrentUserGrants = (userId?: string | null) =>
   useQuery({
     queryKey: authKeys.currentUserGrants(userId),
-    enabled: true,
+    enabled: !!userId,
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
+      if (!userId) return { perm: [], feat: [] };
 
-      if (error) throw error;
+      const data = await GrantsRepository.fetchUserGrants(userId);
 
-      return data.reduce(
+      return (data ?? []).reduce(
         (prev, curr) => {
           if (curr.key && curr.kind) {
             switch (curr.kind) {
               case 'perm':
-                return { feat: prev.feat, perm: prev.perm.add(curr.key) };
+                prev.perm.push(curr.key);
+                break;
               case 'feat':
-                return { feat: prev.feat.add(curr.key), perm: prev.perm };
+                prev.feat.push(curr.key);
+                break;
             }
           }
           return prev;
         },
-        { perm: new Set<string>(), feat: new Set<string>() }
+        { perm: [] as string[], feat: [] as string[] }
       );
     },
     refetchOnWindowFocus: false,

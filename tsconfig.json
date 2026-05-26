@@ -147,6 +147,7 @@
     "types/**/*",
     "src/service-worker.ts",
     "src/vite-env.d.ts",
-    "supabase/functions/**/*"
+    "supabase/functions/**/*",
+    "playwright.config.ts"
   ]
 }

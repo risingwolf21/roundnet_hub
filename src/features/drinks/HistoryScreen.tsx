@@ -1,49 +1,33 @@
 import { useUpdateHistoryEntryMutation } from '@/tanstack/drinks';
 import { captureException } from '@sentry/react';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { format } from 'date-fns';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { groupBy } from '../../utils';
-import { HistoryItem } from './components/HistoryItem';
-import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
-import List from '@mui/material/List';
-import Typography from '@mui/material/Typography';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppBar } from '@/components/ui/appbar';
+import { Button } from '@/components/ui/button';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
+import { t } from 'i18next';
+import { Pencil } from 'lucide-react';
+import { toast } from 'sonner';
+import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 
 export const HistoryScreen = ({
   user,
   data: history,
   isLoading,
+  refetch,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
 }: UseInfiniteQueryResult<InfiniteData<{ data: FullHistory[]; nextPage?: number }>> & { user: User }) => {
-  const notifications = useNotifications();
-
-  const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
-  const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
 
   const updateEntry = useUpdateHistoryEntryMutation(user);
 
-  const handleEntryUpdate = (newEntry: FullHistory) => {
-    updateEntry.mutate(newEntry, {
-      onError: (error) => {
-        captureException(error);
-        notifications.show(error.message, { severity: 'error' });
-      },
-      onSuccess: () => {
-        setEditHistoryEntryOpen(false);
-      },
-    });
-  };
-
-  const handleEntryOnClick = (entry: FullHistory) => {
-    setHistoryEntryToEdit(entry);
-    setEditHistoryEntryOpen(true);
-  };
+  const dialogs = useDialogs();
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -62,40 +46,68 @@ export const HistoryScreen = ({
     };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (isLoading) {
-    return <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />;
-  }
-
-  if ((history?.pages.flatMap((x) => x.data) ?? []).length <= 0) {
-    return (
-      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
-        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
-      </Box>
-    );
-  }
-
   return (
-    <>
-      <List>
-        {Array.from(
-          groupBy(
-            (history?.pages.flatMap((x) => x.data) ?? []).filter((x) => x.drink),
-            (x: FullHistory) => format(x.created_at ?? '', 'dd MMMM yyyy')
-          )
-        ).map(([key, value]) => (
-          <HistoryItem key={key} items={value} header={key} onClick={handleEntryOnClick} />
-        ))}
-      </List>
-      {isFetchingNextPage && <p style={{ padding: '12px' }}>Lade mehr...</p>}
-      <div ref={loadMoreRef} style={{ height: 40 }} />
-      <EditHistoryEntryDialog
-        open={editHistoryEntryOpen}
-        setOpen={() => setEditHistoryEntryOpen(true)}
-        handleClose={() => setEditHistoryEntryOpen(false)}
-        entry={historyEntryToEdit}
-        handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title={t("drinks.drinks")}
+        user={user}
       />
-    </>
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh
+          onRefresh={() => {
+            refetch();
+          }}>
+          <div>
+            {Array.from(
+              groupBy(
+                (history?.pages.flatMap((x) => x.data) ?? []).filter((x) => x.drink),
+                (x: FullHistory) => format(x.created_at ?? '', 'dd MMMM yyyy')
+              )
+            ).map(([key, value]) => (
+              <div key={key}>
+                <div className="text-sm font-semibold ml-2">
+                  {key}
+                </div>
+                <div className='p-2 gap-2 flex flex-col'>
+                  {value.map(x => <Item key={x.id} variant={"outline"} className='py-1'>
+                    <div className='text-base'>{x.count}x</div>
+                    <ItemContent>
+                      <ItemTitle>
+                        {x.drink.name}
+                      </ItemTitle>
+                      <ItemDescription>
+                        {format(x.created_at ?? '', 'HH:mm')}
+                      </ItemDescription>
+                    </ItemContent>
+                    <ItemActions>
+                      <div className='text-sm'>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</div>
+                      <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
+                        const result = await dialogs.open(EditHistoryEntryDialog, x);
+                        if (result) {
+                          updateEntry.mutate(result, {
+                            onError: (error) => {
+                              captureException(error);
+                              toast.error(error.message);
+                            },
+                            onSuccess: () => {
+                              toast.success("Eintrag aktualisiert");
+                            },
+                          });
+                        }
+                      }}>
+                        <Pencil />
+                      </Button>
+                    </ItemActions>
+                  </Item>)}
+                </div>
+              </div>
+            ))}
+          </div>
+          {isFetchingNextPage && <p style={{ padding: '12px' }}>Lade mehr...</p>}
+          <div ref={loadMoreRef} style={{ height: 40 }} />
+        </PullToRefresh>
+      </main>
+    </div>
   );
 };

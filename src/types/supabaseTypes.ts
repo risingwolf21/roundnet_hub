@@ -10,6 +10,7 @@ export type FullChallenge = Challenge & {
 
 export type ChallengeStatWithUser = ChallengeStats & {
   fullUser: User;
+  meta: ChallengeStatsMeta | null;
 };
 
 export type FullKeyHistory = Modify<
@@ -48,8 +49,12 @@ export function answerDeadlineExpired(x: EventsUserView) {
   return isBefore(x.answerDeadline, Date.now());
 }
 
-export function eventInThePast(x: EventsUserView) {
+export function eventInThePast(x: EventsUserView | EventWithGroup) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
+}
+
+export function eventHasStarted(x: EventsUserView | EventWithGroup) {
+  return isBefore(x.startingDateTime!, Date.now());
 }
 
 export function maxAttendeesExceeded(x: EventsUserView, attendance: Attendance[]) {
@@ -140,16 +145,6 @@ export type ChallengePointsView = {
   user: string;
 };
 
-export type UserMatchesView = {
-  created_at: string;
-  event: string | null;
-  id: string;
-  team_a_name: string;
-  team_b_name: string;
-  set_results: string;
-  rated: boolean;
-};
-
 type Modify<T, R> = Omit<T, keyof R> & R;
 
 type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
@@ -157,50 +152,50 @@ type GamesSchema = Database[Extract<keyof Database, 'games'>];
 
 export type GamesTable<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (GamesSchema['Tables'] & GamesSchema['Views'])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (GamesSchema['Tables'] & GamesSchema['Views'])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (GamesSchema['Tables'] & GamesSchema['Views'])
-    ? (GamesSchema['Tables'] & GamesSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
-      }
-      ? R
-      : never
-    : never;
+  ? (GamesSchema['Tables'] & GamesSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+    Row: infer R;
+  }
+  ? R
+  : never
+  : never;
 
 export type GamesTableUpdate<
   DefaultSchemaTableNameOrOptions extends keyof GamesSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
+    Update: infer U;
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof GamesSchema['Tables']
-    ? GamesSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
-      }
-      ? U
-      : never
-    : never;
+  ? GamesSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U;
+  }
+  ? U
+  : never
+  : never;

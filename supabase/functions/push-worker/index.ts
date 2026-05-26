@@ -1,7 +1,9 @@
 import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
 import webpush from "web-push";
-import { Database, Tables } from '../_shared/supabase-generated.types.ts';
+import { Database } from '../_shared/supabase-generated.types.ts';
+
+type NotificationOutbox = Database['notifications']['Tables']['notification_outbox']['Row'];
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -46,7 +48,25 @@ const MAX_JOB_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_JOB_ATTEMPTS") ?
 const MAX_TARGET_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_TARGET_ATTEMPTS") ?? "5", 10);
 const BACKOFF_CAP_SECONDS = parseInt(Deno.env.get("PUSH_WORKER_BACKOFF_CAP_SECONDS") ?? "1800", 10); // 30 min
 
-webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+// Wrap VAPID setup with error handling to catch configuration issues early
+try {
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    throw new Error("VAPID_PUBLIC_KEY or VAPID_PRIVATE_KEY environment variables are not set");
+  }
+  webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+} catch (e: any) {
+  Sentry.captureException(e, {
+    extra: {
+      message: "Failed to set VAPID details",
+      vapidPublicKey: VAPID_PUBLIC_KEY ? "present" : "missing",
+      vapidPrivateKey: VAPID_PRIVATE_KEY ? "present" : "missing",
+    },
+    tags: {
+      errorType: "vapid_setup_failure",
+    },
+  });
+  throw e; // Re-throw to prevent the worker from starting with invalid config
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -58,7 +78,29 @@ function calcBackoffSeconds(attempts: number) {
   return Math.min(BACKOFF_CAP_SECONDS, base);
 }
 
-async function fetchDueJobs(limit: number): Promise<Tables<'notification_outbox'>[]> {
+function validateSubscription(sub: TargetRow['web_push_subscriptions']): { valid: boolean; reason?: string } {
+  if (!sub) {
+    return { valid: false, reason: "subscription is null" };
+  }
+  if (!sub.endpoint || typeof sub.endpoint !== 'string' || sub.endpoint.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing endpoint" };
+  }
+  if (!sub.p256dh || typeof sub.p256dh !== 'string' || sub.p256dh.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing p256dh key" };
+  }
+  if (!sub.auth || typeof sub.auth !== 'string' || sub.auth.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing auth key" };
+  }
+  // Basic URL validation for endpoint
+  try {
+    new URL(sub.endpoint);
+  } catch {
+    return { valid: false, reason: "endpoint is not a valid URL" };
+  }
+  return { valid: true };
+}
+
+async function fetchDueJobs(limit: number): Promise<NotificationOutbox[]> {
   const { data, error } = await supabase
     .schema("notifications")
     .from("notification_outbox")
@@ -200,7 +242,7 @@ async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
   }
 }
 
-async function processJob(job: Tables<'notification_outbox'>) {
+async function processJob(job: NotificationOutbox) {
   // fetch targets
   const targets = await fetchPendingTargets(job.id);
   if (targets.length === 0) {
@@ -223,6 +265,29 @@ async function processJob(job: Tables<'notification_outbox'>) {
     await Promise.all(
       chunk.map(async (t) => {
         const sub = t.web_push_subscriptions!;
+        
+        // Validate subscription data before attempting to send
+        const validation = validateSubscription(sub);
+        if (!validation.valid) {
+          allSent = false;
+          const msg = `Invalid subscription: ${validation.reason}`;
+          Sentry.captureMessage(msg, {
+            level: 'warning',
+            extra: {
+              jobId: job.id,
+              subId: sub?.id,
+              reason: validation.reason,
+            },
+            tags: {
+              pushErrorType: 'invalid_subscription',
+            },
+          });
+          await revokeSubscription(sub.id);
+          await markTargetSkipped(job.id, sub.id, 0, msg);
+          results.push({ subId: sub.id, ok: false, status: 0, action: "revoke+skip", reason: validation.reason });
+          return;
+        }
+
         const payloadObj = { title: job.title, body: job.body, data: job.data ?? {} }
         const payload = JSON.stringify(payloadObj);
         try {
@@ -239,28 +304,69 @@ async function processJob(job: Tables<'notification_outbox'>) {
             opts,
           );
 
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-            Sentry.captureException(Error(JSON.stringify({ res })))
-          }
-
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
-          Sentry.captureException(e);
-          const status = e?.statusCode ?? 0;
+          // Extract status code and coerce to number — the Deno HTTP layer may return
+          // the status as a string (e.g. "410"), which breaks strict === comparisons.
+          const rawStatus = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode;
+          const status = Number(rawStatus) || 0;
 
           allSent = false;
           const msg = e?.message ?? "send error";
-          // 404/410: endpoint gone → revoke + skip
-          if (status === 404 || status === 410) {
+
+          // Categorize errors and handle appropriately:
+          // 400-403: Invalid VAPID/auth, malformed request → permanent failure, revoke subscription
+          // 404/410: Endpoint gone/expired → revoke subscription (expected; no Sentry noise)
+          // 429: Rate limit → retry with backoff
+          // 500-599: Server error → retry with backoff
+          // Other: Unknown error → retry with backoff and report to Sentry
+
+          if (status === 400 || status === 401 || status === 403) {
+            // Permanent authentication/authorization failures - revoke subscription
             await revokeSubscription(sub.id);
-            await markTargetSkipped(job.id, sub.id, status!, msg);
-            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip" });
-          } else {
+            await markTargetSkipped(job.id, sub.id, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "auth_failure" });
+          } else if (status === 404 || status === 410) {
+            // Endpoint gone or subscription expired — expected outcome, revoke and move on
+            await revokeSubscription(sub.id);
+            await markTargetSkipped(job.id, sub.id, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "endpoint_gone" });
+          } else if (status === 429) {
+            // Rate limit - use longer backoff
             const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
             await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
-            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext });
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "rate_limit" });
+          } else if (status >= 500 && status < 600) {
+            // Server error - retry with backoff
+            const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
+            await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "server_error" });
+          } else {
+            // Truly unexpected: capture to Sentry for investigation
+            Sentry.captureException(e, {
+              extra: {
+                message: msg,
+                statusCode: status,
+                errorName: e?.name,
+                errorStack: e?.stack,
+                endpoint: sub.endpoint,
+                jobId: job.id,
+                subId: sub.id,
+                rawErrorBody: e?.body,
+                rawErrorHeaders: e?.headers,
+                fullError: JSON.stringify(e, Object.getOwnPropertyNames(e)),
+              },
+              tags: {
+                pushErrorType: e?.name || 'unknown',
+                statusCode: String(status),
+                errorCategory: 'unknown',
+              },
+            });
+            const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
+            await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "unknown_error" });
           }
         }
       }),

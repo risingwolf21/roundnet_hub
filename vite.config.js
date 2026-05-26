@@ -1,4 +1,5 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -37,6 +38,7 @@ export default defineConfig(({ mode }) => {
     envDir: './environments',
     plugins: [
       react(),
+      tailwindcss(),
       sentryVitePlugin({
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: "roundnet-karlsruhe",
@@ -49,11 +51,7 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
-        },
-        workbox: {
-          cleanupOutdatedCaches: true,
-          skipWaiting: true,
-          globPatterns: ['**/*'],
+          maximumFileSizeToCacheInBytes: 3000000
         },
         devOptions: {
           enabled: ENABLE_PWA_DEV,
@@ -92,7 +90,7 @@ export default defineConfig(({ mode }) => {
     ].filter(Boolean),
     build: {
       target: 'es2020',
-      sourcemap: true,
+      sourcemap: false,
       outDir: 'build', // CRA's default build output
     },
     test: {

@@ -1,31 +1,20 @@
 import { useInsertItemMutation, useUpdateItemMutation } from '@/tanstack/items';
-import CloseIcon from '@mui/icons-material/Close';
-import KeyIcon from '@mui/icons-material/Key';
-import { Box } from '@mui/system';
-import { useNotifications } from '@toolpad/core';
 import { useState } from 'react';
 
-import AppBar from '@mui/material/AppBar';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DialogProps } from '@/contexts/DialogsProvider';
+import { X } from 'lucide-react';
+import { toast } from 'sonner';
 
 type EditOrAddItemDialogProps = {
-  open: boolean;
-  handleClose: () => void;
   itemToEdit: ItemUpdate | null;
 };
 
-export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAddItemDialogProps) => {
+export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: DialogProps<EditOrAddItemDialogProps>) => {
   const [currentItem, setCurrentItem] = useState<ItemUpdate>({
     id: itemToEdit?.id,
     name: itemToEdit?.name,
@@ -33,7 +22,6 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
     current_holder: itemToEdit?.current_holder,
     type: itemToEdit?.type,
   });
-  const notifications = useNotifications();
 
   const updateItemMutation = useUpdateItemMutation();
   const insertItemMutation = useInsertItemMutation();
@@ -50,13 +38,14 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
 
   const handleSubmit = async () => {
     if (!currentItem.name || currentItem.name.length < 6) {
-      notifications.show('Der Schlüsselname ist zu kurz!', { severity: 'warning' });
+      toast.warning('Der Schlüsselname ist zu kurz!');
       return;
     }
     if (!currentItem.type) {
-      notifications.show('Der Schlüssel braucht einen Typ', { severity: 'warning' });
+      toast.warning('Der Schlüssel braucht einen Typ');
       return;
     }
+    console.log(currentItem)
     if (currentItem.id) {
       updateItemMutation.mutate(
         {
@@ -66,8 +55,8 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
           },
         },
         {
-          onError: (e) => notifications.show(e.message, { severity: 'error' }),
-          onSuccess: () => handleClose(),
+          onError: (e) => toast.error(e.message),
+          onSuccess: () => onClose(),
         }
       );
     } else {
@@ -81,77 +70,140 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
           },
         },
         {
-          onError: (e) => notifications.show(e.message, { severity: 'error' }),
-          onSuccess: () => handleClose(),
+          onError: (e) => toast.error(e.message),
+          onSuccess: () => onClose(),
         }
       );
     }
   };
 
-  return (
-    <Dialog fullScreen open={open} onClose={handleClose}>
-      <Box component="form" noValidate>
-        <AppBar position="sticky" sx={{ top: 0, pt: 'env(safe-area-inset-top)' }}>
-          <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
-              <CloseIcon />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
-            </Typography>
-            <Button sx={{ color: 'white' }} onClick={handleSubmit}>
-              Speichern
-            </Button>
-          </Toolbar>
-        </AppBar>
-        <Box sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <List>
-            <ListItem>
-              <TextField
-                fullWidth
-                variant="outlined"
-                value={currentItem?.name ?? ''}
-                onChange={(e) => setCurrentItem({ ...currentItem, name: e.target.value })}
-                label="Schlüsselname"
-                margin="normal"
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemAvatar>
-                <Avatar sx={{ background: currentItem?.color ?? '#000', width: 40, height: 40, borderRadius: 2 }}>
-                  <KeyIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <TextField
-                fullWidth
-                variant="outlined"
-                value={currentItem?.color ?? '#000'}
-                onChange={(e) => setCurrentItem({ ...currentItem, color: e.target.value })}
-                label="Farbe"
-                margin="normal"
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemAvatar></ListItemAvatar>
-              <Select
-                fullWidth
-                value={currentItem?.type ?? 'nothing'}
-                onChange={(e) =>
-                  setCurrentItem({
-                    ...currentItem,
-                    type: e.target.value === 'nothing' ? undefined : (e.target.value as ItemType),
-                  })
+  const KEY_TYPES: { label: string, value: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe" | 'none' }[] = [
+    { label: "MTV Keller", value: "mtvStorage" },
+    { label: "MTV Gym", value: "mtvGym" },
+    { label: "MTV Palazzo", value: "mtvGymPalazzo" },
+    { label: "Nichts", value: 'none' }
+  ]
+
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogHeader variant={"appbar"}>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+            <X className="h-5 w-5" />
+          </Button>
+        } />
+        <DialogTitle className="flex-1">
+          {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
+        </DialogTitle>
+        <Button className="ml-1" onClick={handleSubmit}>
+          Speichern
+        </Button>
+      </DialogHeader>
+      <DialogBody className='gap-4'>
+        <Field>
+          <FieldLabel htmlFor="item-name">
+            Schlüsselname
+          </FieldLabel>
+          <Input
+            id="item-name"
+            value={currentItem?.name ?? ''}
+            onChange={(e) => setCurrentItem({ ...currentItem, name: e.target.value })}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="item-name">
+            Farbe
+          </FieldLabel>
+          <Input
+            id="item-name"
+            value={currentItem?.color ?? ''}
+            type='color'
+            onChange={(e) => setCurrentItem({ ...currentItem, color: e.target.value })}
+          />
+        </Field>
+
+        <Field className="w-full">
+          <FieldLabel>Schlüsseltyp</FieldLabel>
+          <Select
+            items={KEY_TYPES}
+            value={currentItem.type ?? 'none'}
+            onValueChange={(val) => setCurrentItem({
+              ...currentItem,
+              type: val === 'none' ? undefined : (val as ItemType)
+            })}>
+            <SelectTrigger className={"w-full"}>
+              <SelectValue placeholder="Typ" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {
+                  KEY_TYPES.map(x => (
+                    <SelectItem key={x.value} value={x.value}>
+                      {x.label}
+                    </SelectItem>
+                  ))
                 }
-              >
-                <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
-                <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
-                <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
-                <MenuItem value={'nothing'}>Nichts</MenuItem>
-              </Select>
-            </ListItem>
-          </List>
-        </Box>
-      </Box>
-    </Dialog>
-  );
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </Field>
+      </DialogBody>
+    </DialogContent>
+  </Dialog>
+
+  // return (
+  //   <Dialog fullScreen open={open} onClose={onClose}>
+  //     <Box component="form" noValidate>
+
+  //       <Box sx={{ pt: 'env(safe-area-inset-top)' }}>
+  //         <List>
+  //           <ListItem>
+  //             <TextField
+  //               fullWidth
+  //               variant="outlined"
+  //               value={currentItem?.name ?? ''}
+  //               onChange={(e) => setCurrentItem({ ...currentItem, name: e.target.value })}
+  //               label="Schlüsselname"
+  //               margin="normal"
+  //             />
+  //           </ListItem>
+  //           <ListItem>
+  //             <ListItemAvatar>
+  //               <Avatar sx={{ background: currentItem?.color ?? '#000', width: 40, height: 40, borderRadius: 2 }}>
+  //                 <KeyIcon />
+  //               </Avatar>
+  //             </ListItemAvatar>
+  //             <TextField
+  //               fullWidth
+  //               variant="outlined"
+  //               value={currentItem?.color ?? '#000'}
+  //               onChange={(e) => setCurrentItem({ ...currentItem, color: e.target.value })}
+  //               label="Farbe"
+  //               margin="normal"
+  //             />
+  //           </ListItem>
+  //           <ListItem>
+  //             <ListItemAvatar></ListItemAvatar>
+  //             <Select
+  //               fullWidth
+  //               value={currentItem?.type ?? 'nothing'}
+  //               onChange={(e) =>
+  //                 setCurrentItem({
+  //                   ...currentItem,
+  //                   type: e.target.value === 'nothing' ? undefined : (e.target.value as ItemType),
+  //                 })
+  //               }
+  //             >
+  //               <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
+  //               <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
+  //               <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
+  //               <MenuItem value={'nothing'}>Nichts</MenuItem>
+  //             </Select>
+  //           </ListItem>
+  //         </List>
+  //       </Box>
+  //     </Box>
+  //   </Dialog>
+  // );
 };

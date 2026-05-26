@@ -34,3 +34,15 @@ package-lock.json
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Playwright artifacts
+/playwright-report/
+/test-results/
+.playwright/
+
+# keep any existing test-results or Playwright report folders ignored
+**/playwright-report/
+**/test-results/
+
+# Claude Code local state
+.claude/

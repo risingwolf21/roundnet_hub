@@ -1,124 +1,78 @@
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useChangeUserRoleMutation, useGroup, useGroupUsers, useLeaveGroupMutation } from '@/tanstack/groups';
-import { captureException } from '@sentry/react';
-import { useDialogs, useLocalStorageState, useNotifications } from '@toolpad/core';
-import { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
-import { useGrants } from '../auth/GrantsContext';
-import { AcceptJoinButton } from './components/AcceptJoinButton';
-import { DeclineJoinButton } from './components/DeclineJoinButton';
-import { GroupUserItem } from './components/GroupUserItem';
-import { CreateOrUpdateGroupDialog } from './dialogs/CreateOrUpdateGroupDialog';
-import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
-import { useAddUsersMutation } from './query/addUsersMutation';
-import { useRemoveUsersMutation } from './query/removeUsersMutation';
-
-import Layout from '@/components/layout/Layout';
-import { Has } from '@/hooks/useGrants';
-import AccountBox from '@mui/icons-material/AccountBox';
-import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
-import Check from '@mui/icons-material/Check';
-import Edit from '@mui/icons-material/Edit';
-import GroupRemove from '@mui/icons-material/GroupRemove';
-import MoreVert from '@mui/icons-material/MoreVert';
-import MoveDownIcon from '@mui/icons-material/MoveDown';
-import MoveUpIcon from '@mui/icons-material/MoveUp';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-import PersonRemove from '@mui/icons-material/PersonRemove';
-import Avatar from '@mui/material/Avatar';
-import Badge from '@mui/material/Badge';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
-import Fab from '@mui/material/Fab';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { AcceptTrialJoinButton } from './components/AcceptTrialJoinButton';
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { Alert, AlertAction, AlertTitle } from "@/components/ui/alert";
+import { AppBar } from "@/components/ui/appbar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Toggle } from "@/components/ui/toggle";
+import { useDialogs } from "@/contexts/DialogsProvider";
+import { Has } from "@/hooks/useGrants";
+import { cn } from "@/lib/utils";
+import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
+import { captureException } from "@sentry/react";
+import groupBy from "lodash.groupby";
+import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
+import { v4 } from "uuid";
+import { useGrants } from "../auth/GrantsContext";
+import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
+import { useAddUsersMutation } from "./query/addUsersMutation";
+import { useDeclineRequestMutation } from "./query/declineRequestMutation";
+import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 
 type Filter = { user: boolean; admin: boolean; joinRequested: boolean; trials: boolean };
 const DEFAULT_FILTER = { user: true, admin: true, joinRequested: true, trials: true };
 
+const roleWeights: Record<string, number> = {
+  'joinRequested': 1,
+  'trial': 2,
+  'admin': 3,
+  'user': 4
+};
+
 const PublicGroupInformation = () => {
+
   const { groupId } = useParams();
   const { user } = useGrants();
-  const navigate = useNavigate();
-  const notifications = useNotifications();
   const dialogs = useDialogs();
+  const navigate = useNavigate();
+
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
-    codec: {
-      parse: (value): Filter => {
-        return JSON.parse(value) as Filter;
-      },
-      stringify: (value) => JSON.stringify(value),
-    },
-  });
-  const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
-
-  const { data: group = null, error, isLoading, refetch: refetchGroup } = useGroup(groupId);
-  const { data: group_users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useGroupUsers('user', groupId);
-  const {
-    data: group_admins = [],
-    isLoading: isLoadingAdmins,
-    refetch: refetchAdmins,
-  } = useGroupUsers('admin', groupId);
-  const {
-    data: group_join_requested = [],
-    isLoading: isLoadingJoinRequested,
-    refetch: refetchJoinRequested,
-  } = useGroupUsers('joinRequested', groupId);
-  const {
-    data: group_trials = [],
-    isLoading: isLoadingTrials,
-    refetch: refetchTrials,
-  } = useGroupUsers('trial', groupId);
-
-  const refetch = () => {
-    refetchGroup();
-    refetchUsers();
-    refetchAdmins();
-    refetchJoinRequested();
-    refetchTrials();
-  };
-
-  useEffect(() => {
-    if (error) notifications.show(error.message, { severity: 'error' });
-  }, [error, notifications]);
+  const [searchQuery, setSearchQuery] = useState("");
+  // const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
+  //   codec: {
+  //     parse: (value): Filter => {
+  //       return JSON.parse(value) as Filter;
+  //     },
+  //     stringify: (value) => JSON.stringify(value),
+  //   },
+  // });
+  const [filter, setFilter] = useState<Filter>(DEFAULT_FILTER);
+  const { data: group = null, error: groupError, isLoading: groupLoading, refetch: refetchGroup } = useGroup(groupId);
+  const { data: group_users = [], isLoading: usersLoading, error: usersError, refetch } = useGroupAllUsers(groupId);
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
   const leaveGroupMutation = useLeaveGroupMutation();
   const changeUserRoleMutation = useChangeUserRoleMutation();
 
-  if (!isLoading && !group) {
-    return <Navigate to={'/groups/list'} />;
-  }
-
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(
       { newUsers: users },
       {
         onSuccess: () => {
-          notifications.show(`Successfully added ${users.length} users to the group ${group?.name}`, {
-            severity: 'success',
-          });
+          toast.success(`Successfully added ${users.length} users to the group ${group?.name}`);
           setSelectedUsers([]);
         },
         onError: (error) => {
-          notifications.show(`Failed to add ${users.length} user to the group ${group?.name} ${error.message}`, {
-            severity: 'error',
-          });
+          toast.error(`Failed to add ${users.length} user to the group ${group?.name} ${error.message}`);
           captureException(error);
           setSelectedUsers([]);
         },
@@ -131,434 +85,409 @@ const PublicGroupInformation = () => {
       { users },
       {
         onSuccess: () => {
-          notifications.show(`Successfully removed ${users.length} users from the group ${group?.name}`, {
-            severity: 'success',
-          });
+          toast.success(`Successfully removed ${users.length} users from the group ${group?.name}`);
           setSelectedUsers([]);
         },
         onError: (error) => {
-          notifications.show(`Failed to remove ${users.length} user from the group ${group?.name} ${error.message}`, {
-            severity: 'error',
-          });
+          toast.error(`Failed to remove ${users.length} user from the group ${group?.name} ${error.message}`);
+          captureException(error);
           setSelectedUsers([]);
         },
       }
     );
   };
 
+  if (groupLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <AppBar
+          className='!border-b !shadow-sm'
+          title={""}
+          primaryAction="back"
+          user={user}
+        />
+        <div className='flex-1 p-4 space-y-4'>
+          {/* Beschreibung Skeleton */}
+          <div className="space-y-2 max-w-lg">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+          <Separator />
+          {/* Filter Skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-12" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-10 w-28 rounded-md" />
+              <Skeleton className="h-10 w-24 rounded-md" />
+              <Skeleton className="h-10 w-24 rounded-md" />
+              <Skeleton className="h-10 w-28 rounded-md" />
+            </div>
+          </div>
+          {/* Users List Skeleton */}
+          <div className="space-y-4 mt-6">
+            <Skeleton className="h-5 w-32" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={v4()} className="flex items-center justify-between rounded-md border p-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="size-10 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (groupError || !group) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <AppBar
+          className='!border-b !shadow-sm'
+          title="Gruppe"
+          primaryAction="back"
+          user={user}
+        />
+        <div className='flex-1 flex items-center justify-center p-4'>
+          <Empty>
+            <EmptyMedia>
+              <AlertCircle className="size-10 text-destructive" />
+            </EmptyMedia>
+            <EmptyTitle>Gruppe nicht gefunden</EmptyTitle>
+            <EmptyDescription>
+              Die angeforderte Gruppe existiert nicht, wurde gelöscht oder du hast keine Zugriffsberechtigung.
+            </EmptyDescription>
+            <Button onClick={() => navigate('/groups/list')} className="mt-4" variant="outline">
+              Zurück zur Übersicht
+            </Button>
+          </Empty>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Layout
-      appBarConfig={{ navigateBackPath: '/groups/list' }}
-      appBarActions={
-        group?.user_group_role === 'admin' && (
-          <>
-            <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
-              <MoreVert />
-            </IconButton>
-            <Menu
-              id="simple-menu"
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              <MenuItem
-                onClick={async () => {
-                  setAnchorEl(null);
-                  const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
-                  if (result && result !== 'closed') {
-                    refetch();
-                    notifications.show('Gruppe wurde erfolgreich bearbeitet.', { severity: 'success' });
-                  } else if (!result) {
-                    notifications.show('Gruppe konnte nicht bearbeitet werden.', { severity: 'error' });
-                  }
-                }}
-              >
-                <ListItemIcon>
-                  <Edit />
-                </ListItemIcon>
-                <ListItemText primary={'Gruppe bearbeiten'} />
-              </MenuItem>
-            </Menu>
-          </>
-        )
-      }
-    >
-      <PullToRefresh onRefresh={refetch}>
-        <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
-          <LoadingIndicator loading={isLoading} />
-          <Typography pl={2} variant="h6" fontWeight="bold">
-            Beschreibung
-          </Typography>
-          <Typography pl={2} pb={1}>
-            {group?.description}
-          </Typography>
-          <Divider />
-          <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-            {selectedUsers.length > 0 && group?.user_group_role === 'admin' && (
-              <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ borderRadius: 2, background: '#ba1a1a' }}>
-                      <PersonRemove />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={'Gewählte Teilnehmer entfernen'} />
-                </ListItem>
-              </CardActionArea>
-            )}
-          </Card>
-          {group?.user_group_role === 'admin' && (
-            <Card sx={{ borderRadius: 2, py: 1, px: 0, m: 1 }}>
-              <Grid container direction={'row'} rowSpacing={3} columnSpacing={2} sx={{ px: 2, py: 1 }}>
-                <Badge color="primary" badgeContent={group_join_requested.length}>
-                  <Chip
-                    disabled={isLoadingJoinRequested}
-                    icon={filter?.joinRequested ? <Check /> : undefined}
-                    color={filter?.joinRequested ? 'secondary' : 'default'}
-                    label="Anfragen"
-                    onClick={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}
-                  />
-                </Badge>
-
-                <Has feat={'events.trials'}>
-                  <Badge color="primary" badgeContent={group_trials.length}>
-                    <Chip
-                      disabled={isLoadingTrials}
-                      icon={filter?.trials ? <Check /> : undefined}
-                      color={filter?.trials ? 'secondary' : 'default'}
-                      label="Trials"
-                      onClick={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}
-                    />
-                  </Badge>
-                </Has>
-
-                <Badge color="primary" badgeContent={group_admins.length}>
-                  <Chip
-                    disabled={isLoadingAdmins}
-                    icon={filter?.admin ? <Check /> : undefined}
-                    color={filter?.admin ? 'secondary' : 'default'}
-                    label="Admins"
-                    onClick={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}
-                  />
-                </Badge>
-
-                <Badge color="primary" badgeContent={group_users.length}>
-                  <Chip
-                    disabled={isLoadingUsers}
-                    icon={filter?.user ? <Check /> : undefined}
-                    color={filter?.user ? 'secondary' : 'default'}
-                    label="Nutzer"
-                    onClick={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}
-                  />
-                </Badge>
-              </Grid>
-            </Card>
-          )}
-          {group?.user_group_role === 'admin' && filter?.joinRequested && group_join_requested.length > 0 && (
-            <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-              <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
-                Beitrittsanfragen · {group_join_requested.length}
-              </Typography>
-              <Divider />
-              {group_join_requested
-                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-                .map((x) => (
-                  <ListItem divider key={x.user.id} sx={{ pr: 1 }}>
-                    <ListItemAvatar>
-                      <Avatar sx={{ borderRadius: 2 }}>
-                        {x.user.avatarUrl ? (
-                          <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                        ) : (
-                          <AccountBox />
-                        )}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <Stack
-                      direction={'row'}
-                      spacing={2}
-                      sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}
-                    >
-                      <ListItemText
-                        primary={
-                          <Stack direction={'row'} spacing={2}>
-                            <Typography>{x.user.name}</Typography>
-                            {group.user_group_role === 'admin' && (
-                              <Chip variant="outlined" size="small" label="Angefragt" color="warning" />
-                            )}
-                          </Stack>
-                        }
-                      />
-                      <Stack direction={'row'} spacing={0}>
-                        <DeclineJoinButton user={x.user} group={group} />
-                        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
-                        <AcceptJoinButton user={x.user} group={group} />
-                        <Has feat={'events.trials'}>
-                          <AcceptTrialJoinButton user={x.user} group={group} />
-                        </Has>
-                      </Stack>
-                    </Stack>
-                  </ListItem>
-                ))}
-            </Card>
-          )}
-          {group?.user_group_role === 'admin' && filter?.trials && group_trials.length > 0 && (
-            <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-              <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
-                Probenutzer · {group_trials.length}
-              </Typography>
-              <Divider />
-              {group_trials
-                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-                .map((x) => (
-                  <ListItem
-                    key={x.user.id}
-                    secondaryAction={
-                      <IconButton
-                        onClick={async () => {
-                          const confirmed = await dialogs.confirm(
-                            `Bist du sicher dass du ${x.user.name} zu einem vollwertigen Benutzer überführen möchtest?`,
-                            {
-                              okText: 'Bestätigen',
-                              cancelText: 'Abbrechen',
-                              title: 'Benutzer zu vollwertigem Mitglied machen?',
-                            }
-                          );
-                          if (confirmed) {
-                            changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
-                          }
-                        }}
-                      >
-                        <MoveUpIcon />
-                      </IconButton>
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ borderRadius: 2 }}>
-                        {x.user.avatarUrl ? (
-                          <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                        ) : (
-                          <AccountBox />
-                        )}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Stack direction={'row'} spacing={2}>
-                          <Typography>{x.user.name}</Typography>
-                          {group.user_group_role === 'admin' && (
-                            <Chip variant="outlined" size="small" label="Trial" color="success" />
-                          )}
-                        </Stack>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <AppBar
+        className='!border-b !shadow-sm'
+        showSearch
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        primaryAction="back"
+        user={user}
+        actions={
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
+            if (result && result !== 'closed') {
+              refetch();
+              toast.success('Gruppe wurde erfolgreich bearbeitet.');
+            } else if (!result) {
+              toast.error('Gruppe konnte nicht bearbeitet werden.');
+            }
+          }}>
+            <Pencil />
+          </Button>
+        }
+      />
+      <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>
+        <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
+          <div className="flex-1 p-4 space-y-2">
+            <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
+              <div className="text-lg font-semibold">{group.name}</div>
+              <div className="text-sm font-semibold">
+                Beschreibung
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {group.description || "Keine Beschreibung vorhanden."}
+              </div>
+            </div>
+            <Separator className="my-2" />
+            {
+              group.user_group_role === "admin" && <div className="space-y-2">
+                <div className="text-sm font-semibold">
+                  Filter
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Toggle variant="outline" aria-label="Toggle join requests"
+                    pressed={filter?.joinRequested}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
+                    <GitPullRequest className="size-4" />
+                    Anfragen
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle trials"
+                    pressed={filter?.trials}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
+                    <Shapes className="size-4" />
+                    Trials
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle admins"
+                    pressed={filter?.admin}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
+                    <UserStar className="size-4" />
+                    Admins
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle users"
+                    pressed={filter?.user}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
+                    <User className="size-4" />
+                    Benutzer
+                  </Toggle>
+                </div>
+              </div>
+            }
+            {
+              selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
+                <AlertCircle className="size-4" />
+                <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
+                <AlertAction>
+                  <Button variant={"outline"} onClick={() => {
+                    dialogs.confirm(`Möchtest du die ${selectedUsers.length} ausgewählten Benutzer wirklich aus der Gruppe entfernen?`, {
+                      okText: "Entfernen",
+                      cancelText: "Abbrechen"
+                    }).then((result) => {
+                      if (result) {
+                        handleUsersRemove(selectedUsers);
                       }
-                    />
-                  </ListItem>
+                    })
+                  }}>Entfernen</Button>
+                </AlertAction>
+              </Alert>
+            }
+
+            {usersLoading ? (
+              <div className="space-y-4 mt-6">
+                <Skeleton className="h-5 w-32" />
+                {Array.from({ length: 3 }).map((_, i) => i).map((k) => (
+                  <div key={k} className="flex items-center justify-between rounded-md border p-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="size-10 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </div>
+                  </div>
                 ))}
-            </Card>
-          )}
-          {group && filter?.admin && group_admins.length > 0 && (
-            <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-              <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
-                Administratoren · {group_admins.length}
-              </Typography>
-              <Divider />
-              {group_admins
-                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-                .map((x) => (
-                  <GroupUserItem
-                    key={x.user}
-                    groupUser={x.user}
-                    user={user}
-                    isAdmin={x.role === 'admin'}
-                    dialogs={dialogs}
-                    selected={selectedUsers.includes(x.user)}
-                    {...(group.user_group_role === 'admin' && x.user.id !== user?.id
-                      ? {
-                          secondaryAction: (
-                            <IconButton
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                const result = await dialogs.confirm(
-                                  `Möchtest du wirklich ${x.user.name} von den Admins dieser Gruppe entfernen?`,
-                                  {
-                                    okText: 'Bestätigen',
-                                    cancelText: 'Abbrechen',
+              </div>
+            ) : usersError ? (
+              <div className="mt-8">
+                <Empty>
+                  <EmptyMedia>
+                    <AlertCircle className="size-8 text-destructive" />
+                  </EmptyMedia>
+                  <EmptyTitle>Fehler</EmptyTitle>
+                  <EmptyDescription>Benutzer konnten nicht geladen werden.</EmptyDescription>
+                </Empty>
+              </div>
+            ) : (
+              Object.entries(groupBy(group_users, (x) => x.role))
+                .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
+                .map(([role, users]) => (
+                  <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
+                    hidden: (role === 'admin' && !filter?.admin) ||
+                      (role === 'user' && !filter?.user) ||
+                      (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
+                      (role === 'trial' && !filter?.trials)
+                  })}>
+                    <div className="text-sm font-semibold">
+                      {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
+                      {` (${users.length})`}
+                    </div>
+                    {users
+                      .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((x) => (
+                        <Item variant={"outline"} key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
+                          <ItemMedia>
+                            <Avatar className="cursor-pointer" {...(
+                              (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
+                                onClick: () => {
+                                  if (selectedUsers.includes(x.user)) {
+                                    setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                                  } else {
+                                    setSelectedUsers([...selectedUsers, x.user]);
                                   }
-                                );
-                                if (result) {
-                                  changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
                                 }
-                              }}
-                            >
-                              <MoveDownIcon />
-                            </IconButton>
-                          ),
-                          onAvatarClick: (e) => {
-                            e.stopPropagation();
-                            if (group.user_group_role !== 'admin') return;
-                            if (selectedUsers.includes(x.user)) {
-                              setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                            } else {
-                              setSelectedUsers([...selectedUsers, x.user]);
-                            }
-                          },
-                        }
-                      : {})}
-                  />
-                ))}
-            </Card>
-          )}
-          {group && filter?.user && group_users.length > 0 && (
-            <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-              <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
-                Benutzer · {group_users.length}
-              </Typography>
-              <Divider />
-              {group_users
-                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-                .map((x) => (
-                  <GroupUserItem
-                    key={x.user}
-                    groupUser={x.user}
-                    user={user}
-                    isAdmin={x.role === 'admin'}
-                    dialogs={dialogs}
-                    selected={selectedUsers.includes(x.user)}
-                    {...(group.user_group_role === 'admin' && x.role !== 'admin'
-                      ? {
-                          secondaryAction: (
-                            <Stack direction={'row'}>
-                              <IconButton
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  const result = await dialogs.confirm(
-                                    `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                                    {
-                                      okText: 'Bestätigen',
-                                      cancelText: 'Abbrechen',
-                                    }
-                                  );
-                                  if (result) {
-                                    changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'admin' });
-                                  }
-                                }}
-                              >
-                                <AdminPanelSettings />
-                              </IconButton>
-                              <Has feat={'events.trials'}>
-                                <IconButton
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    const result = await dialogs.confirm(
-                                      `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
-                                      {
-                                        okText: 'Bestätigen',
-                                        cancelText: 'Abbrechen',
-                                      }
-                                    );
-                                    if (result) {
-                                      changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'trial' });
-                                    }
-                                  }}
-                                >
-                                  <MoveDownIcon />
-                                </IconButton>
-                              </Has>
-                            </Stack>
-                          ),
-                        }
-                      : {})}
-                    {...(group.user_group_role === 'admin'
-                      ? {
-                          onAvatarClick: (e) => {
-                            e.stopPropagation();
-                            if (group.user_group_role !== 'admin') return;
-                            if (selectedUsers.includes(x.user)) {
-                              setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                            } else {
-                              setSelectedUsers([...selectedUsers, x.user]);
-                            }
-                          },
-                        }
-                      : {})}
-                  />
-                ))}
-            </Card>
-          )}
-          {group?.parent_group !== null && (
-            <>
-              <Divider />
-              <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
-                <CardActionArea sx={{ px: 1 }}>
-                  <ListItem
-                    onClick={() => {
-                      if (!group || !user) return;
-                      dialogs
-                        .confirm(
-                          group.need_request_to_join
-                            ? 'Du kannst der Gruppe nicht mehr direkt beitreten, sondern musst bestätigt werden.'
-                            : 'Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.',
-                          {
-                            okText: 'Verlassen',
-                            cancelText: 'Abbrechen',
-                            title: 'Möchtest du die Gruppe wirklich verlassen?',
-                          }
-                        )
-                        .then((result) => {
-                          if (result) {
-                            leaveGroupMutation.mutate(
-                              { group, user },
-                              {
-                                onSuccess: () => navigate('/groups/list', { replace: true }),
-                                onError: (error) => {
-                                  captureException(error);
-                                  notifications.show('Es ist ein Fehler aufgetreten.', { severity: 'error' });
-                                },
                               }
-                            );
-                          }
-                        });
-                    }}
-                  >
-                    <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                      <GroupRemove />
-                    </ListItemAvatar>
-                    <ListItemText primary="Gruppe verlassen" />
-                  </ListItem>
-                </CardActionArea>
-              </Card>
-            </>
-          )}
-        </List>
-        {group?.user_group_role === 'admin' && (
-          <Stack
-            direction={'row'}
-            spacing={2}
-            sx={{
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            }}
+                            )}>
+                              {
+                                selectedUsers.includes(x.user)
+                                  ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
+                                    <CheckCircle2 className="size-6" />
+                                  </div>
+                                  : <>
+                                    <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                                    <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                                  </>
+                              }
+                            </Avatar>
+                          </ItemMedia>
+                          <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
+                            <ItemTitle>{x.user.name}</ItemTitle>
+                            <ItemDescription>{x.user.email}</ItemDescription>
+                          </ItemContent>
+                          <ItemActions>
+                            {
+                              x.role === 'admin' && (
+                                <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
+                              )
+                            }
+                            {
+                              role === "trial" && <AcceptTrialButton group={group} user={x.user} />
+                            }
+                            {
+                              role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
+                            }
+                          </ItemActions>
+                        </Item>
+                      ))}
+                  </div>
+                ))
+            )}
+          </div>
+        </PullToRefresh>
+        {group.user_group_role === "admin" && (
+          <div
+            className="fixed right-6 z-50"
+            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <Fab
-              sx={{
-                background: 'primary.light',
-              }}
+            <Button
+              size="icon"
+              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
               onClick={() => {
                 dialogs
-                  .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.id) })
+                  .selectMultipleUser(group_users.map((x) => x.user.id))
                   .then((result) => {
                     if (result) handleUsersAdded(result);
                   });
               }}
             >
-              <PersonAdd sx={{ color: 'white' }} />
-            </Fab>
-          </Stack>
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
         )}
-      </PullToRefresh>
-    </Layout>
+      </main>
+    </div>
   );
-};
+}
+
+const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
+  const changeUserRoleMutation = useChangeUserRoleMutation();
+  const dialogs = useDialogs();
+  return <Button variant={"ghost"} size={"icon-sm"} onClick={() => {
+    dialogs.confirm("Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?", {
+      okText: "Akzeptieren",
+      cancelText: "Abbrechen"
+    }).then((result) => {
+      if (result) {
+        changeUserRoleMutation.mutate(
+          { user: user, group: group, new_role: 'user' },
+          {
+            onError: (error) => {
+              toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+            },
+            onSuccess: () => {
+              toast.success('Anfrage erfolgreich akzeptiert.');
+            },
+          }
+        );
+      }
+    })
+  }}>
+    <CircleFadingArrowUp className="size-4" />
+  </Button>
+}
+
+const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User }) => {
+  const declineJoinMutation = useDeclineRequestMutation(group);
+  const changeUserRoleMutation = useChangeUserRoleMutation();
+  const dialogs = useDialogs();
+
+  return <DropdownMenu >
+    <DropdownMenuTrigger render={<Button variant={"outline"} size="sm">Bearbeiten</Button>} />
+    <DropdownMenuContent className={"w-full"}>
+      <DropdownMenuItem variant="destructive" className={"text-sm"}
+        onClick={() =>
+          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich ablehnen?", {
+            okText: "Ablehnen",
+            cancelText: "Abbrechen"
+          }).then((result) => {
+            if (result) {
+              declineJoinMutation.mutate(user, {
+                onError: (error) => {
+                  toast.error('Anfrage konnte nicht gelöscht werden. ' + error.message);
+                },
+                onSuccess: () => {
+                  toast.success('Anfrage erfolgreich gelöscht.');
+                },
+              })
+            }
+          })
+        }>
+        <XCircle className="size-4 mr-2" />
+        Ablehnen
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className={"text-sm"}
+        onClick={() => {
+          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich akzeptieren?", {
+            okText: "Akzeptieren",
+            cancelText: "Abbrechen"
+          }).then((result) => {
+            if (result) {
+              changeUserRoleMutation.mutate(
+                { user: user, group: group, new_role: 'user' },
+                {
+                  onError: (error) => {
+                    toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                  },
+                  onSuccess: () => {
+                    toast.success('Anfrage erfolgreich akzeptiert.');
+                  },
+                }
+              );
+            }
+          })
+        }}>
+        <CheckCircle2 className="size-4 mr-2" />
+        Akzeptieren
+      </DropdownMenuItem>
+      <Has feat={"events.trials"}>
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className={"text-sm"}
+            onClick={() => {
+              dialogs.confirm("Möchtest du den Benutzer wirklich als Probenutzer akzeptieren?", {
+                okText: "Akzeptieren",
+                cancelText: "Abbrechen"
+              }).then((result) => {
+                if (result) {
+                  changeUserRoleMutation.mutate(
+                    { user: user, group: group, new_role: 'trial' },
+                    {
+                      onError: (error) => {
+                        toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                      },
+                      onSuccess: () => {
+                        toast.success('Anfrage erfolgreich akzeptiert.');
+                      },
+                    }
+                  );
+                }
+              })
+            }}>
+            <CheckCircle2 className="size-4 mr-2" />
+            Probenutzer
+          </DropdownMenuItem>
+        </>
+      </Has>
+    </DropdownMenuContent>
+  </DropdownMenu>
+}
 
 export default PublicGroupInformation;
