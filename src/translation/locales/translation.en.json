@@ -272,6 +272,9 @@
       "noHolder": "Unassigned"
     }
   },
+  "user": {
+    "lastActive": "Active {{ date, ago }}"
+  },
   "profile": {
     "account": {
       "avatar": "Profile picture",
@@ -344,6 +347,7 @@
       "disable": "Disable notifications",
       "vapidMissing": "VAPID public key missing."
     },
+    "lastSeenAt": "Last active {{ date, ago }}",
     "offline": "You are offline. Cached data is displayed.",
     "h2h": {
       "title": "Head-to-Head",

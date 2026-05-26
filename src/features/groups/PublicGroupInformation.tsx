@@ -15,11 +15,10 @@ import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
-import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { v4 } from "uuid";
@@ -40,7 +39,7 @@ const roleWeights: Record<string, number> = {
 };
 
 const PublicGroupInformation = () => {
-
+  const { t } = useTranslation();
   const { groupId } = useParams();
   const { user } = useGrants();
   const dialogs = useDialogs();
@@ -335,7 +334,7 @@ const PublicGroupInformation = () => {
                               {x.user.email}
                               {x.user.last_sign_in_at && (
                                 <span className="ml-2 text-xs">
-                                  · Aktiv {formatDistanceToNow(new Date(x.user.last_sign_in_at), { addSuffix: true, locale: de })}
+                                  · {t('user.lastActive', { date: new Date(x.user.last_sign_in_at) })}
                                 </span>
                               )}
                             </ItemDescription>

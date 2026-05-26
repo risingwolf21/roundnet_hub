@@ -1,6 +1,5 @@
-import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -15,6 +14,7 @@ import { useGrants } from '../auth/GrantsContext';
 import EditUserDialog from './dialogs/EditUserDialog';
 
 const AdminUserList = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const [searchString, setSearchString] = useState('');
@@ -66,7 +66,7 @@ const AdminUserList = () => {
                     <div className="text-xs text-muted-foreground">{user.email}</div>
                     {user.last_sign_in_at && (
                       <div className="text-xs text-muted-foreground">
-                        Aktiv {formatDistanceToNow(new Date(user.last_sign_in_at), { addSuffix: true, locale: de })}
+                        {t('user.lastActive', { date: new Date(user.last_sign_in_at) })}
                       </div>
                     )}
                   </div>
