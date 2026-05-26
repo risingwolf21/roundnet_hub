@@ -122,6 +122,15 @@
       "declined_other": "{{count}} declined",
       "commentTimeAgo": "{{time}} ago"
     },
+    "bringItems": {
+      "tab": "Bring Items",
+      "empty": "No items to bring for this event",
+      "save": "Save pledges",
+      "pledged": "{{pledged}} of {{required}} {{unit}} pledged",
+      "myPledge": "My pledge",
+      "saveSuccess": "Pledges saved",
+      "saveError": "Error saving pledges"
+    },
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
