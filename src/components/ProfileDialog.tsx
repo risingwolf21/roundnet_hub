@@ -7,6 +7,8 @@ import { useUserTrophies } from '@/tanstack/challenge';
 import { usePlayerLeaderboardEntry, usePlayerMatches } from '@/tanstack/games';
 import { useEloHistoryForPlayer } from '@/tanstack/player_data';
 import { useProfile } from '@/tanstack/user';
+import { formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -178,6 +180,11 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 <AvatarFallback>{profile?.displayName ? profile.displayName[0] : 'U'}</AvatarFallback>
               </Avatar>
               <div className='text-2xl mt-4'>{profile?.displayName}</div>
+              {profile?.user?.last_sign_in_at && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Zuletzt aktiv {formatDistanceToNow(new Date(profile.user.last_sign_in_at), { addSuffix: true, locale: de })}
+                </p>
+              )}
             </div>
           )}
 

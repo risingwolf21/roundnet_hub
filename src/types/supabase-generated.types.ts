@@ -2499,6 +2499,7 @@ export type Database = {
           displayName: string
           email: string
           id: string
+          last_sign_in_at: string | null
           name: string
           role: Database["public"]["Enums"]["UserRole"]
           verified: boolean
@@ -2510,6 +2511,7 @@ export type Database = {
           displayName?: string
           email?: string
           id: string
+          last_sign_in_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
           verified?: boolean
@@ -2521,6 +2523,7 @@ export type Database = {
           displayName?: string
           email?: string
           id?: string
+          last_sign_in_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
           verified?: boolean

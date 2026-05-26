@@ -15,6 +15,8 @@ import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
+import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
@@ -329,7 +331,14 @@ const PublicGroupInformation = () => {
                           </ItemMedia>
                           <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
                             <ItemTitle>{x.user.name}</ItemTitle>
-                            <ItemDescription>{x.user.email}</ItemDescription>
+                            <ItemDescription>
+                              {x.user.email}
+                              {x.user.last_sign_in_at && (
+                                <span className="ml-2 text-xs">
+                                  · Aktiv {formatDistanceToNow(new Date(x.user.last_sign_in_at), { addSuffix: true, locale: de })}
+                                </span>
+                              )}
+                            </ItemDescription>
                           </ItemContent>
                           <ItemActions>
                             {
