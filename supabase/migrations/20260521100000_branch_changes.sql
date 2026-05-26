@@ -88,13 +88,6 @@ CREATE TRIGGER trg_reset_reminder_sent_at
   FOR EACH ROW EXECUTE FUNCTION public.reset_reminder_sent_at();
 
 -- =============================================================================
--- iCal token
--- =============================================================================
-
-ALTER TABLE public.user
-  ADD COLUMN IF NOT EXISTS ical_token uuid NOT NULL DEFAULT gen_random_uuid();
-
--- =============================================================================
 -- Missing indexes (performance / RLS hot paths)
 -- =============================================================================
 
