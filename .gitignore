@@ -11,6 +11,9 @@
 # production
 /build
 
+# Claude Code session state
+.claude/
+
 # misc
 .DS_Store
 .env.local

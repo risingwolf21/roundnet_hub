@@ -2063,6 +2063,8 @@ export type Database = {
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd: string | null
+          reminder_before: string | null
+          reminder_sent_at: string | null
           required_item: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string
           title: string
@@ -2084,6 +2086,8 @@ export type Database = {
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
+          reminder_before?: string | null
+          reminder_sent_at?: string | null
           required_item?: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string
           title?: string
@@ -2105,6 +2109,8 @@ export type Database = {
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
+          reminder_before?: string | null
+          reminder_sent_at?: string | null
           required_item?: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime?: string
           title?: string
