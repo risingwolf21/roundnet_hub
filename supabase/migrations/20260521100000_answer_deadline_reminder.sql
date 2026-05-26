@@ -25,7 +25,7 @@ DECLARE
   v_count   integer := 0;
 BEGIN
   FOR v_event IN
-    SELECT e.id, e.title, e."groupId"
+    SELECT e.id, e.title, e."group"
     FROM public.events e
     WHERE e."answerDeadline" IS NOT NULL
       AND e.reminder_before IS NOT NULL
@@ -37,12 +37,12 @@ BEGIN
     FOR v_user_id IN
       SELECT gum."user"::uuid
       FROM public.group_user_mapping gum
-      WHERE gum."group" = v_event."groupId"
+      WHERE gum."group" = v_event."group"
         AND gum.role IN ('user', 'admin', 'trial')
         AND NOT EXISTS (
           SELECT 1 FROM public.event_attendance_user_mapping eaum
           WHERE eaum.event = v_event.id
-            AND eaum."user" = gum."user"::uuid
+            AND eaum."user" = gum."user"
             AND eaum.state NOT IN ('Pending', 'Waiting', 'WaitingAsTrial')
         )
     LOOP
