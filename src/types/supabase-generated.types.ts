@@ -545,6 +545,8 @@ export type Database = {
           set_number: number
           team_a_score: number
           team_b_score: number
+          type: string
+          set_awarded: boolean | null
         }
         Insert: {
           created_at?: string
@@ -553,6 +555,8 @@ export type Database = {
           set_number: number
           team_a_score: number
           team_b_score: number
+          type?: string
+          set_awarded?: boolean | null
         }
         Update: {
           created_at?: string
@@ -561,6 +565,8 @@ export type Database = {
           set_number?: number
           team_a_score?: number
           team_b_score?: number
+          type?: string
+          set_awarded?: boolean | null
         }
         Relationships: [
           {
@@ -799,6 +805,7 @@ export type Database = {
           player_2b_rating: number
           player_names?: Json
           rated?: boolean
+          spezi_set?: Json
         }
         Returns: string
       }
