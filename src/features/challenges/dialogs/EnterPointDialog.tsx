@@ -162,7 +162,9 @@ const EnterPointDialog = ({
             <Field>
               <Select modal={true} onValueChange={(val) => val && setCategory(val as string)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Kategorie" className="text-base" />
+                  <SelectValue placeholder="Kategorie" className="text-base">
+                    {category}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="p-0 pointer-events-auto z-[100]">
                   <SelectGroup>
