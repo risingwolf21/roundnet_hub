@@ -1,6 +1,6 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, PrecacheController, PrecacheRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
@@ -18,26 +18,48 @@ self.addEventListener('activate', (event) => {
         .matchAll({ type: 'window' })
         .then((windowClients) =>
           Promise.all(
-            (windowClients as WindowClient[]).map((c) => c.navigate(c.url))
+            (windowClients as WindowClient[]).map((c) => c.navigate(c.url).catch(() => null))
           )
         )
     )
   );
 });
 
+// Precaching — resilient: SW still activates even if the network fails during
+// cache population (e.g. slow/spotty mobile connection on first open after deploy).
+const precacheController = new PrecacheController();
+precacheController.addToCacheList(self.__WB_MANIFEST);
+registerRoute(new PrecacheRoute(precacheController));
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    precacheController.install({ event }).catch((err) =>
+      console.warn('[SW] Precache install failed, activating without full cache:', err)
+    )
+  );
+});
+
 cleanupOutdatedCaches();
 
-precacheAndRoute(self.__WB_MANIFEST);
-
-const SPA_INDEX = new URL('index.html', self.registration.scope).href;
+// SPA navigation: NetworkFirst so the app loads even when the precache is
+// incomplete (e.g. after a resilient-install that skipped some files).
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 
-registerRoute(({ request, url }) => {
-  if (request.mode !== 'navigate') return false;
-  if (url.pathname.startsWith('/_')) return false;
-  if (url.pathname.match(fileExtensionRegexp)) return false;
-  return true;
-}, createHandlerBoundToURL(SPA_INDEX));
+registerRoute(
+  ({ request, url }) => {
+    if (request.mode !== 'navigate') return false;
+    if (url.pathname.startsWith('/_')) return false;
+    if (url.pathname.match(fileExtensionRegexp)) return false;
+    return true;
+  },
+  new NetworkFirst({
+    cacheName: 'navigations',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({ maxEntries: 5 }),
+    ],
+  })
+);
 
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
@@ -58,8 +80,8 @@ registerRoute(
     cacheName: 'supabase-api-cache',
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 50, // Cache maximal die letzten 50 API-Antworten
-        maxAgeSeconds: 24 * 60 * 60, // Lösche API-Cache nach 24 Stunden
+        maxEntries: 50,
+        maxAgeSeconds: 24 * 60 * 60,
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -78,7 +100,7 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Tage
+        maxAgeSeconds: 30 * 24 * 60 * 60,
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -102,8 +124,6 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-self.addEventListener('install', () => self.skipWaiting());
-
 function safeParseJSON(data: PushMessageData | null) {
   try {
     return data ? data.json() : {};
@@ -114,7 +134,6 @@ function safeParseJSON(data: PushMessageData | null) {
 
 function extractPayload(raw: any) {
   const p = raw || {};
-  // Akzeptiere sowohl top-level (url) als auch data.url
   const title = p.title || 'Benachrichtigung';
   const body = p.body || '';
   const data = p.data || {};
