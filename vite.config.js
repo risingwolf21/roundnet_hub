@@ -92,6 +92,7 @@ export default defineConfig(({ mode }) => {
       target: 'es2020',
       sourcemap: false,
       outDir: 'build', // CRA's default build output
+      rollupOptions: {},
     },
     test: {
       globals: true,

@@ -4,7 +4,6 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { dataURLtoFile, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import Compressor from 'compressorjs';
 import { v4 as uuid } from 'uuid';
 import { authKeys } from "./auth";
 
@@ -68,6 +67,7 @@ const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
 }
 
 export async function compress(file: Blob | File, convertSize: number) {
+  const { default: Compressor } = await import('compressorjs');
   return await new Promise<File | Blob>((resolve, reject) => {
     new Compressor(file, {
       convertSize,

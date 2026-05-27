@@ -34,7 +34,7 @@ export function ForeignKeyPicker({ relationship, value, onValueChange, disabled 
     queryFn: async () => {
       const { data, error } = await supabase
         //@ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
-        .schema(relationship.target_table_schema)
+        .schema(relationship.target_table_schema ?? 'public')
         //@ts-expect-error - supabase-js types sind nicht aktuell mit den neuesten Postgres-Features wie json_populate_record
         .from(relationship.target_table_name)
         .select('*')

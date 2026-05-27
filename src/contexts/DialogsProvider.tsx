@@ -4,7 +4,7 @@ import { SelectSingleOptionDialog } from '@/components/dialogs/SelectSingleOptio
 import { ProfileDialog } from '@/components/ProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import React, { createContext, use, useCallback, useState } from 'react';
+import React, { Suspense, createContext, use, useCallback, useState } from 'react';
 
 // 1. Das Toolpad-ähnliche Interface für ALLE Dialoge
 export interface DialogProps<Payload = void, Result = void> {
@@ -134,12 +134,13 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser, selectGroup, selectSingleOption, userProfile }}>
       {children}
       {dialogs.map(({ id, Component, payload, open, resolve }) => (
-        <Component
-          key={id}
-          open={open}
-          payload={payload}
-          onClose={resolve}
-        />
+        <Suspense key={id} fallback={null}>
+          <Component
+            open={open}
+            payload={payload}
+            onClose={resolve}
+          />
+        </Suspense>
       ))}
     </DialogsContext>
   );

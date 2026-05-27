@@ -1,28 +1,53 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope;
 
 self.skipWaiting();
-clientsClaim();
+
+// On activation, claim all clients then force-reload every open window so that
+// pages stuck with a white screen (stale SW served broken chunk hashes, JS
+// never ran) are recovered automatically — no page-side JS required.
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    self.clients.claim().then(() =>
+      self.clients
+        .matchAll({ type: 'window' })
+        .then((windowClients) =>
+          Promise.all(
+            (windowClients as WindowClient[]).map((c) => c.navigate(c.url).catch(() => null))
+          )
+        )
+    )
+  );
+});
 
 cleanupOutdatedCaches();
 
 precacheAndRoute(self.__WB_MANIFEST);
 
-const SPA_INDEX = new URL('index.html', self.registration.scope).href;
+// SPA navigation: NetworkFirst so the app loads even when the precache is
+// incomplete (falls back to the cached response when offline).
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 
-registerRoute(({ request, url }) => {
-  if (request.mode !== 'navigate') return false;
-  if (url.pathname.startsWith('/_')) return false;
-  if (url.pathname.match(fileExtensionRegexp)) return false;
-  return true;
-}, createHandlerBoundToURL(SPA_INDEX));
+registerRoute(
+  ({ request, url }) => {
+    if (request.mode !== 'navigate') return false;
+    if (url.pathname.startsWith('/_')) return false;
+    if (url.pathname.match(fileExtensionRegexp)) return false;
+    return true;
+  },
+  new NetworkFirst({
+    cacheName: 'navigations',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [200] }),
+      new ExpirationPlugin({ maxEntries: 5 }),
+    ],
+  })
+);
 
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com',
@@ -43,8 +68,8 @@ registerRoute(
     cacheName: 'supabase-api-cache',
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 50, // Cache maximal die letzten 50 API-Antworten
-        maxAgeSeconds: 24 * 60 * 60, // Lösche API-Cache nach 24 Stunden
+        maxEntries: 50,
+        maxAgeSeconds: 24 * 60 * 60,
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -63,7 +88,7 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Tage
+        maxAgeSeconds: 30 * 24 * 60 * 60,
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -87,8 +112,6 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-self.addEventListener('install', () => self.skipWaiting());
-
 function safeParseJSON(data: PushMessageData | null) {
   try {
     return data ? data.json() : {};
@@ -99,7 +122,6 @@ function safeParseJSON(data: PushMessageData | null) {
 
 function extractPayload(raw: any) {
   const p = raw || {};
-  // Akzeptiere sowohl top-level (url) als auch data.url
   const title = p.title || 'Benachrichtigung';
   const body = p.body || '';
   const data = p.data || {};

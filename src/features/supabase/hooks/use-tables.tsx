@@ -41,7 +41,7 @@ export interface Relationship {
   target_table_name: string;
   source_column_name: string;
   target_column_name: string;
-  target_table_schema: string;
+  target_table_schema: string | null;
 }
 
 export interface Column {
