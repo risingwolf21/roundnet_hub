@@ -9,6 +9,14 @@ import { v4 as uuid } from 'uuid';
 import { authKeys } from "./auth";
 
 
+export const useSharedGroupMembers = (currentUserId: string | undefined) =>
+  useQuery({
+    queryKey: ['users', 'shared-group-members', currentUserId],
+    enabled: !!currentUserId,
+    queryFn: () => UserRepository.fetchSharedGroupMembers(currentUserId!),
+    staleTime: 5 * 60 * 1000,
+  });
+
 export const useProfile = (userId: string) =>
   useQuery({
     queryKey: ['profile', userId],

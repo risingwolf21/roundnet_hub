@@ -60,4 +60,33 @@ export const UserRepository = {
     const { data } = await supabase.from('user').update(update).eq('id', userId).select('*').maybeSingle().throwOnError();
     return data;
   },
+
+  async fetchSharedGroupMembers(currentUserId: string): Promise<User[]> {
+    const { data: myMappings } = await supabase
+      .from('group_user_mapping')
+      .select('group')
+      .eq('user', currentUserId)
+      .throwOnError();
+
+    const groupIds = (myMappings ?? []).map((m) => m.group);
+    if (groupIds.length === 0) return [];
+
+    const result = await supabase
+      .from('group_user_mapping')
+      .select('user:user(id, displayName, name, avatarUrl, last_seen_at)')
+      .in('group', groupIds)
+      .neq('user', currentUserId)
+      .throwOnError();
+
+    const seen = new Set<string>();
+    const users: User[] = [];
+    for (const m of result.data ?? []) {
+      const u = (m as any).user as User;
+      if (u && !seen.has(u.id)) {
+        seen.add(u.id);
+        users.push(u);
+      }
+    }
+    return users;
+  },
 };
