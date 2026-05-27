@@ -1,6 +1,6 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { cleanupOutdatedCaches, PrecacheController, PrecacheRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
@@ -25,24 +25,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Precaching — resilient: SW still activates even if the network fails during
-// cache population (e.g. slow/spotty mobile connection on first open after deploy).
-const precacheController = new PrecacheController();
-precacheController.addToCacheList(self.__WB_MANIFEST);
-registerRoute(new PrecacheRoute(precacheController));
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    precacheController.install({ event }).catch((err) =>
-      console.warn('[SW] Precache install failed, activating without full cache:', err)
-    )
-  );
-});
-
 cleanupOutdatedCaches();
 
+precacheAndRoute(self.__WB_MANIFEST);
+
 // SPA navigation: NetworkFirst so the app loads even when the precache is
-// incomplete (e.g. after a resilient-install that skipped some files).
+// incomplete (falls back to the cached response when offline).
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 
 registerRoute(
