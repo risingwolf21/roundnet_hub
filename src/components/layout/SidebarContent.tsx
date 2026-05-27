@@ -7,7 +7,6 @@ import { useAllNotifications } from '@/tanstack/notifications';
 import { Bell, ChartArea, Database, Euro, GitMerge, HelpCircle, History, Home, KeyRound, LayoutDashboard, Logs, Package, RefreshCcw, Search, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
-import { UserSearchDialog } from '@/features/search/UserSearchDialog';
 import { useLocation, useNavigate } from "react-router";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from '../ui/sidebar';
 import { Spinner } from '../ui/spinner';
@@ -42,7 +41,6 @@ export function AppSidebar() {
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
   const { setOpenMobile } = useSidebar();
   const tab = location.pathname.substring(1) || "home";
@@ -145,7 +143,7 @@ export function AppSidebar() {
         {
           title: t('navigation.search'),
           icon: <Search />,
-          onClick: () => { setOpenMobile(false); setShowSearch(true); },
+          path: 'search',
         },
         {
           title: t('navigation.training'),
@@ -293,8 +291,6 @@ export function AppSidebar() {
   ]
 
   return (
-    <>
-    <UserSearchDialog open={showSearch} onClose={() => setShowSearch(false)} />
     <Sidebar>
       <SidebarContent className='pt-safe-top pb-safe-bottom overscroll-none'>
         {categories.map((category, index) => {
@@ -364,6 +360,5 @@ export function AppSidebar() {
         })}
       </SidebarContent>
     </Sidebar>
-    </>
   )
 }

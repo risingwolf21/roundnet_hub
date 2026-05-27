@@ -93,6 +93,10 @@ const createRouter = (user: UserWithGroups | null) =>
               element: <Pages.NotificationScreen />,
             },
             {
+              path: '/search',
+              element: <Pages.UserSearchPage />,
+            },
+            {
               path: '/user',
               element: <Outlet />,
               errorElement: <Pages.ErrorRouteElement />,
