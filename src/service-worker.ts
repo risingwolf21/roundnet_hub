@@ -8,7 +8,23 @@ import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategi
 declare let self: ServiceWorkerGlobalScope;
 
 self.skipWaiting();
-clientsClaim();
+
+// On activation, claim all clients then force-reload every open window so that
+// pages stuck with a white screen (stale SW served broken chunk hashes, JS
+// never ran) are recovered automatically — no page-side JS required.
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    self.clients.claim().then(() =>
+      self.clients
+        .matchAll({ type: 'window' })
+        .then((windowClients) =>
+          Promise.all(
+            (windowClients as WindowClient[]).map((c) => c.navigate(c.url))
+          )
+        )
+    )
+  );
+});
 
 cleanupOutdatedCaches();
 
