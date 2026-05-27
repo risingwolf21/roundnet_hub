@@ -24,11 +24,11 @@ const PrivateRoute = () => {
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
   return <GrantsProvider user={user}>
-    <Pages.MainLayout>
-      <Pages.DialogsProvider>
+    <Pages.DialogsProvider>
+      <Pages.MainLayout>
         <Outlet />
-      </Pages.DialogsProvider>
-    </Pages.MainLayout>
+      </Pages.MainLayout>
+    </Pages.DialogsProvider>
   </GrantsProvider>
 };
 
