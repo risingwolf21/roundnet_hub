@@ -1,5 +1,4 @@
 import { useGrants } from '@/features/auth/GrantsContext';
-import { UserSearchDialog } from '@/features/search/UserSearchDialog';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
@@ -42,7 +41,6 @@ export function AppSidebar() {
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
   const { setOpenMobile } = useSidebar();
   const tab = location.pathname.substring(1) || "home";
@@ -145,7 +143,7 @@ export function AppSidebar() {
         {
           title: t('navigation.search'),
           icon: <Search />,
-          onClick: () => { setOpenMobile(false); setShowSearch(true); },
+          path: 'search',
         },
         {
           title: t('navigation.training'),
@@ -293,77 +291,74 @@ export function AppSidebar() {
   ]
 
   return (
-    <>
-      <UserSearchDialog open={showSearch} onClose={() => setShowSearch(false)} />
-      <Sidebar>
-        <SidebarContent className='pt-safe-top pb-safe-bottom overscroll-none'>
-          {categories.map((category, index) => {
+    <Sidebar>
+      <SidebarContent className='pt-safe-top pb-safe-bottom overscroll-none'>
+        {categories.map((category, index) => {
 
-            const CategoryContent = (
-              <SidebarGroup>
-                {category.header && (
-                  <SidebarGroupLabel>{category.header}</SidebarGroupLabel>
-                )}
-                <SidebarGroupContent>
-                  <SidebarMenu className='gap-y-4'>
-                    {category.children.map((item) => {
-                      const isActive = tab === item.path
+          const CategoryContent = (
+            <SidebarGroup>
+              {category.header && (
+                <SidebarGroupLabel>{category.header}</SidebarGroupLabel>
+              )}
+              <SidebarGroupContent>
+                <SidebarMenu className='gap-y-4'>
+                  {category.children.map((item) => {
+                    const isActive = tab === item.path
 
-                      const component = <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          onClick={() => {
-                            if (item.path) {
-                              setOpenMobile(false);
-                              navigate(`/${item.path}`);
-                            } else if (item.onClick) {
-                              item.onClick();
-                            }
-                          }}
-                          tooltip={item.title}
-                        >
-                          {item.icon}
-                          <div className='text-lg ml-2'>{item.title}</div>
-                        </SidebarMenuButton>
+                    const component = <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        onClick={() => {
+                          if (item.path) {
+                            setOpenMobile(false);
+                            navigate(`/${item.path}`);
+                          } else if (item.onClick) {
+                            item.onClick();
+                          }
+                        }}
+                        tooltip={item.title}
+                      >
+                        {item.icon}
+                        <div className='text-lg ml-2'>{item.title}</div>
+                      </SidebarMenuButton>
 
-                        {/* Optionales Badge (z.B. für offene Anfragen) */}
-                        {item.secondaryAction && (
-                          <SidebarMenuBadge>{item.secondaryAction}</SidebarMenuBadge>
-                        )}
-                      </SidebarMenuItem>
-                      if (item.permission) {
-                        return (
-                          <Has key={item.path} feat={item.permission.feat} perm={item.permission.perm} any={item.permission.any}>
-                            {component}
-                          </Has>
-                        )
-                      }
-                      return component;
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            )
+                      {/* Optionales Badge (z.B. für offene Anfragen) */}
+                      {item.secondaryAction && (
+                        <SidebarMenuBadge>{item.secondaryAction}</SidebarMenuBadge>
+                      )}
+                    </SidebarMenuItem>
+                    if (item.permission) {
+                      return (
+                        <Has key={item.path} feat={item.permission.feat} perm={item.permission.perm} any={item.permission.any}>
+                          {component}
+                        </Has>
+                      )
+                    }
+                    return component;
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )
 
-            // Überprüfe Berechtigungen für die ganze Gruppe
-            if (category.permission) {
-              return (
-                <Has key={category.key} feat={category.permission.feat} perm={category.permission.perm} any={category.permission.any}>
-                  {CategoryContent}
-                  {index < categories.length - 1 && <SidebarSeparator />}
-                </Has>
-              )
-            }
-
+          // Überprüfe Berechtigungen für die ganze Gruppe
+          if (category.permission) {
             return (
-              <div key={category.key}>
+              <Has key={category.key} feat={category.permission.feat} perm={category.permission.perm} any={category.permission.any}>
                 {CategoryContent}
                 {index < categories.length - 1 && <SidebarSeparator />}
-              </div>
+              </Has>
             )
-          })}
-        </SidebarContent>
-      </Sidebar>
-    </>
+          }
+
+          return (
+            <div key={category.key}>
+              {CategoryContent}
+              {index < categories.length - 1 && <SidebarSeparator />}
+            </div>
+          )
+        })}
+      </SidebarContent>
+    </Sidebar>
   )
 }
