@@ -96,13 +96,24 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
-            if (id.includes('react-dom') || id.includes('/react/') || id.includes('react-router') || id.includes('react-i18next') || id.includes('scheduler')) return 'vendor-react';
+            // React core + every React-wrapper package that calls React.createContext()
+            // at module-init time must live in the same chunk to avoid Rollup's CJS
+            // default-import interop resolving React to undefined across chunk boundaries.
+            if (
+              id.includes('react-dom') ||
+              id.includes('/react/') ||
+              id.includes('react-router') ||
+              id.includes('react-i18next') ||
+              id.includes('react-leaflet') ||
+              id.includes('react-day-picker') ||
+              id.includes('scheduler')
+            ) return 'vendor-react';
             if (id.includes('@supabase')) return 'vendor-supabase';
             if (id.includes('@sentry')) return 'vendor-sentry';
             if (id.includes('i18next')) return 'vendor-i18n';
             if (id.includes('@tanstack')) return 'vendor-query';
-            if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-leaflet';
-            if (id.includes('@emotion') || id.includes('@base-ui') || id.includes('date-fns') || id.includes('react-day-picker')) return 'vendor-ui';
+            if (id.includes('leaflet')) return 'vendor-leaflet'; // pure leaflet, not react-leaflet
+            if (id.includes('@emotion') || id.includes('@base-ui') || id.includes('date-fns')) return 'vendor-ui';
           },
         },
       },
