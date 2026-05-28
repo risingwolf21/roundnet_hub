@@ -1,10 +1,13 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useSharedGroupMembers } from '@/tanstack/user';
+import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,11 +33,9 @@ const UserSearchPage = () => {
       <AppBar
         title={t('search.title')}
         user={user}
-        showSearch
         searchPlaceholder={t('search.placeholder')}
         searchValue={search}
         onSearchChange={setSearch}
-        primaryAction="back"
       />
 
       {isLoading ? (
@@ -55,6 +56,23 @@ const UserSearchPage = () => {
         </p>
       ) : (
         <div className="py-2">
+          <div className="flex flex-col items-center gap-3 px-4 mb-3">
+            <div className="relative w-full flex-1">
+              <InputGroup>
+                <InputGroupInput
+                  type="search"
+                  placeholder={t('search.placeholder')}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-full"
+                />
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+              </InputGroup>
+            </div>
+          </div>
+          <Separator />
           {filtered.map((member) => {
             const displayName = member.displayName ?? member.name ?? '?';
             const initials = displayName.slice(0, 2).toUpperCase();
