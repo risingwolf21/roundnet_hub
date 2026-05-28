@@ -1,5 +1,5 @@
 // @/push/WebPushKeeper.tsx
-import useDeviceId from '@/hooks/useDeviceId';
+import { getDeviceId } from '@/hooks/useDeviceId';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
 import { type Session } from '@supabase/supabase-js';
@@ -26,7 +26,7 @@ function arrayBufferToBase64(buf: ArrayBuffer) {
 }
 
 export default function WebPushKeeper({ children, session, vapidPublicKey }: Props) {
-  const deviceId = useDeviceId();
+  const deviceId = getDeviceId();
   const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {

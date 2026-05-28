@@ -1,3 +1,4 @@
+import UnauthorizedRouteElement from '@/components/UnauthorizedRouteElement';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { Feature, Permission } from '@/generated/supabase-types';
 import React from 'react';
@@ -11,9 +12,9 @@ type HasProps = {
   children: React.ReactNode;
 };
 
-export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = null, children }) => {
+export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = UnauthorizedRouteElement, children }) => {
   const { hasPerm, hasFeat, loading } = useGrants();
-  if (loading) return null; // optional: oder Spinner/Fallback
+  if (loading) return <>{fallback}</>;
 
   const permOk = perm ? hasPerm(perm, any ? 'any' : 'all') : true;
   const featOk = feat ? hasFeat(feat, any ? 'any' : 'all') : true;
