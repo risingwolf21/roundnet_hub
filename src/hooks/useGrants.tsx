@@ -13,7 +13,7 @@ type HasProps = {
 
 export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = null, children }) => {
   const { hasPerm, hasFeat, loading } = useGrants();
-  if (loading) return null; // optional: oder Spinner/Fallback
+  if (loading) return <>{fallback}</>;
 
   const permOk = perm ? hasPerm(perm, any ? 'any' : 'all') : true;
   const featOk = feat ? hasFeat(feat, any ? 'any' : 'all') : true;

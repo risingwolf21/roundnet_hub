@@ -402,7 +402,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
           userId: variables.user.id,
           userName: variables.user.name,
         },
-        tags: { type: 'UpdateEventAttendanc', scope: 'events' },
+        tags: { type: 'UpdateEventAttendance', scope: 'events' },
       });
       if (context?.previousEvent) {
         queryClient.setQueryData(eventKeys.event(variables.event.id), context.previousEvent);

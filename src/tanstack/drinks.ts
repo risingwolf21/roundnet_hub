@@ -92,7 +92,7 @@ export const useDeleteDrinkMutation = () => useMutation({
 
     if (previousAdminDrinkList) {
       const newAdminDrinkList = previousAdminDrinkList.filter(x => x.id !== drink.id)
-      queryClient.setQueryData(drinkKeys.drinks(), newAdminDrinkList);
+      queryClient.setQueryData(drinkKeys.listAdmin(), newAdminDrinkList);
     }
 
     return { previousDrinkList, previousAdminDrinkList }
@@ -108,7 +108,7 @@ export const useDeleteDrinkMutation = () => useMutation({
     if (context?.previousDrinkList) {
       queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
     }
-    if (context?.previousDrinkList) {
+    if (context?.previousAdminDrinkList) {
       queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
     }
   },
@@ -136,7 +136,7 @@ export const useInsertDrinkMutation = () => useMutation({
     const previousAdminDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.listAdmin());
 
     if (previousAdminDrinkList) {
-      queryClient.setQueryData(drinkKeys.drinks(), [...previousAdminDrinkList, drink]);
+      queryClient.setQueryData(drinkKeys.listAdmin(), [...previousAdminDrinkList, drink]);
     }
 
     return { previousDrinkList, previousAdminDrinkList }
@@ -152,7 +152,7 @@ export const useInsertDrinkMutation = () => useMutation({
     if (context?.previousDrinkList) {
       queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
     }
-    if (context?.previousDrinkList) {
+    if (context?.previousAdminDrinkList) {
       queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
     }
   },
@@ -192,7 +192,7 @@ export const useUpdateDrinkMutation = () => useMutation({
         }
         return x;
       });
-      queryClient.setQueryData(drinkKeys.drinks(), newAdminDrinkList);
+      queryClient.setQueryData(drinkKeys.listAdmin(), newAdminDrinkList);
     }
 
     return { previousDrinkList, previousAdminDrinkList }
@@ -208,7 +208,7 @@ export const useUpdateDrinkMutation = () => useMutation({
     if (context?.previousDrinkList) {
       queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
     }
-    if (context?.previousDrinkList) {
+    if (context?.previousAdminDrinkList) {
       queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
     }
   },
