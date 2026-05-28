@@ -17,7 +17,7 @@ import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMut
 import { captureException } from "@sentry/react";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -58,6 +58,12 @@ const PublicGroupInformation = () => {
   const [filter, setFilter] = useState<Filter>(DEFAULT_FILTER);
   const { data: group = null, error: groupError, isLoading: groupLoading, refetch: refetchGroup } = useGroup(groupId);
   const { data: group_users = [], isLoading: usersLoading, error: usersError, refetch } = useGroupAllUsers(groupId);
+
+  const groupedUsers = useMemo(
+    () => Object.entries(groupBy(group_users, (x) => x.role))
+      .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB]),
+    [group_users]
+  );
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
@@ -287,9 +293,7 @@ const PublicGroupInformation = () => {
                 </Empty>
               </div>
             ) : (
-              Object.entries(groupBy(group_users, (x) => x.role))
-                .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
-                .map(([role, users]) => (
+              groupedUsers.map(([role, users]) => (
                   <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
                     hidden: (role === 'admin' && !filter?.admin) ||
                       (role === 'user' && !filter?.user) ||

@@ -1,5 +1,7 @@
-import CropImageDialog from "@/components/CropImageDialog";
+import { lazy } from "react";
 import { Button } from "@/components/ui/button";
+
+const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -20,6 +20,7 @@ export const useAllDrinksAsAdmin = () =>
   useQuery<Drink[]>({
     queryKey: drinkKeys.listAdmin(),
     queryFn: () => DrinkRepository.fetchAllDrinks(),
+    staleTime: 5 * 60 * 1000,
   });
 
 export const usePaymentHistory = (userId: string) =>
@@ -38,6 +39,7 @@ export const useDrinks = () =>
   useQuery({
     queryKey: drinkKeys.drinks(),
     queryFn: () => DrinkRepository.fetchDrinks(),
+    staleTime: 5 * 60 * 1000,
   });
 
 export const useInfiniteUserHistory = (userId: string, count: number = 20) =>

@@ -1,9 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, lazy, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { dataURLtoFile, readFile } from '../../../utils';
-
-import CropImageDialog from '@/components/CropImageDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -13,6 +11,8 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Switch } from '@/components/ui/switch';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { EuroIcon, Image, Trash2, UploadCloud } from 'lucide-react';
+
+const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 
 type EditDrinkDialogProps = {
   drink: Drink;
