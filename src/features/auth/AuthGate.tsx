@@ -1,6 +1,6 @@
 import { AppRoutes } from '@/AppRoutes';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import useDeviceId from '@/hooks/useDeviceId';
+import { getDeviceId } from '@/hooks/useDeviceId';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/tanstack/auth';
@@ -12,7 +12,7 @@ import { ApplicationContext } from './ApplicationContext';
 import { useUserGrantsQuery } from './tanstack/useUserGrantsQuery';
 
 export const AuthGate = () => {
-  const deviceId = useDeviceId();
+  const deviceId = getDeviceId();
 
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthRestored, setIsAuthRestored] = useState(false);
@@ -24,7 +24,6 @@ export const AuthGate = () => {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
-      queryClient.clear();
     } catch (error) {
       captureException(error);
     }

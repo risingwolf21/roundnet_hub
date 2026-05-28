@@ -1,3 +1,4 @@
+import { getDeviceId } from "@/hooks/useDeviceId";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -31,14 +32,6 @@ function bufferToBase64Url(buf: ArrayBuffer) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function getDeviceId() {
-  let id = localStorage.getItem('device_id');
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem('device_id', id);
-  }
-  return id;
-}
 
 function detectPlatform() {
   const ua = navigator.userAgent || '';

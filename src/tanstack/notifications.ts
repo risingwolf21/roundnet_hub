@@ -51,7 +51,7 @@ export const useDismissNotification = () =>
           ...variables,
           ...error,
         },
-        tags: { type: 'InsertItem', scope: 'items' },
+        tags: { type: 'DismissNotification', scope: 'notifications' },
       });
       if (context?.previousNotifications) {
         queryClient.setQueryData(notificationKeys.all, context.previousNotifications);

@@ -1,8 +1,6 @@
 // src/features/grants/GrantsProvider.tsx
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { authKeys } from '@/tanstack/auth';
 import type { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import * as React from 'react';
@@ -25,15 +23,6 @@ export function GrantsProvider({ user, children }: Props) {
       await supabase.auth.signOut();
     } catch (error: unknown) {
       captureException(error);
-    } finally {
-      // Query Cache hart säubern – Nutzerkontext ist weg
-      try {
-        await queryClient.cancelQueries();
-        await queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(user.id) });
-        queryClient.clear();
-      } catch {
-        /* empty */
-      }
     }
   }, []);
 
