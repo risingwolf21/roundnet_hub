@@ -130,31 +130,6 @@ const AppInformation = () => {
       </div>
     </main>
   </div>
-
-  // return (
-  //   <Layout appBarConfig={{ title: 'Hilfe und Informationen' }}>
-  //     <List sx={{ mx: 2, mb: 'env(safe-area-inset-bottom)' }}>
-  //       <List subheader={<ListSubheader sx={{ m: 0, p: 0 }}>Inhalt dieser Seite</ListSubheader>}>
-  //         <ListItemButton dense href="#refresh">
-  //           <ListItemText primary={t('titles.refresh')} />
-  //         </ListItemButton>
-  //         <ListItemButton dense href="#installation">
-  //           <ListItemText primary={t('titles.installation')} />
-  //         </ListItemButton>
-  //         <ListItemButton dense href="#groups">
-  //           <ListItemText primary={t('titles.groups')} />
-  //         </ListItemButton>
-  //         <ListItemButton dense href="#events">
-  //           <ListItemText primary={t('titles.events')} />
-  //         </ListItemButton>
-  //         <ListItemButton dense href="#faq">
-  //           <ListItemText primary={t('titles.faq')} />
-  //         </ListItemButton>
-  //       </List>
-  //       <Divider />
-  //     </List>
-  //   </Layout>
-  // );
 };
 
 export default AppInformation;

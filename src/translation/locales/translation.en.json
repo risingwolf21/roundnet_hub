@@ -177,7 +177,13 @@
     "leaderboard": "Leaderboard",
     "matches": "Matches",
     "training": "Training",
-    "groups": "Groups"
+    "groups": "Groups",
+    "search": "Search"
+  },
+  "search": {
+    "title": "Search players",
+    "placeholder": "Search by name...",
+    "noResults": "No players found"
   },
   "notificationTags": {
     "eventComments": "Event comments",
