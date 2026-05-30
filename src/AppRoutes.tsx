@@ -97,6 +97,10 @@ const createRouter = (user: UserWithGroups | null) =>
               element: <Pages.UserSearchPage />,
             },
             {
+              path: '/costs',
+              element: <Pages.TournamentCostsPage />,
+            },
+            {
               path: '/user',
               element: <Outlet />,
               errorElement: <Pages.ErrorRouteElement />,

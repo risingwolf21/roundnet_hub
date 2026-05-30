@@ -5,7 +5,9 @@
   "common": {
     "confirm": "Bestätigen",
     "cancel": "Abbrechen",
-    "filter": "Filter"
+    "filter": "Filter",
+    "save": "Speichern",
+    "delete": "Löschen"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
@@ -178,12 +180,38 @@
     "matches": "Spiele",
     "leaderboard": "Rangliste",
     "groups": "Gruppen",
-    "search": "Suchen"
+    "search": "Suchen",
+    "costs": "Turnierkosten"
   },
   "search": {
     "title": "Spieler suchen",
     "placeholder": "Name suchen...",
     "noResults": "Keine Spieler gefunden"
+  },
+  "costs": {
+    "title": "Turnierkosten",
+    "addEntry": "Eintrag hinzufügen",
+    "editEntry": "Eintrag bearbeiten",
+    "tournament": "Turniername",
+    "date": "Datum",
+    "category": "Kategorie",
+    "customCategory": "Eigene Kategorie",
+    "customCategoryPlaceholder": "z.B. Parkgebühren",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Optional",
+    "amount": "Betrag (€)",
+    "total": "Gesamt",
+    "empty": "Noch keine Einträge.",
+    "emptyDescription": "Tippe auf + um deine ersten Kosten zu erfassen.",
+    "deleteConfirm": "Eintrag wirklich löschen?",
+    "categories": {
+      "transportation": "Transport",
+      "fee": "Startgebühr",
+      "food": "Essen & Trinken",
+      "accommodation": "Unterkunft",
+      "equipment": "Ausrüstung",
+      "other": "Sonstiges"
+    }
   },
   "notificationTags": {
     "eventComments": "Event Kommentare",
