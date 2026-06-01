@@ -5,7 +5,9 @@
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "filter": "Filter"
+    "filter": "Filter",
+    "save": "Save",
+    "delete": "Delete"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "The same day",
@@ -178,12 +180,38 @@
     "matches": "Matches",
     "training": "Training",
     "groups": "Groups",
-    "search": "Search"
+    "search": "Search",
+    "costs": "Tournament Costs"
   },
   "search": {
     "title": "Search players",
     "placeholder": "Search by name...",
     "noResults": "No players found"
+  },
+  "costs": {
+    "title": "Tournament Costs",
+    "addEntry": "Add Entry",
+    "editEntry": "Edit Entry",
+    "tournament": "Tournament Name",
+    "date": "Date",
+    "category": "Category",
+    "customCategory": "Custom Category",
+    "customCategoryPlaceholder": "e.g. Parking fees",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional",
+    "amount": "Amount (€)",
+    "total": "Total",
+    "empty": "No entries yet.",
+    "emptyDescription": "Tap + to log your first costs.",
+    "deleteConfirm": "Delete this entry?",
+    "categories": {
+      "transportation": "Transportation",
+      "fee": "Entry Fee",
+      "food": "Food & Drinks",
+      "accommodation": "Accommodation",
+      "equipment": "Equipment",
+      "other": "Other"
+    }
   },
   "notificationTags": {
     "eventComments": "Event comments",
