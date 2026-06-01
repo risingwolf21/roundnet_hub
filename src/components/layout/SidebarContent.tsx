@@ -149,6 +149,7 @@ export function AppSidebar() {
           title: t('navigation.costs'),
           icon: <Receipt />,
           path: 'costs',
+          permission: { feat: 'costs' },
         },
         {
           title: t('navigation.training'),

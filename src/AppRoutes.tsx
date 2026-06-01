@@ -98,7 +98,11 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/costs',
-              element: <Pages.TournamentCostsPage />,
+              element: (
+                <Has feat={'costs'} fallback={<Pages.FeatureLockedRouteElement />}>
+                  <Pages.TournamentCostsPage />
+                </Has>
+              ),
             },
             {
               path: '/user',
