@@ -65,8 +65,14 @@ const TournamentCostsPage = () => {
     [costs]
   );
 
+  const existingTournaments = useMemo(
+    () => [...new Set(costs.map((c) => c.tournament))].sort(),
+    [costs]
+  );
+
   const openAdd = () => {
     dialogs.open(AddEditCostDialog, {
+      existingTournaments,
       onSave: (data) => addCost.mutate(data),
     });
   };
@@ -130,6 +136,7 @@ const TournamentCostsPage = () => {
                         onClick={() =>
                           dialogs.open(AddEditCostDialog, {
                             entry,
+                            existingTournaments,
                             onSave: (data) =>
                               updateCost.mutate({ id: entry.id, patch: data }),
                             onDelete: () => deleteCost.mutate(entry.id),

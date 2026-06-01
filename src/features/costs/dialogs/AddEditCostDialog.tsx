@@ -19,6 +19,7 @@ export const FIXED_CATEGORIES = [
 
 export type AddEditCostPayload = {
   entry?: TournamentCostRow;
+  existingTournaments?: string[];
   onSave: (data: TournamentCostInsert) => void;
   onDelete?: () => void;
 };
@@ -28,7 +29,7 @@ const today = () => new Date().toISOString().split('T')[0];
 const AddEditCostDialog = ({ open, onClose, payload }: DialogProps<AddEditCostPayload, void>) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
-  const { entry, onSave, onDelete } = payload;
+  const { entry, existingTournaments, onSave, onDelete } = payload;
 
   const isEdit = !!entry;
 
@@ -89,7 +90,15 @@ const AddEditCostDialog = ({ open, onClose, payload }: DialogProps<AddEditCostPa
               value={tournament}
               onChange={(e) => setTournament(e.target.value)}
               placeholder={t('costs.tournament')}
+              list="cost-tournament-list"
             />
+            {existingTournaments && existingTournaments.length > 0 && (
+              <datalist id="cost-tournament-list">
+                {existingTournaments.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            )}
           </Field>
 
           <Field>
