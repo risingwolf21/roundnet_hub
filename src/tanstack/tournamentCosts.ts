@@ -23,7 +23,7 @@ export const useTournamentCosts = (userId: string | undefined) =>
 
 export const useAddCostMutation = (userId: string) =>
   useMutation({
-    mutationFn: (row: TournamentCostInsert) => TournamentCostRepository.insert(row),
+    mutationFn: (row: TournamentCostInsert) => TournamentCostRepository.insert(userId, row),
     onMutate: async (row) => {
       await queryClient.cancelQueries({ queryKey: costKeys.byUser(userId) });
       const previous = queryClient.getQueryData<TournamentCostRow[]>(costKeys.byUser(userId));

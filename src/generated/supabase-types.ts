@@ -47,6 +47,7 @@ export type Permission =
 
 export type Feature =
   | 'challenges'
+  | 'costs'
   | 'drinks'
   | 'events'
   | 'events.trials'

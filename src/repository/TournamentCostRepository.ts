@@ -28,9 +28,9 @@ export const TournamentCostRepository = {
     return (data ?? []) as TournamentCostRow[];
   },
 
-  async insert(row: TournamentCostInsert): Promise<TournamentCostRow> {
+  async insert(userId: string, row: TournamentCostInsert): Promise<TournamentCostRow> {
     const { data } = await db()
-      .insert(row)
+      .insert({ ...row, user_id: userId })
       .select()
       .single()
       .throwOnError();
