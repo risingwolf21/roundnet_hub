@@ -107,7 +107,7 @@ begin
       using public.events e
       where eaum.event = e.id
         and e."group" = r.group_id
-        and eaum."user" = r.user_id::text
+        and eaum."user" = r.user_id
         and eaum.state in ('AttendingAsTrial'::public."EventAttendance",
                            'WaitingAsTrial'::public."EventAttendance")
         and e."startingDateTime" > now();
