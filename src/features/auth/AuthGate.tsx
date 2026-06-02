@@ -4,11 +4,11 @@ import { getDeviceId } from '@/hooks/useDeviceId';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/tanstack/auth';
-import { captureException } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
 import WebPushKeeper from '../push/WebPushKeeper';
 import { ApplicationContext } from './ApplicationContext';
+import { signOut } from './signOut';
 import { useUserGrantsQuery } from './tanstack/useUserGrantsQuery';
 
 export const AuthGate = () => {
@@ -20,14 +20,6 @@ export const AuthGate = () => {
   const { data: currentUser = null, isFetching } = useCurrentUser(session);
 
   useUserGrantsQuery(currentUser?.id);
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      captureException(error);
-    }
-  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -53,7 +45,7 @@ export const AuthGate = () => {
     <ApplicationContext
       value={{
         user: currentUser,
-        signOut: handleSignOut,
+        signOut,
         deviceId,
         version: import.meta.env.VITE_GIT_COMMIT,
       }}

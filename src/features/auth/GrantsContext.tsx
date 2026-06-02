@@ -1,9 +1,8 @@
 // src/features/grants/GrantsProvider.tsx
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { supabase } from '@/lib/supabase';
 import type { UserWithGroups } from '@/types/supabaseTypes';
-import { captureException } from '@sentry/react';
 import * as React from 'react';
+import { signOut as performSignOut } from './signOut';
 import { useUserGrantsQuery } from './tanstack/useUserGrantsQuery';
 
 type GrantsContextValue = ReturnType<typeof useUserGrantsQuery> & {
@@ -18,13 +17,7 @@ type Props = { user: UserWithGroups; children: React.ReactNode };
 export function GrantsProvider({ user, children }: Props) {
   const grantsQuery = useUserGrantsQuery(user.id);
 
-  const signOut = React.useCallback(async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error: unknown) {
-      captureException(error);
-    }
-  }, []);
+  const signOut = React.useCallback(() => performSignOut(), []);
 
   const value = React.useMemo<GrantsContextValue>(
     () => ({ user, signOut, ...grantsQuery }),
