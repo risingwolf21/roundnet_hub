@@ -25,11 +25,13 @@ DROP POLICY IF EXISTS "Enable access for all users" ON "public"."payments";
 -- ============================================================
 DROP POLICY IF EXISTS "Enable access for all users" ON "public"."vouchers";
 
+-- vouchers."user" is uuid (changed in 20251123154825), so compare against
+-- auth.uid() directly without a ::text cast.
 CREATE POLICY "Allow select for own vouchers"
   ON "public"."vouchers"
   FOR SELECT
   TO "authenticated"
-  USING ("user" = (SELECT auth.uid())::text);
+  USING ("user" = (SELECT auth.uid()));
 
 -- ============================================================
 -- public.user: drop the policy that grants anon read access
