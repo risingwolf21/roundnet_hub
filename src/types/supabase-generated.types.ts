@@ -2225,16 +2225,19 @@ export type Database = {
         Row: {
           group: string
           role: Database["public"]["Enums"]["GroupRole"]
+          trial_started_at: string | null
           user: string
         }
         Insert: {
           group: string
           role?: Database["public"]["Enums"]["GroupRole"]
+          trial_started_at?: string | null
           user: string
         }
         Update: {
           group?: string
           role?: Database["public"]["Enums"]["GroupRole"]
+          trial_started_at?: string | null
           user?: string
         }
         Relationships: [
