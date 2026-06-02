@@ -38,6 +38,7 @@ begin
   if NEW.role = 'trial'::public."GroupRole" then
     if TG_OP = 'INSERT' or OLD.role is distinct from 'trial'::public."GroupRole" then
       NEW.trial_started_at := now();                 -- became trial: start the clock
+    end if;
   else
     NEW.trial_started_at := null;                    -- not a trial: clear it
   end if;
