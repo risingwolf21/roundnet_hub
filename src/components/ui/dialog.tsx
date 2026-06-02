@@ -1,12 +1,12 @@
 "use client"
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-import { XIcon } from "lucide-react"
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { cva, VariantProps } from "class-variance-authority"
+import { XIcon } from "lucide-react"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -66,17 +66,14 @@ const dialogContentVariants = cva(
 export interface DialogContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Popup>,
   VariantProps<typeof dialogContentVariants> {
-  showCloseButton?: boolean;
 }
 
 function DialogContent({
   className,
   variant,
   children,
-  showCloseButton = true,
   ...props
 }: DialogContentProps) {
-  const isDrawer = variant === "drawer";
   const needsFlexWrapper = variant === "drawer" || variant === "fullscreen";
 
   return (
@@ -87,10 +84,6 @@ function DialogContent({
         className={cn(dialogContentVariants({ variant }), className)}
         {...props}
       >
-        {isDrawer && (
-          <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted/60" />
-        )}
-
         {needsFlexWrapper ? (
           <div className="flex flex-col overflow-hidden h-full w-full">
             {children}
@@ -99,20 +92,6 @@ function DialogContent({
           children
         )}
 
-        {/* Bei "fullscreen" sollte der Close-Button idealerweise im Header sitzen. 
-          Wenn du ihn nutzt, setze im Code <DialogContent variant="fullscreen" showCloseButton={false}> 
-        */}
-        {showCloseButton && variant !== "fullscreen" && (
-          <DialogPrimitive.Close
-            data-slot="dialog-close"
-            render={
-              <Button variant="ghost" className="absolute top-2 right-2 z-50" size="icon-sm">
-                <XIcon />
-                <span className="sr-only">Close</span>
-              </Button>
-            }
-          />
-        )}
       </DialogPrimitive.Popup>
     </DialogPortal>
   )
@@ -122,30 +101,54 @@ function DialogContent({
 const dialogHeaderVariants = cva("flex flex-col", {
   variants: {
     variant: {
-      default: "gap-2",
+      default: "gap-2 p-4",
       appbar: "pt-safe-top sticky top-0 z-50 w-full bg-background/95 supports-[backdrop-filter]:bg-background border-b shadow-sm shrink-0",
     }
   },
   defaultVariants: { variant: "default" }
 });
 
-export interface DialogHeaderProps extends React.ComponentProps<"div">, VariantProps<typeof dialogHeaderVariants> { }
+export interface DialogHeaderProps extends React.ComponentProps<"div">, VariantProps<typeof dialogHeaderVariants> {
+  showCloseButton?: boolean; // Optionales Prop, um den Close Button anzuzeigen
+}
 
-function DialogHeader({ className, variant, children, ...props }: DialogHeaderProps) {
+function DialogHeader({ className, variant, children, showCloseButton = true, ...props }: DialogHeaderProps) {
   if (variant === "appbar") {
     return (
       <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className)} {...props}>
         {/* Das innere div steuert die 56px (h-14) Höhe und das Padding (wie in deiner AppBar) */}
-        <div className="flex h-14 w-full items-center gap-4 px-4">
+        <div className="flex h-14 w-full items-center gap-4 px-4 flex-row justify-between">
           {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              render={
+                <Button variant="ghost" className="z-50" size="icon-sm">
+                  <XIcon />
+                  <span className="sr-only">Close</span>
+                </Button>
+              }
+            />
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className)} {...props}>
+    <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className, "flex flex-row justify-between")} {...props}>
       {children}
+      {showCloseButton && (
+        <DialogPrimitive.Close
+          data-slot="dialog-close"
+          render={
+            <Button variant="ghost" className="z-50" size="icon-sm">
+              <XIcon />
+              <span className="sr-only">Close</span>
+            </Button>
+          }
+        />
+      )}
     </div>
   )
 }
@@ -167,7 +170,7 @@ function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
 const dialogFooterVariants = cva("flex", {
   variants: {
     variant: {
-      default: "-mx-4 -mb-4 flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+      default: "flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
       fullscreen: "mt-auto shrink-0 flex-col-reverse gap-2 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-end",
     }
   },

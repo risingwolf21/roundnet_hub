@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { TournamentCostInsert, TournamentCostRow } from '@/repository/TournamentCostRepository';
-import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const FIXED_CATEGORIES = [
   'transportation',
