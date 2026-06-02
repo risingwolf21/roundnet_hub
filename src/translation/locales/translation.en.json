@@ -188,6 +188,11 @@
     "placeholder": "Search by name...",
     "noResults": "No players found"
   },
+  "groups": {
+    "trialDaysLeft_one": "{{count}} day left",
+    "trialDaysLeft_other": "{{count}} days left",
+    "trialExpiring": "expiring today"
+  },
   "costs": {
     "title": "Tournament Costs",
     "addEntry": "Add Entry",

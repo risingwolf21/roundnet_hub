@@ -38,6 +38,16 @@ const roleWeights: Record<string, number> = {
   'user': 4
 };
 
+// Mirrors the server-side `trial_duration_days` (app_config, default 28). Used only
+// for the informational countdown; the authoritative expiry runs in the DB cron job.
+const TRIAL_DURATION_DAYS = 28;
+
+const trialDaysLeft = (startedAt: string | null | undefined): number | null => {
+  if (!startedAt) return null;
+  const elapsedDays = Math.floor((Date.now() - new Date(startedAt).getTime()) / 86_400_000);
+  return TRIAL_DURATION_DAYS - elapsedDays;
+};
+
 const PublicGroupInformation = () => {
   const { t } = useTranslation();
   const { groupId } = useParams();
@@ -345,6 +355,24 @@ const PublicGroupInformation = () => {
                               x.role === 'admin' && (
                                 <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
                               )
+                            }
+                            {
+                              role === "trial" && (() => {
+                                const daysLeft = trialDaysLeft(x.trial_started_at);
+                                if (daysLeft === null) return null;
+                                return (
+                                  <Badge
+                                    variant="outline"
+                                    className={cn("text-xs", daysLeft <= 3
+                                      ? "text-destructive border-destructive/20 bg-destructive/10"
+                                      : "text-muted-foreground")}
+                                  >
+                                    {daysLeft > 0
+                                      ? t('groups.trialDaysLeft', { count: daysLeft })
+                                      : t('groups.trialExpiring')}
+                                  </Badge>
+                                );
+                              })()
                             }
                             {
                               role === "trial" && <AcceptTrialButton group={group} user={x.user} />
