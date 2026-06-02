@@ -13,7 +13,7 @@ import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import groupBy from 'lodash.groupby';
 import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter, Plus } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
@@ -40,6 +40,11 @@ const EventScreen = () => {
   }, [error, refetch, t]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+
+  const eventsByWeek = useMemo(
+    () => Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))),
+    [events]
+  );
 
   return (
     <div>
@@ -115,7 +120,7 @@ const EventScreen = () => {
               </div>
             )}
 
-            {!isLoading && events.length > 0 && Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+            {!isLoading && events.length > 0 && eventsByWeek.map(
               ([key, value]: [string, EventsUserView[]]) => (
                 <div key={key} className="flex w-full gap-2 flex-col">
                   <div className="text-sm font-semibold ml-2">

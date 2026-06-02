@@ -123,7 +123,7 @@ const HomePage = () => {
                     const isAttending = event.user_state === "Attending" || event.user_state === "AttendingAsTrainer" || event.user_state === "AttendingAsTrial";
                     const isWaiting = event.user_state === "RequestedAttendance" || event.user_state === "Waiting" || event.user_state === "WaitingAsTrial";
                     const place = event.place ? JSON.parse(event.place) as PlaceType : null
-                    const date = format(event.startingDateTime, "PPPP").split(",").splice(0, 2).join(",")
+                    const date = format(event.startingDateTime, "PPPP").split(",").slice(0, 2).join(",")
                     const time = format(event.startingDateTime, "HH:mm") + " - " + format(event.endDateTime, "HH:mm")
 
                     return <Card key={event.id} className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-t-[color:var(--attendance-color)]"

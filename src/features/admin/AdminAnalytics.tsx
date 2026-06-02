@@ -1,7 +1,7 @@
 import { RpcName, useAdminAnalytics, useAnalyticsTableOptions } from "@/tanstack/admin"
 
 import { add, format } from "date-fns"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { AppBar } from "@/components/ui/appbar"
 import { Button } from "@/components/ui/button"
@@ -274,13 +274,23 @@ const AdminAnalytics = () => {
     });
 
     setQueryParams(mappedParams);
-    // Falls Query Params gleich bleiben, erzwingen wir ein Refetch
-    setTimeout(() => refetch(), 0);
   };
+
+  useEffect(() => {
+    if (queryParams !== null) refetch();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParams]);
 
   const updateFormValue = (id: string, val: any) => {
     setFormValues(prev => ({ ...prev, [id]: val }));
   };
+
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => data && data.length > 0
+      ? Object.keys(data[0]).map(field => ({ accessorKey: field, header: field }))
+      : [],
+    [data]
+  );
 
   return <div>
     <AppBar
@@ -410,10 +420,7 @@ const AdminAnalytics = () => {
       </Item>
 
       <DataTable
-        columns={data && data.length > 0
-          ? Object.keys(data[0]).map(field => ({ accessorKey: field, header: field } as ColumnDef<any>))
-          : []
-        }
+        columns={columns}
         data={data}
         columnFilters={[]}
         sorting={[]}
