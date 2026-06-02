@@ -34,12 +34,12 @@ const AddEditCostDialog = ({ open, onClose, payload }: DialogProps<AddEditCostPa
   const isEdit = !!entry;
 
   const [tournament, setTournament] = useState(entry?.tournament ?? '');
-  const [date, setDate] = useState(entry?.date ?? today());
+  const [date, setDate] = useState(() => entry?.date ?? today());
   const [category, setCategory] = useState(
-    entry ? (FIXED_CATEGORIES.includes(entry.category as any) ? entry.category : 'other') : 'transportation'
+    entry ? (FIXED_CATEGORIES.includes(entry.category as never) ? entry.category : 'other') : 'transportation'
   );
   const [customCategory, setCustomCategory] = useState(
-    entry && !FIXED_CATEGORIES.includes(entry.category as any) ? entry.category : ''
+    entry && !FIXED_CATEGORIES.includes(entry.category as never) ? entry.category : ''
   );
   const [description, setDescription] = useState(entry?.description ?? '');
   const [amount, setAmount] = useState(entry ? String(entry.amount) : '');

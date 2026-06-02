@@ -10,19 +10,19 @@ import {
   useTournamentCosts,
   useUpdateCostMutation,
 } from '@/tanstack/tournamentCosts';
-import { lazy, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import groupBy from 'lodash.groupby';
 import {
   BedDouble,
   Bus,
-  Ticket,
-  UtensilsCrossed,
-  Wrench,
   HelpCircle,
   Plus,
   Receipt,
+  Ticket,
+  UtensilsCrossed,
+  Wrench,
 } from 'lucide-react';
+import { lazy, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FIXED_CATEGORIES } from './dialogs/AddEditCostDialog';
 
 const AddEditCostDialog = lazy(() => import('./dialogs/AddEditCostDialog'));
@@ -121,10 +121,10 @@ const TournamentCostsPage = () => {
                     <span className="text-sm font-semibold">{formatAmount(subtotal)}</span>
                   </div>
                   {entries.map((entry) => {
-                    const catKey = FIXED_CATEGORIES.includes(entry.category as any)
+                    const catKey = FIXED_CATEGORIES.includes(entry.category as never)
                       ? entry.category
                       : 'other';
-                    const catLabel = FIXED_CATEGORIES.includes(entry.category as any)
+                    const catLabel = FIXED_CATEGORIES.includes(entry.category as never)
                       ? t(`costs.categories.${entry.category}`)
                       : entry.category;
 
