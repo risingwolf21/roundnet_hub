@@ -111,15 +111,20 @@ export function generateColumnsFromMetadata(table: TableMetadata): ColumnDef<any
   })
 }
 
+const ALLOWED_SCHEMAS = new Set(['public', 'games', 'notifications']);
+
 export const useListTables = () => {
   return useQuery<TableMetadata[]>({
     queryKey: ['database', 'tables'],
     queryFn: async () => {
       const result = await supabase.schema("util").rpc("get_table_metadata", {
-        target_schemas: ['public', 'games', 'notifications']
+        target_schemas: Array.from(ALLOWED_SCHEMAS)
       });
 
-      return (result.data as unknown) as TableMetadata[];
+      // Guard: drop any entries the DB returned for schemas not in our allowlist
+      // (prevents schema-cache errors when PostgREST hasn't exposed that schema).
+      const rows = (result.data as unknown) as TableMetadata[] | null;
+      return rows?.filter(t => ALLOWED_SCHEMAS.has(t.schema)) ?? [];
     },
   })
 }

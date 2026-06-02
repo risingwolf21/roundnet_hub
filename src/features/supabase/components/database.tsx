@@ -184,7 +184,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 
   const columns = useMemo(() => generateColumnsFromMetadata(table), [table])
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['table-data', table.schema, table.name, sorting, pagination, columnFilters], // Konsistenter Key
     queryFn: async () => {
       let query = supabase
@@ -266,19 +266,28 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
           } />
         </DialogHeader>
         <DialogBody className='p-2'>
-          <DataTable
-            columns={columns}
-            data={data?.data || []}
-            rowCount={data?.count || 0}
-            onRowClick={handleRowClick}
-            sorting={sorting}
-            onSortingChange={setSorting}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-            columnFilters={columnFilters}
-            onColumnFiltersChange={setColumnFilters}
-            isLoading={isLoading}
-          />
+          {isError && (
+            <Alert variant="destructive" className="m-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error loading table</AlertTitle>
+              <AlertDescription>{(error as Error)?.message ?? 'Failed to load table data.'}</AlertDescription>
+            </Alert>
+          )}
+          {!isError && (
+            <DataTable
+              columns={columns}
+              data={data?.data || []}
+              rowCount={data?.count || 0}
+              onRowClick={handleRowClick}
+              sorting={sorting}
+              onSortingChange={setSorting}
+              pagination={pagination}
+              onPaginationChange={setPagination}
+              columnFilters={columnFilters}
+              onColumnFiltersChange={setColumnFilters}
+              isLoading={isLoading}
+            />
+          )}
         </DialogBody>
       </DialogContent>
     </Dialog>
