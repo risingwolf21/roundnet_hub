@@ -3,12 +3,16 @@ import { AppBar } from "@/components/ui/appbar";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { queryClient } from "@/lib/queryClient";
 import { authKeys } from "@/tanstack/auth";
 import { useGroups, useJoinGroup, useRequestedUsersPerGroup } from "@/tanstack/groups";
+import { useAllNotifications } from "@/tanstack/notifications";
 import { captureException } from "@sentry/react";
-import { AlertCircle, Loader2, Plus, SearchX, Users } from "lucide-react";
+import { AlertCircle, Clock, Info, Loader2, Plus, SearchX, Users } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
@@ -44,9 +48,18 @@ const PublicGroupList = () => {
   const { user } = useGrants();
   const navigate = useNavigate();
   const dialogs = useDialogs();
+  const { t } = useTranslation();
 
   const { data: groups = [], error, isLoading, refetch } = useGroups();
   const { data: requested_group_joins = [], refetch: refetchRequested } = useRequestedUsersPerGroup(user);
+  const { data: notifications = [] } = useAllNotifications(user);
+
+  const [joinRequestedGroup, setJoinRequestedGroup] = useState<Group | null>(null);
+
+  const hasTrialExpiredFor = (groupId: string) =>
+    notifications.some(
+      (n) => n.topic === 'group.trial.expired' && (n.data as { group?: string })?.group === groupId
+    );
 
 
   return <div>
@@ -122,7 +135,9 @@ const PublicGroupList = () => {
                     .map((x) => (
                       <div key={x.id} className="flex flex-row items-center gap-3 border-b last:border-0 pb-2"
                         onClick={() => {
-                          if (x.user_group_role && x.user_group_role !== "joinRequested") {
+                          if (x.user_group_role === 'joinRequested') {
+                            setJoinRequestedGroup(x);
+                          } else if (x.user_group_role) {
                             navigate("/groups/" + x.id);
                           }
                         }}>
@@ -168,6 +183,50 @@ const PublicGroupList = () => {
         </div>
       </PullToRefresh>
     </main>
+
+    <Sheet
+      open={joinRequestedGroup !== null}
+      onOpenChange={(open) => { if (!open) setJoinRequestedGroup(null); }}
+    >
+      <SheetContent side="bottom" className="rounded-t-xl pb-safe-bottom">
+        {joinRequestedGroup && (
+          <>
+            <SheetHeader className="items-center text-center pt-2">
+              {hasTrialExpiredFor(joinRequestedGroup.id) ? (
+                <>
+                  <div className="rounded-full bg-warning/10 p-3 mb-1">
+                    <Clock className="size-6 text-warning" />
+                  </div>
+                  <SheetTitle>{t('groups.trialExpiredSheet.title')}</SheetTitle>
+                  <SheetDescription>
+                    {t('groups.trialExpiredSheet.body', { group: joinRequestedGroup.name })}
+                  </SheetDescription>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-full bg-info/10 p-3 mb-1">
+                    <Info className="size-6 text-info" />
+                  </div>
+                  <SheetTitle>{t('groups.joinRequestedSheet.title')}</SheetTitle>
+                  <SheetDescription>
+                    {t('groups.joinRequestedSheet.body')}
+                  </SheetDescription>
+                </>
+              )}
+            </SheetHeader>
+            <SheetFooter>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setJoinRequestedGroup(null)}
+              >
+                {t('common.close')}
+              </Button>
+            </SheetFooter>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   </div>
 }
 

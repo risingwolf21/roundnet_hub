@@ -5,6 +5,7 @@
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "close": "Close",
     "filter": "Filter",
     "save": "Save",
     "delete": "Delete"
@@ -191,7 +192,15 @@
   "groups": {
     "trialDaysLeft_one": "{{count}} day left",
     "trialDaysLeft_other": "{{count}} days left",
-    "trialExpiring": "expiring today"
+    "trialExpiring": "expiring today",
+    "trialExpiredSheet": {
+      "title": "Trial period ended",
+      "body": "Your trial at {{group}} has ended. Please contact a group admin to let them know whether you'd like to join as a registered club member or as an external player."
+    },
+    "joinRequestedSheet": {
+      "title": "Join request pending",
+      "body": "Your join request is being reviewed. A group admin will process it shortly."
+    }
   },
   "costs": {
     "title": "Tournament Costs",
