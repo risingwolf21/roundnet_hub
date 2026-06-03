@@ -5,6 +5,7 @@
   "common": {
     "confirm": "Bestätigen",
     "cancel": "Abbrechen",
+    "close": "Schließen",
     "filter": "Filter",
     "save": "Speichern",
     "delete": "Löschen"
@@ -191,7 +192,15 @@
   "groups": {
     "trialDaysLeft_one": "noch {{count}} Tag",
     "trialDaysLeft_other": "noch {{count}} Tage",
-    "trialExpiring": "läuft heute ab"
+    "trialExpiring": "läuft heute ab",
+    "trialExpiredSheet": {
+      "title": "Probezeit abgelaufen",
+      "body": "Deine Probezeit bei {{group}} ist abgelaufen. Bitte kontaktiere einen Admin der Gruppe und teile mit, ob du jetzt als offizielles Vereinsmitglied oder als externer Spieler teilnehmen möchtest."
+    },
+    "joinRequestedSheet": {
+      "title": "Anfrage ausstehend",
+      "body": "Deine Beitrittsanfrage wird geprüft. Ein Admin wird sie in Kürze bearbeiten."
+    }
   },
   "costs": {
     "title": "Turnierkosten",
