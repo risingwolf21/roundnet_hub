@@ -42,6 +42,7 @@ Sentry.init({
         /Failed to fetch/,
         /Script .*service-worker\.js load failed/,
         /Invalid login credentials/,
+        /Maximum points per (week|day) already reached/,
         'signal is aborted without reason',
         'The operation was aborted',
       ],
