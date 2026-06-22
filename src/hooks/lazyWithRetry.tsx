@@ -2,9 +2,9 @@ import * as React from 'react';
 
 function isChunkError(err: unknown) {
   const msg = (err as any)?.message ?? '';
-  // Match specific chunk/module loading errors, but avoid generic "Importing a module script failed" 
-  // which can be caused by other issues like API incompatibilities
-  return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|Importing .*chunk.*failed/i.test(
+  // Safari iOS reports lazy-load failures as "Importing a module script failed." instead of
+  // the Chromium-style "Failed to fetch dynamically imported module" — include both variants.
+  return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|Importing a module script failed|Importing .*chunk.*failed/i.test(
     msg
   );
 }
