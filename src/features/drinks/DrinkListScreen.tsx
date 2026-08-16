@@ -8,7 +8,7 @@ import { useGrants } from '../auth/GrantsContext';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldLabel, FieldTitle } from '@/components/ui/field';
@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { cn } from '@/lib/utils';
 import { t } from 'i18next';
 import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -117,7 +118,10 @@ const DrinkListScreen = () => {
     localStorage.setItem('visibleTypes', newValue.join(';'));
   };
 
-  const activeDrinks = drinks.filter((x: Drink) => !x.deleted && x.active);
+  const activeDrinks = [...drinks].sort((a, b) =>
+    Number(b.active) - Number(a.active) ||
+    (a.name ?? "").localeCompare(b.name ?? "", "de")
+  );
   const filteredDrinks = activeDrinks.filter((x: Drink) => visibleTypes.includes(x.type));
   const groupedDrinks = groupBy(filteredDrinks, (x) => x.type).entries();
 
@@ -220,6 +224,12 @@ const DrinkListScreen = () => {
                           <ItemMedia>
                             <Avatar className="size-10">
                               <AvatarImage src={drink.imageUrl ?? undefined} />
+                              <Has perm={"drinks.edit"}>
+                                <AvatarBadge className={cn("text-primary-foreground text-xs top-0 right-0", {
+                                  'bg-red-500': !drink.active,
+                                  'bg-green-500': drink.active,
+                                })} />
+                              </Has>
                               <AvatarFallback>
                                 <Image className="text-muted-foreground/50" />
                               </AvatarFallback>
@@ -232,7 +242,7 @@ const DrinkListScreen = () => {
                           <ItemActions>
                             {
                               !toggleEdit ? (
-                                <div className='flex flex-row items-center gap-2'>
+                                drink.active && <div className='flex flex-row items-center gap-2'>
                                   {
                                     (addedDrinks[drink.id]?.count ?? 0) > 0 &&
                                     <>
