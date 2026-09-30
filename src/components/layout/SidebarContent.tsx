@@ -350,7 +350,7 @@ export function AppSidebar() {
           // Überprüfe Berechtigungen für die ganze Gruppe
           if (category.permission) {
             return (
-              <Has key={category.key} feat={category.permission.feat} perm={category.permission.perm} any={category.permission.any}>
+              <Has key={category.key} feat={category.permission.feat} perm={category.permission.perm} any={category.permission.any} fallback={<></>}>
                 {CategoryContent}
                 {index < categories.length - 1 && <SidebarSeparator />}
               </Has>
