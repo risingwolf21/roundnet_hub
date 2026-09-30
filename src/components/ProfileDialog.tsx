@@ -7,7 +7,7 @@ import { useUserTrophies } from '@/tanstack/challenge';
 import { usePlayerLeaderboardEntry, usePlayerMatches } from '@/tanstack/games';
 import { useEloHistoryForPlayer } from '@/tanstack/player_data';
 import { useProfile } from '@/tanstack/user';
-import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff, X } from 'lucide-react';
+import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -153,7 +153,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
-          <DialogClose render={<Button variant={"ghost"} size={"icon-lg"}><X /></Button>} />
+          <DialogClose />
         </DialogHeader>
         <DialogBody>
 

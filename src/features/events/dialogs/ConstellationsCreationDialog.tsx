@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { captureException } from '@sentry/react';
-import { ChevronDownIcon, Plus, RefreshCcw, Save, Trash2, X } from 'lucide-react';
+import { ChevronDownIcon, Plus, RefreshCcw, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ConstellationCreationDialogProps = {
@@ -343,7 +343,7 @@ export const ConstellationCreationDialog = ({
       <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle>Konstellationen</DialogTitle>
-          <DialogClose render={<Button variant={"ghost"}><X /></Button>} />
+          <DialogClose />
         </DialogHeader>
         <DialogBody className='p-0'>
           <div className='p-2 flex flex-col gap-2'>

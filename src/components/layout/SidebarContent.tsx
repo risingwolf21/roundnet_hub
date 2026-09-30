@@ -302,7 +302,7 @@ export function AppSidebar() {
         {categories.map((category, index) => {
 
           const CategoryContent = (
-            <SidebarGroup>
+            <SidebarGroup key={category.key}>
               {category.header && (
                 <SidebarGroupLabel>{category.header}</SidebarGroupLabel>
               )}

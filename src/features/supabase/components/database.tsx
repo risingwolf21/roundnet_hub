@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, Table, X } from 'lucide-react'
+import { AlertTriangle, Table } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { z, type ZodTypeAny } from 'zod'
 
@@ -149,11 +149,7 @@ function EditRowView({ payload: {
           <DialogTitle className={"flex-1"}>
             Editing row in {table.name}
           </DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody>
           <DynamicForm
@@ -254,16 +250,12 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className={"flex-1"}>
             {`${table.schema}.${table.name}`}
           </DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody className='p-2'>
           {isError && (

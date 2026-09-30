@@ -1,8 +1,8 @@
-import React from 'react';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '@/utils';
+import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { add, Duration, format, isAfter, set } from 'date-fns';
 import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
-import { CalendarSync, CalendarX2, Map, Pencil, Trash2, X } from 'lucide-react';
+import { CalendarSync, CalendarX2, Map, Pencil, Trash2 } from 'lucide-react';
 import { FormEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
@@ -203,9 +203,7 @@ export const CreateOrUpdateEventDialog = ({
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className={"flex-1"}>{`Event ${event ? 'bearbeiten' : 'erstellen'}`}</DialogTitle>
-        <DialogClose render={<Button variant={"ghost"}>
-          <X />
-        </Button>} />
+        <DialogClose />
       </DialogHeader>
       <DialogBody className='p-0'>
         <form ref={ref} onSubmit={handleSubmit} noValidate className='flex flex-col gap-2'>

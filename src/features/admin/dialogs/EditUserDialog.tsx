@@ -9,7 +9,7 @@ import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 type EditUserDialogProps = {
@@ -62,14 +62,10 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className="flex-1">Benutzer bearbeiten</DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody>
           <form noValidate onSubmit={handleSubmit}>

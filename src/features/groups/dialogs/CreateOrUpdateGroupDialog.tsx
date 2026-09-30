@@ -13,7 +13,6 @@ import { Switch } from '@/components/ui/switch';
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
-import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type CreateOrUpdateGroupDialogProps = {
@@ -45,18 +44,14 @@ export const CreateOrUpdateGroupDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose('closed')}>
-      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className={"flex-1"}>
             {
               data.id === '' ? "Gruppe erstellen" : "Gruppe bearbeiten"
             }
           </DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody className='gap-4'>
 

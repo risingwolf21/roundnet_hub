@@ -7,7 +7,6 @@ import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DialogProps } from '@/contexts/DialogsProvider';
-import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type EditOrAddItemDialogProps = {
@@ -85,13 +84,9 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
   ]
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+    <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
-        <DialogClose render={
-          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-            <X className="h-5 w-5" />
-          </Button>
-        } />
+        <DialogClose />
         <DialogTitle className="flex-1">
           {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
         </DialogTitle>

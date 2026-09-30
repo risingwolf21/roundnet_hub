@@ -8,7 +8,6 @@ import { Field, FieldContent, FieldLabel } from '@/components/ui/field';
 import { Item, ItemContent } from '@/components/ui/item';
 import { Switch } from '@/components/ui/switch';
 import { DialogProps } from '@/contexts/DialogsProvider';
-import { X } from 'lucide-react';
 
 export type GroupResult = {
   grantPerm: string[];
@@ -76,14 +75,10 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   };
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+    <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className="flex-1">{payload.title}</DialogTitle>
-        <DialogClose render={
-          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-            <X className="h-5 w-5" />
-          </Button>
-        } />
+        <DialogClose />
       </DialogHeader>
       <DialogBody>
         <div className="text-sm font-semibold m-2">Permissions</div>

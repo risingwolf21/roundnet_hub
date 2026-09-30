@@ -12,7 +12,7 @@ type HasProps = {
   children: React.ReactNode;
 };
 
-export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = UnauthorizedRouteElement, children }) => {
+export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = <UnauthorizedRouteElement />, children }) => {
   const { hasPerm, hasFeat, loading } = useGrants();
   if (loading) return <>{fallback}</>;
 

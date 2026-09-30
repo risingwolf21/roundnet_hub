@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { t } from 'i18next';
-import { Minus, Plus, Search, Trash2, X } from 'lucide-react';
+import { Minus, Plus, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 
@@ -221,14 +221,10 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
   };
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+    <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
-        <DialogClose render={
-          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-            <X className="h-5 w-5" />
-          </Button>
-        } />
+        <DialogClose />
       </DialogHeader>
       <DialogBody>
         <div className='flex flex-col w-full gap-2'>
@@ -473,7 +469,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className="flex-1">
             <div className="relative w-full max-w-md flex-1">
@@ -486,11 +482,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
               />
             </div>
           </DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody>
 
@@ -594,14 +586,10 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
           <DialogTitle className="flex-1">Gastspieler erstellen</DialogTitle>
-          <DialogClose render={
-            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-              <X className="h-5 w-5" />
-            </Button>
-          } />
+          <DialogClose />
         </DialogHeader>
         <DialogBody>
           <div className='flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 p-1'>

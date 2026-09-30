@@ -12,7 +12,6 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { DialogProps } from '@/contexts/DialogsProvider';
-import { X } from 'lucide-react';
 
 interface CropPayload {
   imageUrl: string;
@@ -42,14 +41,10 @@ const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<C
   };
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+    <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
-        <DialogClose render={
-          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
-            <X className="h-5 w-5" />
-          </Button>
-        } />
+        <DialogClose />
       </DialogHeader>
       <DialogBody>
 
