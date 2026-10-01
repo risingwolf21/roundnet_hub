@@ -271,19 +271,27 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'drinks/history',
-                  element: <Pages.AdminHistoryScreen />,
+                  element: <Has perm={'drinks.history.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
+                    <Pages.AdminHistoryScreen />
+                  </Has>
                 },
                 {
                   path: 'drinks/payments',
-                  element: <Pages.PaymentsPendingAdmin />,
+                  element: <Has perm={'drinks.confirm.payments'} fallback={<Pages.UnauthorizedRouteElement />}>
+                    <Pages.PaymentsPendingAdmin />
+                  </Has>
                 },
                 {
                   path: 'users',
-                  element: <Pages.AdminUserList />,
+                  element: <Has perm={'users.manage'} fallback={<Pages.UnauthorizedRouteElement />}>
+                    <Pages.AdminUserList />
+                  </Has>
                 },
                 {
                   path: 'analytics',
-                  element: <Pages.AdminAnalytics />
+                  element: <Has perm={'admin.analytics.view'} fallback={<Pages.UnauthorizedRouteElement />}>
+                    <Pages.AdminAnalytics />
+                  </Has>
                 },
                 {
                   path: 'grants',
@@ -295,7 +303,9 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'merge_accounts',
-                  element: <Pages.UserPlayerMapping />
+                  element: <Has perm={'games.admin.merge_accounts'} fallback={<Pages.UnauthorizedRouteElement />}>
+                    <Pages.UserPlayerMapping />
+                  </Has>
                 },
                 {
                   path: 'notify_users',
