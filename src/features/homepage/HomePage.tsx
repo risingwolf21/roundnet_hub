@@ -82,7 +82,7 @@ const HomePage = () => {
   const { data: items = [], isLoading: isItemsLoading, isFetching: isItemsFetching, error: itemsError, refetch: refetchItems } = useAllItems();
   const navigate = useNavigate();
 
-  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+  const updateAttendance = useUpdateAttendanceMutation();
   const updateHistory = useInsertHistoryEntryMutation(user);
 
   return (

@@ -10,7 +10,7 @@ import { durationToPostgresInterval, formatDateFromDatabaseNotNull, formatDateTo
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { Duration, format, isAfter, isBefore } from 'date-fns';
+import { Duration, format, isBefore } from 'date-fns';
 
 export const eventKeys = {
   all: ['events'] as const,
@@ -25,6 +25,61 @@ export const eventKeys = {
   recurring: () => [...eventKeys.all, 'recurring'] as const,
   eventTranformation: (eventKey: string) => [...eventKeys.all, 'transformation', eventKey] as const,
   eventTranformationApplication: (event: string) => [...eventKeys.all, 'transformation-application', event] as const,
+};
+
+const EVENT_LIST_MODES = ['past', 'upcoming'] as const;
+
+type EventListSnapshot = Array<[ReturnType<typeof eventKeys.list>, EventsUserView[] | undefined]>;
+
+/**
+ * Invalidates every events query (both lists, details, recurring series, ...). Mutations return this
+ * promise from onSuccess/onSettled so `mutateAsync` only resolves once fresh server data is loaded.
+ */
+export const invalidateEvents = (excludeEventId?: string) =>
+  queryClient.invalidateQueries({
+    queryKey: eventKeys.all,
+    predicate: excludeEventId ? (query) => query.queryKey[1] !== excludeEventId : undefined,
+  });
+
+const invalidateEventLists = () =>
+  Promise.all(EVENT_LIST_MODES.map((mode) => queryClient.invalidateQueries({ queryKey: eventKeys.list(mode), exact: true })));
+
+const cancelEventLists = () =>
+  Promise.all(EVENT_LIST_MODES.map((mode) => queryClient.cancelQueries({ queryKey: eventKeys.list(mode), exact: true })));
+
+const snapshotEventLists = (): EventListSnapshot =>
+  EVENT_LIST_MODES.map((mode) => [eventKeys.list(mode), queryClient.getQueryData<EventsUserView[]>(eventKeys.list(mode))]);
+
+const restoreEventLists = (snapshot: EventListSnapshot) =>
+  snapshot.forEach(([key, data]) => {
+    if (data !== undefined) queryClient.setQueryData(key, data);
+  });
+
+const updateEventLists = (updater: (events: EventsUserView[]) => EventsUserView[]) =>
+  EVENT_LIST_MODES.forEach((mode) =>
+    queryClient.setQueryData<EventsUserView[]>(eventKeys.list(mode), (old) => (old ? updater(old) : old))
+  );
+
+/** Applies an optimistic change to an event in both lists and in its detail cache. */
+const updateEventEverywhere = (eventId: string, updater: (event: EventsUserView) => EventsUserView) => {
+  updateEventLists((events) => events.map((ev) => (ev.id === eventId ? updater(ev) : ev)));
+  queryClient.setQueryData<EventsUserView | null>(eventKeys.event(eventId), (old) => (old ? updater(old) : old));
+};
+
+const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+
+/**
+ * Converts a table update into a shape that is safe to merge into `EventsUserView` cache entries:
+ * `group` is a uuid in the table but a joined object in the view, so it is left to the refetch.
+ */
+const toOptimisticChanges = (
+  changes: TablesUpdate<'events'>,
+  { includeDates = true }: { includeDates?: boolean } = {}
+): Partial<EventsUserView> => {
+  const rest = { ...changes };
+  delete rest.group;
+  if (!includeDates) EVENT_DATE_FIELDS.forEach((field) => delete rest[field]);
+  return rest as Partial<EventsUserView>;
 };
 
 export const useEvents = (filter: 'past' | 'upcoming', limit?: number) => {
@@ -50,9 +105,7 @@ export const useRecurringEvents = () =>
 export const useCreateNextOccurences = () => useMutation({
   meta: { suppressErrorToast: true },
   mutationFn: () => EventRepository.createNextOccurrences(),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: eventKeys.list("upcoming") });
-  }
+  onSuccess: () => invalidateEvents(),
 });
 
 export const useEventMatches = (eventId: string) =>
@@ -285,17 +338,8 @@ export const useUpsetBringPledges = () => {
       }
       if (previousFullPledges) {
         const updatedFullPledges = previousFullPledges.map((x) => {
-          return items.map((y) => {
-            if (x.item === y.item_id && x.event === event && x.user.id === user) {
-              return {
-                ...x,
-                qty: y.quantity,
-                status: y.status,
-              };
-            } else {
-              return x;
-            }
-          });
+          const changed = items.find((y) => x.item === y.item_id && x.event === event && x.user.id === user);
+          return changed ? { ...x, qty: changed.quantity, status: changed.status } : x;
         });
         queryClient.setQueryData(eventKeys.eventBringPledges(event), updatedFullPledges);
       }
@@ -317,81 +361,47 @@ export const useUpsetBringPledges = () => {
       }
     },
 
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.eventBringOverview(variables.event) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.eventBringPledges(variables.event) });
-    },
+    onSettled: (_data, _error, variables) =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: eventKeys.eventBringOverview(variables.event) }),
+        queryClient.invalidateQueries({ queryKey: eventKeys.eventBringPledges(variables.event) }),
+      ]),
   });
 };
 
-export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
+export const useUpdateAttendanceMutation = () => {
   return useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: ({ event, newState, user }: { user: User; event: EventsUserView; newState: EventAttendance }) => {
       return EventRepository.updateAttendance(user.id, event.id!, newState);
     },
     onMutate: async ({ event, newState, user }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
-      await queryClient.cancelQueries({ queryKey: eventKeys.eventAttendance(event.id) });
-      await queryClient.cancelQueries({ queryKey: eventKeys.event(event.id) });
+      await Promise.all([
+        cancelEventLists(),
+        queryClient.cancelQueries({ queryKey: eventKeys.eventAttendance(event.id) }),
+        queryClient.cancelQueries({ queryKey: eventKeys.event(event.id), exact: true }),
+      ]);
 
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
+      const previousLists = snapshotEventLists();
       const previousAttendance = queryClient.getQueryData<FullAttendance[]>(eventKeys.eventAttendance(event.id));
-      const previousEvent = queryClient.getQueryData<FullAttendance[]>(eventKeys.event(event.id));
-      if (previousEvents) {
-        const updatedEvents = previousEvents.map((ev) => {
-          if (ev.id === event.id) {
-            return {
-              ...ev,
-              user_state: newState,
-            };
-          }
-          return ev;
-        });
+      const previousEvent = queryClient.getQueryData<EventsUserView | null>(eventKeys.event(event.id));
 
-        queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-      }
-
-      if (previousEvent) {
-        const updatedEvent = {
-          ...previousEvent,
-          user_state: newState,
-        };
-
-        queryClient.setQueryData(eventKeys.event(event.id), updatedEvent);
-      }
+      updateEventEverywhere(event.id, (ev) => ({ ...ev, user_state: newState }));
 
       if (previousAttendance) {
-        const attendance = previousAttendance.find((x) => x.event === event.id && x.user === user.id);
-        if (!attendance) {
-          const updatedAttendance = [
-            ...previousAttendance,
-            {
-              event: event.id,
-              lastUpdate: formatDateToDatabase(new Date()),
-              state: newState,
-              user: user,
-            },
-          ] as FullAttendance[];
-          queryClient.setQueryData(eventKeys.eventAttendance(event.id), updatedAttendance);
-        } else {
-          const updatedAttendance = previousAttendance.map((x) => {
-            if (x.event === attendance.event && x.user === user.id) {
-              return {
-                event: event.id,
-                lastUpdate: formatDateToDatabase(new Date()),
-                state: newState,
-                user: user,
-              };
-            } else {
-              return x;
-            }
-          });
-          queryClient.setQueryData(eventKeys.eventAttendance(event.id), updatedAttendance);
-        }
+        const now = formatDateToDatabase(new Date());
+        const exists = previousAttendance.some((x) => x.event === event.id && x.user.id === user.id);
+        const updatedAttendance = (
+          exists
+            ? previousAttendance.map((x) =>
+              x.event === event.id && x.user.id === user.id ? { ...x, lastUpdate: now, state: newState } : x
+            )
+            : [...previousAttendance, { event: event.id, lastUpdate: now, state: newState, user }]
+        ) as FullAttendance[];
+        queryClient.setQueryData(eventKeys.eventAttendance(event.id), updatedAttendance);
       }
 
-      return { previousEvents, previousAttendance, previousEvent, event };
+      return { previousLists, previousAttendance, previousEvent, event };
     },
     onError: (error, variables, context) => {
       captureException(error, {
@@ -404,21 +414,22 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'UpdateEventAttendance', scope: 'events' },
       });
-      if (context?.previousEvent) {
+      if (!context) return;
+      restoreEventLists(context.previousLists);
+      if (context.previousEvent !== undefined) {
         queryClient.setQueryData(eventKeys.event(variables.event.id), context.previousEvent);
       }
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
-      if (context?.previousAttendance) {
+      if (context.previousAttendance) {
         queryClient.setQueryData(eventKeys.eventAttendance(variables.event.id!), context.previousAttendance);
       }
     },
 
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.eventAttendance(variables.event.id!) });
-    },
+    onSettled: (_data, _error, variables) =>
+      Promise.all([
+        invalidateEventLists(),
+        // Prefix match: refreshes the event itself and its attendance.
+        queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.event.id) }),
+      ]),
   });
 };
 
@@ -454,35 +465,15 @@ export const useAddCommentMutation = (user: User) => {
           created_at: formatDateToDatabase(new Date()),
           replies: [],
         };
-        if (reply_to) {
-          const index = previousComments.findIndex((x) => x.id === reply_to.id);
-          const updatedComments = [
-            ...previousComments.splice(0, index),
-            {
-              ...reply_to,
-              replies: [
-                ...reply_to.replies,
-                {
-                  ...newComment,
-                  reply_to: reply_to.id,
-                },
-              ],
-            },
-            ...previousComments.splice(index),
-          ] as FullComment[];
+        const updatedComments = (
+          reply_to
+            ? previousComments.map((x) =>
+              x.id === reply_to.id ? { ...x, replies: [...x.replies, { ...newComment, reply_to: reply_to.id }] } : x
+            )
+            : [...previousComments, { ...newComment, reply_to: null }]
+        ) as FullComment[];
 
-          queryClient.setQueryData(eventKeys.eventComments(event.id), updatedComments);
-        } else {
-          const updatedComments = [
-            ...previousComments,
-            {
-              ...newComment,
-              reply_to,
-            },
-          ] as FullComment[];
-
-          queryClient.setQueryData(eventKeys.eventComments(event.id), updatedComments);
-        }
+        queryClient.setQueryData(eventKeys.eventComments(event.id), updatedComments);
       }
 
       return { previousComments, eventId: event.id };
@@ -504,48 +495,29 @@ export const useAddCommentMutation = (user: User) => {
       }
     },
 
-    onSettled: (_data, _error, _variables, context) => {
-      if (context?.eventId) queryClient.invalidateQueries({ queryKey: eventKeys.eventComments(context.eventId) });
-    },
+    onSettled: (_data, _error, variables) =>
+      queryClient.invalidateQueries({ queryKey: eventKeys.eventComments(variables.event.id) }),
   });
 };
 
-export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
+export const useCancelTrainingMutation = () => {
   return useMutation({
     meta: { suppressErrorToast: true },
     mutationFn: ({ event, isCancelled }: { event: EventsUserView; isCancelled: boolean }) => {
       return EventRepository.updateCancellationForEvent(event.id, isCancelled);
     },
     onMutate: async ({ event, isCancelled }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
-      await queryClient.cancelQueries({ queryKey: eventKeys.event(event.id) });
+      await Promise.all([
+        cancelEventLists(),
+        queryClient.cancelQueries({ queryKey: eventKeys.event(event.id), exact: true }),
+      ]);
 
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
-      const previousEvent = queryClient.getQueryData<EventsUserView>(eventKeys.event(event.id));
-      if (previousEvents) {
-        const updatedEvents = previousEvents.map((ev) => {
-          if (ev.id === event.id) {
-            return {
-              ...ev,
-              isCancelled: isCancelled,
-            };
-          }
-          return ev;
-        });
+      const previousLists = snapshotEventLists();
+      const previousEvent = queryClient.getQueryData<EventsUserView | null>(eventKeys.event(event.id));
 
-        queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-      }
+      updateEventEverywhere(event.id, (ev) => ({ ...ev, isCancelled }));
 
-      if (previousEvent) {
-        const updatedEvent = {
-          ...previousEvent,
-          isCancelled: isCancelled,
-        };
-
-        queryClient.setQueryData(eventKeys.event(event.id), updatedEvent);
-      }
-
-      return { previousEvents, previousEvent, event };
+      return { previousLists, previousEvent, event };
     },
     onError: (error, variables, context) => {
       captureException(error, {
@@ -556,55 +528,44 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'CancelEvent', scope: 'events' },
       });
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
-      if (context?.previousEvent) {
+      if (!context) return;
+      restoreEventLists(context.previousLists);
+      if (context.previousEvent !== undefined) {
         queryClient.setQueryData(eventKeys.event(context.event.id), context.previousEvent);
       }
     },
 
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.event.id!) });
-    },
+    onSettled: () => invalidateEvents(),
   });
 };
 
-export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
+export const useDeleteTrainingMutation = () => {
   return useMutation({
     meta: { suppressErrorToast: true },
-    mutationFn: ({ event, type }: { event: EventsUserView; type: DeleteEventType; currentUser: User }) => {
+    mutationFn: async ({ event, type }: { event: EventsUserView; type: DeleteEventType; currentUser: User }) => {
       if (type === 'This Event') {
-        return EventRepository.deleteEvent(event.id);
+        await EventRepository.deleteEvent(event.id);
       } else {
-        return EventRepository.deleteEventAndUpcomingEvents(event.id, event.key, event.startingDateTime);
+        await EventRepository.deleteEventAndUpcomingEvents(event.key, event.startingDateTime);
       }
     },
     onMutate: async ({ event, type }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
+      await cancelEventLists();
 
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
+      const previousLists = snapshotEventLists();
 
-      if (previousEvents) {
-        if (type === 'This Event') {
-          const updatedEvents = previousEvents.filter((x) => x.id !== event.id);
-          queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-        } else if (type === 'This and following events') {
-          const updatedEvents = previousEvents.filter(
-            (x) => x.key !== event.key && !isBefore(x.startingDateTime, event.startingDateTime)
-          );
+      const isDeleted = (x: EventsUserView) =>
+        type === 'This Event'
+          ? x.id === event.id
+          : x.key === event.key && !isBefore(x.startingDateTime, event.startingDateTime);
 
-          queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-        }
-      }
+      updateEventLists((events) => events.filter((x) => !isDeleted(x)));
 
-      return { previousEvents, event };
+      return { previousLists, event };
     },
     onError: (error, variables, context) => {
       captureException(error, {
         extra: {
-          fetchMode: fetchMode,
           event: variables.event.id,
           eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
           userId: variables.currentUser.id,
@@ -613,19 +574,18 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'DeleteEvent', scope: 'events' },
       });
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
+      if (context) restoreEventLists(context.previousLists);
     },
 
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-    },
+    onSettled: (_data, error, variables) =>
+      // Don't refetch the deleted event's detail queries (they would 404 while the page is still mounted).
+      invalidateEvents(error ? undefined : variables.event.id),
   });
 };
 
-export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
+export const useInsertEventMutation = () => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({
       event,
       items,
@@ -636,27 +596,9 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
     }) => {
       return EventRepository.insertEventWithBringItems(event, items);
     },
-    onMutate: async ({ event }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
-
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
-
-      if (previousEvents) {
-        const updatedEvents = [
-          ...previousEvents,
-          {
-            ...event,
-            attending_count: 0,
-            declined_count: 0,
-            user_state: null,
-          },
-        ] as EventsUserView[];
-        queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-      }
-
-      return { previousEvents, event };
-    },
-    onError: (err, _vars, context) => {
+    // No optimistic insert: the server assigns the id and decides visibility (RLS), so wait for the
+    // refetch instead of showing (and persisting) a placeholder that may disappear later.
+    onError: (err, _vars) => {
       captureException(err, {
         extra: {
           ..._vars,
@@ -664,18 +606,23 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'InsertEvent', scope: 'events' },
       });
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-    },
+    onSettled: () => invalidateEvents(),
   });
 };
 
-export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
+export type EventUpdateItems = Array<{
+  id?: string | null;
+  name: string;
+  required_qty: number | null;
+  unit: string;
+  notes: string | null;
+  sort_order: number;
+}>;
+
+export const useUpdateSingleMutation = () => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({
       eventChanges,
       id,
@@ -684,7 +631,7 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       id: string;
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
-      items?: Array<{ id?: string | null; name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>;
+      items?: EventUpdateItems;
     }) => {
       const result = await EventRepository.updateSingleEvent(id, eventChanges);
       if (items !== undefined) {
@@ -693,101 +640,77 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       return result;
     },
     onMutate: async ({ eventChanges, id }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
-      await queryClient.cancelQueries({ queryKey: eventKeys.event(id) });
+      await Promise.all([cancelEventLists(), queryClient.cancelQueries({ queryKey: eventKeys.event(id), exact: true })]);
 
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
-      const previousEvent = queryClient.getQueryData<EventsUserView>(eventKeys.event(id));
+      const previousLists = snapshotEventLists();
+      const previousEvent = queryClient.getQueryData<EventsUserView | null>(eventKeys.event(id));
 
-      if (previousEvent) {
-        const updatedEvent = {
-          ...previousEvent,
-          ...eventChanges,
-        };
+      const optimistic = toOptimisticChanges(eventChanges);
+      updateEventEverywhere(id, (ev) => ({ ...ev, ...optimistic }));
 
-        queryClient.setQueryData(eventKeys.event(id), updatedEvent);
-      }
-
-      if (previousEvents) {
-        const updatedEvents = previousEvents.map((x) => {
-          if (x.id === id) {
-            return {
-              ...x,
-              ...eventChanges,
-            };
-          }
-          return x;
-        }) as EventsUserView[];
-        queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-      }
-
-      return { previousEvents, previousEvent };
+      return { previousLists, previousEvent };
     },
     onError: (err, _vars, context) => {
       captureException(err, {
         extra: {
-          ...err,
           ..._vars,
+          error: err,
         },
         tags: { type: 'UpdateSingleEvent', scope: 'events' },
       });
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
-      if (context?.previousEvent) {
+      if (!context) return;
+      restoreEventLists(context.previousLists);
+      if (context.previousEvent !== undefined) {
         queryClient.setQueryData(eventKeys.event(_vars.id), context.previousEvent);
       }
     },
-    onSettled: (_data, _error, variables) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.id) });
-      if (variables.items !== undefined) {
-        queryClient.invalidateQueries({ queryKey: eventKeys.eventBringOverview(variables.id) });
-      }
-    },
+    onSettled: () => invalidateEvents(),
   });
 };
 
-export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
+export const useUpdateRecurrenceMutation = () => {
   return useMutation({
+    meta: { suppressErrorToast: true },
     mutationFn: async ({
       eventChanges,
       key,
-      startingDateTime,
+      originalStartingDateTime,
       items,
     }: {
       key: string;
-      startingDateTime: string;
+      /** Start of the edited occurrence *before* the change; anchors "this and following events". */
+      originalStartingDateTime: string;
       eventChanges: TablesUpdate<'events'>;
       currentUser: User;
-      items?: Array<{ name: string; required_qty: number | null; unit: string; notes: string | null; sort_order: number }>;
+      items?: EventUpdateItems;
     }) => {
-      const results = await EventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
+      const results = await EventRepository.updateEventAndAllRecurrences(eventChanges, key, originalStartingDateTime);
       if (items !== undefined) {
-        const eventIds = results.map(r => r.data?.id).filter((id): id is string => !!id);
-        await Promise.all(eventIds.map(id => EventRepository.syncEventBringItems(id, items)));
+        const itemsWithoutIds = items.map(({ name, required_qty, unit, notes, sort_order }) => ({
+          name,
+          required_qty,
+          unit,
+          notes,
+          sort_order,
+        }));
+        await Promise.all(results.map(({ id }) => EventRepository.syncEventBringItems(id, itemsWithoutIds)));
       }
       return results;
     },
-    onMutate: async ({ eventChanges, key, startingDateTime }) => {
-      await queryClient.cancelQueries({ queryKey: eventKeys.list(fetchMode) });
+    onMutate: async ({ eventChanges, key, originalStartingDateTime }) => {
+      await cancelEventLists();
 
-      const previousEvents = queryClient.getQueryData<EventsUserView[]>(eventKeys.list(fetchMode));
+      const previousLists = snapshotEventLists();
 
-      if (previousEvents) {
-        const updatedEvents = previousEvents.map((x) => {
-          if (x.key === key && isAfter(x.startingDateTime, startingDateTime)) {
-            return {
-              ...x,
-              ...eventChanges,
-            };
-          }
-          return x;
-        }) as EventsUserView[];
-        queryClient.setQueryData(eventKeys.list(fetchMode), updatedEvents);
-      }
+      // Dates are shifted per occurrence on the server, so only apply non-date fields optimistically.
+      const optimistic = toOptimisticChanges(eventChanges, { includeDates: false });
+      updateEventLists((events) =>
+        events.map((x) =>
+          x.key === key && !isBefore(x.startingDateTime, originalStartingDateTime) ? { ...x, ...optimistic } : x
+        )
+      );
 
-      return { previousEvents };
+      return { previousLists };
     },
     onError: (err, _vars, context) => {
       captureException(err, {
@@ -797,12 +720,8 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'UpdateEventRecurrence', scope: 'events' },
       });
-      if (context?.previousEvents) {
-        queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
-      }
+      if (context) restoreEventLists(context.previousLists);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
-    },
+    onSettled: () => invalidateEvents(),
   });
 };

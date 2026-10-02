@@ -39,7 +39,7 @@ const EventScreen = () => {
       });
   }, [error, refetch, t]);
 
-  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+  const updateAttendance = useUpdateAttendanceMutation();
 
   const eventsByWeek = useMemo(
     () => Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))),

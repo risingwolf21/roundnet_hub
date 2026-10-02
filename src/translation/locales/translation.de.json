@@ -103,6 +103,8 @@
       "reminderPT6H": "6 Stunden vorher",
       "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
       "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
+      "notMemberOfGroupTitle": "Du bist nicht Mitglied dieser Gruppe",
+      "notMemberOfGroup": "Das Event wird gespeichert, erscheint danach aber nicht in deiner Eventliste, da nur Mitglieder der Gruppe die Events sehen können.",
       "reminderBefore": "Erinnerung senden",
       "reminderNone": "Keine",
       "reminderPT30M": "30 Minuten vorher",

@@ -5,6 +5,8 @@ import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Omit } from 'lodash';
+import { authKeys } from './auth';
+import { eventKeys } from './events';
 
 export const groupKeys = {
   all: ['groups'] as const,
@@ -12,6 +14,12 @@ export const groupKeys = {
   single: (groupId?: string) => [...groupKeys.all, groupId] as const,
   users: (groupId?: string) => [...groupKeys.all, groupId, 'users'] as const,
   singleForRole: (groupId: string, role: string) => [...groupKeys.all, groupId, role] as const,
+};
+
+// Group membership decides which events are visible (RLS) and which grants a user has.
+const invalidateMembershipDependents = () => {
+  queryClient.invalidateQueries({ queryKey: eventKeys.all });
+  queryClient.invalidateQueries({ queryKey: authKeys.all });
 };
 
 export const useRequestedUsersPerGroup = (me: User) =>
@@ -120,6 +128,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: groupKeys.single(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.all });
+      invalidateMembershipDependents();
     },
   });
 
@@ -155,6 +164,7 @@ export const useLeaveGroupMutation = () =>
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.single(vars.group.id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.all });
+      invalidateMembershipDependents();
     },
   });
 
@@ -230,6 +240,7 @@ export const useChangeUserRoleMutation = () =>
     onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: groupKeys.single(vars.group.id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.all });
+      invalidateMembershipDependents();
     },
   });
 

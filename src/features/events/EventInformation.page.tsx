@@ -1,4 +1,3 @@
-import { useFetchMode } from '@/hooks/useFetchMode';
 import {
   useEvent
 } from '@/tanstack/events';
@@ -15,9 +14,8 @@ const EventInformation = () => {
   const { selectedEventId } = useParams();
 
   const { t } = useTranslation();
-  const [fetchMode] = useFetchMode();
 
-  const { data: event, isLoading, refetch } = useEvent(selectedEventId);
+  const { data: event, isLoading } = useEvent(selectedEventId);
   const { data: keyHolders = [], isLoading: keyHoldersLoading } = useAllItems();
 
   const selectedEventPlace = useMemo<PlaceType | null>(() => {
@@ -58,7 +56,6 @@ const EventInformation = () => {
     selectedEventPlace={selectedEventPlace}
     t={t}
     keyHolders={keyHolders}
-    fetchMode={fetchMode}
   />
 
 };

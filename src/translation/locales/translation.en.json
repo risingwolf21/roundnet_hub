@@ -103,6 +103,8 @@
       "reminderPT6H": "6 hours before",
       "startDateCannotBeNull": "The startDate of this event can not be empty",
       "titleTooShort": "The title of this event needs at least 6 characters",
+      "notMemberOfGroupTitle": "You are not a member of this group",
+      "notMemberOfGroup": "The event will be saved, but it will not appear in your event list afterwards because only members of the group can see its events.",
       "reminderBefore": "Send reminder",
       "reminderNone": "None",
       "reminderPT30M": "30 minutes before",

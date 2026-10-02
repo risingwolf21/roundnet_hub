@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,13 +67,12 @@ type EventInformationProps = {
   selectedEventPlace: PlaceType | null;
   keyHolders: FullItemHolder[];
   t: TFunction;
-  fetchMode: 'past' | 'upcoming';
 };
 
-const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInformationProps, 'event' | 'fetchMode'>) => {
+const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 'event'>) => {
   const { user } = useGrants();
   const { t } = useTranslation();
-  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+  const updateAttendance = useUpdateAttendanceMutation();
   const { data: attendance = [], isLoading } = useAttendance(event.id);
 
   const changeAttendance = ({
@@ -199,10 +199,10 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
   );
 };
 
-export const EventInformation = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
-  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
-  const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
-  const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
+export const EventInformation = ({ event, selectedEventPlace }: EventInformationProps) => {
+  const updateAttendance = useUpdateAttendanceMutation();
+  const cancelTrainingMutation = useCancelTrainingMutation();
+  const deleteTrainingMutation = useDeleteTrainingMutation();
   const { user } = useGrants();
   const navigate = useNavigate();
   const dialogs = useDialogs();
@@ -394,7 +394,7 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                     })}</AlertTitle>
                   </Alert>
                 )}
-                <EventInformationAttendanceState event={event} fetchMode={fetchMode} />
+                <EventInformationAttendanceState event={event} />
 
                 {event.constellations_enabled && (
                   <Has perm={"event.create.constellations"}>
@@ -462,6 +462,28 @@ export const EventInformation = ({ event, selectedEventPlace, fetchMode }: Event
                 {allItems.length > 0 && <BringItemsTab eventId={event.id} />}
               </div>
             </Tabs>
+
+            <Has perm={'supabase.admin'}>
+              <Card className="pt-0">
+                <CardHeader className="border-b !py-2">
+                  <div className="flex justify-between items-center !p-0">
+                    <CardTitle className="text-lg flex items-center">
+                      Admin-Informationen
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm space-y-2 text-foreground/90">
+                  <div>
+                    <h4 className="font-semibold text-foreground">Key</h4>
+                    <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+                      {event.key}
+                    </p>
+                  </div>
+
+                  <Separator />
+                </CardContent>
+              </Card>
+            </Has>
           </div>
         </PullToRefresh>
       </main>

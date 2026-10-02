@@ -13,15 +13,21 @@ self.skipWaiting();
 // never ran) are recovered automatically — no page-side JS required.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    self.clients.claim().then(() =>
-      self.clients
-        .matchAll({ type: 'window' })
-        .then((windowClients) =>
-          Promise.all(
-            (windowClients as WindowClient[]).map((c) => c.navigate(c.url).catch(() => null))
+    // Supabase REST responses are no longer cached by the SW (TanStack Query owns API caching);
+    // drop the legacy cache so stale or other users' responses can't be served anymore.
+    caches
+      .delete('supabase-api-cache')
+      .catch(() => false)
+      .then(() => self.clients.claim())
+      .then(() =>
+        self.clients
+          .matchAll({ type: 'window' })
+          .then((windowClients) =>
+            Promise.all(
+              (windowClients as WindowClient[]).map((c) => c.navigate(c.url).catch(() => null))
+            )
           )
-        )
-    )
+      )
   );
 });
 
@@ -55,25 +61,6 @@ registerRoute(
     cacheName: 'google-fonts',
     plugins: [
       new ExpirationPlugin({ maxEntries: 20 }),
-    ],
-  })
-);
-
-registerRoute(
-  ({ url, request }) =>
-    url.origin.includes('supabase.co') &&
-    url.pathname.startsWith('/rest/v1/') &&
-    request.method === 'GET',
-  new NetworkFirst({
-    cacheName: 'supabase-api-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 24 * 60 * 60,
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
     ],
   })
 );

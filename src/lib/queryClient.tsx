@@ -15,8 +15,10 @@ export const queryClient = new QueryClient({
       networkMode: 'offlineFirst',
     },
     mutations: {
-      retry: 1,
-      networkMode: 'offlineFirst',
+      // Writes must never be silently paused or blindly replayed: a paused mutation is lost on reload
+      // and retrying non-idempotent inserts can create duplicates. Fail fast and surface the error.
+      retry: 0,
+      networkMode: 'always',
     },
   },
   mutationCache: new MutationCache({
@@ -56,11 +58,23 @@ const localStoragePersister = createAsyncStoragePersister({
   storage: window.localStorage,
 });
 
-persistQueryClient({
+const [, restorePromise] = persistQueryClient({
   queryClient,
   persister: localStoragePersister,
   maxAge: 1000 * 60 * 60 * 24,
+  // Drop persisted data from older deployments (data shapes / query keys may have changed).
+  buster: import.meta.env.VITE_GIT_COMMIT ?? '',
+  dehydrateOptions: {
+    // Only persist confirmed server data, never pending/optimistic state or paused mutations.
+    shouldDehydrateQuery: (query) => query.state.status === 'success' && !query.state.isInvalidated,
+    shouldDehydrateMutation: () => false,
+  },
 });
+
+// Restored data is only a placeholder for a fast first paint; always revalidate it against the server.
+restorePromise
+  .then(() => queryClient.invalidateQueries())
+  .catch((error) => captureException(error));
 
 declare global {
   interface Window {

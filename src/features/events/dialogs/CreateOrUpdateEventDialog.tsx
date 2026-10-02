@@ -1,9 +1,9 @@
 import { useGrants } from '@/features/auth/GrantsContext';
-import { useFetchMode } from '@/hooks/useFetchMode';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '@/utils';
 import React from 'react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,6 +13,7 @@ import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLeg
 import { Input } from '@/components/ui/input';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
@@ -22,17 +23,18 @@ import { cn } from '@/lib/utils';
 import { add, Duration, format, isAfter, set } from 'date-fns';
 import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
-import { CalendarSync, CalendarX2, Map, Pencil, Trash2 } from 'lucide-react';
+import { CalendarSync, CalendarX2, Map, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { FormEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
+import { GroupWithUserRole } from '@/types/supabaseTypes';
 import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 const SearchPlacesDialog = React.lazy(() => import('./SearchPlacesDialog'));
 
 const DEFAULT_DURATION: Duration = { hours: 2 };
 
-const emptyEvent = {
+const createEmptyEvent = () => ({
   title: '',
   description: '',
   startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
@@ -45,7 +47,11 @@ const emptyEvent = {
   answerDeadline: null,
   // answerStart: null,
   place: null,
-} as EventTable;
+}) as EventTable;
+
+const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+
+const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown error.');
 
 type CreateEventProps = {
   event?: EventTable | null;
@@ -85,59 +91,64 @@ export const CreateOrUpdateEventDialog = ({
   open,
   onClose,
 }: DialogProps<CreateEventProps>) => {
-  const [fetchMode] = useFetchMode();
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
+  const [editedEvent, setEditedEvent] = useState<EventTable>(() => event ?? createEmptyEvent());
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [bringItems, setBringItems] = useState(items);
   const ref = useRef<HTMLFormElement>(null);
 
   const place = useMemo(() => (editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null), [editedEvent]);
 
-  const insertEvent = useInsertEventMutation(fetchMode);
-  const updateSingleEvent = useUpdateSingleMutation(fetchMode);
-  const updateRecurrenceEvents = useUpdateRecurrenceMutation(fetchMode);
+  const insertEvent = useInsertEventMutation();
+  const updateSingleEvent = useUpdateSingleMutation();
+  const updateRecurrenceEvents = useUpdateRecurrenceMutation();
+  const isSaving = insertEvent.isPending || updateSingleEvent.isPending || updateRecurrenceEvents.isPending;
+
+  // Events are only visible (RLS) to members of their group, so warn before the event "disappears".
+  const isMemberOfSelectedGroup = useMemo(() => {
+    if (!editedEvent.group) return true;
+    return (user.groups as GroupWithUserRole[]).some(
+      (g) => g.id === editedEvent.group && (g.user_role === 'user' || g.user_role === 'admin')
+    );
+  }, [editedEvent.group, user.groups]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSaving) return;
 
     try {
-      if (!editedEvent.meetingDateTime)
-        setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
-
       const bring_items = bringItems.filter((x) => x.name && x.required_qty && x.required_qty > 0);
 
-      setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
+      // Build the final event synchronously; state updates would only be visible on the next render.
+      const finalEvent = {
+        ...editedEvent,
+        ...(option === 'InsertEvent' && !editedEvent.meetingDateTime && { meetingDateTime: editedEvent.startingDateTime }),
+        items_enabled: bring_items.length > 0,
+      } as TablesInsert<'events'>;
 
-      const edited_event = editedEvent as TablesInsert<'events'>;
-
-      const edited_event_pairs = toPairs(edited_event);
-      const event_pairs = event ? toPairs(event) : [];
-
-      const changes = differenceWith(edited_event_pairs, event_pairs, isEqual);
-
+      const changes = differenceWith(toPairs(finalEvent), event ? toPairs(event) : [], isEqual);
       const eventChanges = fromPairs(changes) as TablesUpdate<'events'>;
 
-      if (!edited_event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
+      if (!finalEvent.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
-      if (!edited_event.group) throw new Error(t('events.creation.noGroupSelected'));
+      if (!finalEvent.group) throw new Error(t('events.creation.noGroupSelected'));
 
-      if (edited_event.answerDeadline && isAfter(edited_event.answerDeadline, edited_event.startingDateTime))
+      if (finalEvent.answerDeadline && isAfter(finalEvent.answerDeadline, finalEvent.startingDateTime))
         throw new Error(t('events.creation.answerDeadlineAfterStart'));
 
-      if (!edited_event.title || edited_event.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
+      if (!finalEvent.title || finalEvent.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
 
-      if (!edited_event.description || edited_event.description.length < 1)
+      if (!finalEvent.description || finalEvent.description.length < 1)
         throw new Error(t('events.creation.descriptionEmpty'));
 
-      if (edited_event.meetingDateTime)
-        if (isAfter(edited_event.meetingDateTime, edited_event.startingDateTime))
+      if (finalEvent.meetingDateTime)
+        if (isAfter(finalEvent.meetingDateTime, finalEvent.startingDateTime))
           throw new Error(t('events.creation.meetingTimeBeforeStartTime'));
 
       if (option === 'InsertEvent') {
-        insertEvent.mutate(
-          {
+        try {
+          await insertEvent.mutateAsync({
             event: eventChanges as Tables<'events'>,
             currentUser: user,
             items: bring_items.map((x) => ({
@@ -147,55 +158,59 @@ export const CreateOrUpdateEventDialog = ({
               sort_order: 0,
               notes: null,
             })),
-          },
-          {
-            onError: (error) =>
-              toast.error('Event konnte nicht erstellt werden: ' + error.message),
-            onSuccess: () => {
-              onClose();
-            },
-          }
-        );
+          });
+        } catch (error) {
+          toast.error('Event konnte nicht erstellt werden: ' + errorMessage(error));
+          return;
+        }
+        toast.success('Event wurde erstellt');
+        onClose();
       } else if (option === 'UpdateSingle') {
-        updateSingleEvent.mutate(
-          {
-            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
-            id: edited_event.id ?? '',
+        try {
+          await updateSingleEvent.mutateAsync({
+            eventChanges,
+            id: finalEvent.id ?? '',
             currentUser: user,
             items: bring_items,
-          },
-          {
-            onError: (error) =>
-              toast.error('Event konnte nicht aktualisiert werden: ' + error.message),
-            onSuccess: () => onClose(),
-          }
-        );
+          });
+        } catch (error) {
+          toast.error('Event konnte nicht aktualisiert werden: ' + errorMessage(error));
+          return;
+        }
+        toast.success('Event wurde gespeichert');
+        onClose();
       } else if (option === 'UpdateRecurrence') {
-        const recurrenceItems = bring_items.map(({ name, required_qty, unit, notes, sort_order }) => ({
-          name,
-          required_qty,
-          unit,
-          notes,
-          sort_order,
-        }));
-        updateRecurrenceEvents.mutate(
-          {
-            eventChanges: { ...eventChanges, items_enabled: bring_items.length > 0 },
-            key: editedEvent.key,
-            startingDateTime: editedEvent.startingDateTime,
-            currentUser: user,
-            items: recurrenceItems,
-          },
-          {
-            onError: (error) =>
-              toast.error('Events konnten nicht aktualisiert werden: ' + error.message),
-            onSuccess: () => onClose(),
+        if (!event) throw new Error('Event not found.');
+
+        // Date changes are applied relative to every occurrence's start, so send all date fields
+        // together to keep end/meeting/deadline consistent with a moved start.
+        const dateFieldChanged = EVENT_DATE_FIELDS.some((field) => field in eventChanges);
+        const recurrenceChanges: TablesUpdate<'events'> = dateFieldChanged
+          ? {
+            ...eventChanges,
+            ...Object.fromEntries(
+              EVENT_DATE_FIELDS.filter((field) => finalEvent[field]).map((field) => [field, finalEvent[field]])
+            ),
           }
-        );
+          : eventChanges;
+
+        try {
+          await updateRecurrenceEvents.mutateAsync({
+            eventChanges: recurrenceChanges,
+            key: event.key,
+            originalStartingDateTime: event.startingDateTime,
+            currentUser: user,
+            items: bring_items,
+          });
+        } catch (error) {
+          toast.error('Events konnten nicht aktualisiert werden: ' + errorMessage(error));
+          return;
+        }
+        toast.success('Events wurden gespeichert');
+        onClose();
       }
     } catch (error: unknown) {
-      const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-      toast.error(message);
+      toast.error(errorMessage(error));
     }
   }
 
@@ -253,6 +268,14 @@ export const CreateOrUpdateEventDialog = ({
                 </ItemTitle>
               </Item>
             </Field>
+
+            {!isMemberOfSelectedGroup && (
+              <Alert variant={"warning"}>
+                <TriangleAlert />
+                <AlertTitle>{t('events.creation.notMemberOfGroupTitle')}</AlertTitle>
+                <AlertDescription>{t('events.creation.notMemberOfGroup')}</AlertDescription>
+              </Alert>
+            )}
           </FieldSet>
 
           <FieldSeparator />
@@ -766,10 +789,12 @@ export const CreateOrUpdateEventDialog = ({
       </DialogBody>
       <DialogFooter variant={"fullscreen"}>
         <Button
+          disabled={isSaving}
           onClick={() => {
             if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
           }}
         >
+          {isSaving && <Spinner />}
           Speichern
         </Button>
       </DialogFooter>

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { add, Duration, startOfDay } from 'date-fns';
+import { add, differenceInCalendarDays, Duration, isAfter, set, startOfDay, sub } from 'date-fns';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
@@ -17,17 +17,30 @@ export const fetchEventBringPledges = () => supabase
   .from('event_bring_pledges')
   .select('*, user: user(*), item: event_bring_items(*)')
 
+const assertRowsAffected = (rows: unknown[] | null, message: string) => {
+  if (!rows || rows.length === 0) {
+    throw new Error(`${message} (fehlende Berechtigung oder Event nicht sichtbar).`);
+  }
+};
+
 export const EventRepository = {
+  /**
+   * Applies `updates` to the event series identified by `key`, starting with the occurrence that
+   * originally started at `oldStartTime` (the anchor). Date changes are applied relative to the anchor
+   * so every following occurrence keeps its own day while getting the new time-of-day / offsets.
+   */
   async updateEventAndAllRecurrences(updates: TablesUpdate<'events'>, key: string, oldStartTime: string) {
     const { data, error } = await supabase
       .from('events')
       .select('*')
       .eq('key', key)
       .gte('startingDateTime', oldStartTime)
+      .order('startingDateTime', { ascending: true })
       .returns<EventTable[]>();
 
-    if (!data || error) {
-      throw new Error('Could not fetch events that need to be updated!');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('Die Events der Serie konnten nicht gefunden werden (fehlende Berechtigung oder bereits gelöscht).');
     }
 
     const recurrenceFrom = (recurrence: EventRecurrence, index: number): Duration => {
@@ -44,41 +57,70 @@ export const EventRepository = {
       }
     };
 
-    return Promise.all(
-      data.map(async (e, index) => {
-        const updatedChanges = {
-          ...updates,
-          ...(updates.startingDateTime && {
-            startingDateTime: formatDateToDatabase(
-              add(updates.startingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-            ),
-          }),
-          ...(updates.endDateTime && {
-            endDateTime: formatDateToDatabase(
-              add(updates.endDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-            ),
-          }),
-          ...(updates.meetingDateTime && {
-            meetingDateTime: formatDateToDatabase(
-              add(updates.meetingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-            ),
-          }),
-          ...(updates.answerDeadline && {
-            answerDeadline: formatDateToDatabase(
-              add(updates.answerDeadline, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-            ),
-          }),
-        } as TablesUpdate<'events'>;
-        const result = await supabase
-          .from('events')
-          .update(updatedChanges)
-          .eq('id', e.id)
-          .select('*')
-          .single()
-          .throwOnError();
-        return result;
-      })
-    );
+    const anchor = data[0];
+    const anchorOldStart = new Date(anchor.startingDateTime);
+    const anchorNewStart = updates.startingDateTime ? new Date(updates.startingDateTime) : anchorOldStart;
+    const recurrenceChanged = !!updates.recurrence && updates.recurrence !== anchor.recurrence;
+    const dayShift = differenceInCalendarDays(anchorNewStart, anchorOldStart);
+    const timeOf = (date: Date) => ({
+      hours: date.getHours(),
+      minutes: date.getMinutes(),
+      seconds: date.getSeconds(),
+      milliseconds: 0,
+    });
+
+    // Positions a date field of the anchor relative to the (new) start of another occurrence,
+    // using calendar days + wall-clock time so DST changes don't shift the time-of-day.
+    const relativeTo = (occurrenceStart: Date, anchorValue: string) => {
+      const value = new Date(anchorValue);
+      return formatDateToDatabase(
+        set(add(occurrenceStart, { days: differenceInCalendarDays(value, anchorNewStart) }), timeOf(value))
+      );
+    };
+
+    const dateFieldsChanged =
+      !!updates.startingDateTime || !!updates.endDateTime || !!updates.meetingDateTime || !!updates.answerDeadline;
+
+    const changesFor = (e: EventTable, index: number): TablesUpdate<'events'> => {
+      if (!dateFieldsChanged && !recurrenceChanged) return updates;
+
+      const startChanged = !!updates.startingDateTime || recurrenceChanged;
+      const newStart = recurrenceChanged
+        ? add(anchorNewStart, recurrenceFrom(updates.recurrence!, index))
+        : updates.startingDateTime
+          ? set(add(new Date(e.startingDateTime), { days: dayShift }), timeOf(anchorNewStart))
+          : new Date(e.startingDateTime);
+
+      return {
+        ...updates,
+        ...(startChanged && { startingDateTime: formatDateToDatabase(newStart) }),
+        ...(updates.endDateTime && { endDateTime: relativeTo(newStart, updates.endDateTime) }),
+        ...(updates.meetingDateTime && { meetingDateTime: relativeTo(newStart, updates.meetingDateTime) }),
+        ...(updates.answerDeadline && { answerDeadline: relativeTo(newStart, updates.answerDeadline) }),
+      };
+    };
+
+    const planned = data.map((e, index) => ({ id: e.id, changes: changesFor(e, index) }));
+
+    // (key, startingDateTime) is unique: when moving a series later, update the latest occurrence first
+    // (and vice versa) so an occurrence never collides with the not-yet-moved next one.
+    if (isAfter(anchorNewStart, anchorOldStart)) planned.reverse();
+
+    const updatedEvents: Tables<'events'>[] = [];
+    for (const { id, changes } of planned) {
+      const result = await supabase
+        .from('events')
+        .update(changes)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (result.error) throw result.error;
+      if (!result.data) {
+        throw new Error('Event konnte nicht gespeichert werden (fehlende Berechtigung oder Event nicht sichtbar).');
+      }
+      updatedEvents.push(result.data);
+    }
+    return updatedEvents;
   },
 
   async updateEvent(
@@ -128,27 +170,41 @@ export const EventRepository = {
       .throwOnError();
   },
 
-  async deleteEvent(eventId: string): Promise<null> {
-    const result = await supabase.from('events').delete().eq('id', eventId).throwOnError();
-
-    return result.data;
+  async deleteEvent(eventId: string): Promise<void> {
+    const result = await supabase.from('events').delete().eq('id', eventId).select('id').throwOnError();
+    assertRowsAffected(result.data, 'Event konnte nicht gelöscht werden');
   },
 
-  async deleteEventAndUpcomingEvents(eventId: string, key: string, startDateTime: string | null): Promise<void> {
-    await supabase.from('events').delete().eq('key', key).gte('startingDateTime', startDateTime);
+  async deleteEventAndUpcomingEvents(key: string, startDateTime: string): Promise<void> {
+    const result = await supabase
+      .from('events')
+      .delete()
+      .eq('key', key)
+      .gte('startingDateTime', startDateTime)
+      .select('id')
+      .throwOnError();
+    assertRowsAffected(result.data, 'Events konnten nicht gelöscht werden');
 
+    // End the series on the remaining occurrences, otherwise create_next_occurrences would
+    // regenerate the deleted events from the latest remaining occurrence.
     await supabase
       .from('events')
       .update({
-        recurrenceEnd: formatDateToDatabase(Date.now()),
+        recurrenceEnd: formatDateToDatabase(sub(new Date(startDateTime), { seconds: 1 })),
       })
-      .eq('id', eventId);
+      .eq('key', key)
+      .lt('startingDateTime', startDateTime)
+      .throwOnError();
   },
 
-  async updateCancellationForEvent(eventId: string, isCancelled: boolean): Promise<null> {
-    const result = await supabase.from('events').update({ isCancelled: isCancelled }).eq('id', eventId).throwOnError();
-
-    return result.data;
+  async updateCancellationForEvent(eventId: string, isCancelled: boolean): Promise<void> {
+    const result = await supabase
+      .from('events')
+      .update({ isCancelled: isCancelled })
+      .eq('id', eventId)
+      .select('id')
+      .throwOnError();
+    assertRowsAffected(result.data, 'Event konnte nicht aktualisiert werden');
   },
 
   async fetchUserEvent(eventId: string): Promise<EventsUserView | null> {
@@ -218,18 +274,19 @@ export const EventRepository = {
   },
 
   async fetchBringOverview(eventId: string) {
-    const result = await supabase.from('event_bring_overview').select('*').eq('event', eventId);
+    const result = await supabase.from('event_bring_overview').select('*').eq('event', eventId).throwOnError();
     return result.data ?? [];
   },
 
   async fetchBringItems(eventId: string) {
-    const result = await supabase.from('event_bring_items').select('*').eq('event', eventId);
+    const result = await supabase.from('event_bring_items').select('*').eq('event', eventId).throwOnError();
     return result.data ?? [];
   },
 
   async fetchBringPledges(eventId: string) {
     const result = await fetchEventBringPledges()
-      .eq('event', eventId);
+      .eq('event', eventId)
+      .throwOnError();
     return result.data ?? [];
   },
 
@@ -260,7 +317,8 @@ export const EventRepository = {
       .from('event_transformations')
       .select('*')
       .eq('event_key', eventKey)
-      .maybeSingle();
+      .maybeSingle()
+      .throwOnError();
     return result.data;
   },
 
@@ -270,7 +328,8 @@ export const EventRepository = {
       .from('event_transformation_applications')
       .select('*')
       .eq('event', event)
-      .maybeSingle();
+      .maybeSingle()
+      .throwOnError();
     return result.data;
   },
 
@@ -320,17 +379,23 @@ export const EventRepository = {
   },
 
   async upsertBringPledges(event: string, user: string, items: { item_id: string; quantity: number; status: string }[]) {
-    await supabase
-      .from('event_bring_pledges')
-      .delete()
-      .eq('event', event)
-      .eq('user', user)
-      .in('item', items.filter((x) => x.quantity <= 0).map((x) => x.item_id));
-    await supabase.from('event_bring_pledges').upsert(
-      items
-        .filter((x) => x.quantity > 0)
-        .map((x) => ({ event, user: user, qty: x.quantity, status: x.status, item: x.item_id }))
-    );
+    const removed = items.filter((x) => x.quantity <= 0).map((x) => x.item_id);
+    const pledged = items
+      .filter((x) => x.quantity > 0)
+      .map((x) => ({ event, user: user, qty: x.quantity, status: x.status, item: x.item_id }));
+
+    if (removed.length > 0) {
+      await supabase
+        .from('event_bring_pledges')
+        .delete()
+        .eq('event', event)
+        .eq('user', user)
+        .in('item', removed)
+        .throwOnError();
+    }
+    if (pledged.length > 0) {
+      await supabase.from('event_bring_pledges').upsert(pledged).throwOnError();
+    }
   },
 
   async insertEventWithBringItems(p_event: TablesInsert<'events'>, p_items: { name: string; required_qty: number; unit: string; notes: string | null; sort_order: number }[]) {
@@ -344,9 +409,14 @@ export const EventRepository = {
   ) {
     const keepIds = items.filter(x => x.id).map(x => x.id!);
     if (keepIds.length > 0) {
-      await supabase.from('event_bring_items').delete().eq('event', eventId).not('id', 'in', `(${keepIds.join(',')})`);
+      await supabase
+        .from('event_bring_items')
+        .delete()
+        .eq('event', eventId)
+        .not('id', 'in', `(${keepIds.join(',')})`)
+        .throwOnError();
     } else {
-      await supabase.from('event_bring_items').delete().eq('event', eventId);
+      await supabase.from('event_bring_items').delete().eq('event', eventId).throwOnError();
     }
     if (items.length > 0) {
       await supabase.from('event_bring_items').upsert(
@@ -359,12 +429,14 @@ export const EventRepository = {
           notes: item.notes ?? null,
           sort_order: item.sort_order ?? i,
         }))
-      );
+      ).throwOnError();
     }
   },
 
   async updateSingleEvent(id: string, eventChanges: TablesUpdate<'events'>) {
     const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
+    // RLS silently filters rows instead of raising an error, so 0 updated rows means nothing was saved.
+    assertRowsAffected(result.data, 'Event konnte nicht gespeichert werden');
     return result.data;
   },
 
