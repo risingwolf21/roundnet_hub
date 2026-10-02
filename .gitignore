@@ -49,3 +49,7 @@ package-lock.json
 
 # Claude Code local state
 .claude/
+
+# Database dumps / backups (contain production user data — never commit)
+supabase/backup/
+*dump*.sql

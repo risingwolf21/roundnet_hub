@@ -1,5 +1,6 @@
 import { createClient } from "supabase";
 import { Database } from "../_shared/supabase-generated.types.ts";
+import { buildAllowedRoutes, isAllowedRoute, projectRefFromUrl } from "../_shared/managementProxyRoutes.ts";
 
 const corsHeaders = {
   // Im Dev: '*' oder 'http://localhost:5173'
@@ -10,11 +11,15 @@ const corsHeaders = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const PROJECT_REF = Deno.env.get("SUPABASE_PROJECT_REF") ?? projectRefFromUrl(SUPABASE_URL);
+const ALLOWED_ROUTES = buildAllowedRoutes(PROJECT_REF);
 
-const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false },
-});
+const jsonError = (message: string, status: number) =>
+  new Response(JSON.stringify({ error: message }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status,
+  });
 
 Deno.serve(async (req) => {
   // 1. Handle CORS Preflight
@@ -31,18 +36,31 @@ Deno.serve(async (req) => {
       return new Response('Missing bearer token', { status: 401, headers: corsHeaders });
     }
 
+    // Client acting as the caller, so auth.uid() / RLS / authorize() apply.
+    const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } },
+    });
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
     if (userError || !user) {
-      throw new Error('Unauthorized: You must be logged in.')
+      return jsonError('Unauthorized: You must be logged in.', 401)
     }
 
-    const { data: profile } = await supabase.from('user').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') throw new Error('Forbidden: Only Admins can access the Management API.')
+    const { data: isAdmin, error: authzError } = await supabase.rpc('authorize', { requested_permission: 'supabase.admin' })
+    if (authzError || isAdmin !== true) {
+      return jsonError('Forbidden: Only Admins can access the Management API.', 403)
+    }
 
     const { path, method, payload } = await req.json()
 
-    if (!path || !method) {
+    if (typeof path !== 'string' || typeof method !== 'string') {
       throw new Error('Missing required parameters: path and method')
+    }
+
+    const upperMethod = method.toUpperCase()
+    if (!isAllowedRoute(ALLOWED_ROUTES, upperMethod, path)) {
+      return jsonError(`Forbidden: ${upperMethod} ${path} is not allowed through this proxy.`, 403)
     }
 
     // 4. Retrieve the secure Personal Access Token
@@ -54,7 +72,7 @@ Deno.serve(async (req) => {
     // 5. Forward the request to the Management API
     const managementApiUrl = `https://api.supabase.com${path}`
     const response = await fetch(managementApiUrl, {
-      method: method.toUpperCase(),
+      method: upperMethod,
       headers: {
         'Authorization': `Bearer ${PAT}`,
         'Content-Type': 'application/json'

@@ -199,7 +199,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
               upsertSetsToMatch.mutate(
                 { sets: allSets },
                 {
-                  onSuccess: (result) => onClose(result.result),
+                  onSuccess: (result) => onClose(result),
                   onError: (error) => {
                     captureException(error);
                     toast.error('Die Sätze konnten nicht gespeichert werden.');

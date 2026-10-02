@@ -8,7 +8,8 @@ SELECT tests.authenticate_as('user_1a');
 -- pgTAP initialisieren
 SELECT plan(13);
 
--- 1) Frische Gruppe
+-- 1) Frische Gruppe (nur service_role / Plattform-Admins dürfen Gruppen anlegen)
+SELECT tests.authenticate_as_service_role();
 WITH g AS (
   INSERT INTO public.event_group (name, description, color, is_public, need_request_to_join)
   VALUES ('__test_group__', 'tmp', '#000000', true, false)
@@ -17,6 +18,7 @@ WITH g AS (
 SELECT ok((SELECT id IS NOT NULL FROM g), 'Setup: event_group erstellt');
 
 INSERT INTO public.group_user_mapping("user", "group", "role") VALUES(tests.get_supabase_uid('user_1a'), (SELECT id FROM public.event_group WHERE name='__test_group__' LIMIT 1), 'admin');
+SELECT tests.authenticate_as('user_1a');
 
 -- 2) Args bauen (Happy Path)
 WITH grp AS (SELECT id FROM public.event_group WHERE name='__test_group__' LIMIT 1),
