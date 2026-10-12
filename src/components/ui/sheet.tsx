@@ -58,7 +58,7 @@ function SheetContent({
         )}
         {...props}
       >
-        <div className="fixed top-0 left-0 z-[100] h-px w-full bg-sidebar-background md:hidden" />
+        <div className="fixed top-0 left-0 z-[100] h-[7px] w-full bg-sidebar-background md:hidden" />
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" render={<Button variant="ghost" className="absolute top-3 right-3" size="icon-sm"><XIcon /><span className="sr-only">Close</span></Button>} />
