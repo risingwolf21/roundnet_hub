@@ -61,7 +61,14 @@ root.render(
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
         <FeatureToggleProvider>
-          <App />
+          <>
+            <div
+              aria-hidden="true"
+              className="fixed inset-x-0 top-0 z-[99999] h-px pointer-events-none"
+              style={{ backgroundColor: "var(--background)" }}
+            />
+            <App />
+          </>
         </FeatureToggleProvider>
       </ThemeProvider>
     </Suspense>
