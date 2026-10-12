@@ -12,7 +12,7 @@ export const DrinkRepository = {
   },
 
   async fetchAllDrinks(): Promise<Drink[]> {
-    const result = await supabase.from('drink').select('*');
+    const result = await supabase.from('drink').select('*').throwOnError();
     return result.data ?? [];
   },
 
@@ -55,7 +55,7 @@ export const DrinkRepository = {
     return { data: data ?? [], nextPage: hasMore ? pageParam + 1 : undefined };
   },
 
-  async deleteDrink(drinkId: number) {
+  async deleteDrink(drinkId: string) {
     return supabase.from('drink').delete().eq('id', drinkId).throwOnError();
   },
 

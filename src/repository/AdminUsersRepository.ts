@@ -129,7 +129,7 @@ export const AdminUsersRepository = {
     scopeId: string;
     sourceId: string;
   }): Promise<number> {
-    const { data, error } = await supabase.schema("notifications").rpc('notify_emit', {
+    const { data, error } = await supabase.schema("notifications").rpc('admin_notify_emit', {
       p_recipients: args.recipients,
       p_topic: args.topic,
       p_title: args.title,

@@ -45,10 +45,9 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
       toast.error(t('profile.playerzone.noGender'));
       return;
     }
+    // rg_index / rg_avatar_url are reset server-side when rg_link changes
     const updates: GamesTableUpdate<'players'> = {
       rg_link: rgLink ?? null,
-      rg_avatar_url: null,
-      rg_index: null,
       gender: gender,
     };
     updatePlayer.mutate(

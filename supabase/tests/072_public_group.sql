@@ -31,10 +31,13 @@ SELECT throws_like(
   'Direkter Insert als role=admin verboten'
 );
 
+-- Groups can only be created by platform admins / service_role
+SELECT tests.authenticate_as_service_role();
 INSERT INTO public.event_group(id,name,visible,is_public,need_request_to_join)
 VALUES ('00000000-0000-0000-0000-0000000000bb','Closed Group',TRUE,FALSE,TRUE)
 ON CONFLICT (id) DO UPDATE
 SET is_public = FALSE, need_request_to_join = TRUE;
+SELECT tests.authenticate_as('some_user');
 
 SELECT throws_like(
   $$

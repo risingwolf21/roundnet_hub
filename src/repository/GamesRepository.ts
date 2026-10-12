@@ -219,22 +219,20 @@ export const GamesRepository = {
   },
 
   async upsertSetsToMatch(matchId: string, sets: GamesTable<'sets'>[]) {
-    const result = await supabase
-      .schema('games')
-      .from('sets')
-      .upsert(sets)
-      .select('*')
-      .throwOnError();
+    const upserted =
+      sets.length > 0
+        ? (await supabase.schema('games').from('sets').upsert(sets).select('*').throwOnError()).data ?? []
+        : [];
 
-    await supabase
-      .schema('games')
-      .from('sets')
-      .delete()
-      .not('id', 'in', `(${sets.map((x) => `${x.id}`).join(',')})`)
-      .eq('match', matchId)
-      .throwOnError();
+    // Remove all sets of this match that are no longer part of the list.
+    const keepIds = upserted.map((x) => x.id);
+    let deleteQuery = supabase.schema('games').from('sets').delete().eq('match', matchId);
+    if (keepIds.length > 0) {
+      deleteQuery = deleteQuery.not('id', 'in', `(${keepIds.join(',')})`);
+    }
+    await deleteQuery.throwOnError();
 
-    return result.data;
+    return upserted;
   },
 
   async deleteMatch(matchId: string) {

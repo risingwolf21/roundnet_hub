@@ -29,7 +29,7 @@ export const AdminDrinksRepository = {
     return supabase.from('drink').update(drink).eq('id', drink.id).throwOnError();
   },
 
-  async deleteDrink(id: number): Promise<PostgrestSingleResponse<null>> {
+  async deleteDrink(id: string): Promise<PostgrestSingleResponse<null>> {
     return supabase.from('drink').delete().eq('id', id).throwOnError();
   },
 
