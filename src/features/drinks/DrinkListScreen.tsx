@@ -24,14 +24,13 @@ import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 }
 import { toast } from 'sonner';
 import EditDrinkDialog from './dialog/EditDrinkDialog';
 
-const EMPTY_DRINK: Drink = {
+export const EMPTY_DRINK: Drink = {
   imageUrl: '',
   name: '',
   price: 0,
   active: false,
   deleted: false,
-  id: 0,
-  previousDrink: null,
+  id: '',
   stock: 0,
   type: 'Drink',
 };

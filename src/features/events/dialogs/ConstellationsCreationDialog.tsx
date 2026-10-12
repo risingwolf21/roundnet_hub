@@ -195,6 +195,11 @@ export type PlayerWithUser = GamesTable<'players'> & {
   name?: string;
 };
 
+// Legacy users have player = user id, newer users are linked via linked_user_id.
+export const userIdOfPlayer = (player: GamesTable<'players'>) => player.linked_user_id ?? player.player;
+export const playersOfUsersFilter = (userIds: string[]) =>
+  `linked_user_id.in.(${userIds.join(',')}),player.in.(${userIds.join(',')})`;
+
 export const ConstellationCreationDialog = ({
   payload,
   open,
@@ -221,7 +226,7 @@ export const ConstellationCreationDialog = ({
         .schema('games')
         .from('players')
         .select('*')
-        .in('player', payload.users.map((x) => x.id));
+        .or(playersOfUsersFilter(payload.users.map((x) => x.id)));
 
       if (error) {
         toast.error('Fehler beim Laden der Spielerdaten');
@@ -232,7 +237,7 @@ export const ConstellationCreationDialog = ({
       if (data) {
         const loadedPlayers = data.map((x) => ({
           ...x,
-          name: payload.users.find((y) => y.id === x.player)?.name,
+          name: payload.users.find((y) => y.id === userIdOfPlayer(x))?.name,
         }));
         setPlayers(loadedPlayers);
         setFoundPlayers(loadedPlayers);
@@ -424,21 +429,21 @@ export const ConstellationCreationDialog = ({
                         variant={"outline"}
                         onClick={() => {
                           dialogs
-                            .selectMultipleUser(players.map((x) => x.player))
+                            .selectMultipleUser(players.map(userIdOfPlayer))
                             .then((result) => {
                               if (result) {
                                 supabase
                                   .schema('games')
                                   .from('players')
                                   .select('*')
-                                  .in('player', result.map((x) => x.id))
+                                  .or(playersOfUsersFilter(result.map((x) => x.id)))
                                   .then((res) => {
                                     if (res.data) {
                                       setPlayers((prev) => [
-                                        ...prev.filter((x) => !result.map((r) => r.id).includes(x.player)),
+                                        ...prev.filter((x) => !result.map((r) => r.id).includes(userIdOfPlayer(x))),
                                         ...res.data.map((x) => ({
                                           ...x,
-                                          name: result.find((y) => y.id === x.player)?.name,
+                                          name: result.find((y) => y.id === userIdOfPlayer(x))?.name,
                                         })),
                                       ]);
                                     }

@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { Has } from "@/hooks/useGrants";
 import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 
@@ -69,17 +70,19 @@ const PublicGroupList = () => {
       primaryAction="default"
       user={user}
       actions={
-        <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-          const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
-          if (result && result !== 'closed') {
-            refetch();
-            toast.success('Gruppe wurde erfolgreich erstellt.');
-          } else if (!result) {
-            toast.error('Gruppe konnte nicht erstellt werden.');
-          }
-        }}>
-          <Plus />
-        </Button>
+        <Has perm={['supabase.admin', 'groups.manage.admin']} any>
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
+            if (result && result !== 'closed') {
+              refetch();
+              toast.success('Gruppe wurde erfolgreich erstellt.');
+            } else if (!result) {
+              toast.error('Gruppe konnte nicht erstellt werden.');
+            }
+          }}>
+            <Plus />
+          </Button>
+        </Has>
       }
     />
 

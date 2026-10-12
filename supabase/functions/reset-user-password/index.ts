@@ -1,9 +1,10 @@
 import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
-import { Database, Tables } from '../_shared/supabase-generated.types.ts';
+import { Database } from '../_shared/supabase-generated.types.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
@@ -60,33 +61,32 @@ Deno.serve(async (req) => {
       return new Response('Das Passwort muss mindestens 6 Zeichen enthalten', { status: 400, headers: corsHeaders });
     }
 
-    // 1) Client-ähnlicher Supabase-Client, um den aufrufenden User aus dem JWT zu lesen
-    const { data: me, error: meErr } = await supabase.auth.getUser(token);
+    // 1) Client acting as the caller, so auth.uid() / authorize() refer to them
+    const callerClient = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: me, error: meErr } = await callerClient.auth.getUser(token);
     if (meErr || !me?.user) {
-      throw meErr
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
     }
 
-    // 2) Admin-Check gegen eure public.user-Tabelle (Role-Feld)
-    const { data: adminRow, error: adminErr } = await supabase
-      .from('user')
-      .select('role')
-      .eq('id', me.user.id)
-      .single();
+    // 2) Permission check via the grants system (group or direct grant)
+    const [{ data: canReset, error: resetErr }, { data: isAdmin, error: adminErr }] = await Promise.all([
+      callerClient.rpc('authorize', { requested_permission: 'reset_user_password' }),
+      callerClient.rpc('authorize', { requested_permission: 'supabase.admin' }),
+    ]);
 
-    if (adminErr || adminRow?.role !== 'admin') {
-      throw adminErr;
-    }
-
-    const { data: permissions, error: permissionErr } = await supabase
-      .from("user_grants_view")
-      .select("*");
-
-    if (permissionErr || permissions.map((x: Tables<'user_grants_view'>) => x.key).includes('reset_user_password')) {
-      throw new UnauthorizedError(JSON.stringify({
-        user_email: me.user.email,
+    if (resetErr || adminErr || (canReset !== true && isAdmin !== true)) {
+      Sentry.captureException(new UnauthorizedError(JSON.stringify({
         user_id: me.user.id,
-        for_user_id: userId
-      }))
+        for_user_id: userId,
+      })));
+      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // 3) Admin-Client mit Service Role für Passwort-Update

@@ -2,8 +2,8 @@ import { supabase } from '@/lib/supabase';
 
 export const GrantsRepository = {
   async fetchAdminGroups() {
-    const result = await supabase.from('event_groups_view').select('*').eq('role', 'admin');
-    return result?.data ?? [];
+    const result = await supabase.from('event_groups_view').select('*').eq('role', 'admin').throwOnError();
+    return result.data ?? [];
   },
 
   async fetchPermissions(): Promise<string[]> {

@@ -542,31 +542,31 @@ export type Database = {
           created_at: string
           id: string
           match: string
+          set_awarded: boolean | null
           set_number: number
           team_a_score: number
           team_b_score: number
           type: string
-          set_awarded: boolean | null
         }
         Insert: {
           created_at?: string
           id?: string
           match: string
+          set_awarded?: boolean | null
           set_number: number
           team_a_score: number
           team_b_score: number
           type?: string
-          set_awarded?: boolean | null
         }
         Update: {
           created_at?: string
           id?: string
           match?: string
+          set_awarded?: boolean | null
           set_number?: number
           team_a_score?: number
           team_b_score?: number
           type?: string
-          set_awarded?: boolean | null
         }
         Relationships: [
           {
@@ -1190,6 +1190,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_notify_emit: {
+        Args: {
+          p_body: string
+          p_data: Json
+          p_recipients: string[]
+          p_scope_id: string
+          p_scope_type: string
+          p_source_id: string
+          p_source_type: string
+          p_title: string
+          p_topic: string
+          p_urgency: string
+        }
+        Returns: number
+      }
       enqueue_notification: {
         Args: {
           p_body?: string
@@ -1553,10 +1568,9 @@ export type Database = {
         Row: {
           active: boolean
           deleted: boolean
-          id: number
+          id: string
           imageUrl: string | null
           name: string | null
-          previousDrink: number | null
           price: number | null
           stock: number | null
           type: Database["public"]["Enums"]["ProductType"]
@@ -1564,10 +1578,9 @@ export type Database = {
         Insert: {
           active?: boolean
           deleted?: boolean
-          id?: number
+          id?: string
           imageUrl?: string | null
           name?: string | null
-          previousDrink?: number | null
           price?: number | null
           stock?: number | null
           type?: Database["public"]["Enums"]["ProductType"]
@@ -1575,10 +1588,9 @@ export type Database = {
         Update: {
           active?: boolean
           deleted?: boolean
-          id?: number
+          id?: string
           imageUrl?: string | null
           name?: string | null
-          previousDrink?: number | null
           price?: number | null
           stock?: number | null
           type?: Database["public"]["Enums"]["ProductType"]
@@ -2269,7 +2281,7 @@ export type Database = {
           amount: number
           count: number
           created_at: string | null
-          drink: number
+          drink: string
           id: number
           payment: number
           user: string
@@ -2279,7 +2291,7 @@ export type Database = {
           amount?: number
           count: number
           created_at?: string | null
-          drink: number
+          drink: string
           id?: number
           payment: number
           user: string
@@ -2289,20 +2301,13 @@ export type Database = {
           amount?: number
           count?: number
           created_at?: string | null
-          drink?: number
+          drink?: string
           id?: number
           payment?: number
           user?: string
           voucher?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "history_drink_fkey"
-            columns: ["drink"]
-            isOneToOne: false
-            referencedRelation: "distinct_drinks"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "history_drink_fkey"
             columns: ["drink"]
@@ -2494,6 +2499,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_costs: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          tournament: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          tournament: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          tournament?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user: {
         Row: {
           avatarUrl: string | null
@@ -2548,7 +2586,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["grant_kind"]
           tenant?: string
           updated_at?: string
-          user?: string
+          user: string
         }
         Update: {
           created_at?: string
@@ -2664,20 +2702,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      distinct_drinks: {
-        Row: {
-          active: boolean | null
-          deleted: boolean | null
-          id: number | null
-          imageUrl: string | null
-          name: string | null
-          previousDrink: number | null
-          price: number | null
-          stock: number | null
-          type: Database["public"]["Enums"]["ProductType"] | null
-        }
-        Relationships: []
       }
       distinct_event: {
         Row: {
@@ -2927,6 +2951,10 @@ export type Database = {
           user_name: string
         }[]
       }
+      admin_expire_trials: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       apply_transformation_to_event: {
         Args: { p_event_id: string; p_transformation_id: string }
         Returns: undefined
@@ -3003,6 +3031,8 @@ export type Database = {
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd: string | null
+          reminder_before: string | null
+          reminder_sent_at: string | null
           required_item: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string
           title: string
@@ -3015,7 +3045,7 @@ export type Database = {
           constellations_enabled: boolean
           description: string
           endDateTime: string
-          group: string
+          group_id: string
           items_enabled: boolean
           key: string
           maxAttendees: number
@@ -3083,6 +3113,10 @@ export type Database = {
           type: Database["public"]["Enums"]["ItemType"]
         }
       }
+      expire_trial_memberships: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_or_create_payment_for_user: {
         Args: { user_id: string }
         Returns: number
@@ -3146,8 +3180,20 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
+      is_full_member_of_event: {
+        Args: { p_event: string }
+        Returns: boolean
+      }
+      is_full_member_of_group: {
+        Args: { p_group: string }
+        Returns: boolean
+      }
       is_group_public_joinable: {
         Args: { p_group: string }
+        Returns: boolean
+      }
+      is_member_of_event: {
+        Args: { p_event: string }
         Returns: boolean
       }
       is_user_admin_in_group: {
@@ -3193,6 +3239,10 @@ export type Database = {
       run_push_worker_if_needed: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      send_answer_deadline_reminders: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       update_attendance: {
         Args: {

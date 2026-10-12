@@ -56,9 +56,10 @@ INSERT INTO public.permissions(name) SELECT adminPerm FROM _v ON CONFLICT DO NOT
 INSERT INTO public.features(name)    SELECT feat1  FROM _v ON CONFLICT DO NOTHING;
 
 -- ---------------------------------------------------------------------------
--- Gruppe anlegen (als user_1a, Rolle 'admin'), gid in _v speichern
+-- Gruppe anlegen (als service_role, user_1a als 'admin'), gid in _v speichern
+-- Nur Plattform-Admins / service_role dürfen Gruppen anlegen.
 -- ---------------------------------------------------------------------------
-SELECT tests.authenticate_as('user_1a');
+SELECT tests.authenticate_as_service_role();
 
 WITH g AS (
   SELECT public.create_group_with_user(

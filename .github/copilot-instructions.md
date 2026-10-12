@@ -15,6 +15,12 @@ Purpose: Give Copilot sessions the essential commands, architecture overview, an
   - Run all: `yarn test` or `npx vitest`
   - Run single test file: `npx vitest run src/tests/profileCreation.test.tsx`
   - Run tests matching name: `npx vitest -t "namePattern"`
+  - Integration tests (`groupCreation`, `profileCreation`) only run when `environments/.env.local` points to a local stack (`supabase start`).
+
+- Database tests (pgTAP): `yarn test:db` (`supabase test db`). Security guards and policy matrices live in `supabase/tests/085`–`089`.
+- Edge function tests (Deno): `yarn test:functions` (unit + integration against the local edge runtime).
+- Full test plan and coverage matrix: `docs/TEST_PLAN.md`.
+- Manual test personas (local only): `yarn seed:personas` / `yarn seed:personas --remove`.
 
 - E2E tests (Jest + selenium):
   - Run all e2e: `npx jest --config jest.config.js`

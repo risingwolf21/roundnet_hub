@@ -104,11 +104,11 @@ export const useGrantUserPermissions = () =>
         },
         tags: { type: 'GrantUserPermissions', scope: 'grants' },
       });
-      if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupFeatures);
-      }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupPermissions);
+      }
+      if (context?.previousGroupFeatures) {
+        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupFeatures);
       }
     },
     onSettled: (_d, _e, _v) => {
@@ -150,11 +150,11 @@ export const useRevokeUserPermissions = () =>
         },
         tags: { type: 'RevokeUserPermissions', scope: 'grants' },
       });
-      if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupFeatures);
-      }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupPermissions);
+      }
+      if (context?.previousGroupFeatures) {
+        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupFeatures);
       }
     },
     onSettled: (_d, _e, _v) => {
@@ -196,11 +196,11 @@ export const useGrantGroupPermissions = () =>
         },
         tags: { type: 'GrantGroupPermissions', scope: 'grants' },
       });
-      if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupFeatures);
-      }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupPermissions);
+      }
+      if (context?.previousGroupFeatures) {
+        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupFeatures);
       }
     },
     onSettled: (_d, _e, _v) => {
@@ -241,11 +241,11 @@ export const useRevokeGroupPermissions = () =>
         },
         tags: { type: 'RevokeGroupPermissions', scope: 'grants' },
       });
-      if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupFeatures);
-      }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupPermissions);
+      }
+      if (context?.previousGroupFeatures) {
+        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupFeatures);
       }
     },
     onSettled: (_d, _e, _v) => {
