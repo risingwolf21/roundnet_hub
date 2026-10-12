@@ -61,6 +61,7 @@ root.render(
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
         <FeatureToggleProvider>
+          <div className="ios-statusbar-fix"></div>
           <App />
         </FeatureToggleProvider>
       </ThemeProvider>
