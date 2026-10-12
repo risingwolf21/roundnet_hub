@@ -84,6 +84,7 @@ function DialogContent({
         className={cn(dialogContentVariants({ variant }), className)}
         {...props}
       >
+        <div className="fixed top-0 left-0 z-[100] h-px w-full bg-background" />
         {needsFlexWrapper ? (
           <div className="flex flex-col overflow-hidden h-full w-full">
             {children}

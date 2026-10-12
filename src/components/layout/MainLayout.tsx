@@ -5,15 +5,19 @@ import { AppSidebar } from "./SidebarContent";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className='flex min-h-dvh w-full'>
-      <SidebarProvider>
-        <AppSidebar />
-        <Toaster />
-        <div className='flex flex-1 flex-col size-full'>
-          {children}
-        </div>
-      </SidebarProvider>
-    </div>
+    <>
+      {/* iOS Statusbar Blur Fix */}
+      <div className="fixed top-0 left-0 z-[9999] h-px w-full bg-background" />
+      <div className='flex min-h-dvh w-full'>
+        <SidebarProvider>
+          <AppSidebar />
+          <Toaster />
+          <div className='flex flex-1 flex-col size-full'>
+            {children}
+          </div>
+        </SidebarProvider>
+      </div>
+    </>
   );
 }
 
