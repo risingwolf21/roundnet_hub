@@ -16,6 +16,11 @@ SELECT plan(6);
 -- Clean slate for our keys
 DELETE FROM public.events WHERE "key" IN ('dst-autumn','dst-spring');
 
+-- Run as service_role: public.create_next_occurrences only runs for service_role or
+-- a caller holding event.create/event.edit, and service_role also bypasses RLS for
+-- the fixture inserts and assertions below.
+SELECT tests.authenticate_as_service_role();
+
 -- ============================================================
 -- AUTUMN: base Wed 2026-10-21 19:00 Europe/Berlin (CEST = 17:00Z)
 -- ============================================================

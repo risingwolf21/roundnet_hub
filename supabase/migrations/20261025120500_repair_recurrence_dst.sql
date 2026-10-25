@@ -70,8 +70,11 @@ END;
 $function$
 ;
 
--- Maintenance utility: not for general clients.
-REVOKE ALL ON FUNCTION public.repair_recurrence_local_time(text) FROM PUBLIC;
+-- Maintenance utility: not for client roles. Supabase default-grants EXECUTE on
+-- new public functions to anon/authenticated, so revoke from them explicitly
+-- (the 085 security test asserts no non-allow-listed SECURITY DEFINER function is
+-- reachable by the API roles). service_role (cron/ops) keeps access.
+REVOKE ALL ON FUNCTION public.repair_recurrence_local_time(text) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.repair_recurrence_local_time(text) TO service_role;
 
 -- Apply the one-time repair for the switch that just happened.
