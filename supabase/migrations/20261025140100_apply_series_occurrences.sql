@@ -6,7 +6,9 @@
 --   * insert brand-new occurrences (and materialize the items template)
 --   * update FUTURE, series-managed occurrences in place — preserving the row id, so
 --     attendance / bring-items / pledges / comments / games.match survive a series edit
---   * never touch past or `detached` (manually edited) occurrences
+--   * never touch past or `detached` (manually edited) occurrences, nor occurrences whose
+--     `key` no longer matches the series' key — the event_transformations feature rewrites an
+--     occurrence's key to decouple it, so a key mismatch is treated as "detached" too
 --   * prune future occurrences the rule no longer produces: cancel them if they carry
 --     attendance/pledges/matches, otherwise delete
 --
@@ -103,6 +105,7 @@ begin
 
     elsif v_existing."startingDateTime" > now()
           and v_existing.detached = false
+          and v_existing."key" = s.key
           and v_existing."isCancelled" = false then
       -- update the future, series-managed occurrence in place (id preserved)
       update public.events
@@ -132,6 +135,7 @@ begin
     select * from public.events
     where series_id = p_series_id
       and detached = false
+      and "key" = s.key
       and "isCancelled" = false
       and "startingDateTime" > now()
       and not (occurrence_date = any(v_dates))

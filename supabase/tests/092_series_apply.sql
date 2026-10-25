@@ -7,7 +7,7 @@
 
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(13);
+SELECT plan(14);
 
 -- local "today" in the series timezone; all slots are built relative to it
 SELECT (now() AT TIME ZONE 'Europe/Berlin')::date AS d0 \gset
@@ -123,6 +123,18 @@ SELECT is((SELECT title FROM public.events WHERE series_id = :'sid'::uuid AND oc
 -- ---- past occurrence is never rewritten -----------------------------
 SELECT is((SELECT title FROM public.events WHERE series_id = :'sid'::uuid AND occurrence_date = :'d0'::date - 7),
   'S', 'past occurrence is never rewritten by series edits');
+
+-- ---- key-rewrite (event_transformations style) is treated as detached ----
+-- Rewrite occurrence C's key (what apply_transformation_to_event does to decouple it),
+-- then push a series edit: the expander must leave the key-mismatched occurrence alone.
+UPDATE public.events SET "key" = gen_random_uuid()::text
+  WHERE series_id = :'sid'::uuid AND occurrence_date = :'d0'::date + 21;
+UPDATE public.event_series SET title = 'S4' WHERE id = :'sid'::uuid;
+SELECT public.apply_series_occurrences(:'sid'::uuid, jsonb_build_array(
+  pg_temp.slot(:'d0'::date + 21, '19:00')
+)) AS r8 \gset
+SELECT is((SELECT title FROM public.events WHERE series_id = :'sid'::uuid AND occurrence_date = :'d0'::date + 21),
+  'S3', 'key-rewritten (transformed) occurrence is not touched by a series edit');
 
 SELECT * FROM finish();
 ROLLBACK;
