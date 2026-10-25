@@ -3071,6 +3071,10 @@ export type Database = {
         Args: { p_series_id: string; p_slots: Json }
         Returns: Json
       }
+      expand_series: {
+        Args: { p_series_id: string; p_slots: Json }
+        Returns: Json
+      }
       apply_transformation_to_event: {
         Args: { p_event_id: string; p_transformation_id: string }
         Returns: undefined

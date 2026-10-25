@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import { RecurrenceExpander } from '@/lib/recurrence-expander';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, differenceInCalendarDays, Duration, isAfter, set, startOfDay, sub } from 'date-fns';
 import { EventTable } from 'types/supabase';
-import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
+import { Json, Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
 
 export const fetchEvents = () =>
@@ -448,13 +449,41 @@ export const EventRepository = {
     return result.data ?? [];
   },
 
-  /** Materialize occurrences for one series (or all active series when omitted) via the edge function. */
-  async expandRecurrences(seriesId?: string): Promise<{ processed: number; results: unknown[] }> {
-    const { data, error } = await supabase.functions.invoke('recurrence-expander', {
-      body: { series_id: seriesId ?? null, horizon_days: 60 },
-    });
-    if (error) throw error;
-    return (data ?? { processed: 0, results: [] }) as { processed: number; results: unknown[] };
+  /**
+   * Materialize occurrences for one series (or every series the caller may edit, when omitted).
+   * The RRULE is expanded in the browser (RecurrenceExpander); the DB only applies the slots via
+   * the authorized expand_series RPC. Replaces the former edge function.
+   */
+  async expandRecurrences(seriesId?: string): Promise<{ processed: number }> {
+    const { data: series } = await supabase
+      .rpc('series_for_expansion', seriesId ? { p_series_id: seriesId } : {})
+      .throwOnError();
+
+    const now = new Date();
+    const rangeEnd = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000); // 60-day horizon
+    let processed = 0;
+
+    for (const s of series ?? []) {
+      const slots = RecurrenceExpander.expand(
+        {
+          rrule: s.rrule,
+          dtstart: s.dtstart,
+          timezone: s.timezone,
+          until: s.until,
+          durationMs: Math.round((s.duration_s ?? 0) * 1000),
+          meetingOffsetMs: s.meeting_offset_s != null ? Math.round(s.meeting_offset_s * 1000) : null,
+          answerOffsetMs: s.answer_offset_s != null ? Math.round(s.answer_offset_s * 1000) : null,
+        },
+        now,
+        rangeEnd
+      );
+      await supabase
+        .rpc('expand_series', { p_series_id: s.id, p_slots: slots as unknown as Json })
+        .throwOnError();
+      processed += 1;
+    }
+
+    return { processed };
   },
 
   /** Create a recurring-series template, then materialize its occurrences. */

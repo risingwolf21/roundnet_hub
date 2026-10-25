@@ -1,4 +1,3 @@
-import { TZDate } from '@date-fns/tz';
 import { rrulestr } from 'rrule';
 
 export interface RecurrenceSeriesInput {
@@ -103,32 +102,45 @@ export class RecurrenceExpander {
     return slots;
   }
 
-  private static instantToFloating(date: Date, timezone: string): Date {
-    const zonedDate = new TZDate(date, timezone);
-    return new Date(
-      Date.UTC(
-        zonedDate.getFullYear(),
-        zonedDate.getMonth(),
-        zonedDate.getDate(),
-        zonedDate.getHours(),
-        zonedDate.getMinutes(),
-        zonedDate.getSeconds(),
-      ),
+  /** Offset (ms) of `timezone` at `date`: local wall-clock time minus UTC. Dependency-free (Intl). */
+  private static tzOffsetMs(date: Date, timezone: string): number {
+    const dtf = new Intl.DateTimeFormat('en-GB', {
+      timeZone: timezone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const parts: Record<string, string> = {};
+    for (const part of dtf.formatToParts(date)) parts[part.type] = part.value;
+    let hour = Number(parts.hour);
+    if (hour === 24) hour = 0; // en-GB reports midnight as 24 in some engines
+    const wallAsUtc = Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+      hour,
+      Number(parts.minute),
+      Number(parts.second),
     );
+    return wallAsUtc - date.getTime();
+  }
+
+  private static instantToFloating(date: Date, timezone: string): Date {
+    return new Date(date.getTime() + this.tzOffsetMs(date, timezone));
   }
 
   private static floatingToInstant(date: Date, timezone: string): Date {
-    return new Date(
-      new TZDate(
-        date.getUTCFullYear(),
-        date.getUTCMonth(),
-        date.getUTCDate(),
-        date.getUTCHours(),
-        date.getUTCMinutes(),
-        date.getUTCSeconds(),
-        timezone,
-      ).getTime(),
-    );
+    const wallAsUtc = date.getTime();
+    const firstOffset = this.tzOffsetMs(new Date(wallAsUtc), timezone);
+    let instant = wallAsUtc - firstOffset;
+    // Refine once: near a DST transition the offset at the guessed instant may differ.
+    const refinedOffset = this.tzOffsetMs(new Date(instant), timezone);
+    if (refinedOffset !== firstOffset) instant = wallAsUtc - refinedOffset;
+    return new Date(instant);
   }
 
   private static floatingDtstartString(date: Date): string {

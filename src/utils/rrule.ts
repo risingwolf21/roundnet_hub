@@ -1,7 +1,7 @@
 // Minimal iCal-RRULE helpers for the frontend. The app only needs to *build* a rule string
 // from the recurrence options the UI already offers (weekly / fortnightly / monthly) plus the
-// event's start day; the heavy expansion lives in the recurrence-expander edge function
-// (rrule.js). Kept dependency-free on purpose so it adds nothing to the bundle/lockfile.
+// event's start day; the heavy RRULE expansion lives in src/lib/recurrence-expander.tsx (runs
+// in the browser). Kept dependency-free on purpose.
 
 export type EventRecurrence = 'None' | 'Weekly' | 'Fortnightly' | 'Monthly';
 

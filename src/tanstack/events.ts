@@ -108,8 +108,9 @@ export const useCreateNextOccurences = () => useMutation({
   onSuccess: () => invalidateEvents(),
 });
 
-// Recurring Events v2 — series templates. Generation runs through the recurrence-expander
-// edge function; create/edit of a recurring event writes the series template and re-expands.
+// Recurring Events v2 — series templates. Occurrences are expanded in the browser
+// (src/lib/recurrence-expander) and applied via the expand_series RPC; create/edit of a
+// recurring event writes the series template and re-expands.
 export const useExpandRecurrences = () => useMutation({
   meta: { suppressErrorToast: true },
   mutationFn: () => EventRepository.expandRecurrences(),

@@ -1,5 +1,6 @@
--- Feed for the recurrence-expander edge function: returns each active series with its
--- interval fields as seconds (JS-friendly), so the function needn't parse Postgres intervals.
+-- Feed for the frontend recurrence expander: returns the active series the caller may edit,
+-- with interval fields as seconds (JS-friendly) so the client needn't parse Postgres intervals.
+-- Authz mirrors the event_series write policy (event.edit + full member of the series' group).
 
 create or replace function public.series_for_expansion(p_series_id uuid default null)
  returns table(
@@ -23,8 +24,10 @@ as $function$
          extract(epoch from s.answer_offset)
   from public.event_series s
   where s.active = true
-    and (p_series_id is null or s.id = p_series_id);
+    and (p_series_id is null or s.id = p_series_id)
+    and public.authorize('event.edit')
+    and public.is_full_member_of_group(s."group");
 $function$;
 
-revoke all on function public.series_for_expansion(uuid) from public, anon, authenticated;
-grant execute on function public.series_for_expansion(uuid) to service_role;
+revoke all on function public.series_for_expansion(uuid) from public, anon;
+grant execute on function public.series_for_expansion(uuid) to authenticated, service_role;
