@@ -264,7 +264,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                           group: event.group?.id ?? null,
                           reminder_before: null,
                           reminder_sent_at: null,
-                        } as EventTable,
+                        } as unknown as EventTable,
                         eventGroup: event.group,
                         option: result,
                         items: allItems,

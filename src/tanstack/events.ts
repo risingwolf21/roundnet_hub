@@ -108,6 +108,27 @@ export const useCreateNextOccurences = () => useMutation({
   onSuccess: () => invalidateEvents(),
 });
 
+// Recurring Events v2 — series templates. Generation runs through the recurrence-expander
+// edge function; create/edit of a recurring event writes the series template and re-expands.
+export const useExpandRecurrences = () => useMutation({
+  meta: { suppressErrorToast: true },
+  mutationFn: () => EventRepository.expandRecurrences(),
+  onSuccess: () => invalidateEvents(),
+});
+
+export const useCreateSeriesMutation = () => useMutation({
+  meta: { suppressErrorToast: true },
+  mutationFn: (series: TablesInsert<'event_series'>) => EventRepository.createSeries(series),
+  onSettled: () => invalidateEvents(),
+});
+
+export const useUpdateSeriesMutation = () => useMutation({
+  meta: { suppressErrorToast: true },
+  mutationFn: ({ key, patch }: { key: string; patch: TablesUpdate<'event_series'> }) =>
+    EventRepository.updateSeriesByKey(key, patch),
+  onSettled: () => invalidateEvents(),
+});
+
 export const useEventMatches = (eventId: string) =>
   useQuery<FullMatch[]>({
     queryKey: eventKeys.eventMatches(eventId),
@@ -546,7 +567,9 @@ export const useDeleteTrainingMutation = () => {
       if (type === 'This Event') {
         await EventRepository.deleteEvent(event.id);
       } else {
-        await EventRepository.deleteEventAndUpcomingEvents(event.key, event.startingDateTime);
+        // End the series going forward; the expander prunes (or cancels, if attended) the
+        // now-removed future occurrences so they are not regenerated.
+        await EventRepository.endSeriesByKey(event.key, event.startingDateTime);
       }
     },
     onMutate: async ({ event, type }) => {

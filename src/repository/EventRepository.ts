@@ -447,4 +447,45 @@ export const EventRepository = {
     }).throwOnError();
     return result.data ?? [];
   },
+
+  /** Materialize occurrences for one series (or all active series when omitted) via the edge function. */
+  async expandRecurrences(seriesId?: string): Promise<{ processed: number; results: unknown[] }> {
+    const { data, error } = await supabase.functions.invoke('recurrence-expander', {
+      body: { series_id: seriesId ?? null, horizon_days: 60 },
+    });
+    if (error) throw error;
+    return (data ?? { processed: 0, results: [] }) as { processed: number; results: unknown[] };
+  },
+
+  /** Create a recurring-series template, then materialize its occurrences. */
+  async createSeries(series: TablesInsert<'event_series'>): Promise<Tables<'event_series'>> {
+    const result = await supabase.from('event_series').insert(series).select('*').single().throwOnError();
+    const created = result.data as Tables<'event_series'>;
+    await EventRepository.expandRecurrences(created.id);
+    return created;
+  },
+
+  /** Redefine a series (looked up by its stable key) and re-materialize its future occurrences. */
+  async updateSeriesByKey(key: string, patch: TablesUpdate<'event_series'>): Promise<Tables<'event_series'>> {
+    const result = await supabase.from('event_series').update(patch).eq('key', key).select('*').single().throwOnError();
+    const updated = result.data as Tables<'event_series'>;
+    await EventRepository.expandRecurrences(updated.id);
+    return updated;
+  },
+
+  /**
+   * End a series just before `fromIso` (the first occurrence to drop) and let the expander
+   * prune/cancel the now-removed future occurrences.
+   */
+  async endSeriesByKey(key: string, fromIso: string): Promise<void> {
+    const until = formatDateToDatabase(sub(new Date(fromIso), { seconds: 1 }));
+    const result = await supabase
+      .from('event_series')
+      .update({ until })
+      .eq('key', key)
+      .select('id')
+      .throwOnError();
+    assertRowsAffected(result.data, 'Serie konnte nicht beendet werden');
+    await EventRepository.expandRecurrences((result.data as { id: string }[])[0].id);
+  },
 };
