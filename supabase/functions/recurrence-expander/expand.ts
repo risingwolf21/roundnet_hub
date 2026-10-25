@@ -6,8 +6,14 @@
 // a 19:00 training stays 19:00 across the spring/autumn switch. UNTIL is applied as an instant
 // filter here (not inside the rule string) to avoid rrule.js' floating-vs-Zulu DTSTART mismatch.
 
-import { rrulestr } from 'rrule';
+// `rrule` ships CommonJS; under Deno's npm compatibility its named ESM bindings (e.g.
+// `rrulestr`) are not all re-exported, so default-import the module (the CJS exports object)
+// and read the member off it.
+import rrulePkg from 'rrule';
 import { TZDate } from '@date-fns/tz';
+
+type RRuleLike = { between(after: Date, before: Date, inc?: boolean): Date[] };
+const rrulestr = (rrulePkg as unknown as { rrulestr: (rule: string) => RRuleLike }).rrulestr;
 
 export interface SeriesInput {
   rrule: string;          // e.g. "FREQ=WEEKLY;INTERVAL=1;BYDAY=WE" (UNTIL, if any, is ignored here)
