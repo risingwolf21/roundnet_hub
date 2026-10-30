@@ -49,7 +49,9 @@ export interface RostersResponse {
   rosters: Record<string, ScrapedPlayer[]>;
 }
 
-const FN_BASE = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co`;
+const FN_BASE = import.meta.env.DEV
+  ? 'http://127.0.0.1:54321/functions/v1'
+  : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
 
 async function invoke<T>(body: Record<string, unknown>): Promise<T> {
   const { data: session } = await supabase.auth.getSession();
