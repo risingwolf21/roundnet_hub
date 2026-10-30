@@ -1,6 +1,7 @@
 // Auto-generiert – nicht manuell bearbeiten
 
 export type Permission =
+  | 'bundesliga.admin'
   | 'challenge.manage'
   | 'grants.manage'
   | 'challenges.create.own-group'
