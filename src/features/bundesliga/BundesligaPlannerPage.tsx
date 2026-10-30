@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useProfile } from '@/tanstack/user';
@@ -99,7 +100,8 @@ const BundesligaPlannerPage = () => {
   });
 
   const ownTeamCard = teams.find((t) => t.teamId === state.ownTeamId) ?? null;
-  const myPlayers: Player[] = useMemo(
+  // Full squad (for the attendance/gender editor)…
+  const myRoster: Player[] = useMemo(
     () =>
       state.ownTeamId && rosters[state.ownTeamId]
         ? [...rosters[state.ownTeamId]]
@@ -108,6 +110,14 @@ const BundesligaPlannerPage = () => {
         : [],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rosters, state.ownTeamId, state.genderOverrides]
+  );
+  // …and only the players marked present (the ones the seat selects offer).
+  const absentIds = state.ownTeamId ? state.absentByTeam[state.ownTeamId] ?? [] : [];
+  const isPresent = (id: string) => !absentIds.includes(id);
+  const myPlayers = useMemo(
+    () => myRoster.filter((p) => isPresent(p.id)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [myRoster, absentIds.join(',')]
   );
   const myPlayerMap = useMemo(() => toPlayerMap(myPlayers), [myPlayers]);
 
@@ -139,6 +149,18 @@ const BundesligaPlannerPage = () => {
       },
     }));
 
+  const getOpponentLineup = (oppId: string): Lineup =>
+    (state.ownTeamId && state.opponentLineups[lineupKey(state.leagueId, state.ownTeamId, oppId)]) ||
+    emptyLineup();
+
+  const setOpponentLineup = (oppId: string, lineup: Lineup) =>
+    patch((prev) => ({
+      opponentLineups: {
+        ...prev.opponentLineups,
+        [lineupKey(prev.leagueId, prev.ownTeamId!, oppId)]: lineup,
+      },
+    }));
+
   const encounters: Encounter[] = opponents.map((o) => ({
     opponentTeamId: o.id,
     lineup: getLineup(o.id),
@@ -146,6 +168,9 @@ const BundesligaPlannerPage = () => {
   const counts = gameCountsForDay(encounters);
   const issuesByOpp = Object.fromEntries(
     opponents.map((o) => [o.id, validateEncounter(getLineup(o.id), myPlayerMap)])
+  );
+  const oppIssuesByOpp = Object.fromEntries(
+    opponents.map((o) => [o.id, validateEncounter(getOpponentLineup(o.id), toPlayerMap(o.players))])
   );
 
   const [activeOpp, setActiveOpp] = useState<string | null>(null);
@@ -183,6 +208,16 @@ const BundesligaPlannerPage = () => {
 
   const setGender = (playerId: string, gender: Gender) =>
     patch((prev) => ({ genderOverrides: { ...prev.genderOverrides, [playerId]: gender } }));
+
+  const togglePresent = (playerId: string) =>
+    patch((prev) => {
+      if (!prev.ownTeamId) return {};
+      const current = prev.absentByTeam[prev.ownTeamId] ?? [];
+      const nextAbsent = current.includes(playerId)
+        ? current.filter((x) => x !== playerId)
+        : [...current, playerId];
+      return { absentByTeam: { ...prev.absentByTeam, [prev.ownTeamId]: nextAbsent } };
+    });
 
   const totalErrors = Object.values(issuesByOpp).filter((is) => hasErrors(is)).length;
 
@@ -290,9 +325,9 @@ const BundesligaPlannerPage = () => {
           </div>
         )}
 
-        {/* My squad + gender correction */}
-        {myPlayers.length > 0 && (
-          <Collapsible>
+        {/* My squad: who is present + gender correction */}
+        {myRoster.length > 0 && (
+          <Collapsible defaultOpen>
             <Card>
               <CollapsibleTrigger className="w-full">
                 <CardHeader className="pb-2 flex-row items-center justify-between">
@@ -303,7 +338,7 @@ const BundesligaPlannerPage = () => {
                         <AvatarFallback>{ownTeamCard.name.slice(0, 2)}</AvatarFallback>
                       </Avatar>
                     )}
-                    Mein Kader ({myPlayers.length})
+                    Mein Kader ({myPlayers.length}/{myRoster.length} dabei)
                   </CardTitle>
                   <ChevronDown className="size-4 text-muted-foreground" />
                 </CardHeader>
@@ -311,35 +346,42 @@ const BundesligaPlannerPage = () => {
               <CollapsibleContent>
                 <CardContent className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground">
-                    Geschlecht wird automatisch erkannt – hier bei Bedarf korrigieren (zählt für
-                    Women &amp; Mixed).
+                    Wer ist am Spieltag dabei? Nur dabei-Spieler stehen zur Aufstellung. Geschlecht
+                    wird automatisch erkannt – bei Bedarf korrigieren (zählt für Women &amp; Mixed).
                   </p>
-                  {myPlayers.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Avatar className="size-7">
-                          {p.avatarUrl ? <AvatarImage src={p.avatarUrl} alt={p.name} /> : null}
-                          <AvatarFallback>{p.name.slice(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate">{p.name}</span>
-                        <span className="text-muted-foreground text-sm shrink-0">
-                          {p.rgIndex ?? '—'}
-                        </span>
+                  {myRoster.map((p) => {
+                    const present = isPresent(p.id);
+                    return (
+                      <div
+                        key={p.id}
+                        className={`flex items-center justify-between gap-2 ${present ? '' : 'opacity-40'}`}
+                      >
+                        <label className="flex items-center gap-2 min-w-0 cursor-pointer">
+                          <Switch checked={present} onCheckedChange={() => togglePresent(p.id)} />
+                          <Avatar className="size-7">
+                            {p.avatarUrl ? <AvatarImage src={p.avatarUrl} alt={p.name} /> : null}
+                            <AvatarFallback>{p.name.slice(0, 2)}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{p.name}</span>
+                          <span className="text-muted-foreground text-sm shrink-0">
+                            {p.rgIndex ?? '—'}
+                          </span>
+                        </label>
+                        <div className="flex gap-1 shrink-0">
+                          {GENDERS.map((g) => (
+                            <Button
+                              key={g.value}
+                              size="icon-sm"
+                              variant={p.gender === g.value ? 'default' : 'outline'}
+                              onClick={() => setGender(p.id, g.value)}
+                            >
+                              {g.label}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        {GENDERS.map((g) => (
-                          <Button
-                            key={g.value}
-                            size="icon-sm"
-                            variant={p.gender === g.value ? 'default' : 'outline'}
-                            onClick={() => setGender(p.id, g.value)}
-                          >
-                            {g.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </CardContent>
               </CollapsibleContent>
             </Card>
@@ -378,7 +420,7 @@ const BundesligaPlannerPage = () => {
               {opponents.map((o) => (
                 <TabsTrigger key={o.id} value={o.id} className="flex-1">
                   {o.name}
-                  {hasErrors(issuesByOpp[o.id] ?? []) && (
+                  {(hasErrors(issuesByOpp[o.id] ?? []) || hasErrors(oppIssuesByOpp[o.id] ?? [])) && (
                     <AlertTriangle className="size-3 ml-1 text-destructive" />
                   )}
                 </TabsTrigger>
@@ -390,7 +432,10 @@ const BundesligaPlannerPage = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setLineup(o.id, emptyLineup())}
+                    onClick={() => {
+                      setLineup(o.id, emptyLineup());
+                      setOpponentLineup(o.id, emptyLineup());
+                    }}
                   >
                     <RotateCcw className="size-4 mr-1" /> Zurücksetzen
                   </Button>
@@ -398,9 +443,13 @@ const BundesligaPlannerPage = () => {
                 <EncounterEditor
                   opponent={o}
                   myPlayers={myPlayers}
+                  opponentPlayers={o.players}
                   lineup={getLineup(o.id)}
+                  opponentLineup={getOpponentLineup(o.id)}
                   issues={issuesByOpp[o.id] ?? []}
+                  opponentIssues={oppIssuesByOpp[o.id] ?? []}
                   onChange={(l) => setLineup(o.id, l)}
+                  onOpponentChange={(l) => setOpponentLineup(o.id, l)}
                 />
               </TabsContent>
             ))}

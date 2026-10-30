@@ -9,7 +9,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertTriangle, XCircle } from 'lucide-react';
-import { BOARDS, type BoardSeats, type Lineup, type Player, type Team } from '../types';
+import {
+  BOARDS,
+  type BoardId,
+  type BoardSeats,
+  type Lineup,
+  type Player,
+  type Team,
+} from '../types';
 import { combinedRgx, type LineupIssue, toPlayerMap } from '../lineup';
 
 const NONE = '__none__';
@@ -38,7 +45,7 @@ function SeatSelect({
       value={value ?? NONE}
       onValueChange={(v) => onChange(v === NONE ? null : v)}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full h-9">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
@@ -57,25 +64,92 @@ function SeatSelect({
   );
 }
 
+/** One side (us or them) of a single board: two seats + this board's issues. */
+function BoardSide({
+  label,
+  seats,
+  players,
+  rgx,
+  issues,
+  onSeat,
+  accent,
+}: {
+  label: string;
+  seats: BoardSeats;
+  players: Player[];
+  rgx: number;
+  issues: LineupIssue[];
+  onSeat: (seat: 0 | 1, id: string | null) => void;
+  accent: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <span className={`text-xs font-medium ${accent}`}>{label}</span>
+        <Badge variant={issues.some((i) => i.level === 'error') ? 'destructive' : 'secondary'}>
+          RGX {rgx}
+        </Badge>
+      </div>
+      <SeatSelect value={seats[0]} players={players} placeholder="Spieler 1" onChange={(id) => onSeat(0, id)} />
+      <SeatSelect value={seats[1]} players={players} placeholder="Spieler 2" onChange={(id) => onSeat(1, id)} />
+      {issues.map((i, k) => (
+        <p
+          key={k}
+          className={`flex items-start gap-1 text-xs ${i.level === 'error' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'}`}
+        >
+          {i.level === 'error' ? (
+            <XCircle className="size-3.5 mt-0.5 shrink-0" />
+          ) : (
+            <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
+          )}
+          {i.message}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export interface EncounterEditorProps {
   opponent: Team;
   myPlayers: Player[];
+  opponentPlayers: Player[];
   lineup: Lineup;
+  opponentLineup: Lineup;
   issues: LineupIssue[];
+  opponentIssues: LineupIssue[];
   onChange: (lineup: Lineup) => void;
+  onOpponentChange: (lineup: Lineup) => void;
 }
 
-export function EncounterEditor({ opponent, myPlayers, lineup, issues, onChange }: EncounterEditorProps) {
-  const playerMap = toPlayerMap(myPlayers);
+export function EncounterEditor({
+  opponent,
+  myPlayers,
+  opponentPlayers,
+  lineup,
+  opponentLineup,
+  issues,
+  opponentIssues,
+  onChange,
+  onOpponentChange,
+}: EncounterEditorProps) {
+  const myMap = toPlayerMap(myPlayers);
+  const oppMap = toPlayerMap(opponentPlayers);
 
-  const setSeat = (boardId: keyof Lineup, seat: 0 | 1, id: string | null) => {
-    const next: BoardSeats = [...lineup[boardId]] as BoardSeats;
+  const setSeat = (
+    current: Lineup,
+    emit: (l: Lineup) => void,
+    boardId: BoardId,
+    seat: 0 | 1,
+    id: string | null
+  ) => {
+    const next: BoardSeats = [...current[boardId]] as BoardSeats;
     next[seat] = id;
-    onChange({ ...lineup, [boardId]: next });
+    emit({ ...current, [boardId]: next });
   };
 
-  const boardIssues = (boardId: string) => issues.filter((i) => i.board === boardId);
-  const crossIssues = issues.filter((i) => i.board === null);
+  const forBoard = (list: LineupIssue[], boardId: BoardId) => list.filter((i) => i.board === boardId);
+  const crossMine = issues.filter((i) => i.board === null);
+  const crossOpp = opponentIssues.filter((i) => i.board === null);
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,56 +162,46 @@ export function EncounterEditor({ opponent, myPlayers, lineup, issues, onChange 
         <span className="font-semibold">{opponent.name}</span>
       </div>
 
-      {BOARDS.map((board) => {
-        const seats = lineup[board.id];
-        const rgx = combinedRgx(seats, playerMap);
-        const bIssues = boardIssues(board.id);
-        const hasError = bIssues.some((i) => i.level === 'error');
-        return (
-          <Card key={board.id} className={hasError ? 'border-destructive' : undefined}>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center justify-between text-base">
-                <span>{board.label}</span>
-                <Badge variant={hasError ? 'destructive' : 'secondary'}>RGX {rgx}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              <SeatSelect
-                value={seats[0]}
-                players={myPlayers}
-                placeholder="Spieler 1"
-                onChange={(id) => setSeat(board.id, 0, id)}
-              />
-              <SeatSelect
-                value={seats[1]}
-                players={myPlayers}
-                placeholder="Spieler 2"
-                onChange={(id) => setSeat(board.id, 1, id)}
-              />
-              {bIssues.map((i, k) => (
-                <p
-                  key={k}
-                  className={`flex items-start gap-1 text-xs ${i.level === 'error' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'}`}
-                >
-                  {i.level === 'error' ? (
-                    <XCircle className="size-3.5 mt-0.5 shrink-0" />
-                  ) : (
-                    <AlertTriangle className="size-3.5 mt-0.5 shrink-0" />
-                  )}
-                  {i.message}
-                </p>
-              ))}
-            </CardContent>
-          </Card>
-        );
-      })}
+      {BOARDS.map((board) => (
+        <Card key={board.id}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">{board.label}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3">
+            <BoardSide
+              label="Wir"
+              accent="text-primary"
+              seats={lineup[board.id]}
+              players={myPlayers}
+              rgx={combinedRgx(lineup[board.id], myMap)}
+              issues={forBoard(issues, board.id)}
+              onSeat={(seat, id) => setSeat(lineup, onChange, board.id, seat, id)}
+            />
+            <BoardSide
+              label={opponent.name}
+              accent="text-muted-foreground"
+              seats={opponentLineup[board.id]}
+              players={opponentPlayers}
+              rgx={combinedRgx(opponentLineup[board.id], oppMap)}
+              issues={forBoard(opponentIssues, board.id)}
+              onSeat={(seat, id) => setSeat(opponentLineup, onOpponentChange, board.id, seat, id)}
+            />
+          </CardContent>
+        </Card>
+      ))}
 
-      {crossIssues.length > 0 && (
+      {(crossMine.length > 0 || crossOpp.length > 0) && (
         <div className="flex flex-col gap-1 rounded-md border border-destructive/50 bg-destructive/5 p-3">
-          {crossIssues.map((i, k) => (
-            <p key={k} className="flex items-start gap-1 text-xs text-destructive">
+          {crossMine.map((i, k) => (
+            <p key={`m${k}`} className="flex items-start gap-1 text-xs text-destructive">
               <XCircle className="size-3.5 mt-0.5 shrink-0" />
-              {i.message}
+              Wir: {i.message}
+            </p>
+          ))}
+          {crossOpp.map((i, k) => (
+            <p key={`o${k}`} className="flex items-start gap-1 text-xs text-destructive">
+              <XCircle className="size-3.5 mt-0.5 shrink-0" />
+              {opponent.name}: {i.message}
             </p>
           ))}
         </div>

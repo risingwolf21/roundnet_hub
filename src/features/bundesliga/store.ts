@@ -14,8 +14,12 @@ export interface PlannerState {
   opponentIds: string[];
   /** playerId -> gender override (the scrape guesses gender; the user can correct it). */
   genderOverrides: Record<string, Gender>;
-  /** `${leagueId}:${ownTeamId}:${opponentTeamId}` -> lineup. */
+  /** teamId -> player ids NOT present at the match day (present = roster minus these). */
+  absentByTeam: Record<string, string[]>;
+  /** `${leagueId}:${ownTeamId}:${opponentTeamId}` -> our lineup. */
   lineups: Record<string, Lineup>;
+  /** Same key -> the opponent lineup we expect to face. */
+  opponentLineups: Record<string, Lineup>;
 }
 
 export const defaultState: PlannerState = {
@@ -25,7 +29,9 @@ export const defaultState: PlannerState = {
   matchDayName: null,
   opponentIds: [],
   genderOverrides: {},
+  absentByTeam: {},
   lineups: {},
+  opponentLineups: {},
 };
 
 function read(): PlannerState {
