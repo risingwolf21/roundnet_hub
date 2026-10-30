@@ -1,0 +1,4144 @@
+
+
+
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        
+    <link href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/0304_teampopup.css" rel="stylesheet">
+    
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/tournament/css/phase_table.css" rel="stylesheet">
+    
+
+        
+    <style>
+
+/* The old "Teams & Spiele" drawer is retired, see the sidebar_right block
+   below. Hidden from the head rather than by the empty-sidebar check of
+   base.html - that one only runs on ready and would let the trigger flash up
+   during load, and the block still carries a script so it would not catch it. */
+[data-drawer] {
+    display: none;
+}
+.side-section i{
+    font-size: 18px;
+    margin-left: 10px;
+}
+.animated-progress {
+    height: 5px;
+    border-radius: 5px;
+    margin: -3px 0px 3px 0;
+    border: 1px solid rgb(189, 113, 113);
+    overflow: hidden;
+    position: relative;
+}
+
+.animated-progress span {
+  height: 100%;
+  display: block;
+  width: 0;
+  color: rgb(255, 251, 251);
+  line-height: 30px;
+  position: absolute;
+  text-align: end;
+  padding-right: 5px;
+}
+
+.progress-blue span {
+  background-color: blue;
+}
+.progress-green span {
+  background-color: green;
+}
+.progress-purple span {
+  background-color: indigo;
+}
+.progress-red span {
+  background-color: red;
+}
+.progress-white span {
+  background-color: white;
+}
+.stream-img{
+height: 23px;
+width: 23px;
+object-fit: contain;
+vertical-align: middle;
+font-size: 20px;
+z-index: 1;
+}
+.stream-platform-img{
+    opacity: 0;
+  animation-name: change-background;
+  animation-duration: 3s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes change-background {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.game-stream{
+width: max-content;
+display: inline-block;
+ver
+}
+.group-item{
+width: calc(100% / 2);
+padding: 5px 5px 0 5px;
+}
+.groups{
+display: flex;
+flex-direction: row;
+flex-wrap: wrap;
+}
+.placement-phase{
+    display: none
+}
+.placement-link{
+  float: right;
+  margin-right: 5px;
+  font-weight: lighter;
+  font-family: 'Roboto Condensed';
+  font-size: 12px;
+}
+.current-phase{
+background-color: #ff0c00 !important
+}
+    .player-name-club{
+    vertical-align: top;
+    padding-left: 10px;
+}
+.player-name-club .player-name{
+    font-size: 28px;
+    line-height: 20px;
+    padding-top: 9px;
+}
+.player-name-club .player-name a{
+    color: black !important;
+}
+.player-club-community img{
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 5px;
+    margin-top: 5px;
+    vertical-align: text-bottom;
+}
+    @media only screen and (max-width : 420px) {
+    .player-name-club .player-name {
+        font-size: 22px !important;
+    }
+    .player-img-name-club .player-img img{
+        width: 50px !important;
+    }
+}
+.player-img-name-club .player-img img{
+    height: auto;
+    width: 55px;
+    vertical-align: bottom;
+}
+<!--.player-col .player-img{-->
+<!--    display: table-cell;-->
+<!--}-->
+    </style>
+    <link href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/team_tournament5.css"
+          rel="stylesheet">
+    <script src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/js/tournament_list.js"></script>
+
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/coaching/css/animations.css" rel="stylesheet">
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/0304_teampopup.css" rel="stylesheet">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        
+        <title>
+            Deutsche Roundnet Liga 2026/2027
+        </title>
+        <meta name="description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany ">
+
+        
+        <meta property="og:type"
+              content=" website " />
+        <meta property="og:url"
+              content=" https://playerzone.roundnetgermany.de/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase " />
+        <meta property="og:title"
+              content=" RG Playerzone " />
+        <meta property="og:description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany " />
+        <meta property="og:image"
+              content=" https://playerzone.roundnetgermany.de/static/ranking/images/meta.jpg " />
+        <meta property="og:image:width"
+              content=" 1200 " />
+        <meta property="og:image:height"
+              content=" 630 " />
+        <meta property="og:image:alt"
+              content=" Roundnet Germany " />
+        <meta property="og:site_name" content="RG Playerzone" />
+        <meta property="og:locale" content="de_DE" />
+
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url"
+              content=" https://playerzone.roundnetgermany.de/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase " />
+        <meta name="twitter:title"
+              content=" RG Playerzone " />
+        <meta name="twitter:description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany " />
+        <meta name="twitter:image"
+              content=" https://playerzone.roundnetgermany.de/static/ranking/images/meta.jpg " />
+
+        
+        <link rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/css/fonts.css">
+        <link rel="stylesheet"
+              type="text/css"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/base_2603.css" />
+        
+        
+
+<!-- Manifest for pwa -->
+<link rel="manifest" href="https://pstaassets.blob.core.windows.net/staticfiles/manifest.json">
+<!-- Favicon for browsers -->
+<link rel="icon"
+      sizes="16x16"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-16x16.png">
+<link rel="icon"
+      sizes="32x32"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-32x32.png">
+<!-- Windows taskbar -->
+<link rel="icon"
+      sizes="48x48"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-48x48.png">
+<!-- Google Search results -->
+<link rel="icon"
+      sizes="96x96"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-96x96.png">
+<!-- Android Home -->
+<link rel="icon"
+      sizes="192x192"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-192x192.png">
+<!-- High resolution displays -->
+<link rel="shortcut"
+      sizes="512x512"
+      type="image/png"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-512x512.png">
+
+<!-- Apple Favicons -->
+<!-- IPad -->
+<link rel="apple-touch-icon"
+      sizes="167x167"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-167x167.png">
+<!-- IPhone -->
+<link rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-180x180.png">
+<!-- MacOS -->
+<link rel="apple-touch-icon"
+      sizes="512x512"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-512x512.png">
+
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/fouce.css">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/placeholder.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/transition.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/popup.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/dropdown.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/label.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/icon.min.css">
+        <link rel="stylesheet"
+              type="text/css"
+              href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+        
+        
+        <script defer src="https://pstaassets.blob.core.windows.net/staticfiles/user/js/vanillatoasts.js"></script>
+        
+        
+        
+        
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.1/chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/user/js/vanillatoasts.css" rel="stylesheet" />
+        
+            <meta name="webpush-vapid-key" content="BO1S4H507Bky4HtptzjyeKFGRIq8MPbAgqsTJEnrta1EDaL0u1RD070UfGcfygPoDOC-k6Gl30zZqxpyZOprnyU">
+        
+        
+        <link  rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/assets/main-iCwjwgmw.css" />
+<script type="module" crossorigin="" src="https://pstaassets.blob.core.windows.net/staticfiles/assets/main-TIMGWlTe.js"></script>
+    </head>
+    <body>
+        <div class="loading-screen" data-loading-screen>
+    <div class="loading-screen--spinner">
+        <svg class="loading-screen--ball-1"
+             width="458"
+             height="457"
+             viewBox="0 0 458 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.964" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M241.417 112.665C263.35 83.4306 309.777 103.149 303.969 139.232L297.198 181.292C295.132 194.127 300.35 207.05 310.749 214.851L344.826 240.418C374.06 262.351 354.341 308.778 318.259 302.97L276.199 296.199C263.364 294.133 250.441 299.351 242.639 309.749L217.073 343.827C195.14 373.061 148.713 353.342 154.521 317.26L161.292 275.199C163.358 262.365 158.14 249.442 147.741 241.64L113.664 216.074C84.4298 194.141 104.148 147.713 140.231 153.522L182.291 160.293C195.126 162.359 208.049 157.141 215.85 146.742L241.417 112.665Z" fill="var(--color-white)" />
+        </svg>
+
+        <svg class="loading-screen--ball-2"
+             width="457"
+             height="457"
+             viewBox="0 0 457 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.452" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M336.872 185.28C366.461 189.854 371.829 230.19 344.467 242.344L272.841 274.162C268.472 276.103 264.63 279.059 261.635 282.786L212.538 343.877C193.782 367.215 156.166 351.697 159.321 321.923L167.579 243.984C168.083 239.23 167.443 234.425 165.714 229.968L137.355 156.903C126.522 128.991 158.769 104.173 182.977 121.792L246.345 167.914C250.21 170.727 254.692 172.576 259.416 173.306L336.872 185.28Z" fill="var(--color-white)" />
+        </svg>
+
+        <svg class="loading-screen--ball-3"
+             width="458"
+             height="457"
+             viewBox="0 0 458 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.838" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M296.218 130.503C327.421 124.151 352.673 155.848 339.509 184.842L329.685 206.48C324.531 217.831 325.115 230.962 331.255 241.812L342.959 262.493C358.643 290.205 336.3 324.017 304.657 320.457L281.043 317.8C268.655 316.406 256.346 321.019 247.925 330.211L231.873 347.733C210.364 371.212 171.302 360.412 164.91 329.218L160.14 305.938C157.637 293.725 149.447 283.445 138.102 278.277L116.478 268.425C87.5002 255.224 85.7016 214.737 113.394 199.018L134.06 187.287C144.902 181.133 152.148 170.167 153.558 157.78L156.245 134.169C159.845 102.531 197.795 88.3092 221.302 109.789L238.845 125.818C248.048 134.228 260.716 137.73 272.932 135.244L296.218 130.503Z" fill="var(--color-white)" />
+        </svg>
+    </div>
+</div>
+
+        
+
+<rg-navigation>
+    <div slot="mobile-menu">
+        <rg-navigation-drawer>
+    
+
+<rg-navigation-menu  mobile-menu>
+    <rg-navigation-item  icon="home" href="/" mobile-menu>
+        Home
+    </rg-navigation-item>
+
+    
+        
+        <rg-navigation-item mobile-menu current img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Deutsche_Roundnet_Liga_3NJTNWW.png" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+            League
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item icon="trophy"  mobile-menu>
+        Tournaments
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Roundnet_Coach_Badge_Level_1.png" href="/tournaments/803-2026-10-29-2026-roundnet-coach-level-1">
+                        2026 Roundnet-Coach Level 1
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png" href="/tournaments/842-2026-11-21-karlsruher-kojoten-cup-9">
+                        Karlsruher Kojoten Cup 9
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png" href="/tournaments/843-2026-11-21-munich-indoor-tournament-2-3">
+                        Munich Indoor Tournament 2/3
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Augsburg_wei%C3%9F.png" href="/tournaments/875-2026-11-29-cash-out-cup">
+                        Cash out Cup
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Erlangen_weisshinterlegt_Zeichnung.png" href="/tournaments/840-2027-01-09-turnierblocker">
+                        Turnierblocker
+                    </rg-navigation-dropdown-item>
+                
+            
+
+            <rg-navigation-dropdown-item mobile-menu img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/alle.png" href="/tournaments/upcoming">
+                All
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item mobile-menu icon="calendar_add_on" href="/tournament/calendar">
+                Subscribe to all
+            </rg-navigation-dropdown-item>
+
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    <rg-navigation-item mobile-menu  href="/clubs" icon="group">
+        Clubs
+    </rg-navigation-item>
+
+    <rg-navigation-item mobile-menu  icon="leaderboard">
+        Rankings
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" href="/ranking/rg-index/">
+                    RGX
+                </rg-navigation-dropdown-item>
+            
+
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=32">
+                    GRT - Women
+                </rg-navigation-dropdown-item>
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=31">
+                    GRT - Men
+                </rg-navigation-dropdown-item>
+            
+            
+                <rg-navigation-dropdown-item icon="verified" href="/tournaments/pro-division">
+                    Pro Division
+                </rg-navigation-dropdown-item>
+            
+            <rg-navigation-dropdown-item icon="dashboard" href="/rankings">
+                Overview
+            </rg-navigation-dropdown-item>
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+
+    
+        <rg-navigation-item mobile-menu  href="/coaching/" icon="tactic">
+            Coaching
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item mobile-menu icon="groups">
+        Community
+
+        <rg-navigation-dropdown slot="dropdown">
+            <rg-navigation-dropdown-item icon="group_add" href="/partner-search/">
+                Partner Search
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="swipe" href="/roundmatch/">
+                Roundmatch 🆕
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="weekend" href="/couchsurfing/">
+                Couchsurfing
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="directions_car" href="/ridesharing/">
+                Ride Sharing
+            </rg-navigation-dropdown-item>
+
+            
+
+            <rg-navigation-dropdown-item icon="analytics" href="/stats/tournament-charts">
+                Tournament Stats
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="connect_without_contact" href="/safe-zone/">
+                    Safe Zone
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="star_outline" href="/team-of-the-week">
+                Team of the week
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="smart_display" href="/videos">
+                Videos
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="emoji_events" href="/rg-awards/2025">
+                    RG Awards
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="rule" href="/prediction-game/overview/2026" style="position: relative;">
+                Prediction Game
+
+                <div class="open-predictions" data-year="2026"></div>
+            </rg-navigation-dropdown-item>
+
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+        <rg-navigation-item mobile-menu img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/irf_event_logo_big_dark_bg.png" img-alt="" href="/national-team/2026-germany">
+            Worlds 2026
+        </rg-navigation-item>
+    
+</rg-navigation-menu>
+
+</rg-navigation-drawer>
+
+    </div>
+
+    <div slot="menu">
+        
+
+<rg-navigation-menu hidden-on-mobile >
+    <rg-navigation-item  icon="home" href="/" >
+        Home
+    </rg-navigation-item>
+
+    
+        
+        <rg-navigation-item  current img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Deutsche_Roundnet_Liga_3NJTNWW.png" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+            League
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item icon="trophy"  >
+        Tournaments
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Roundnet_Coach_Badge_Level_1.png" href="/tournaments/803-2026-10-29-2026-roundnet-coach-level-1">
+                        2026 Roundnet-Coach Level 1
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png" href="/tournaments/842-2026-11-21-karlsruher-kojoten-cup-9">
+                        Karlsruher Kojoten Cup 9
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png" href="/tournaments/843-2026-11-21-munich-indoor-tournament-2-3">
+                        Munich Indoor Tournament 2/3
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Augsburg_wei%C3%9F.png" href="/tournaments/875-2026-11-29-cash-out-cup">
+                        Cash out Cup
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Erlangen_weisshinterlegt_Zeichnung.png" href="/tournaments/840-2027-01-09-turnierblocker">
+                        Turnierblocker
+                    </rg-navigation-dropdown-item>
+                
+            
+
+            <rg-navigation-dropdown-item  img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/alle.png" href="/tournaments/upcoming">
+                All
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item  icon="calendar_add_on" href="/tournament/calendar">
+                Subscribe to all
+            </rg-navigation-dropdown-item>
+
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    <rg-navigation-item   href="/clubs" icon="group">
+        Clubs
+    </rg-navigation-item>
+
+    <rg-navigation-item   icon="leaderboard">
+        Rankings
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" href="/ranking/rg-index/">
+                    RGX
+                </rg-navigation-dropdown-item>
+            
+
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=32">
+                    GRT - Women
+                </rg-navigation-dropdown-item>
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=31">
+                    GRT - Men
+                </rg-navigation-dropdown-item>
+            
+            
+                <rg-navigation-dropdown-item icon="verified" href="/tournaments/pro-division">
+                    Pro Division
+                </rg-navigation-dropdown-item>
+            
+            <rg-navigation-dropdown-item icon="dashboard" href="/rankings">
+                Overview
+            </rg-navigation-dropdown-item>
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+
+    
+        <rg-navigation-item   href="/coaching/" icon="tactic">
+            Coaching
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item  icon="groups">
+        Community
+
+        <rg-navigation-dropdown slot="dropdown">
+            <rg-navigation-dropdown-item icon="group_add" href="/partner-search/">
+                Partner Search
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="swipe" href="/roundmatch/">
+                Roundmatch 🆕
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="weekend" href="/couchsurfing/">
+                Couchsurfing
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="directions_car" href="/ridesharing/">
+                Ride Sharing
+            </rg-navigation-dropdown-item>
+
+            
+
+            <rg-navigation-dropdown-item icon="analytics" href="/stats/tournament-charts">
+                Tournament Stats
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="connect_without_contact" href="/safe-zone/">
+                    Safe Zone
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="star_outline" href="/team-of-the-week">
+                Team of the week
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="smart_display" href="/videos">
+                Videos
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="emoji_events" href="/rg-awards/2025">
+                    RG Awards
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="rule" href="/prediction-game/overview/2026" style="position: relative;">
+                Prediction Game
+
+                <div class="open-predictions" data-year="2026"></div>
+            </rg-navigation-dropdown-item>
+
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+        <rg-navigation-item icon-only img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/irf_event_logo_big_dark_bg.png" img-alt="" href="/national-team/2026-germany">
+            Worlds 2026
+        </rg-navigation-item>
+    
+</rg-navigation-menu>
+
+    </div>
+
+    <rg-navigation-menu slot="actions">
+        <rg-navigation-item icon="search" icon-only data-search-trigger>
+            Search
+        </rg-navigation-item>
+
+        <!-- TODO: Should be a button -->
+        <rg-navigation-item icon="language" class="modal-trigger" icon-only href="#switchlanguage">
+            Change language
+        </rg-navigation-item>
+
+        <rg-navigation-item icon="help" icon-only href="/help/faq">
+            FAQ
+        </rg-navigation-item>
+
+        
+        
+        
+            <rg-navigation-item icon="person" icon-only href="/login/">
+                Login
+            </rg-navigation-item>
+        
+    </rg-navigation-menu>
+</rg-navigation>
+
+        
+
+<rg-search-overlay heading="Search" placeholder="Search tournaments, players, etc." hint-text="Start typing to search tournaments, teams, clubs and players." no-results-text="Nothing found" label-close="Close" label-open="Open result" label-navigate="Navigate results" label-recent="Recent" label-loading="Searching" label-ctrl="Ctrl" label-tournaments="Tournaments" label-teams="Teams" label-clubs="Clubs" label-players="Players">
+</rg-search-overlay>
+
+        
+
+<div id="switchlanguage" class="modal">
+    <div class="modal-content">
+        <rg-heading tag="h4" size="2xs">
+            Change language
+        </rg-heading>
+        <form action="/i18n/set_language/" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="2fqVb4JNy43BbUKrrczCX43ZpC6iDPfSqpNWkTN4vLt9412iY651KevuoSH8Dn8Y">
+            <div class="input-field col s6">
+                <input type="hidden" name="next" value="">
+                <select name="language" class="browser-default">
+                    
+                    
+                    
+                        <option disabled selected
+                                value="en">
+                            English (en)
+                        </option>
+                    
+                        <option 
+                                value="de">
+                            Deutsch (de)
+                        </option>
+                    
+                        <option 
+                                value="es">
+                            español (es)
+                        </option>
+                    
+                </select>
+            </div>
+            <rg-button type="submit" size="small">
+                Change language
+            </rg-button>
+        </form>
+        <br>
+        <rg-heading tag="h4" size="2xs">
+            Change site
+        </rg-heading>
+        <form action="/set_host" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="2fqVb4JNy43BbUKrrczCX43ZpC6iDPfSqpNWkTN4vLt9412iY651KevuoSH8Dn8Y">
+            <div class="input-field col s6">
+                <input type="hidden" name="next" value="">
+                <select name="host" class="browser-default">
+                    
+                        <option  value="eu">
+                            European Roundnet Association
+                        </option>
+                    
+                        <option  value="dk">
+                            Roundnet Denmark
+                        </option>
+                    
+                        <option  value="fr">
+                            Roundnet France
+                        </option>
+                    
+                        <option disabled selected value="de">
+                            Roundnet Germany
+                        </option>
+                    
+                        <option  value="it">
+                            Roundnet Italy
+                        </option>
+                    
+                        <option  value="nl">
+                            Roundnet Nederland
+                        </option>
+                    
+                        <option  value="es">
+                            Roundnet Spain
+                        </option>
+                    
+                        <option  value="sw">
+                            Roundnet Sweden
+                        </option>
+                    
+                        <option  value="ch">
+                            Swiss Roundnet
+                        </option>
+                    
+                </select>
+            </div>
+            <rg-button type="submit" size="small">
+                Change site
+            </rg-button>
+        </form>
+        <br>
+    </div>
+</div>
+
+
+        
+        <main>
+            <div class="container "
+                 id="content">
+                
+                
+                
+    
+
+<div class="rg-tournament-nav">
+    
+    <a class="rg-tournament-nav--back"
+       href="/tournaments/upcoming"
+       data-tournament-back
+       data-event-slug="793-2027-04-11-deutsche-roundnet-liga-2026-2027"
+       aria-label="Back">
+        <rg-icon name="arrow_back" size="small">
+        </rg-icon>
+    </a>
+
+    <div class="rg-tournament-nav--actions">
+        
+            <a class="rg-tournament-nav--action"
+               href="https://www.twitch.tv/roundnetgermany"
+               target="_blank"
+               rel="noopener"
+               title="Live: Twitch - RG"
+               aria-label="Live: Twitch - RG">
+                
+                    <img class="rg-tournament-nav--platform-logo"
+                         src="https://pstaassets.blob.core.windows.net/assets/stream/logos/twitch.png"
+                         alt="">
+                
+            </a>
+        
+        
+        
+    </div>
+
+    <a class="rg-tournament-nav--identity"
+       href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+        
+            <img class="rg-tournament-nav--logo"
+                 src="https://pstaassets.blob.core.windows.net/assets/tournaments/img/1DRB_lang2.png"
+                 alt="Deutsche Roundnet Liga 2026/2027">
+        
+        <span class="rg-tournament-nav--title">
+            
+            Deutsche Roundnet Liga 2026/2027
+        </span>
+    </a>
+
+    <nav class="rg-tournament-nav--tabs" aria-label="Tournament">
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027"
+               >
+                Info
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2613"
+               >
+                Teams
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/registration"
+               >
+                Registration
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase"
+               aria-current="page">
+                Games
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=ranking"
+               >
+                Table
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/stats/2613"
+               >
+                Stats
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/overview"
+               >
+                Overview
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/partner-search"
+               >
+                Partner Search
+                
+                    <span class="rg-tournament-nav--badge">2</span>
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/prediction"
+               >
+                Prediction Game
+                
+            </a>
+        
+    </nav>
+</div>
+
+
+    <div class="rg-tournament-nav--context">
+        
+
+
+
+    <rg-navigation-item type="inline">
+        1. Bundesliga
+
+        <rg-navigation-dropdown slot="dropdown" type="inline" columns>
+            
+                
+                <div class="rg-tournament-nav--division-group"
+                     >
+                    
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase" class="active">
+                            1. Bundesliga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14363-hauptrunde-2-bl" class="">
+                            2. Bundesliga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14531-hauptrunde" class="">
+                            3. Liga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14631-hauptrunde" class="">
+                            Regionalliga
+                        </rg-navigation-dropdown-item>
+                    
+                </div>
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+
+
+
+        
+    <div class="rg-tab-nav phase-navigation">
+        
+            
+                <a class="rg-tab active "
+                   href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase">Hauptrunde</a>
+            
+        
+            
+        
+            
+        
+    </div>
+
+    </div>
+
+                
+    
+        <div class="schedule-phase-container">
+            <!-- Phase Info -->
+            
+                <div class="phase-info">
+                    <div class="alert-msg alert-info">
+                        <rg-icon name="info" size="small">
+                        </rg-icon>
+                        <div class="text">
+                            <div><p>Innerhalb der Hauptrunde spielt jedes Team einmal gegen jedes andere Team eine Begegnung. Eine Begegnung besteht aus 5 Partien: Open 1, Open 2, Damen, Mixed 1 und Mixed 2. Eine Partie wird im Modus Best-of-Three mit den ersten beiden Sätzen bis 17 (HC 21) und dem dritten Entscheidungssatz bis 13 (HC 17) ausgespielt.</p></div>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+
+            <!-- Display Options (Games/List vs Bracket/Ranking) -->
+            <div class="display-options">
+                <div class="rg-tab-nav view-selector" full-width>
+                    <a href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games"
+                       class="rg-tab active">
+                        
+                            <rg-icon name="view_list" size="small">
+                            </rg-icon>
+                            Games & Groups
+                        
+                    </a>
+                    <a href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=ranking"
+                       class="rg-tab ">
+                        
+                            <rg-icon name="format_list_numbered" size="small">
+                            </rg-icon>
+                            Ranking Hauptrunde
+                        
+                    </a>
+                </div>
+
+                <!-- Bracket Selector Dropdown -->
+                
+            </div>
+
+            <!-- Group Tabs (for group phases) -->
+            
+            
+
+            <!-- Phase Content (injected by child templates) -->
+            
+    
+
+    
+        
+        <div id="phase-contents">
+            <div class="contents-filter">
+                
+                    
+                    
+                    <div class="matchdays rg-tab-nav" theme="secondary">
+                        
+                            <a class="matchday-title rg-tab "
+                               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games&group_id=76368&md=110">1. Matchday</a>
+                        
+                            <a class="matchday-title rg-tab active"
+                               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games&group_id=76368&md=111">2. Matchday</a>
+                        
+                            <a class="matchday-title rg-tab "
+                               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games&group_id=76368&md=112">3. Matchday</a>
+                        
+                            <a class="matchday-title rg-tab "
+                               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games&group_id=76368&md=113">4. Matchday</a>
+                        
+                            <a class="matchday-title rg-tab "
+                               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=games&group_id=76368&md=114">5. Matchday</a>
+                        
+                    </div>
+                    
+
+                    
+                    <div class="md-groups rg-tab-nav">
+                        <a href="#!"
+                           onclick="show_md_group(0)"
+                           class="rg-tab md-group-title active md-group-title-all">All</a>
+                        
+                            <a href="#!"
+                               
+                               onclick="show_md_group(660)"
+                               class="rg-tab md-group-title  md-group-title-660">
+                                Gruppe E
+                                
+                            </a>
+                        
+                            <a href="#!"
+                               
+                               onclick="show_md_group(661)"
+                               class="rg-tab md-group-title  md-group-title-661">
+                                Gruppe F
+                                
+                            </a>
+                        
+                            <a href="#!"
+                               
+                               onclick="show_md_group(662)"
+                               class="rg-tab md-group-title  md-group-title-662">
+                                Gruppe G
+                                
+                            </a>
+                        
+                            <a href="#!"
+                               
+                               onclick="show_md_group(663)"
+                               class="rg-tab md-group-title  md-group-title-663">
+                                Gruppe H
+                                
+                            </a>
+                        
+                    </div>
+                    
+                
+            </div>
+
+            
+            
+            <div class="games-and-table-container">
+                <div class="phase-games">
+                    <div class="top-bar">
+                        <h4>Games</h4>
+                        <div class="table-link hide-on-large-only">
+                            <a href="#table-76368">
+                                <rg-icon name="arrow_circle_down" size="small">
+                                </rg-icon>
+                                Table
+                            </a>
+                        </div>
+                    </div>
+                    <div id="games-container">
+                        
+                            
+                                <div class="md-group-container md-group-660"
+                                     >
+                                    
+                                        
+
+
+
+<div class="md-group-header">
+    <span class="md-group-name">Gruppe E</span>
+    |
+    <span class="md-group-date">07.11.2026</span>
+
+    
+        |
+        <span class="md-group-city">
+            Bonn
+            
+                <rg-icon name="info" size="small" class="md-info-icon pointer" onclick="load_md_group_info(660)">
+                </rg-icon>
+            
+        </span>
+    
+
+    
+</div>
+
+
+<div class="md-group-games">
+    
+
+<ul class="game-list-container">
+    
+        
+            
+                
+                    
+                    <div id="game-419803">
+                        <rg-game-card data-game-id="419803"  variant="game" outcome="" class="slideRight   " >
+                            <div slot="tags">
+                                
+                                    <a class="tag"
+                                       href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?group_id=76368&md=111&md_group=660">
+                                        
+                                    2. Matchday #1</a>
+                                
+                                
+                                    
+                                
+                                
+                                
+                            </div>
+                            <div slot="actions">
+                                <!-- Stream icon -->
+                                
+
+                                <!-- Game Comment -->
+                                
+
+                                <!-- Game Info -->
+                                
+
+                                <!-- Edit result -->
+                                
+
+                                <!-- Manage Observers -->
+                                
+
+                                <!-- Videos -->
+                                
+
+                                <!-- Edit game details -->
+                                
+
+                                <!-- Copy game ID for the scoreboard -->
+                                
+
+                                <!-- Edit in database -->
+                                
+
+                                <!-- Result history -->
+                                
+                                    
+                                
+
+                                <!-- Generate thumbnail -->
+                                
+
+                                <!-- Download game result graphic -->
+                                
+
+                                <!-- Delete game -->
+                                
+
+                                <!-- Expand indicator -->
+                                
+                                    <rg-icon id="expand-419803" class="expand-subgames" onclick="show_subgames('419803')" name="keyboard_arrow_down" size="small">
+                                    </rg-icon>
+                                    <rg-icon id="collapse-419803" class="expand-subgames" onclick="hide_subgames('419803')" name="keyboard_arrow_up" size="small" style="display:none">
+                                    </rg-icon>
+                                
+                            </div>
+
+                            <div class="teams">
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(45622, 60177, null, null, 419803)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/W%C3%BCrzburg_schwarze_outline.png">
+                                        
+
+                                        
+
+                                        <span class="name">Würzburg</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(40834, 59991, null, null, 419803)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/RCB_Logo.png">
+                                        
+
+                                        
+
+                                        <span class="name">Roundnet Club Bonn I</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+                            </div>
+
+                            
+                                <div class="scores">
+                                    
+                                        
+                                            
+                                                <div class="set" set="placeholder">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                                <div class="set" set="summary">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                            
+                                        
+                                    
+                                </div>
+                            
+                            
+                                <div slot="subgames"
+                                     class="sub-games"
+                                     id="subgames-419803"
+                                     style="display:none">
+                                    <div class="game-list-container">
+                                        
+                                    </div>
+                                    <div class="ui placeholder"
+                                         >
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                        </rg-game-card>
+                        </div>
+
+                    
+                
+            
+        
+            
+                
+                    
+                    <div id="game-419809">
+                        <rg-game-card data-game-id="419809"  variant="game" outcome="" class="slideRight   " >
+                            <div slot="tags">
+                                
+                                    <a class="tag"
+                                       href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?group_id=76368&md=111&md_group=660">
+                                        
+                                    2. Matchday #2</a>
+                                
+                                
+                                    
+                                
+                                
+                                
+                            </div>
+                            <div slot="actions">
+                                <!-- Stream icon -->
+                                
+
+                                <!-- Game Comment -->
+                                
+
+                                <!-- Game Info -->
+                                
+
+                                <!-- Edit result -->
+                                
+
+                                <!-- Manage Observers -->
+                                
+
+                                <!-- Videos -->
+                                
+
+                                <!-- Edit game details -->
+                                
+
+                                <!-- Copy game ID for the scoreboard -->
+                                
+
+                                <!-- Edit in database -->
+                                
+
+                                <!-- Result history -->
+                                
+                                    
+                                
+
+                                <!-- Generate thumbnail -->
+                                
+
+                                <!-- Download game result graphic -->
+                                
+
+                                <!-- Delete game -->
+                                
+
+                                <!-- Expand indicator -->
+                                
+                                    <rg-icon id="expand-419809" class="expand-subgames" onclick="show_subgames('419809')" name="keyboard_arrow_down" size="small">
+                                    </rg-icon>
+                                    <rg-icon id="collapse-419809" class="expand-subgames" onclick="hide_subgames('419809')" name="keyboard_arrow_up" size="small" style="display:none">
+                                    </rg-icon>
+                                
+                            </div>
+
+                            <div class="teams">
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(45613, 60025, null, null, 419809)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Heidelberg_neon_png.png">
+                                        
+
+                                        
+
+                                        <span class="name">Heidelberg</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(40834, 59991, null, null, 419809)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/RCB_Logo.png">
+                                        
+
+                                        
+
+                                        <span class="name">Roundnet Club Bonn I</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+                            </div>
+
+                            
+                                <div class="scores">
+                                    
+                                        
+                                            
+                                                <div class="set" set="placeholder">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                                <div class="set" set="summary">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                            
+                                        
+                                    
+                                </div>
+                            
+                            
+                                <div slot="subgames"
+                                     class="sub-games"
+                                     id="subgames-419809"
+                                     style="display:none">
+                                    <div class="game-list-container">
+                                        
+                                    </div>
+                                    <div class="ui placeholder"
+                                         >
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                        </rg-game-card>
+                        </div>
+
+                    
+                
+            
+        
+            
+                
+                    
+                    <div id="game-419815">
+                        <rg-game-card data-game-id="419815"  variant="game" outcome="" class="slideRight   " >
+                            <div slot="tags">
+                                
+                                    <a class="tag"
+                                       href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?group_id=76368&md=111&md_group=660">
+                                        
+                                    2. Matchday #3</a>
+                                
+                                
+                                    
+                                
+                                
+                                
+                            </div>
+                            <div slot="actions">
+                                <!-- Stream icon -->
+                                
+
+                                <!-- Game Comment -->
+                                
+
+                                <!-- Game Info -->
+                                
+
+                                <!-- Edit result -->
+                                
+
+                                <!-- Manage Observers -->
+                                
+
+                                <!-- Videos -->
+                                
+
+                                <!-- Edit game details -->
+                                
+
+                                <!-- Copy game ID for the scoreboard -->
+                                
+
+                                <!-- Edit in database -->
+                                
+
+                                <!-- Result history -->
+                                
+                                    
+                                
+
+                                <!-- Generate thumbnail -->
+                                
+
+                                <!-- Download game result graphic -->
+                                
+
+                                <!-- Delete game -->
+                                
+
+                                <!-- Expand indicator -->
+                                
+                                    <rg-icon id="expand-419815" class="expand-subgames" onclick="show_subgames('419815')" name="keyboard_arrow_down" size="small">
+                                    </rg-icon>
+                                    <rg-icon id="collapse-419815" class="expand-subgames" onclick="hide_subgames('419815')" name="keyboard_arrow_up" size="small" style="display:none">
+                                    </rg-icon>
+                                
+                            </div>
+
+                            <div class="teams">
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(45622, 60177, null, null, 419815)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/W%C3%BCrzburg_schwarze_outline.png">
+                                        
+
+                                        
+
+                                        <span class="name">Würzburg</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+
+                                <div class="team ">
+
+                                    <a class="details"
+                                       href="#!"
+                                       onclick="load_team_info(45613, 60025, null, null, 419815)">
+                                        
+                                            <img loading="lazy"
+                                                 class="logo "
+                                                 src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Heidelberg_neon_png.png">
+                                        
+
+                                        
+
+                                        <span class="name">Heidelberg</span>
+                                    </a>
+
+                                    
+
+                                    
+                                    
+                                </div>
+                            </div>
+
+                            
+                                <div class="scores">
+                                    
+                                        
+                                            
+                                                <div class="set" set="placeholder">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                                <div class="set" set="summary">
+                                                    <span class="score">-</span>
+                                                    <span class="score">-</span>
+                                                </div>
+                                            
+                                        
+                                    
+                                </div>
+                            
+                            
+                                <div slot="subgames"
+                                     class="sub-games"
+                                     id="subgames-419815"
+                                     style="display:none">
+                                    <div class="game-list-container">
+                                        
+                                    </div>
+                                    <div class="ui placeholder"
+                                         >
+                                        <div class="paragraph">
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                            <div class="line"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                        </rg-game-card>
+                        </div>
+
+                    
+                
+            
+        
+    
+    
+        
+        
+    </ul>
+    <!-- History Modal moved to schedule_phase.html for better reusability -->
+    <script>
+
+
+
+    function show_subgames(id){
+        $('#subgames-'+id).show();
+        $('#subgames-'+id+' .placeholder').show();
+        $('#subgames-'+id+' .game-list-container').hide();
+        $('#collapse-'+id).show();
+        $('#expand-'+id).hide();
+        $.ajax({
+            url: '/ajax/get-subgames/'+id,
+            dataType: 'json',
+            data: {
+                group: 76368,
+                    },
+            success: function(data) {
+                $('#subgames-'+id+' .placeholder').hide();
+                $('#subgames-'+id+' .game-list-container').html(data.html).show();
+                for(var i=0; i<data.results.length; i++){
+                    if(data.results[i].sets[0] != null && data.results[i].sets[1] != null){
+                        
+                        $('#game-'+data.results[i].game+' .result-container .set-results').text('('+data.results[i].sets[0]+':'+data.results[i].sets[1]+')');
+                        $('#game-'+data.results[i].game+' .result-container .game-results').text(data.results[i].wins[0]+':'+data.results[i].wins[1]);
+                        
+                    }
+                }
+                refresh_table(data);
+            }
+        });
+    }
+
+    function hide_subgames(id){
+        $('#subgames-'+id).hide();
+        $('#collapse-'+id).hide();
+        $('#expand-'+id).show();
+    }
+    function applyRgxValueColors(){
+        $('.age-badge.game-profit-badge[data-value]').each(function(){
+            var $el = $(this);
+            var val = parseFloat($el.data('value')) || 0;
+            var ratio = Math.max(0, Math.min(1, val / 20));
+            // interpolate between yellow (0 = draw) and green (25 = perfect win)
+            var r1 = 234, g1 = 215, b1 = 125;
+            var r2 = 4, g2 = 131, b2 = 19;
+            var r = Math.round(r1 + (r2 - r1) * ratio);
+            var g = Math.round(g1 + (g2 - g1) * ratio);
+            var b = Math.round(b1 + (b2 - b1) * ratio);
+            $el.css('background-color', 'rgb('+r+','+g+','+b+')');
+            // use white text on sufficiently green backgrounds
+            if(ratio > 0.45){
+                $el.css('color','#fff');
+            } else {
+                $el.css('color','#000');
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        try{ applyRgxValueColors(); }catch(e){}
+    });
+    </script>
+
+
+
+
+<!-- Observer Management Modal -->
+<div id="observers-modal" class="modal">
+    <div class="modal-content">
+        <h4>Observers</h4>
+
+        <div id="observer-list">
+            <!-- Observer list will be populated by JavaScript -->
+        </div>
+
+        <div id="observer-add-section" style="margin-top: 20px;">
+            <h5>Add Observer</h5>
+            <div class="input-field" style="position: relative;">
+                <input type="text"
+                       id="observer-name-search"
+                       autocomplete="off"
+                       placeholder="Enter name...">
+                <label for="observer-name-search">Name</label>
+                <input type="hidden" id="observer-player-id">
+                <div id="observer-search-dropdown"
+                     style="position: absolute;
+                            z-index: 1000;
+                            width: 100%;
+                            max-height: 250px;
+                            overflow-y: auto;
+                            display: none;
+                            margin-top: 0;
+                            background: white;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                            border: 1px solid #ddd;
+                            border-radius: 4px"></div>
+                <span id="observer-search-hint" class="helper-text" style="display: none;"></span>
+            </div>
+            <button class="btn waves-effect waves-light"
+                    onclick="addObserver()"
+                    id="add-observer-btn"
+                    disabled>
+                <i class="material-icons left">add</i>Add
+            </button>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+</div>
+
+<script>
+(function() {
+if (window.__observersModalScriptLoaded) return;
+window.__observersModalScriptLoaded = true;
+
+let currentGameId = null;
+let observersModalInstance = null;
+let searchTimeout = null;
+let selectedPlayerId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const observersModal = document.getElementById('observers-modal');
+    if (observersModal) {
+        observersModalInstance = M.Modal.init(observersModal, {
+            onCloseEnd: function() {
+                resetSearchState();
+            }
+        });
+    }
+
+    // Setup search input listener
+    const searchInput = document.getElementById('observer-name-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            selectedPlayerId = null;
+            document.getElementById('observer-player-id').value = '';
+            document.getElementById('add-observer-btn').disabled = true;
+
+            // Clear previous timeout
+            if (searchTimeout) clearTimeout(searchTimeout);
+
+            if (query.length < 3) {
+                hideDropdown();
+                showHint('');
+                return;
+            }
+
+            // Debounce: wait 300ms before searching
+            searchTimeout = setTimeout(() => searchPlayers(query), 300);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#observer-add-section')) {
+                hideDropdown();
+            }
+        });
+    }
+});
+
+window.openObserversModal = function(gameId) {
+    currentGameId = gameId;
+    resetSearchState();
+    loadObservers(gameId);
+};
+
+function resetSearchState() {
+    const searchInput = document.getElementById('observer-name-search');
+    if (searchInput) searchInput.value = '';
+    document.getElementById('observer-player-id').value = '';
+    document.getElementById('add-observer-btn').disabled = true;
+    selectedPlayerId = null;
+    hideDropdown();
+    showHint('');
+}
+
+function searchPlayers(query) {
+    fetch(`/api/players/search?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const dropdown = document.getElementById('observer-search-dropdown');
+        dropdown.innerHTML = '';
+
+        if (data.too_many) {
+            hideDropdown();
+            showHint('Too many results. Please be more specific.');
+            return;
+        }
+
+        if (data.players.length === 0) {
+            hideDropdown();
+            showHint('No players found.');
+            return;
+        }
+
+        showHint('');
+        data.players.forEach(player => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;';
+            item.innerHTML = `
+                <img src="${player.img}" alt="" class="circle" style="width: 32px; height: 32px; min-width: 32px; flex-shrink: 0;">
+                <span style="flex: 1;">${player.name}</span>
+                ${player.club_logo ? `<img src="${player.club_logo}" alt="" style="height: 20px; flex-shrink: 0;">` : ''}
+            `;
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                selectPlayer(player);
+            });
+            item.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f5f5f5';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'white';
+            });
+            dropdown.appendChild(item);
+        });
+
+        dropdown.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error searching players:', error);
+        showHint('Error searching players');
+    });
+}
+
+function selectPlayer(player) {
+    selectedPlayerId = player.id;
+    document.getElementById('observer-player-id').value = player.id;
+    document.getElementById('observer-name-search').value = player.name;
+    document.getElementById('add-observer-btn').disabled = false;
+    hideDropdown();
+    showHint('');
+}
+
+function hideDropdown() {
+    document.getElementById('observer-search-dropdown').style.display = 'none';
+}
+
+function showHint(message) {
+    const hint = document.getElementById('observer-search-hint');
+    if (message) {
+        hint.textContent = message;
+        hint.style.display = 'block';
+    } else {
+        hint.style.display = 'none';
+    }
+}
+
+function loadObservers(gameId) {
+    fetch(`/tournaments/game/${gameId}/observers`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const observerList = document.getElementById('observer-list');
+        observerList.innerHTML = '';
+
+        if (data.observers.length === 0) {
+            observerList.innerHTML = '<p class="grey-text">No observers assigned yet.</p>';
+        } else {
+            data.observers.forEach(observer => {
+                const item = document.createElement('div');
+                item.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e0e0e0;';
+
+                // Show delete button only if user can edit
+                const deleteButton = data.can_edit
+                    ? `<a href="#!" onclick="removeObserver(${observer.id}); event.stopPropagation();" style="margin-left: auto;">
+                        <i class="material-icons red-text">delete</i>
+                       </a>`
+                    : '';
+
+                item.innerHTML = `
+                    <img src="${observer.profile_img}" alt="" class="circle" style="width: 42px; height: 42px; border-radius: 50%;">
+                    <a href="${observer.player_url}" target="_blank" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                        <span>${observer.player_name}</span>
+                        ${observer.club_logo ? `<img src="${observer.club_logo}" alt="" style="height: 20px;">` : ''}
+                    </a>
+                    ${deleteButton}
+                `;
+                observerList.appendChild(item);
+            });
+        }
+
+        // Show/hide add section based on permissions and max observers
+        const addSection = document.getElementById('observer-add-section');
+        if (!data.can_edit || data.count >= data.max_observers) {
+            addSection.style.display = 'none';
+        } else {
+            addSection.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading observers:', error);
+        M.toast({html: 'Error loading observers', classes: 'red'});
+    });
+}
+
+window.removeObserver = function(observerId) {
+    if (!confirm('Remove this observer?')) return;
+
+    fetch(`/tournaments/game/${currentGameId}/observers`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ observer_id: observerId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            M.toast({html: 'Observer removed', classes: 'green'});
+            loadObservers(currentGameId);
+        } else {
+            M.toast({html: data.error || 'Error removing observer', classes: 'red'});
+        }
+    })
+    .catch(error => {
+        console.error('Error removing observer:', error);
+        M.toast({html: 'Error removing observer', classes: 'red'});
+    });
+};
+
+window.addObserver = function() {
+    const playerId = document.getElementById('observer-player-id').value;
+
+    if (!playerId) {
+        M.toast({html: 'Please select a player', classes: 'orange'});
+        return;
+    }
+
+    fetch(`/tournaments/game/${currentGameId}/observers`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ player_id: parseInt(playerId) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            M.toast({html: `${data.observer.player_name} added as observer`, classes: 'green'});
+            resetSearchState();
+            loadObservers(currentGameId);
+        } else {
+            M.toast({html: data.error || 'Error adding observer', classes: 'red'});
+        }
+    })
+    .catch(error => {
+        console.error('Error adding observer:', error);
+        M.toast({html: 'Error adding observer', classes: 'red'});
+    });
+};
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+})();
+</script>
+
+
+
+<!-- Videos Modal: video links of a game or a tournament team -->
+<div id="videos-modal" class="modal">
+    
+    <input type="hidden" name="csrfmiddlewaretoken" value="b2Nott81RRTHoP7vct32L7oLAKgGgCNIzcapCiciOyjfhWpmJnzryhQgz0RwgaGO">
+    <div class="modal-content">
+        <h4>Videos</h4>
+        <div id="videos-list" class="rg-video-list"></div>
+        <p id="videos-empty" class="rg-video-empty" style="display: none;">
+            No videos added yet.
+        </p>
+        <div id="videos-add-section"
+             class="videos-add-section"
+             style="display: none">
+            <h5>Add video</h5>
+            <div class="input-field">
+                <input type="url"
+                       id="videos-url"
+                       autocomplete="off"
+                       placeholder="https://www.youtube.com/watch?v=...">
+                <label for="videos-url" class="active">Link</label>
+            </div>
+            <div class="input-field">
+                <input type="text" id="videos-title" maxlength="200" autocomplete="off">
+                <label for="videos-title">Title</label>
+            </div>
+            <div class="videos-thumbnail-actions">
+                <label for="videos-thumbnail-file">Thumbnail</label>
+                <input type="file" id="videos-thumbnail-file" accept="image/*">
+                <rg-button id="videos-generate-btn" variant="outline" size="small" leading-icon-name="image" onclick="generateVideoThumbnail()">
+                    Generate thumbnail
+                </rg-button>
+                <rg-button id="videos-youtube-btn" variant="outline" size="small" leading-icon-name="smart_display" style="display: none" onclick="useYoutubeThumbnail()">
+                    Use thumbnail from YouTube
+                </rg-button>
+            </div>
+            <span class="rg-video-meta">
+                Without a thumbnail, a placeholder is shown.
+            </span>
+            <span id="videos-youtube-rights-hint"
+                  class="rg-video-meta"
+                  style="display: none">
+                Only use the thumbnail from YouTube if you hold the rights to it, e.g. for your own or your team's channel. Thumbnails of other channels are protected by copyright.
+            </span>
+            <div id="videos-thumbnail-preview"
+                 class="rg-video-thumb videos-thumbnail-preview">
+                <img id="videos-thumbnail-preview-img" alt="">
+            </div>
+            <div>
+                <rg-button id="videos-add-btn" leading-icon-name="add" onclick="addVideo()">
+                    Add
+                </rg-button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+</div>
+<script>
+(function() {
+if (window.__videosModalScriptLoaded) return;
+window.__videosModalScriptLoaded = true;
+
+const URLS = {
+    game: {
+        videos: "/tournaments/game/0/videos",
+        thumbnail: "/tournaments/game-thumbnail/0",
+    },
+    team: {
+        videos: "/tournaments/team/0/videos",
+        thumbnail: "/tournaments/team-thumbnail/0",
+    },
+};
+const YOUTUBE_THUMBNAIL_URL = "/tournaments/videos/youtube-thumbnail";
+const YOUTUBE_TITLE_URL = "/tournaments/videos/youtube-title";
+const LINK_HINT = "Opens __host__ in a new tab";
+const YOUTUBE_LINK_RE = /(^|\/\/|\.)(youtube\.com|youtu\.be)\//i;
+
+let current = {kind: null, id: null};
+let generatedThumbnail = null;
+let thumbnailFrame = null;
+let suggestedTitle = '';
+let titleLookupTimeout = null;
+
+function urlFor(kind, type, id) {
+    return URLS[kind][type].replace(/\/0(\/|$)/, `/${id}$1`);
+}
+
+function initModal() {
+    const modal = document.getElementById('videos-modal');
+    if (modal && !M.Modal.getInstance(modal)) {
+        M.Modal.init(modal, {onCloseEnd: resetForm});
+    }
+    const urlInput = document.getElementById('videos-url');
+    if (urlInput) {
+        urlInput.addEventListener('input', function() {
+            updateYoutubeButton();
+            if (titleLookupTimeout) clearTimeout(titleLookupTimeout);
+            titleLookupTimeout = setTimeout(suggestYoutubeTitle, 500);
+        });
+    }
+    const fileInput = document.getElementById('videos-thumbnail-file');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            generatedThumbnail = null;
+            if (this.files.length) {
+                showPreview(URL.createObjectURL(this.files[0]));
+            } else {
+                hidePreview();
+            }
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initModal);
+} else {
+    initModal();
+}
+
+window.openVideosModal = function(kind, id) {
+    current = {kind: kind, id: id};
+    resetForm();
+    loadVideos();
+    // Links with class modal-trigger open the modal themselves, buttons do not.
+    const instance = M.Modal.getInstance(document.getElementById('videos-modal'));
+    if (instance && !instance.isOpen) instance.open();
+};
+
+function resetForm() {
+    ['videos-url', 'videos-title', 'videos-thumbnail-file'].forEach(function(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) input.value = '';
+    });
+    generatedThumbnail = null;
+    hidePreview();
+    removeThumbnailFrame();
+    setBusy(false);
+    updateYoutubeButton();
+    suggestedTitle = '';
+    if (titleLookupTimeout) clearTimeout(titleLookupTimeout);
+}
+
+// Suggests the YouTube title (fetched by the server) - only into an empty title field or
+// over an earlier suggestion, never over what the user typed.
+function suggestYoutubeTitle() {
+    const url = document.getElementById('videos-url').value.trim();
+    const titleInput = document.getElementById('videos-title');
+    if (!YOUTUBE_LINK_RE.test(url)) return;
+    if (titleInput.value.trim() && titleInput.value !== suggestedTitle) return;
+    fetch(`${YOUTUBE_TITLE_URL}?url=${encodeURIComponent(url)}`, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+        if (!data || !data.title) return;
+        // The user may have started typing a title meanwhile, or changed the link.
+        if (titleInput.value.trim() && titleInput.value !== suggestedTitle) return;
+        if (document.getElementById('videos-url').value.trim() !== url) return;
+        titleInput.value = data.title;
+        suggestedTitle = data.title;
+        M.updateTextFields();
+    })
+    .catch(() => {});
+}
+
+function updateYoutubeButton() {
+    const url = document.getElementById('videos-url').value.trim();
+    const display = YOUTUBE_LINK_RE.test(url) ? '' : 'none';
+    document.getElementById('videos-youtube-btn').style.display = display;
+    document.getElementById('videos-youtube-rights-hint').style.display = display;
+}
+
+function useThumbnailFile(file) {
+    generatedThumbnail = file;
+    document.getElementById('videos-thumbnail-file').value = '';
+    showPreview(URL.createObjectURL(file));
+}
+
+// The server fetches the image once; it is then uploaded like any other thumbnail.
+window.useYoutubeThumbnail = function() {
+    const url = document.getElementById('videos-url').value.trim();
+    setBusy(true);
+    fetch(`${YOUTUBE_THUMBNAIL_URL}?url=${encodeURIComponent(url)}`, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .then(response => {
+        const contentType = response.headers.get('content-type') || '';
+        if (response.ok && contentType.startsWith('image/')) {
+            return response.blob().then(blob => useThumbnailFile(new File([blob], 'thumbnail.jpg', {type: blob.type})));
+        }
+        return response.json().catch(() => ({})).then(data => {
+            throw new Error(data.error || 'No thumbnail found for this YouTube video.');
+        });
+    })
+    .catch(error => toast(error.message, 'red'))
+    .finally(() => setBusy(false));
+};
+
+function showPreview(src) {
+    document.getElementById('videos-thumbnail-preview-img').src = src;
+    document.getElementById('videos-thumbnail-preview').classList.add('visible');
+}
+
+function hidePreview() {
+    document.getElementById('videos-thumbnail-preview-img').removeAttribute('src');
+    document.getElementById('videos-thumbnail-preview').classList.remove('visible');
+}
+
+function setBusy(busy) {
+    document.getElementById('videos-add-btn').disabled = busy;
+    document.getElementById('videos-generate-btn').disabled = busy;
+    document.getElementById('videos-youtube-btn').disabled = busy;
+}
+
+function toast(message, classes) {
+    M.toast({html: message, classes: classes});
+}
+
+function buildVideoCard(video, canEdit) {
+    const card = document.createElement('div');
+    card.className = 'rg-video-card';
+
+    const link = document.createElement('a');
+    link.href = video.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.title = LINK_HINT.replace('__host__', video.link_host);
+
+    const thumb = document.createElement('span');
+    thumb.className = 'rg-video-thumb';
+    if (video.thumbnail_src) {
+        const img = document.createElement('img');
+        img.src = video.thumbnail_src;
+        img.alt = '';
+        img.loading = 'lazy';
+        thumb.appendChild(img);
+    } else {
+        const icon = document.createElement('rg-icon');
+        icon.setAttribute('name', 'smart_display');
+        thumb.appendChild(icon);
+    }
+    link.appendChild(thumb);
+
+    const title = document.createElement('span');
+    title.className = 'rg-video-title';
+    title.textContent = video.title;
+    link.appendChild(title);
+
+    const host = document.createElement('span');
+    host.className = 'rg-video-meta rg-video-host';
+    const hostIcon = document.createElement('rg-icon');
+    hostIcon.setAttribute('name', 'open_in_new');
+    hostIcon.setAttribute('size', 'small');
+    host.append(hostIcon, document.createTextNode(video.link_host));
+    link.appendChild(host);
+    card.appendChild(link);
+
+    if (canEdit) {
+        const deleteButton = document.createElement('rg-button');
+        deleteButton.className = 'rg-video-delete';
+        deleteButton.setAttribute('icon-only', '');
+        deleteButton.setAttribute('size', 'small');
+        deleteButton.setAttribute('color', 'danger');
+        deleteButton.setAttribute('leading-icon-name', 'delete');
+        deleteButton.setAttribute('aria-label', 'Remove video');
+        deleteButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            removeVideo(video.id);
+        });
+        card.appendChild(deleteButton);
+    }
+    return card;
+}
+
+function loadVideos(changed) {
+    const {kind, id} = current;
+    fetch(urlFor(kind, 'videos', id), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .then(response => response.json())
+    .then(data => {
+        const list = document.getElementById('videos-list');
+        list.replaceChildren(...data.videos.map(video => buildVideoCard(video, data.can_edit)));
+        document.getElementById('videos-empty').style.display = data.videos.length ? 'none' : 'block';
+        document.getElementById('videos-add-section').style.display = data.can_edit ? 'flex' : 'none';
+        if (changed) notifyChange(data.videos.length);
+    })
+    .catch(error => {
+        console.error('Error loading videos:', error);
+        toast('Error loading videos', 'red');
+    });
+}
+
+function notifyChange(count) {
+    const {kind, id} = current;
+    document.querySelectorAll(`[data-videos-icon="${kind}-${id}"]`).forEach(function(icon) {
+        icon.setAttribute('name', count ? 'video_library' : 'video_call');
+    });
+    if (typeof window.onVideosChanged === 'function') {
+        window.onVideosChanged(kind, id, count);
+    }
+}
+
+function removeThumbnailFrame() {
+    if (thumbnailFrame) {
+        thumbnailFrame.remove();
+        thumbnailFrame = null;
+    }
+}
+
+// Renders the game/team thumbnail page in a hidden iframe and takes its html2canvas result.
+window.generateVideoThumbnail = function() {
+    removeThumbnailFrame();
+    setBusy(true);
+    const frame = document.createElement('iframe');
+    frame.className = 'videos-thumbnail-frame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.src = urlFor(current.kind, 'thumbnail', current.id) + '?embed=1';
+    thumbnailFrame = frame;
+
+    function onMessage(event) {
+        if (event.source !== frame.contentWindow || !event.data || event.data.type !== 'thumbnail-ready') return;
+        window.removeEventListener('message', onMessage);
+        frame.contentWindow.renderThumbnail()
+        .then(dataUrl => fetch(dataUrl).then(response => response.blob()).then(blob => {
+            useThumbnailFile(new File([blob], 'thumbnail.png', {type: 'image/png'}));
+        }))
+        .catch(error => {
+            console.error('Error generating thumbnail:', error);
+            toast('Error generating thumbnail', 'red');
+        })
+        .finally(() => {
+            removeThumbnailFrame();
+            setBusy(false);
+        });
+    }
+    window.addEventListener('message', onMessage);
+    document.getElementById('videos-modal').appendChild(frame);
+};
+
+window.addVideo = function() {
+    const url = document.getElementById('videos-url').value.trim();
+    const title = document.getElementById('videos-title').value.trim();
+    if (!url || !title) {
+        toast('Please enter a link and a title', 'orange');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('url', url);
+    formData.append('title', title);
+    const fileInput = document.getElementById('videos-thumbnail-file');
+    if (fileInput.files.length) {
+        formData.append('thumbnail', fileInput.files[0]);
+    } else if (generatedThumbnail) {
+        formData.append('thumbnail', generatedThumbnail);
+    }
+
+    setBusy(true);
+    fetch(urlFor(current.kind, 'videos', current.id), {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toast('Video added', 'green');
+            resetForm();
+            loadVideos(true);
+        } else {
+            toast(data.error || 'Error adding video', 'red');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding video:', error);
+        toast('Error adding video', 'red');
+    })
+    .finally(() => setBusy(false));
+};
+
+function removeVideo(videoId) {
+    if (!confirm('Remove this video?')) return;
+    fetch(urlFor(current.kind, 'videos', current.id), {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({video_id: videoId}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toast('Video removed', 'green');
+            loadVideos(true);
+        } else {
+            toast(data.error || 'Error removing video', 'red');
+        }
+    })
+    .catch(error => {
+        console.error('Error removing video:', error);
+        toast('Error removing video', 'red');
+    });
+}
+
+function getCookie(name) {
+    const cookie = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(name + '='));
+    if (cookie) return decodeURIComponent(cookie.substring(name.length + 1));
+    const tokenInput = document.querySelector('#videos-modal input[name="csrfmiddlewaretoken"]');
+    return tokenInput ? tokenInput.value : null;
+}
+})();
+</script>
+
+
+</div>
+
+                                    
+                                </div>
+                            
+                                <div class="md-group-container md-group-661"
+                                     data-md-group-id="661">
+                                    
+                                </div>
+                            
+                                <div class="md-group-container md-group-662"
+                                     data-md-group-id="662">
+                                    
+                                </div>
+                            
+                                <div class="md-group-container md-group-663"
+                                     data-md-group-id="663">
+                                    
+                                </div>
+                            
+                            
+
+<div id="edit-result" class="modal rg-result-modal">
+    <meta name="csrf-token" content="2fqVb4JNy43BbUKrrczCX43ZpC6iDPfSqpNWkTN4vLt9412iY651KevuoSH8Dn8Y">
+
+    <div class="rg-result-modal--header">
+        <h5 class="rg-result-modal--title">Enter result</h5>
+        <a href="#!"
+           class="rg-result-modal--close modal-close"
+           aria-label="Close">
+            <rg-icon name="close" size="small">
+            </rg-icon>
+        </a>
+    </div>
+
+    <div class="rg-result-modal--loading preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="error rg-result-modal--error" style="display:none"></div>
+
+    <div class="modal-content rg-result-modal--content">
+        
+        
+        
+        
+        <div class="rg-result-modal--score" data-sets="3">
+            
+            <div class="rg-result-modal--meta">
+                <p class="rg-result-modal--subgame" style="display:none"></p>
+
+                <span id="score-format-hint-a"
+                      class="score-format-hint rg-result-modal--format"
+                      style="display:none"></span>
+            </div>
+
+            <div class="rg-result-modal--team" data-team="1">
+                <span class="rg-result-modal--team-logos" data-team-logos="1"></span>
+                <span class="rg-result-modal--team-name hint" data-team-name="1"></span>
+            </div>
+
+            <div class="rg-result-modal--team" data-team="2">
+                <span class="rg-result-modal--team-logos" data-team-logos="2"></span>
+                <span class="rg-result-modal--team-name hint" data-team-name="2"></span>
+            </div>
+
+            
+                <div class="rg-result-modal--set set-wrapper set-1"
+                     data-set="1">
+                    <span class="rg-result-modal--set-label">1.<span class="rg-result-modal--set-word">&nbsp;Set</span></span>
+
+                    <input id="s1-t1"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="1"
+                           aria-label="1. Set">
+
+                    <span class="rg-result-modal--score-sep">:</span>
+
+                    <input id="s1-t2"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="2"
+                           aria-label="1. Set">
+                </div>
+            
+                <div class="rg-result-modal--set set-wrapper set-2"
+                     data-set="2">
+                    <span class="rg-result-modal--set-label">2.<span class="rg-result-modal--set-word">&nbsp;Set</span></span>
+
+                    <input id="s2-t1"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="1"
+                           aria-label="2. Set">
+
+                    <span class="rg-result-modal--score-sep">:</span>
+
+                    <input id="s2-t2"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="2"
+                           aria-label="2. Set">
+                </div>
+            
+                <div class="rg-result-modal--set set-wrapper set-3"
+                     data-set="3">
+                    <span class="rg-result-modal--set-label">3.<span class="rg-result-modal--set-word">&nbsp;Set</span></span>
+
+                    <input id="s3-t1"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="1"
+                           aria-label="3. Set">
+
+                    <span class="rg-result-modal--score-sep">:</span>
+
+                    <input id="s3-t2"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="2"
+                           aria-label="3. Set">
+                </div>
+            
+                <div class="rg-result-modal--set set-wrapper set-4"
+                     data-set="4">
+                    <span class="rg-result-modal--set-label">4.<span class="rg-result-modal--set-word">&nbsp;Set</span></span>
+
+                    <input id="s4-t1"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="1"
+                           aria-label="4. Set">
+
+                    <span class="rg-result-modal--score-sep">:</span>
+
+                    <input id="s4-t2"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="2"
+                           aria-label="4. Set">
+                </div>
+            
+                <div class="rg-result-modal--set set-wrapper set-5"
+                     data-set="5">
+                    <span class="rg-result-modal--set-label">5.<span class="rg-result-modal--set-word">&nbsp;Set</span></span>
+
+                    <input id="s5-t1"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="1"
+                           aria-label="5. Set">
+
+                    <span class="rg-result-modal--score-sep">:</span>
+
+                    <input id="s5-t2"
+                           class="input-result rg-result-modal--score-input browser-default"
+                           type="number"
+                           inputmode="numeric"
+                           data-team="2"
+                           aria-label="5. Set">
+                </div>
+            
+        </div>
+
+        <div id="score-forfeit-hint"
+             class="score-forfeit-hint rg-result-modal--forfeit"
+             style="display:none">
+            ⚠️ Looks like a forfeit or unfinished game. If the game was not played or a team retired, please tick "Game was not played" below and explain briefly in the comment field.
+        </div>
+
+        <div class="rg-result-modal--options">
+            <label class="rg-result-modal--option">
+                <input type="checkbox" id="temp-result" class="filled-in">
+                <span>
+                    Preliminary result
+                    <small>For example if another set is still to be played</small>
+                </span>
+            </label>
+
+            <label class="rg-result-modal--option">
+                <input type="checkbox" id="exclude-rating" class="filled-in">
+                <span>Game was not played</span>
+            </label>
+
+            <label class="rg-result-modal--option">
+                <input type="checkbox" id="aborted-forfeit" class="filled-in">
+                <span>
+                    Game was aborted (forfeit)
+                    <small>If one of the teams could not finish the game</small>
+                </span>
+            </label>
+
+            <label class="rg-result-modal--option"
+                   id="aborted-decided-option"
+                   style="display:none">
+                <input type="checkbox" id="aborted-decided" class="filled-in">
+                <span>Game was aborted — match already decided</span>
+            </label>
+        </div>
+
+        <a href="#!"
+           id="add-comment-link"
+           class="rg-result-modal--add-comment-link"
+           style="display:none">Add comment</a>
+
+        <div id="comment-section"
+             class="rg-result-modal--comment"
+             style="display:none">
+            <label class="rg-result-modal--comment-label" for="game-comment">
+                Explanation text
+            </label>
+
+            <textarea id="game-comment"
+                      class="rg-result-modal--comment-input browser-default"
+                      rows="2"></textarea>
+
+            <span class="info-label rg-result-modal--comment-help">
+                You can enter information here if the match was aborted (e.g. “Team 1 retired injured at 10:7 in the 2nd set”, or “Team 2 could not play the game due to an injury“), or add any other general information about the game.
+            </span>
+
+            <a class="rg-result-modal--comment-link"
+               href="https://roundnetgermany.de/pz-insert-results/"
+               target="_blank">
+                ℹ️ Which result must be entered?
+            </a>
+        </div>
+
+        <div class="rg-result-modal--actions">
+            <rg-button class="rg-result-modal--cancel modal-close" variant="text" color="monochrome" size="medium" stretched>
+                Cancel
+            </rg-button>
+
+            <div id="modal-loader"
+                 class="preloader-wrapper small active rg-result-modal--save-loader"
+                 style="display:none">
+                <div class="spinner-layer spinner-green-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="gap-patch">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <rg-button id="save-button" class="rg-result-modal--save" variant="filled" color="primary" size="medium" stretched>
+                Save
+            </rg-button>
+        </div>
+    </div>
+</div>
+
+                        
+                    </div>
+                </div>
+                <div class="phase-table" id="table-76368">
+                    <h4>Table</h4>
+                    
+                        
+
+
+    <rg-group-table class="phase-table" data-has-group-pos="false" data-use-average="False" data-compact="true">
+        <div slot="header" class="group-table-header phase-table-header">
+            <div class="header-pos">#</div>
+            <div class="header-team">Team</div>
+            
+            <div class="header-record">
+                
+                    
+                        W-D-L
+                    
+                
+                
+            </div>
+            
+                
+                <div class="header-sets-diff">Sets ±</div>
+                
+                <div class="header-points-diff">Pts ±</div>
+            
+        </div>
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        1.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45617, 59549)">
+                                KA-Boom
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    3-0-0
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                18
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                +
+                                134
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        2.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(40794, 59944)">
+                                MRC I
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    3-0-0
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                16
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                +
+                                112
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        3.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kiel_neu_ab_Dez_2020_VJuktbl.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(42893, 60178)">
+                                Roundet Sharks Kiel
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    3-0-0
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                9
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                +
+                                72
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        4.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/W%C3%BCrzburg_schwarze_outline.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45622, 60177)">
+                                Würzburg
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    2-0-1
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                14
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                +
+                                76
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        5.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/069.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(42718, 60063)">
+                                NULL SECHS NEUN I
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    2-0-0
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                10
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                +
+                                73
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(250, 167, 200, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        6.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Heidelberg_neon_png.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45613, 60025)">
+                                Heidelberg
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    2-0-1
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -1
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -23
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        7.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/freiburg.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45576, 60156)">
+                                EK1P
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    2-0-1
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -5
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -34
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        8.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/RCB_Logo.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(40834, 59991)">
+                                Roundnet Club Bonn I
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    1-0-2
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                +
+                                1
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -10
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        9.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Hamburg_Otters.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45587, 60174)">
+                                Otters &amp; Sharks
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    1-0-2
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -5
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -55
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        10.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Logo_final.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45811, 59989)">
+                                Meet the East
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    1-0-2
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -10
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -76
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        11.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Berlin_Red-Eagles-Roundnet-rund-weiss-mit-Kreis-2000.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(40997, 60182)">
+                                Berlin
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    1-0-1
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -9
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -73
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        12.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/West_Wings.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45584, 60171)">
+                                West Wings Essen
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    0-0-3
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -5
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -13
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(255, 255, 255, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        13.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/K%C3%B6ln_neu_kleiner.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(40862, 60017)">
+                                1. Roundnet Club Köln I
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    0-0-2
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -1
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                0
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(194, 192, 193, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        14.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kassel_2020.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(45591, 60454)">
+                                Roundnet Raccoons
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    0-0-3
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -14
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -90
+                            </div>
+                        
+                    
+                </div>
+            
+        
+            
+                <div class="group-table-row phase-table-row">
+                    <div class="cell-color"
+                          style="background-color: rgba(194, 192, 193, 0.5) !important" >
+                    </div>
+                    <div class="cell-pos">
+                        15.
+                    </div>
+                    <div class="team-cell">
+                        <div class="team-logos">
+                            
+                                <img loading="lazy"
+                                     src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kein_Titel_1500_x_1500_px.png"
+                                     alt=""
+                                     class="team-logo ">
+                            
+                        </div>
+                        <div class="team-name">
+                            <a href="#!"
+                               onclick="load_team_info(40828, 59979)">
+                                Mosquitos Mannheim
+                            </a>
+                            
+                            
+                            
+                                
+                            
+                        </div>
+                    </div>
+                    
+                        
+                        <div class="cell-record "
+                             >
+                            
+                                
+                                    0-0-3
+                                
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="cell-sets-diff">
+                            
+                                
+                                -18
+                            
+                        </div>
+                        
+                            
+                            <div class="cell-points-diff">
+                                
+                                -93
+                            </div>
+                        
+                    
+                </div>
+            
+        
+
+        
+            <div slot="footer" class="group-table-footer">
+                
+                    
+                        <div class="phase-color"
+                             style="background-color: rgba(250, 167, 200, 0.5);
+                                    padding: var(--rg-space-4) var(--rg-space-8);
+                                    border-radius: var(--rg-space-2)">
+                            FINAL SIX
+                        </div>
+                    
+                
+                    
+                        <div class="phase-color"
+                             style="background-color: rgba(194, 192, 193, 0.5);
+                                    padding: var(--rg-space-4) var(--rg-space-8);
+                                    border-radius: var(--rg-space-2)">
+                            ABSTIEG
+                        </div>
+                    
+                
+            </div>
+        
+    </rg-group-table>
+
+
+
+    <div class="alert-msg alert-info"
+         style="margin-block-start: var(--rg-space-16)">
+        <rg-icon name="info" size="small">
+        </rg-icon>
+        <div class="text"><p>Sortierung der Tabelle:</p>
+
+<p>1. gewonnene Begegnungen<br>2. gewonnene Partien<br>3. Berücksichtigung der nicht-angetretenen Partien (siehe Dokument „Ligavorschriften”)<br>4. Satzdifferenz<br>5. direkter Vergleich<br>6. Punktedifferenz<br>7. Münzwurf</p>
+
+<p>Die Prios 3, 5 und 7 müssen manuell angewandt werden und könnten so zu<br>Änderungen in der Tabelle führen.</p></div>
+    </div>
+
+
+                    
+                </div>
+            </div>
+        </div>
+    
+    <div class="ui modal md-info-modal" id="md-info-modal">
+        <div class="ui placeholder">
+            <div class="paragraph">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            </div>
+            <div class="paragraph">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            </div>
+        </div>
+        <div class="modal-content" style="display:none"></div>
+    </div>
+    <script>
+    var get_games_url = '/ajax/get-group-games/14358/76368';
+    var refresh_suc = 'Refresh results';
+    var refresh_err = 'Error, try again';
+
+    function show_md_group(md_group_id){
+        $('.md-group-title').removeClass('active');
+        if(md_group_id == 0){
+            $('.md-group-container').show();
+            $('.md-group-title-all').addClass('active');
+        }else{
+            $('.md-group-container').hide();
+            $('.md-group-container.md-group-'+md_group_id).show();
+            $('.md-group-title-'+md_group_id).addClass('active');
+        }
+    }
+    
+
+    // Only the matchday group the reader lands on is rendered server-side. The rest
+    // are empty containers that already carry their md-group-<id> class, so the tab
+    // navigation works straight away; their content is fetched right after load
+    // rather than on click, so it is there before anyone switches tabs.
+    (function loadRemainingMdGroups(){
+        var urlTemplate = '/tournament/md-group-body/0';
+        var pending = $('.md-group-container[data-md-group-id]').toArray();
+        var inFlight = 0;
+        var MAX_PARALLEL = 3;
+
+        // One function call per request, so each callback closes over its own
+        // container - a `var` inside the loop below would be a single binding shared
+        // by every request started in the same pass.
+        function fetchInto(element){
+            var container = $(element);
+            inFlight++;
+            $.ajax({
+                url: urlTemplate.replace(/0$/, container.data('md-group-id')),
+                dataType: 'json'
+            }).done(function(data){
+                container.html(data.html).removeAttr('data-md-group-id');
+            }).fail(function(){
+                // Leave the container empty and keep going; a reload retries.
+                container.removeAttr('data-md-group-id');
+            }).always(function(){
+                inFlight--;
+                next();
+            });
+        }
+
+        function next(){
+            while (inFlight < MAX_PARALLEL && pending.length) {
+                fetchInto(pending.shift());
+            }
+        }
+        $(next);
+    })();
+    function load_md_group_info(md_group_id){
+            $('#md-info-modal').modal().modal('open');
+            $('#md-info-modal'+' .placeholder').show();
+            $('#md-info-modal'+' .modal-content').hide();
+            $.ajax({
+                url: '/tournament/get-mdgroup-info',
+                data: {
+                    'md_group_id': md_group_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#md-info-modal'+' .modal-content').html(data.html).show();
+                    $('#md-info-modal'+' .placeholder').hide();
+
+                }
+            });
+    }
+    </script>
+    <script src="https://pstaassets.blob.core.windows.net/staticfiles/tournament/js/poolplay_groups.js"></script>
+
+        </div>
+    
+
+    <!-- Subgames Modal -->
+    <div class="ui modal" id="subgames-modal">
+        <div class="modal-header"></div>
+        <div class="modal-content subgames">
+            <div class="ui placeholder">
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            </div>
+            <div class="content"></div>
+        </div>
+    </div>
+
+    <!-- Observer Management Modal -->
+    
+    
+
+    <!-- History Modal (for superuser/host only) -->
+    
+
+                <div class="ui modal team-popup" id="team-popup">
+                    <div class="ui placeholder">
+                        <div class="rectangular image"></div>
+                    </div>
+                    <div class="popup-content" style="display:none"></div>
+                </div>
+                <div id="elo-history" class="modal">
+                    <div class="modal-content">
+                        <div class="ui placeholder" id="modal-preloader">
+                            <div class="image header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                        <div id="rgx-modal-content" style="display: none"></div>
+                    </div>
+                </div>
+                <div id="ranking-history" class="modal">
+                    <div class="modal-content">
+                        <div class="ui placeholder" id="ranking-modal-preloader">
+                            <div class="image header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                        <div id="ranking-modal-content" style="display: none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <rg-drawer position="right" data-drawer>
+                <button id="sidebar-trigger"
+                        class="sidebar-trigger green-text pulse"
+                        type="button"
+                        slot="trigger">
+                    <img class="sidebar-trigger--image"
+                         src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/sidebar-trigger.png"
+                         alt="Trigger Sidebar">
+                </button>
+
+                <div data-sidebar>
+                    
+    
+    <script>
+
+function animate_progress_bars(root) {
+  $(root || document).find(".animated-progress span").each(function () {
+    $(this).animate(
+      {
+        width: $(this).attr("data-progress") + "%",
+      },
+      1000
+    );
+  });
+}
+
+$(function () {
+  animate_progress_bars(document);
+});
+
+function update_progress(id, value){
+    $("#"+id+" span").animate(
+        {
+          width: value + "%",
+        },
+        1000
+      );
+}
+function toggle_placement_phases(link, div_id) {
+      event.preventDefault();
+      const divs = document.querySelectorAll('.div-' + div_id + ' .placement-phase');
+      let allHidden = true;
+
+      divs.forEach(div => {
+        if (div.style.display === 'none' || div.style.display === '') {
+          div.style.display = 'block';
+        } else {
+          div.style.display = 'none';
+          allHidden = false;
+        }
+      });
+
+      // Ändere den Linktext basierend auf dem Status der Divs
+      if (allHidden) {
+        link.textContent = 'Hide placements';
+      } else {
+        link.textContent = 'Show placements';
+      }
+    }
+    </script>
+
+                </div>
+            </rg-drawer>
+        </main>
+        
+
+<footer style class="page-footer"  id="footer">
+    <div class="footer-copyright" style="background-color: #09382">
+        <div class="container">
+            <div class="row">
+                <div class="col l6 m12 s12">
+                    © 2024 &nbsp;
+                    <a class="grey-text text-lighten-3"
+                       href="https://www.roundnetgermany.de">Roundnet Germany</a>&nbsp;&nbsp;
+                    <a href="https://www.instagram.com/roundnetgermany/" target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/insta.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://www.facebook.com/roundnetgermany/" target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/fb.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://open.spotify.com/show/0iYVTONsyfEP4MZHYvBaVa?si=8eY02d8NRlerT6gLPfWTkA/"
+                       target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/spotify.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://www.youtube.com/channel/UCQG5WkAeqmxyQGShjwqrZWA/featured/"
+                       target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/yt.png">
+                    </a>&nbsp;&nbsp;
+                </div>
+                <div class="col l6 m12 s12">
+                    <span class="">
+                        <a href="/help/faq" class="grey-text text-lighten-3">FAQ</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/terms_and_conditions_en.pdf"
+                           target="_blank">Terms and Conditions</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/privacy_policy_en.pdf"
+                           target="_blank">Privacy Policy</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/image_rights_info_en.pdf"
+                           target="_blank">Image Rights Info</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://roundnetgermany.de/impressum/"
+                           target="_blank">Impressum</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="mailto:playerzone@roundnetgermany.de"
+                           target="_blank">Contact</a>
+                    </span>
+                </div>
+                <br>
+                <br>
+                <div class="col l6 m12 s12">
+                    <div class="">
+                        Icons made by <a href="https://www.flaticon.com/de/autoren/freepik" title="Freepik">Freepik</a> and <a href="https://www.flaticon.com/de/autoren/pixel-perfect"
+    title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/de/" title="Flaticon">www.flaticon.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"
+                data-cfasync="false"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/transition.min.js"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/popup.min.js"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/dropdown.js"></script>
+        <script>
+                window.cookieconsent.initialise({
+                    "palette": {
+                        "popup": {
+                            "background": "#eaf7f7",
+                            "text": "#5c7291"
+                        },
+                        "button": {
+                            "background": "transparent",
+                            "text": "#56cbdb",
+                            "border": "#56cbdb"
+                        }
+                    },
+                    "showLink": false,
+                    "content": {
+                        "message": "This website uses cookies to ensure you get the best experience on our website.",
+                        "dismiss": "Ok"
+                    }
+                });
+        </script>
+        
+        
+    </body>
+    
+</html>
+<script>
+    function load_img(element, filename){
+        var img = element.nextElementSibling.getElementsByClassName('collapse-img')[0];
+        var ph = element.nextElementSibling.getElementsByClassName('collapse-img')[1];
+        if(img.alt != 'img'){
+            img.src = filename;
+            img.alt = 'img';
+            img.style.display = 'block';
+            ph.style.display = 'none';
+        }
+    }
+   var elmts = document.getElementsByClassName('collapsible-body');
+
+   for (i = 0; i < elmts.length; i++){
+        elmts[i].onanimationend = function (){
+            var elmnt = this.parentElement.previousElementSibling;
+            //document.getElementById("l-"+id).scrollTop += 100;
+            if (elmnt != null){
+            elmnt.scrollIntoView({block: 'start', behavior: 'smooth'});
+            }
+        };
+   }
+   function toggle_submenu(e){
+    $(e).siblings('.submenu').transition('slide down');
+   }
+
+
+  $(document).ready(function(){
+    if($('[data-sidebar]').children().length == 0) $('[data-drawer]').hide();
+    $('#mobile-demo').sidenav();
+    $('.modal').modal();
+    $('select').formSelect();
+    $('.hint').popup();
+    $('select.ui.dropdown').dropdown_sem({fullTextSearch: 'exact', match: 'text'});
+    $(".dropdown-trigger").dropdown({
+        coverTrigger: false,
+        constrainWidth: false,});
+    var links = document.getElementsByTagName('a');
+    for(var i=0;i<links.length;i++){
+        href = links[i].getAttribute("href");
+        if(href != null && href.length > 0){
+            if(href[0] != '.' && href[0] != '/' && href[0] != '#' && href[0] != '?'){
+                links[i].onclick = function(){ click_link(this.href)};
+                links[i].onauxclick = function(){ click_link(this.href)};
+                links[i].setAttribute('target', '_blank');
+            }
+        }
+
+    }
+
+  });
+
+    function discard_skill_popup(link){
+        $.ajax({
+            url: '/profile/discard-skill-popup',
+            dataType: 'json',
+            data: { },
+            success: function(data) {
+            },
+            error: function(){
+            }
+        });
+  }
+
+  function click_link(link){
+        $.ajax({
+            url: '/click-link',
+            dataType: 'json',
+            data: { link: link
+                    },
+            success: function(data) {
+            },
+            error: function(){
+            }
+        });
+  }
+
+  function show_history(player_id, ranking_id=null){
+    $('#modal-preloader').show();
+    $('#rgx-modal-content').hide();
+    $.ajax({
+        url: '/ranking/rg-rating/history',
+        data: {
+        'player_id': player_id,
+        'ranking_id': ranking_id,
+        },
+        dataType: 'json',
+        success: function(data) {
+        console.log('success');
+            $('.team-popup').removeClass('transition').removeClass('visible').hide();
+            $('#rgx-modal-content').html(data.html);
+            $('#modal-preloader').hide();
+            $('#rgx-modal-content').show();
+        },
+        error: function(data){
+            console.log(data);
+        }
+    });
+  }
+    function show_player_ranking_history(player_id, score_id){
+        $('#ranking-modal-preloader').show();
+        $('#ranking-modal-content').hide();
+        $.ajax({
+            url: '/ranking/history/player',
+            data: {
+            'player_id': player_id,
+            'score_id': score_id,
+            },
+            dataType: 'json',
+            success: function(data) {
+                $('.team-popup').removeClass('transition').removeClass('visible').hide();
+                $('#ranking-modal-content').html(data.html);
+                $('#ranking-modal-preloader').hide();
+                $('#ranking-modal-content').show();
+                $('.collapsible').collapsible();
+            },
+            error: function(data){
+                console.log(data);
+            }
+        });
+    }
+  function toggle_games(e){
+    $(e).next().transition('slide down');
+  }
+  function disable(){
+        $('.small-button').addClass('disabled');
+        $('.button').addClass('disabled');
+        $('.small-button-yellow').addClass('disabled');
+        $('.button-yellow').addClass('disabled');
+        $('#loader').show();
+  }
+  
+
+    function load_team_info(id, tteam_id, md_group_id=null, division_id=null, game_id=null){
+        $('#team-popup').modal().modal('open');
+        $('#team-popup'+' .placeholder').show();
+            $.ajax({
+                url: '/tournament/get-team-info',
+                data: {
+                'id': tteam_id,
+                'md_group_id': md_group_id,
+                'division_id': division_id,
+                'game_id': game_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#team-popup'+' .popup-content').html(data.html).show();
+                    $('#team-popup'+' .placeholder').hide();
+
+                }
+            });
+    }
+    
+</script>
+
+    <script src="https://pstaassets.blob.core.windows.net/staticfiles/tournament/js/game_results_0106.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Materialize dropdown
+            $('.dropdown-trigger').dropdown({
+                constrainWidth: false,
+                coverTrigger: false,
+                alignment: 'left'
+            });
+        });
+
+        var game_id = null;
+    </script>
+

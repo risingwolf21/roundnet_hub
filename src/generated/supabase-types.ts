@@ -46,6 +46,7 @@ export type Permission =
   | 'games.admin.merge_accounts';
 
 export type Feature =
+  | 'bundesliga'
   | 'challenges'
   | 'costs'
   | 'drinks'

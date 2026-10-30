@@ -105,6 +105,14 @@ const createRouter = (user: UserWithGroups | null) =>
               ),
             },
             {
+              path: '/bundesliga',
+              element: (
+                <Has feat={'bundesliga'} fallback={<Pages.FeatureLockedRouteElement />}>
+                  <Pages.BundesligaPlannerPage />
+                </Has>
+              ),
+            },
+            {
               path: '/user',
               element: <Outlet />,
               errorElement: <Pages.ErrorRouteElement />,
