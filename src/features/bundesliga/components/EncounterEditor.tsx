@@ -28,8 +28,16 @@ function SeatSelect({
   onChange: (id: string | null) => void;
   placeholder: string;
 }) {
+  const items = {
+    [NONE]: '— frei —',
+    ...Object.fromEntries(players.map((p) => [p.id, `${p.name} (${p.rgIndex ?? '—'})`])),
+  };
   return (
-    <Select value={value ?? NONE} onValueChange={(v) => onChange(v === NONE ? null : v)}>
+    <Select
+      items={items}
+      value={value ?? NONE}
+      onValueChange={(v) => onChange(v === NONE ? null : v)}
+    >
       <SelectTrigger className="w-full">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

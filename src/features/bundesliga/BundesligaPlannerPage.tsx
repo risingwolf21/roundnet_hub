@@ -199,7 +199,15 @@ const BundesligaPlannerPage = () => {
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Liga</label>
-              <Select value={state.leagueId} onValueChange={(v) => v && selectLeague(v)}>
+              <Select
+                items={Object.fromEntries(
+                  (leagues.length ? leagues : [{ id: state.leagueId, name: state.leagueId }]).map(
+                    (l) => [l.id, l.name]
+                  )
+                )}
+                value={state.leagueId}
+                onValueChange={(v) => v && selectLeague(v)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Liga wählen" />
                 </SelectTrigger>
@@ -229,7 +237,11 @@ const BundesligaPlannerPage = () => {
             {!isLoading && !isError && (
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">Mein Team</label>
-                <Select value={state.ownTeamId ?? ''} onValueChange={(v) => v && selectOwnTeam(v)}>
+                <Select
+                  items={Object.fromEntries(teams.map((t) => [t.teamId, t.name]))}
+                  value={state.ownTeamId ?? ''}
+                  onValueChange={(v) => v && selectOwnTeam(v)}
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Team wählen" />
                   </SelectTrigger>
