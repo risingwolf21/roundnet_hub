@@ -15,8 +15,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGrants } from '@/features/auth/GrantsContext';
+import { Has } from '@/hooks/useGrants';
 import { useProfile } from '@/tanstack/user';
-import { AlertTriangle, ChevronDown, RotateCcw, Trophy } from 'lucide-react';
+import { AlertTriangle, ChevronDown, RefreshCw, RotateCcw, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { EncounterEditor } from './components/EncounterEditor';
 import {
@@ -30,7 +31,7 @@ import {
 import { gameCountsForDay, hasErrors, toPlayerMap, validateEncounter } from './lineup';
 import { lineupKey, usePlannerState } from './store';
 import type { ScrapedPlayer, ScrapedTeam } from './repository';
-import { useLeagueData, useRosters } from './useBundesliga';
+import { useLeagueData, useRefreshBundesliga, useRosters } from './useBundesliga';
 
 const GENDERS: { value: Gender; label: string }[] = [
   { value: 'male', label: 'M' },
@@ -68,6 +69,8 @@ const BundesligaPlannerPage = () => {
 
   const { data: rostersData, isLoading: rostersLoading } = useRosters(teamsNeedingRosters);
   const rosters = useMemo(() => rostersData?.rosters ?? {}, [rostersData]);
+
+  const refresh = useRefreshBundesliga();
 
   // Best-effort: if my RG-iD turns up in a rendered match day, pick my team + opponents for me.
   useEffect(() => {
@@ -223,7 +226,26 @@ const BundesligaPlannerPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppBar title="Bundesliga-Aufstellung" user={user} primaryAction="back" />
+      <AppBar
+        title="Bundesliga-Aufstellung"
+        user={user}
+        primaryAction="back"
+        actions={
+          <Has perm={'bundesliga.admin'} fallback={<></>}>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              title="Daten neu laden (Admin)"
+              disabled={refresh.isPending}
+              onClick={() =>
+                refresh.mutate({ leagueId: state.leagueId, teams: teamsNeedingRosters })
+              }
+            >
+              {refresh.isPending ? <Spinner /> : <RefreshCw />}
+            </Button>
+          </Has>
+        }
+      />
 
       <main className="flex-1 pb-safe-bottom px-4 pt-3 flex flex-col gap-4 max-w-2xl w-full mx-auto">
         {/* Setup */}

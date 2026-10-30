@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { BundesligaRepository, type LeagueResponse, type RostersResponse } from './repository';
 
 export const bundesligaKeys = {
@@ -26,3 +27,13 @@ export const useRosters = (teams: { teamId: string; teamVersionId: string }[]) =
     staleTime: 10 * 60 * 1000,
   });
 };
+
+/** Admin-only hard reload: force a re-scrape of the league + the given teams, then refetch. */
+export const useRefreshBundesliga = () =>
+  useMutation({
+    mutationFn: async (vars: { leagueId: string; teams: { teamId: string; teamVersionId: string }[] }) => {
+      await BundesligaRepository.fetchLeague(vars.leagueId, { force: true });
+      if (vars.teams.length) await BundesligaRepository.fetchRosters(vars.teams, { force: true });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: bundesligaKeys.all }),
+  });
