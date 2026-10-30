@@ -1,6 +1,7 @@
 // Auto-generiert – nicht manuell bearbeiten
 
 export type Permission =
+  | 'bundesliga.admin'
   | 'challenge.manage'
   | 'grants.manage'
   | 'challenges.create.own-group'
@@ -46,6 +47,7 @@ export type Permission =
   | 'games.admin.merge_accounts';
 
 export type Feature =
+  | 'bundesliga'
   | 'challenges'
   | 'costs'
   | 'drinks'

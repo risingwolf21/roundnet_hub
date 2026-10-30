@@ -53,3 +53,5 @@ package-lock.json
 # Database dumps / backups (contain production user data — never commit)
 supabase/backup/
 *dump*.sql
+
+**/node_modules/*

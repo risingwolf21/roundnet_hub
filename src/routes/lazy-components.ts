@@ -39,3 +39,4 @@ export const FeatureLockedRouteElement = lazyWithRetry(() => import('@/component
 export const UnauthorizedRouteElement = lazyWithRetry(() => import('@/components/UnauthorizedRouteElement'));
 export const UserSearchPage = lazyWithRetry(() => import('@/features/search/UserSearchPage'));
 export const TournamentCostsPage = lazyWithRetry(() => import('@/features/costs/TournamentCostsPage'));
+export const BundesligaPlannerPage = lazyWithRetry(() => import('@/features/bundesliga/BundesligaPlannerPage'));

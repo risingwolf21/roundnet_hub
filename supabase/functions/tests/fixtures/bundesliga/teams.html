@@ -1,0 +1,2843 @@
+
+
+
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        
+        
+        
+    <style>
+
+/* The old "Teams & Spiele" drawer is retired, see the sidebar_right block
+   below. Hidden from the head rather than by the empty-sidebar check of
+   base.html - that one only runs on ready and would let the trigger flash up
+   during load, and the block still carries a script so it would not catch it. */
+[data-drawer] {
+    display: none;
+}
+.side-section i{
+    font-size: 18px;
+    margin-left: 10px;
+}
+.animated-progress {
+    height: 5px;
+    border-radius: 5px;
+    margin: -3px 0px 3px 0;
+    border: 1px solid rgb(189, 113, 113);
+    overflow: hidden;
+    position: relative;
+}
+
+.animated-progress span {
+  height: 100%;
+  display: block;
+  width: 0;
+  color: rgb(255, 251, 251);
+  line-height: 30px;
+  position: absolute;
+  text-align: end;
+  padding-right: 5px;
+}
+
+.progress-blue span {
+  background-color: blue;
+}
+.progress-green span {
+  background-color: green;
+}
+.progress-purple span {
+  background-color: indigo;
+}
+.progress-red span {
+  background-color: red;
+}
+.progress-white span {
+  background-color: white;
+}
+.stream-img{
+height: 23px;
+width: 23px;
+object-fit: contain;
+vertical-align: middle;
+font-size: 20px;
+z-index: 1;
+}
+.stream-platform-img{
+    opacity: 0;
+  animation-name: change-background;
+  animation-duration: 3s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes change-background {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.game-stream{
+width: max-content;
+display: inline-block;
+ver
+}
+.group-item{
+width: calc(100% / 2);
+padding: 5px 5px 0 5px;
+}
+.groups{
+display: flex;
+flex-direction: row;
+flex-wrap: wrap;
+}
+.placement-phase{
+    display: none
+}
+.placement-link{
+  float: right;
+  margin-right: 5px;
+  font-weight: lighter;
+  font-family: 'Roboto Condensed';
+  font-size: 12px;
+}
+.current-phase{
+background-color: #ff0c00 !important
+}
+    .player-name-club{
+    vertical-align: top;
+    padding-left: 10px;
+}
+.player-name-club .player-name{
+    font-size: 28px;
+    line-height: 20px;
+    padding-top: 9px;
+}
+.player-name-club .player-name a{
+    color: black !important;
+}
+.player-club-community img{
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 5px;
+    margin-top: 5px;
+    vertical-align: text-bottom;
+}
+    @media only screen and (max-width : 420px) {
+    .player-name-club .player-name {
+        font-size: 22px !important;
+    }
+    .player-img-name-club .player-img img{
+        width: 50px !important;
+    }
+}
+.player-img-name-club .player-img img{
+    height: auto;
+    width: 55px;
+    vertical-align: bottom;
+}
+<!--.player-col .player-img{-->
+<!--    display: table-cell;-->
+<!--}-->
+    </style>
+    <link href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/team_tournament5.css"
+          rel="stylesheet">
+    <script src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/js/tournament_list.js"></script>
+
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/coaching/css/animations.css" rel="stylesheet">
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/0304_teampopup.css" rel="stylesheet">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        
+        <title>
+            
+                RG Playerzone
+            
+        </title>
+        <meta name="description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany ">
+
+        
+        <meta property="og:type"
+              content=" website " />
+        <meta property="og:url"
+              content=" https://playerzone.roundnetgermany.de/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2613 " />
+        <meta property="og:title"
+              content=" RG Playerzone " />
+        <meta property="og:description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany " />
+        <meta property="og:image"
+              content=" https://playerzone.roundnetgermany.de/static/ranking/images/meta.jpg " />
+        <meta property="og:image:width"
+              content=" 1200 " />
+        <meta property="og:image:height"
+              content=" 630 " />
+        <meta property="og:image:alt"
+              content=" Roundnet Germany " />
+        <meta property="og:site_name" content="RG Playerzone" />
+        <meta property="og:locale" content="de_DE" />
+
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url"
+              content=" https://playerzone.roundnetgermany.de/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2613 " />
+        <meta name="twitter:title"
+              content=" RG Playerzone " />
+        <meta name="twitter:description"
+              content=" Tournaments, Results, Rankings - The players' platform from Roundnet Germany " />
+        <meta name="twitter:image"
+              content=" https://playerzone.roundnetgermany.de/static/ranking/images/meta.jpg " />
+
+        
+        <link rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/css/fonts.css">
+        <link rel="stylesheet"
+              type="text/css"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/base_2603.css" />
+        
+        
+
+<!-- Manifest for pwa -->
+<link rel="manifest" href="https://pstaassets.blob.core.windows.net/staticfiles/manifest.json">
+<!-- Favicon for browsers -->
+<link rel="icon"
+      sizes="16x16"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-16x16.png">
+<link rel="icon"
+      sizes="32x32"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-32x32.png">
+<!-- Windows taskbar -->
+<link rel="icon"
+      sizes="48x48"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-48x48.png">
+<!-- Google Search results -->
+<link rel="icon"
+      sizes="96x96"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-96x96.png">
+<!-- Android Home -->
+<link rel="icon"
+      sizes="192x192"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-192x192.png">
+<!-- High resolution displays -->
+<link rel="shortcut"
+      sizes="512x512"
+      type="image/png"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-512x512.png">
+
+<!-- Apple Favicons -->
+<!-- IPad -->
+<link rel="apple-touch-icon"
+      sizes="167x167"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-167x167.png">
+<!-- IPhone -->
+<link rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-180x180.png">
+<!-- MacOS -->
+<link rel="apple-touch-icon"
+      sizes="512x512"
+      href="https://pstaassets.blob.core.windows.net/staticfiles/img/favicon/icon-512x512.png">
+
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/ranking/css/fouce.css">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/placeholder.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/transition.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/popup.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/dropdown.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/label.min.css">
+        <link rel="stylesheet"
+              href="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/icon.min.css">
+        <link rel="stylesheet"
+              type="text/css"
+              href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css" />
+        
+        
+        <script defer src="https://pstaassets.blob.core.windows.net/staticfiles/user/js/vanillatoasts.js"></script>
+        
+        
+        
+        
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.1/chart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+        <link href="https://pstaassets.blob.core.windows.net/staticfiles/user/js/vanillatoasts.css" rel="stylesheet" />
+        
+            <meta name="webpush-vapid-key" content="BO1S4H507Bky4HtptzjyeKFGRIq8MPbAgqsTJEnrta1EDaL0u1RD070UfGcfygPoDOC-k6Gl30zZqxpyZOprnyU">
+        
+        
+        <link  rel="stylesheet" href="https://pstaassets.blob.core.windows.net/staticfiles/assets/main-iCwjwgmw.css" />
+<script type="module" crossorigin="" src="https://pstaassets.blob.core.windows.net/staticfiles/assets/main-TIMGWlTe.js"></script>
+    </head>
+    <body>
+        <div class="loading-screen" data-loading-screen>
+    <div class="loading-screen--spinner">
+        <svg class="loading-screen--ball-1"
+             width="458"
+             height="457"
+             viewBox="0 0 458 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.964" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M241.417 112.665C263.35 83.4306 309.777 103.149 303.969 139.232L297.198 181.292C295.132 194.127 300.35 207.05 310.749 214.851L344.826 240.418C374.06 262.351 354.341 308.778 318.259 302.97L276.199 296.199C263.364 294.133 250.441 299.351 242.639 309.749L217.073 343.827C195.14 373.061 148.713 353.342 154.521 317.26L161.292 275.199C163.358 262.365 158.14 249.442 147.741 241.64L113.664 216.074C84.4298 194.141 104.148 147.713 140.231 153.522L182.291 160.293C195.126 162.359 208.049 157.141 215.85 146.742L241.417 112.665Z" fill="var(--color-white)" />
+        </svg>
+
+        <svg class="loading-screen--ball-2"
+             width="457"
+             height="457"
+             viewBox="0 0 457 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.452" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M336.872 185.28C366.461 189.854 371.829 230.19 344.467 242.344L272.841 274.162C268.472 276.103 264.63 279.059 261.635 282.786L212.538 343.877C193.782 367.215 156.166 351.697 159.321 321.923L167.579 243.984C168.083 239.23 167.443 234.425 165.714 229.968L137.355 156.903C126.522 128.991 158.769 104.173 182.977 121.792L246.345 167.914C250.21 170.727 254.692 172.576 259.416 173.306L336.872 185.28Z" fill="var(--color-white)" />
+        </svg>
+
+        <svg class="loading-screen--ball-3"
+             width="458"
+             height="457"
+             viewBox="0 0 458 457"
+             fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+            <circle cx="228.838" cy="228.452" r="228.452" fill="var(--color-primary)" />
+            <path d="M296.218 130.503C327.421 124.151 352.673 155.848 339.509 184.842L329.685 206.48C324.531 217.831 325.115 230.962 331.255 241.812L342.959 262.493C358.643 290.205 336.3 324.017 304.657 320.457L281.043 317.8C268.655 316.406 256.346 321.019 247.925 330.211L231.873 347.733C210.364 371.212 171.302 360.412 164.91 329.218L160.14 305.938C157.637 293.725 149.447 283.445 138.102 278.277L116.478 268.425C87.5002 255.224 85.7016 214.737 113.394 199.018L134.06 187.287C144.902 181.133 152.148 170.167 153.558 157.78L156.245 134.169C159.845 102.531 197.795 88.3092 221.302 109.789L238.845 125.818C248.048 134.228 260.716 137.73 272.932 135.244L296.218 130.503Z" fill="var(--color-white)" />
+        </svg>
+    </div>
+</div>
+
+        
+
+<rg-navigation>
+    <div slot="mobile-menu">
+        <rg-navigation-drawer>
+    
+
+<rg-navigation-menu  mobile-menu>
+    <rg-navigation-item  icon="home" href="/" mobile-menu>
+        Home
+    </rg-navigation-item>
+
+    
+        
+        <rg-navigation-item mobile-menu current img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Deutsche_Roundnet_Liga_3NJTNWW.png" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+            League
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item icon="trophy"  mobile-menu>
+        Tournaments
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Roundnet_Coach_Badge_Level_1.png" href="/tournaments/803-2026-10-29-2026-roundnet-coach-level-1">
+                        2026 Roundnet-Coach Level 1
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png" href="/tournaments/842-2026-11-21-karlsruher-kojoten-cup-9">
+                        Karlsruher Kojoten Cup 9
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png" href="/tournaments/843-2026-11-21-munich-indoor-tournament-2-3">
+                        Munich Indoor Tournament 2/3
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Augsburg_wei%C3%9F.png" href="/tournaments/875-2026-11-29-cash-out-cup">
+                        Cash out Cup
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Erlangen_weisshinterlegt_Zeichnung.png" href="/tournaments/840-2027-01-09-turnierblocker">
+                        Turnierblocker
+                    </rg-navigation-dropdown-item>
+                
+            
+
+            <rg-navigation-dropdown-item mobile-menu img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/alle.png" href="/tournaments/upcoming">
+                All
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item mobile-menu icon="calendar_add_on" href="/tournament/calendar">
+                Subscribe to all
+            </rg-navigation-dropdown-item>
+
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    <rg-navigation-item mobile-menu  href="/clubs" icon="group">
+        Clubs
+    </rg-navigation-item>
+
+    <rg-navigation-item mobile-menu  icon="leaderboard">
+        Rankings
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" href="/ranking/rg-index/">
+                    RGX
+                </rg-navigation-dropdown-item>
+            
+
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=32">
+                    GRT - Women
+                </rg-navigation-dropdown-item>
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=31">
+                    GRT - Men
+                </rg-navigation-dropdown-item>
+            
+            
+                <rg-navigation-dropdown-item icon="verified" href="/tournaments/pro-division">
+                    Pro Division
+                </rg-navigation-dropdown-item>
+            
+            <rg-navigation-dropdown-item icon="dashboard" href="/rankings">
+                Overview
+            </rg-navigation-dropdown-item>
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+
+    
+        <rg-navigation-item mobile-menu  href="/coaching/" icon="tactic">
+            Coaching
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item mobile-menu icon="groups">
+        Community
+
+        <rg-navigation-dropdown slot="dropdown">
+            <rg-navigation-dropdown-item icon="group_add" href="/partner-search/">
+                Partner Search
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="swipe" href="/roundmatch/">
+                Roundmatch 🆕
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="weekend" href="/couchsurfing/">
+                Couchsurfing
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="directions_car" href="/ridesharing/">
+                Ride Sharing
+            </rg-navigation-dropdown-item>
+
+            
+
+            <rg-navigation-dropdown-item icon="analytics" href="/stats/tournament-charts">
+                Tournament Stats
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="connect_without_contact" href="/safe-zone/">
+                    Safe Zone
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="star_outline" href="/team-of-the-week">
+                Team of the week
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="smart_display" href="/videos">
+                Videos
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="emoji_events" href="/rg-awards/2025">
+                    RG Awards
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="rule" href="/prediction-game/overview/2026" style="position: relative;">
+                Prediction Game
+
+                <div class="open-predictions" data-year="2026"></div>
+            </rg-navigation-dropdown-item>
+
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+        <rg-navigation-item mobile-menu img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/irf_event_logo_big_dark_bg.png" img-alt="" href="/national-team/2026-germany">
+            Worlds 2026
+        </rg-navigation-item>
+    
+</rg-navigation-menu>
+
+</rg-navigation-drawer>
+
+    </div>
+
+    <div slot="menu">
+        
+
+<rg-navigation-menu hidden-on-mobile >
+    <rg-navigation-item  icon="home" href="/" >
+        Home
+    </rg-navigation-item>
+
+    
+        
+        <rg-navigation-item  current img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Deutsche_Roundnet_Liga_3NJTNWW.png" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+            League
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item icon="trophy"  >
+        Tournaments
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/Roundnet_Coach_Badge_Level_1.png" href="/tournaments/803-2026-10-29-2026-roundnet-coach-level-1">
+                        2026 Roundnet-Coach Level 1
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png" href="/tournaments/842-2026-11-21-karlsruher-kojoten-cup-9">
+                        Karlsruher Kojoten Cup 9
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png" href="/tournaments/843-2026-11-21-munich-indoor-tournament-2-3">
+                        Munich Indoor Tournament 2/3
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Augsburg_wei%C3%9F.png" href="/tournaments/875-2026-11-29-cash-out-cup">
+                        Cash out Cup
+                    </rg-navigation-dropdown-item>
+                
+                    <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Erlangen_weisshinterlegt_Zeichnung.png" href="/tournaments/840-2027-01-09-turnierblocker">
+                        Turnierblocker
+                    </rg-navigation-dropdown-item>
+                
+            
+
+            <rg-navigation-dropdown-item  img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/alle.png" href="/tournaments/upcoming">
+                All
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item  icon="calendar_add_on" href="/tournament/calendar">
+                Subscribe to all
+            </rg-navigation-dropdown-item>
+
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    <rg-navigation-item   href="/clubs" icon="group">
+        Clubs
+    </rg-navigation-item>
+
+    <rg-navigation-item   icon="leaderboard">
+        Rankings
+
+        <rg-navigation-dropdown slot="dropdown">
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" href="/ranking/rg-index/">
+                    RGX
+                </rg-navigation-dropdown-item>
+            
+
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=32">
+                    GRT - Women
+                </rg-navigation-dropdown-item>
+            
+                <rg-navigation-dropdown-item img-src="https://pstaassets.blob.core.windows.net/assets/ranking/logos/2_German_Roundnet_Tour_kompakt_4c.png" href="/ranking/grt/individual/2026?id=31">
+                    GRT - Men
+                </rg-navigation-dropdown-item>
+            
+            
+                <rg-navigation-dropdown-item icon="verified" href="/tournaments/pro-division">
+                    Pro Division
+                </rg-navigation-dropdown-item>
+            
+            <rg-navigation-dropdown-item icon="dashboard" href="/rankings">
+                Overview
+            </rg-navigation-dropdown-item>
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+
+    
+        <rg-navigation-item   href="/coaching/" icon="tactic">
+            Coaching
+        </rg-navigation-item>
+    
+
+    <rg-navigation-item  icon="groups">
+        Community
+
+        <rg-navigation-dropdown slot="dropdown">
+            <rg-navigation-dropdown-item icon="group_add" href="/partner-search/">
+                Partner Search
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="swipe" href="/roundmatch/">
+                Roundmatch 🆕
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="weekend" href="/couchsurfing/">
+                Couchsurfing
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="directions_car" href="/ridesharing/">
+                Ride Sharing
+            </rg-navigation-dropdown-item>
+
+            
+
+            <rg-navigation-dropdown-item icon="analytics" href="/stats/tournament-charts">
+                Tournament Stats
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="connect_without_contact" href="/safe-zone/">
+                    Safe Zone
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="star_outline" href="/team-of-the-week">
+                Team of the week
+            </rg-navigation-dropdown-item>
+
+            <rg-navigation-dropdown-item icon="smart_display" href="/videos">
+                Videos
+            </rg-navigation-dropdown-item>
+
+            
+                <rg-navigation-dropdown-item icon="emoji_events" href="/rg-awards/2025">
+                    RG Awards
+                </rg-navigation-dropdown-item>
+            
+
+            <rg-navigation-dropdown-item icon="rule" href="/prediction-game/overview/2026" style="position: relative;">
+                Prediction Game
+
+                <div class="open-predictions" data-year="2026"></div>
+            </rg-navigation-dropdown-item>
+
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+    
+        <rg-navigation-item icon-only img-src="https://pstaassets.blob.core.windows.net/assets/tournaments/logos/irf_event_logo_big_dark_bg.png" img-alt="" href="/national-team/2026-germany">
+            Worlds 2026
+        </rg-navigation-item>
+    
+</rg-navigation-menu>
+
+    </div>
+
+    <rg-navigation-menu slot="actions">
+        <rg-navigation-item icon="search" icon-only data-search-trigger>
+            Search
+        </rg-navigation-item>
+
+        <!-- TODO: Should be a button -->
+        <rg-navigation-item icon="language" class="modal-trigger" icon-only href="#switchlanguage">
+            Change language
+        </rg-navigation-item>
+
+        <rg-navigation-item icon="help" icon-only href="/help/faq">
+            FAQ
+        </rg-navigation-item>
+
+        
+        
+        
+            <rg-navigation-item icon="person" icon-only href="/login/">
+                Login
+            </rg-navigation-item>
+        
+    </rg-navigation-menu>
+</rg-navigation>
+
+        
+
+<rg-search-overlay heading="Search" placeholder="Search tournaments, players, etc." hint-text="Start typing to search tournaments, teams, clubs and players." no-results-text="Nothing found" label-close="Close" label-open="Open result" label-navigate="Navigate results" label-recent="Recent" label-loading="Searching" label-ctrl="Ctrl" label-tournaments="Tournaments" label-teams="Teams" label-clubs="Clubs" label-players="Players">
+</rg-search-overlay>
+
+        
+
+<div id="switchlanguage" class="modal">
+    <div class="modal-content">
+        <rg-heading tag="h4" size="2xs">
+            Change language
+        </rg-heading>
+        <form action="/i18n/set_language/" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="SOjEDvd57oWT95VkP9cl6eVh1TGWTc3wOCTHdkuKCYVSBIivNKoZcqiZ8XPh3V8q">
+            <div class="input-field col s6">
+                <input type="hidden" name="next" value="">
+                <select name="language" class="browser-default">
+                    
+                    
+                    
+                        <option disabled selected
+                                value="en">
+                            English (en)
+                        </option>
+                    
+                        <option 
+                                value="de">
+                            Deutsch (de)
+                        </option>
+                    
+                        <option 
+                                value="es">
+                            español (es)
+                        </option>
+                    
+                </select>
+            </div>
+            <rg-button type="submit" size="small">
+                Change language
+            </rg-button>
+        </form>
+        <br>
+        <rg-heading tag="h4" size="2xs">
+            Change site
+        </rg-heading>
+        <form action="/set_host" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="SOjEDvd57oWT95VkP9cl6eVh1TGWTc3wOCTHdkuKCYVSBIivNKoZcqiZ8XPh3V8q">
+            <div class="input-field col s6">
+                <input type="hidden" name="next" value="">
+                <select name="host" class="browser-default">
+                    
+                        <option  value="eu">
+                            European Roundnet Association
+                        </option>
+                    
+                        <option  value="dk">
+                            Roundnet Denmark
+                        </option>
+                    
+                        <option  value="fr">
+                            Roundnet France
+                        </option>
+                    
+                        <option disabled selected value="de">
+                            Roundnet Germany
+                        </option>
+                    
+                        <option  value="it">
+                            Roundnet Italy
+                        </option>
+                    
+                        <option  value="nl">
+                            Roundnet Nederland
+                        </option>
+                    
+                        <option  value="es">
+                            Roundnet Spain
+                        </option>
+                    
+                        <option  value="sw">
+                            Roundnet Sweden
+                        </option>
+                    
+                        <option  value="ch">
+                            Swiss Roundnet
+                        </option>
+                    
+                </select>
+            </div>
+            <rg-button type="submit" size="small">
+                Change site
+            </rg-button>
+        </form>
+        <br>
+    </div>
+</div>
+
+
+        
+        <main>
+            <div class="container "
+                 id="content">
+                
+                
+                
+    
+
+<div class="rg-tournament-nav">
+    
+    <a class="rg-tournament-nav--back"
+       href="/tournaments/upcoming"
+       data-tournament-back
+       data-event-slug="793-2027-04-11-deutsche-roundnet-liga-2026-2027"
+       aria-label="Back">
+        <rg-icon name="arrow_back" size="small">
+        </rg-icon>
+    </a>
+
+    <div class="rg-tournament-nav--actions">
+        
+            <a class="rg-tournament-nav--action"
+               href="https://www.twitch.tv/roundnetgermany"
+               target="_blank"
+               rel="noopener"
+               title="Live: Twitch - RG"
+               aria-label="Live: Twitch - RG">
+                
+                    <img class="rg-tournament-nav--platform-logo"
+                         src="https://pstaassets.blob.core.windows.net/assets/stream/logos/twitch.png"
+                         alt="">
+                
+            </a>
+        
+        
+        
+    </div>
+
+    <a class="rg-tournament-nav--identity"
+       href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027">
+        
+            <img class="rg-tournament-nav--logo"
+                 src="https://pstaassets.blob.core.windows.net/assets/tournaments/img/1DRB_lang2.png"
+                 alt="Deutsche Roundnet Liga 2026/2027">
+        
+        <span class="rg-tournament-nav--title">
+            
+            Deutsche Roundnet Liga 2026/2027
+        </span>
+    </a>
+
+    <nav class="rg-tournament-nav--tabs" aria-label="Tournament">
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027"
+               >
+                Info
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2613"
+               aria-current="page">
+                Teams
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/registration"
+               >
+                Registration
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase"
+               >
+                Games
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/schedule/mixed-14358-gruppenphase?type=ranking"
+               >
+                Table
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/stats/2613"
+               >
+                Stats
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/overview"
+               >
+                Overview
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/partner-search"
+               >
+                Partner Search
+                
+                    <span class="rg-tournament-nav--badge">2</span>
+                
+            </a>
+        
+            <a class="rg-tournament-nav--tab"
+               href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/prediction"
+               >
+                Prediction Game
+                
+            </a>
+        
+    </nav>
+</div>
+
+
+    <div class="rg-tournament-nav--context">
+        
+
+
+
+    <rg-navigation-item type="inline">
+        1. Bundesliga
+
+        <rg-navigation-dropdown slot="dropdown" type="inline" columns>
+            
+                
+                <div class="rg-tournament-nav--division-group"
+                     >
+                    
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2613" class="active">
+                            1. Bundesliga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2614" class="">
+                            2. Bundesliga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2615" class="">
+                            3. Liga
+                        </rg-navigation-dropdown-item>
+                    
+                        <rg-navigation-dropdown-item type="inline" href="/tournaments/793-2027-04-11-deutsche-roundnet-liga-2026-2027/teams/2616" class="">
+                            Regionalliga
+                        </rg-navigation-dropdown-item>
+                    
+                </div>
+            
+        </rg-navigation-dropdown>
+    </rg-navigation-item>
+
+
+
+
+        
+        
+    </div>
+
+                
+    
+    <div class="tournament-page-header">
+        <div class="tournament-page-subtitle">
+            <rg-heading tag="h4" size="xs" weight="semibold">
+                
+                    Teams
+                
+            </rg-heading>
+        </div>
+    </div>
+    
+
+    <!--    <div class="admin-options">-->
+    <!--        -->
+    <!--        -->
+    <!--    </div>-->
+
+    <div class="tournament-teams-info">
+        <div class="tournament-teams-details">
+            
+
+            
+                <div class="teams-registration-status">
+                    <strong>Registered Teams:</strong> 15/15
+                    
+                </div>
+            
+        </div>
+
+        
+        <div class="tournament-teams-filters">
+            <div class="tournament-teams-filter-group">
+                <span class="tournament-teams-filters-label">Display:</span>
+                <button type="button"
+                        class="filter-logos active"
+                        onclick="toggle_logos(this)">
+                    <span>Clubs</span>
+                </button>
+                <button type="button" class="filter-rgx active" onclick="toggle_rgx(this)">
+                    <span>RGX</span>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+<div class="tournament-teams-grid">
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45617, 59549) "
+             data-edit_date="2026.05.1359549"
+             data-rgx="11659">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            KA-Boom
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Jonas</span>
+                                        
+                                            <span>Paul</span>
+                                        
+                                            <span>Amin</span>
+                                        
+                                            <span>Julia</span>
+                                        
+                                            <span>Hella</span>
+                                        
+                                            <span>Rosa-Rafaela</span>
+                                        
+                                            <span>Wiebke</span>
+                                        
+                                            <span>Lars</span>
+                                        
+                                            <span>Theo</span>
+                                        
+                                            <span>Thibaud</span>
+                                        
+                                            <span>Max</span>
+                                        
+                                            <span>Martin</span>
+                                        
+                                            <span>Janina</span>
+                                        
+                                            <span>Bianca</span>
+                                        
+                                            <span>Robin</span>
+                                        
+                                            <span>Philipp</span>
+                                        
+                                            <span>Peter</span>
+                                        
+                                            <span>Fabian</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (16/18)
+                     ">27,8</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="10259" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(40794, 59944) "
+             data-edit_date="2026.05.1659944"
+             data-rgx="9836">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/M%C3%BCnchen_wei%C3%9F.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            MRC I
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Karl</span>
+                                        
+                                            <span>Franziska</span>
+                                        
+                                            <span>Timo</span>
+                                        
+                                            <span>James</span>
+                                        
+                                            <span>Markus</span>
+                                        
+                                            <span>Raphaela</span>
+                                        
+                                            <span>Louis</span>
+                                        
+                                            <span>Svenja</span>
+                                        
+                                            <span>Simon</span>
+                                        
+                                            <span>Miriam</span>
+                                        
+                                            <span>Jessica</span>
+                                        
+                                            <span>Furkan</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (10/12)
+                     ">27,5</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9836" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(40828, 59979) "
+             data-edit_date="2026.05.1759979"
+             data-rgx="9350">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kein_Titel_1500_x_1500_px.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Mosquitos Mannheim
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Lena</span>
+                                        
+                                            <span>Larissa</span>
+                                        
+                                            <span>Kris</span>
+                                        
+                                            <span>Pierre</span>
+                                        
+                                            <span>Jan Felix</span>
+                                        
+                                            <span>Nina</span>
+                                        
+                                            <span>Tim</span>
+                                        
+                                            <span>Paul Gerrit</span>
+                                        
+                                            <span>Oussama</span>
+                                        
+                                            <span>Irian</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (9/10)
+                     ">27,5</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9350" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45811, 59989) "
+             data-edit_date="2026.05.1859989"
+             data-rgx="9240">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Logo_final.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Meet the East
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Lukas</span>
+                                        
+                                            <span>Johanna</span>
+                                        
+                                            <span>Nina</span>
+                                        
+                                            <span>Elisa</span>
+                                        
+                                            <span>Niklas</span>
+                                        
+                                            <span>Fabian</span>
+                                        
+                                            <span>Pauline</span>
+                                        
+                                            <span>Philipp</span>
+                                        
+                                            <span>Karl</span>
+                                        
+                                            <span>Nico</span>
+                                        
+                                            <span>Wout</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (9/11)
+                     ">29,9</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9240" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(40834, 59991) "
+             data-edit_date="2026.05.1859991"
+             data-rgx="8803">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/RCB_Logo.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Roundnet Club Bonn I
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Daniel</span>
+                                        
+                                            <span>Maja</span>
+                                        
+                                            <span>Franzi</span>
+                                        
+                                            <span>Christine</span>
+                                        
+                                            <span>Ely</span>
+                                        
+                                            <span>Jens</span>
+                                        
+                                            <span>Ben</span>
+                                        
+                                            <span>Hauke</span>
+                                        
+                                            <span>Charlotte</span>
+                                        
+                                            <span>Rafael</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (8/10)
+                     ">27,4</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="8803" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(40862, 60017) "
+             data-edit_date="2026.05.1960017"
+             data-rgx="10829">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/K%C3%B6ln_neu_kleiner.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            1. Roundnet Club Köln I
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Klara</span>
+                                        
+                                            <span>Saskia</span>
+                                        
+                                            <span>Georg</span>
+                                        
+                                            <span>Sophia</span>
+                                        
+                                            <span>Martin</span>
+                                        
+                                            <span>Birk</span>
+                                        
+                                            <span>Laura</span>
+                                        
+                                            <span>Sophia</span>
+                                        
+                                            <span>Paul</span>
+                                        
+                                            <span>Matthias</span>
+                                        
+                                            <span>Martin</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (8/11)
+                     ">29,7</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="10829" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45613, 60025) "
+             data-edit_date="2026.05.1960025"
+             data-rgx="9437">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Heidelberg_neon_png.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Heidelberg
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Mathis</span>
+                                        
+                                            <span>Alina</span>
+                                        
+                                            <span>Becky</span>
+                                        
+                                            <span>Jeremias</span>
+                                        
+                                            <span>Julius</span>
+                                        
+                                            <span>Marvin</span>
+                                        
+                                            <span>Therese</span>
+                                        
+                                            <span>Ben</span>
+                                        
+                                            <span>Dennis</span>
+                                        
+                                            <span>Jonathan</span>
+                                        
+                                            <span>Nathalie</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (9/11)
+                     ">28,6</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9437" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(42718, 60063) "
+             data-edit_date="2026.05.2060063"
+             data-rgx="10276">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/069.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            NULL SECHS NEUN I
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Marcus</span>
+                                        
+                                            <span>Jeremy</span>
+                                        
+                                            <span>Kevin</span>
+                                        
+                                            <span>Rici</span>
+                                        
+                                            <span>Lennart</span>
+                                        
+                                            <span>Julia Kathy</span>
+                                        
+                                            <span>Jonathan</span>
+                                        
+                                            <span>Lucas</span>
+                                        
+                                            <span>Fabienne</span>
+                                        
+                                            <span>Theresa</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (9/10)
+                     ">28,1</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="10276" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45576, 60156) "
+             data-edit_date="2026.05.2360156"
+             data-rgx="9092">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/freiburg.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/france.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            EK1P
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Pierre</span>
+                                        
+                                            <span>Toma</span>
+                                        
+                                            <span>Tobias</span>
+                                        
+                                            <span>Oscar</span>
+                                        
+                                            <span>Manuel</span>
+                                        
+                                            <span>Liza</span>
+                                        
+                                            <span>Noëlle</span>
+                                        
+                                            <span>Zora</span>
+                                        
+                                            <span>Johannes</span>
+                                        
+                                            <span>Jonas</span>
+                                        
+                                            <span>Theo</span>
+                                        
+                                            <span>Dominika</span>
+                                        
+                                            <span>Anna</span>
+                                        
+                                            <span>Lilien</span>
+                                        
+                                            <span>Ali</span>
+                                        
+                                            <span>Hugo</span>
+                                        
+                                            <span>Roman</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (14/17)
+                     ">27,0</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9092" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45584, 60171) "
+             data-edit_date="2026.05.2460171"
+             data-rgx="9559">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/West_Wings.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            West Wings Essen
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Marie Dominique</span>
+                                        
+                                            <span>Sümeyye</span>
+                                        
+                                            <span>Lauma</span>
+                                        
+                                            <span>Aleksej</span>
+                                        
+                                            <span>Henning</span>
+                                        
+                                            <span>Justus</span>
+                                        
+                                            <span>Jonah</span>
+                                        
+                                            <span>Aleksandrs</span>
+                                        
+                                            <span>Kaspar</span>
+                                        
+                                            <span>Max</span>
+                                        
+                                            <span>Nele</span>
+                                        
+                                            <span>Tobias</span>
+                                        
+                                            <span>Sören</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (10/13)
+                     ">28,8</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9559" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45587, 60174) "
+             data-edit_date="2026.05.2460174"
+             data-rgx="9321">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Hamburg_Otters.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Otters &amp; Sharks
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Christof</span>
+                                        
+                                            <span>Greta</span>
+                                        
+                                            <span>Max</span>
+                                        
+                                            <span>Josephine</span>
+                                        
+                                            <span>Miguel</span>
+                                        
+                                            <span>Annabel</span>
+                                        
+                                            <span>Bo</span>
+                                        
+                                            <span>Tomke</span>
+                                        
+                                            <span>Lea</span>
+                                        
+                                            <span>Max</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (8/10)
+                     ">26,4</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9321" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45622, 60177) "
+             data-edit_date="2026.05.2460177"
+             data-rgx="10590">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/W%C3%BCrzburg_schwarze_outline.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Würzburg
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Pascal</span>
+                                        
+                                            <span>Tim</span>
+                                        
+                                            <span>Kasimir</span>
+                                        
+                                            <span>Mario</span>
+                                        
+                                            <span>Lina</span>
+                                        
+                                            <span>Nora</span>
+                                        
+                                            <span>Silvia</span>
+                                        
+                                            <span>Andrea</span>
+                                        
+                                            <span>Lasse</span>
+                                        
+                                            <span>Mattes</span>
+                                        
+                                            <span>Momo</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (9/11)
+                     ">25,5</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="10590" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(42893, 60178) "
+             data-edit_date="2026.05.2460178"
+             data-rgx="9924">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kiel_neu_ab_Dez_2020_VJuktbl.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Roundet Sharks Kiel
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Lukas</span>
+                                        
+                                            <span>Miriam</span>
+                                        
+                                            <span>Sarah</span>
+                                        
+                                            <span>Umut</span>
+                                        
+                                            <span>Jan</span>
+                                        
+                                            <span>Jule</span>
+                                        
+                                            <span>Christoffer</span>
+                                        
+                                            <span>Jarrit</span>
+                                        
+                                            <span>Leon</span>
+                                        
+                                            <span>Albert</span>
+                                        
+                                            <span>Haye</span>
+                                        
+                                            <span>Marie-Charlot</span>
+                                        
+                                            <span>Sophie</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (8/13)
+                     ">26,3</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9924" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(40997, 60182) "
+             data-edit_date="2026.05.2460182"
+             data-rgx="9924">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Berlin_Red-Eagles-Roundnet-rund-weiss-mit-Kreis-2000.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Berlin
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Marc</span>
+                                        
+                                            <span>Vivien</span>
+                                        
+                                            <span>Alicia</span>
+                                        
+                                            <span>Emil</span>
+                                        
+                                            <span>David</span>
+                                        
+                                            <span>Sarah</span>
+                                        
+                                            <span>Rasmus</span>
+                                        
+                                            <span>Cedric</span>
+                                        
+                                            <span>Jonas</span>
+                                        
+                                            <span>Malte</span>
+                                        
+                                            <span>Martijn</span>
+                                        
+                                            <span>Lucca</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (11/12)
+                     ">26,2</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9924" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+        <div 
+             class="tournament-team-card      "
+             onclick=" load_team_info(45591, 60454) "
+             data-edit_date="2026.05.3160454"
+             data-rgx="9335">
+
+            
+
+            <div class="team-card-header">
+                <div class="team-card-logos logos-club">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/assets/clubs/logos/Kassel_2020.png" alt="">
+                    
+                </div>
+                <div class="team-card-logos logos-country" style="display:none">
+                    
+                        <img loading="lazy" src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/flags/germany.svg" alt="">
+                    
+                </div>
+                <div class="team-card-info">
+                    <div class="left">
+                        <div class="team-card-name ">
+                            Roundnet Raccoons
+                        </div>
+
+                        <div class="team-card-details">
+                            
+                                
+                                    <div class="team-card-players">
+                                        
+                                            <span>Fabian</span>
+                                        
+                                            <span>Theresa</span>
+                                        
+                                            <span>Giacomo</span>
+                                        
+                                            <span>Elena</span>
+                                        
+                                            <span>Jürgen</span>
+                                        
+                                            <span>Etienne</span>
+                                        
+                                            <span>Ajay</span>
+                                        
+                                            <span>Yannik</span>
+                                        
+                                            <span>Alina</span>
+                                        
+                                            <span>Sebastiano</span>
+                                        
+                                            <span>Marianne</span>
+                                        
+                                            <span>Eva</span>
+                                        
+                                            <span>Friederike</span>
+                                        
+                                            <span>Tobias</span>
+                                        
+                                    </div>
+                                
+                            
+                        </div>
+                    </div>
+
+                    <div class="team-card-badges">
+                        
+                        
+
+
+    <div class="age-badge " style="display:none">
+        <span class="rgx-value"
+              title="
+                         (10/14)
+                     ">28,4</span>
+    </div>
+
+
+                        
+
+
+    
+        
+    
+        <rg-score-badge score="9335" logo-src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/rgx_small.png" pro-logo-src="None"    size="medium" >
+        </rg-score-badge>
+        
+
+
+    
+
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    
+</div>
+
+
+    <script>
+    $(document).ready(function(){
+        $('.tournament-team-card').popup({on: 'click'});
+    });
+
+    let clicked = false;
+    function toggle_logos(btn){
+        if(!clicked){
+            click_link('toggle-display-Deutsche Roundnet Liga 2026/2027 (1. Bundesliga)')
+            clicked = true;
+        }
+        const spanText = $(btn).find('span').text();
+        if(spanText == 'Clubs' || spanText == 'Clubs'){
+            $(btn).find('span').text('Countries');
+            $('.logos-club').hide();
+            $('.logos-country').show();
+        }else{
+            $(btn).find('span').text('Clubs');
+            $('.logos-club').show();
+            $('.logos-country').hide();
+        }
+    }
+
+    let clicked_rgx = false;
+    function toggle_rgx(btn){
+        if(!clicked_rgx){
+            click_link('toggle-rgx-Deutsche Roundnet Liga 2026/2027 (1. Bundesliga)')
+            clicked_rgx = true;
+        }
+        const spanText = $(btn).find('span').text();
+        if(spanText == 'RGX' || spanText == 'RGX'){
+            $(btn).find('span').text('Age');
+            $('rg-score-badge').hide();
+            $('.age-badge').show();
+        }else{
+            $(btn).find('span').text('RGX');
+            $('rg-score-badge').show();
+            $('.age-badge').hide();
+        }
+    }
+
+    let clicked_sort = false;
+    function sort_teams(btn){
+        if(!clicked_sort){
+            click_link('sort-display-Deutsche Roundnet Liga 2026/2027 (1. Bundesliga)')
+            clicked_sort = true;
+        }
+        const spanText = $(btn).find('span').text();
+        if(spanText == 'Date' || spanText == 'Date'){
+            $(btn).find('span').text('RGX');
+            sort('RGX');
+        }else{
+            $(btn).find('span').text('Date');
+            sort('date');
+        }
+    }
+
+    function sort(crit){
+        const elements = Array.from(document.querySelectorAll('.tournament-team-card'));
+
+        elements.sort((a, b) => {
+            if(crit === 'date')
+                return a.dataset.edit_date.localeCompare(b.dataset.edit_date);
+            else
+                return b.dataset.rgx - a.dataset.rgx;
+        });
+
+        const container = document.querySelector('.tournament-teams-grid');
+        elements.forEach(element => container.appendChild(element));
+    }
+
+    </script>
+
+                <div class="ui modal team-popup" id="team-popup">
+                    <div class="ui placeholder">
+                        <div class="rectangular image"></div>
+                    </div>
+                    <div class="popup-content" style="display:none"></div>
+                </div>
+                <div id="elo-history" class="modal">
+                    <div class="modal-content">
+                        <div class="ui placeholder" id="modal-preloader">
+                            <div class="image header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                        <div id="rgx-modal-content" style="display: none"></div>
+                    </div>
+                </div>
+                <div id="ranking-history" class="modal">
+                    <div class="modal-content">
+                        <div class="ui placeholder" id="ranking-modal-preloader">
+                            <div class="image header">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                            <div class="paragraph">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                        </div>
+                        <div id="ranking-modal-content" style="display: none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <rg-drawer position="right" data-drawer>
+                <button id="sidebar-trigger"
+                        class="sidebar-trigger green-text pulse"
+                        type="button"
+                        slot="trigger">
+                    <img class="sidebar-trigger--image"
+                         src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/sidebar-trigger.png"
+                         alt="Trigger Sidebar">
+                </button>
+
+                <div data-sidebar>
+                    
+    
+    <script>
+
+function animate_progress_bars(root) {
+  $(root || document).find(".animated-progress span").each(function () {
+    $(this).animate(
+      {
+        width: $(this).attr("data-progress") + "%",
+      },
+      1000
+    );
+  });
+}
+
+$(function () {
+  animate_progress_bars(document);
+});
+
+function update_progress(id, value){
+    $("#"+id+" span").animate(
+        {
+          width: value + "%",
+        },
+        1000
+      );
+}
+function toggle_placement_phases(link, div_id) {
+      event.preventDefault();
+      const divs = document.querySelectorAll('.div-' + div_id + ' .placement-phase');
+      let allHidden = true;
+
+      divs.forEach(div => {
+        if (div.style.display === 'none' || div.style.display === '') {
+          div.style.display = 'block';
+        } else {
+          div.style.display = 'none';
+          allHidden = false;
+        }
+      });
+
+      // Ändere den Linktext basierend auf dem Status der Divs
+      if (allHidden) {
+        link.textContent = 'Hide placements';
+      } else {
+        link.textContent = 'Show placements';
+      }
+    }
+    </script>
+
+                </div>
+            </rg-drawer>
+        </main>
+        
+
+<footer style class="page-footer"  id="footer">
+    <div class="footer-copyright" style="background-color: #09382">
+        <div class="container">
+            <div class="row">
+                <div class="col l6 m12 s12">
+                    © 2024 &nbsp;
+                    <a class="grey-text text-lighten-3"
+                       href="https://www.roundnetgermany.de">Roundnet Germany</a>&nbsp;&nbsp;
+                    <a href="https://www.instagram.com/roundnetgermany/" target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/insta.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://www.facebook.com/roundnetgermany/" target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/fb.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://open.spotify.com/show/0iYVTONsyfEP4MZHYvBaVa?si=8eY02d8NRlerT6gLPfWTkA/"
+                       target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/spotify.png">
+                    </a>&nbsp;&nbsp;
+                    <a href="https://www.youtube.com/channel/UCQG5WkAeqmxyQGShjwqrZWA/featured/"
+                       target="_blank">
+                        <img class="align-middle"
+                             style="width:20px"
+                             src="https://pstaassets.blob.core.windows.net/staticfiles/ranking/images/yt.png">
+                    </a>&nbsp;&nbsp;
+                </div>
+                <div class="col l6 m12 s12">
+                    <span class="">
+                        <a href="/help/faq" class="grey-text text-lighten-3">FAQ</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/terms_and_conditions_en.pdf"
+                           target="_blank">Terms and Conditions</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/privacy_policy_en.pdf"
+                           target="_blank">Privacy Policy</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://pstaassets.blob.core.windows.net/staticfiles/image_rights_info_en.pdf"
+                           target="_blank">Image Rights Info</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="https://roundnetgermany.de/impressum/"
+                           target="_blank">Impressum</a> |
+                        <a class="grey-text text-lighten-3"
+                           href="mailto:playerzone@roundnetgermany.de"
+                           target="_blank">Contact</a>
+                    </span>
+                </div>
+                <br>
+                <br>
+                <div class="col l6 m12 s12">
+                    <div class="">
+                        Icons made by <a href="https://www.flaticon.com/de/autoren/freepik" title="Freepik">Freepik</a> and <a href="https://www.flaticon.com/de/autoren/pixel-perfect"
+    title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/de/" title="Flaticon">www.flaticon.com</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+        <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"
+                data-cfasync="false"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/transition.min.js"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/popup.min.js"></script>
+        <script src="https://pstaassets.blob.core.windows.net/staticfiles/semantic/components/dropdown.js"></script>
+        <script>
+                window.cookieconsent.initialise({
+                    "palette": {
+                        "popup": {
+                            "background": "#eaf7f7",
+                            "text": "#5c7291"
+                        },
+                        "button": {
+                            "background": "transparent",
+                            "text": "#56cbdb",
+                            "border": "#56cbdb"
+                        }
+                    },
+                    "showLink": false,
+                    "content": {
+                        "message": "This website uses cookies to ensure you get the best experience on our website.",
+                        "dismiss": "Ok"
+                    }
+                });
+        </script>
+        
+        
+    </body>
+    
+</html>
+<script>
+    function load_img(element, filename){
+        var img = element.nextElementSibling.getElementsByClassName('collapse-img')[0];
+        var ph = element.nextElementSibling.getElementsByClassName('collapse-img')[1];
+        if(img.alt != 'img'){
+            img.src = filename;
+            img.alt = 'img';
+            img.style.display = 'block';
+            ph.style.display = 'none';
+        }
+    }
+   var elmts = document.getElementsByClassName('collapsible-body');
+
+   for (i = 0; i < elmts.length; i++){
+        elmts[i].onanimationend = function (){
+            var elmnt = this.parentElement.previousElementSibling;
+            //document.getElementById("l-"+id).scrollTop += 100;
+            if (elmnt != null){
+            elmnt.scrollIntoView({block: 'start', behavior: 'smooth'});
+            }
+        };
+   }
+   function toggle_submenu(e){
+    $(e).siblings('.submenu').transition('slide down');
+   }
+
+
+  $(document).ready(function(){
+    if($('[data-sidebar]').children().length == 0) $('[data-drawer]').hide();
+    $('#mobile-demo').sidenav();
+    $('.modal').modal();
+    $('select').formSelect();
+    $('.hint').popup();
+    $('select.ui.dropdown').dropdown_sem({fullTextSearch: 'exact', match: 'text'});
+    $(".dropdown-trigger").dropdown({
+        coverTrigger: false,
+        constrainWidth: false,});
+    var links = document.getElementsByTagName('a');
+    for(var i=0;i<links.length;i++){
+        href = links[i].getAttribute("href");
+        if(href != null && href.length > 0){
+            if(href[0] != '.' && href[0] != '/' && href[0] != '#' && href[0] != '?'){
+                links[i].onclick = function(){ click_link(this.href)};
+                links[i].onauxclick = function(){ click_link(this.href)};
+                links[i].setAttribute('target', '_blank');
+            }
+        }
+
+    }
+
+  });
+
+    function discard_skill_popup(link){
+        $.ajax({
+            url: '/profile/discard-skill-popup',
+            dataType: 'json',
+            data: { },
+            success: function(data) {
+            },
+            error: function(){
+            }
+        });
+  }
+
+  function click_link(link){
+        $.ajax({
+            url: '/click-link',
+            dataType: 'json',
+            data: { link: link
+                    },
+            success: function(data) {
+            },
+            error: function(){
+            }
+        });
+  }
+
+  function show_history(player_id, ranking_id=null){
+    $('#modal-preloader').show();
+    $('#rgx-modal-content').hide();
+    $.ajax({
+        url: '/ranking/rg-rating/history',
+        data: {
+        'player_id': player_id,
+        'ranking_id': ranking_id,
+        },
+        dataType: 'json',
+        success: function(data) {
+        console.log('success');
+            $('.team-popup').removeClass('transition').removeClass('visible').hide();
+            $('#rgx-modal-content').html(data.html);
+            $('#modal-preloader').hide();
+            $('#rgx-modal-content').show();
+        },
+        error: function(data){
+            console.log(data);
+        }
+    });
+  }
+    function show_player_ranking_history(player_id, score_id){
+        $('#ranking-modal-preloader').show();
+        $('#ranking-modal-content').hide();
+        $.ajax({
+            url: '/ranking/history/player',
+            data: {
+            'player_id': player_id,
+            'score_id': score_id,
+            },
+            dataType: 'json',
+            success: function(data) {
+                $('.team-popup').removeClass('transition').removeClass('visible').hide();
+                $('#ranking-modal-content').html(data.html);
+                $('#ranking-modal-preloader').hide();
+                $('#ranking-modal-content').show();
+                $('.collapsible').collapsible();
+            },
+            error: function(data){
+                console.log(data);
+            }
+        });
+    }
+  function toggle_games(e){
+    $(e).next().transition('slide down');
+  }
+  function disable(){
+        $('.small-button').addClass('disabled');
+        $('.button').addClass('disabled');
+        $('.small-button-yellow').addClass('disabled');
+        $('.button-yellow').addClass('disabled');
+        $('#loader').show();
+  }
+  
+
+    function load_team_info(id, tteam_id, md_group_id=null, division_id=null, game_id=null){
+        $('#team-popup').modal().modal('open');
+        $('#team-popup'+' .placeholder').show();
+            $.ajax({
+                url: '/tournament/get-team-info',
+                data: {
+                'id': tteam_id,
+                'md_group_id': md_group_id,
+                'division_id': division_id,
+                'game_id': game_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#team-popup'+' .popup-content').html(data.html).show();
+                    $('#team-popup'+' .placeholder').hide();
+
+                }
+            });
+    }
+    
+</script>
+
+
