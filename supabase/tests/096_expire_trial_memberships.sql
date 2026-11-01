@@ -20,13 +20,26 @@ FROM unnest(ARRAY['tx_old','tx_new','tx_null','tx_adm']) n;
 
 INSERT INTO public.event_group(id, name, visible, is_public) VALUES (:'grp','ExpireGrp', true, true);
 
--- Three trials with different ages, plus an admin (recipient of the admin notification).
-INSERT INTO public.group_user_mapping("user","group",role,trial_started_at) VALUES
-  (tests.get_supabase_uid('tx_old'),  :'grp', 'trial', now() - interval '40 days'),  -- expired
-  (tests.get_supabase_uid('tx_new'),  :'grp', 'trial', now() - interval '5 days'),   -- still within trial
-  (tests.get_supabase_uid('tx_null'), :'grp', 'trial', NULL);                         -- never started -> never expires
+-- Pin the trial window so the test doesn't depend on the environment's configured value.
+DELETE FROM public.app_config WHERE key = 'trial_duration_days';
+INSERT INTO public.app_config(key, value) VALUES ('trial_duration_days', '28');
+
+-- Three trials plus an admin (recipient of the admin notification).
 INSERT INTO public.group_user_mapping("user","group",role) VALUES
+  (tests.get_supabase_uid('tx_old'),  :'grp', 'trial'),
+  (tests.get_supabase_uid('tx_new'),  :'grp', 'trial'),
+  (tests.get_supabase_uid('tx_null'), :'grp', 'trial'),
   (tests.get_supabase_uid('tx_adm'),  :'grp', 'admin');
+
+-- set_trial_started_at() stamps now() only when a row BECOMES trial; a later UPDATE that
+-- keeps role = trial preserves whatever we set (that's the back-dating path), so set the ages
+-- through an UPDATE rather than the INSERT (which the trigger would overwrite with now()).
+UPDATE public.group_user_mapping SET trial_started_at = now() - interval '40 days'
+  WHERE "user" = tests.get_supabase_uid('tx_old')  AND "group" = :'grp';   -- expired
+UPDATE public.group_user_mapping SET trial_started_at = now() - interval '5 days'
+  WHERE "user" = tests.get_supabase_uid('tx_new')  AND "group" = :'grp';   -- still within trial
+UPDATE public.group_user_mapping SET trial_started_at = NULL
+  WHERE "user" = tests.get_supabase_uid('tx_null') AND "group" = :'grp';   -- never started
 
 -- Future + past events in the group; expired user holds a trial seat on each.
 INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group")
