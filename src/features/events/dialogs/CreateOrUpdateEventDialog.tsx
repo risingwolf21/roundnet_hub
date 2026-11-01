@@ -1,6 +1,7 @@
 import { useGrants } from '@/features/auth/GrantsContext';
-import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { useCreateSeriesMutation, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSeriesMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '@/utils';
+import { buildRRule, intervalSecondsLiteral, type EventRecurrence } from '@/utils/rrule';
 import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -28,7 +29,7 @@ import { FormEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
 import { GroupWithUserRole } from '@/types/supabaseTypes';
-import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { Json, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 const SearchPlacesDialog = React.lazy(() => import('./SearchPlacesDialog'));
 
@@ -50,6 +51,41 @@ const createEmptyEvent = () => ({
 }) as EventTable;
 
 const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+
+// Derive a recurring-series template from the edited event. Used both when creating a recurring
+// event and when editing "this and all following" (which redefines the series going forward).
+const buildSeriesFromEvent = (
+  ev: TablesInsert<'events'>,
+  bring_items: { name: string; required_qty: number | null }[]
+): TablesInsert<'event_series'> => {
+  const start = ev.startingDateTime;
+  const rrule = buildRRule(ev.recurrence as EventRecurrence, new Date(start));
+  if (!rrule) throw new Error('Keine Wiederholung ausgewählt.');
+  const items = bring_items
+    .filter((x) => x.name && (x.required_qty ?? 0) > 0)
+    .map((x, i) => ({ name: x.name, unit: 'Stk.', required_qty: x.required_qty ?? 0, notes: null, sort_order: i }));
+  return {
+    group: ev.group,
+    title: ev.title ?? '',
+    description: ev.description ?? '',
+    place: ev.place ?? null,
+    timezone: 'Europe/Berlin',
+    rrule,
+    recurrence: ev.recurrence,
+    until: ev.recurrenceEnd ?? null,
+    dtstart: start,
+    duration: intervalSecondsLiteral(start, ev.endDateTime),
+    meeting_offset: ev.meetingDateTime ? intervalSecondsLiteral(start, ev.meetingDateTime) : null,
+    answer_offset: ev.answerDeadline ? intervalSecondsLiteral(start, ev.answerDeadline) : null,
+    max_attendees: ev.maxAttendees ?? null,
+    max_trial_attendees: ev.max_trial_attendees ?? null,
+    required_item: ev.required_item ?? null,
+    items_enabled: items.length > 0,
+    constellations_enabled: ev.constellations_enabled ?? false,
+    reminder_before: ev.reminder_before ?? null,
+    items_template: items as unknown as Json,
+  };
+};
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown error.');
 
@@ -103,7 +139,14 @@ export const CreateOrUpdateEventDialog = ({
   const insertEvent = useInsertEventMutation();
   const updateSingleEvent = useUpdateSingleMutation();
   const updateRecurrenceEvents = useUpdateRecurrenceMutation();
-  const isSaving = insertEvent.isPending || updateSingleEvent.isPending || updateRecurrenceEvents.isPending;
+  const createSeries = useCreateSeriesMutation();
+  const updateSeries = useUpdateSeriesMutation();
+  const isSaving =
+    insertEvent.isPending ||
+    updateSingleEvent.isPending ||
+    updateRecurrenceEvents.isPending ||
+    createSeries.isPending ||
+    updateSeries.isPending;
 
   // Events are only visible (RLS) to members of their group, so warn before the event "disappears".
   const isMemberOfSelectedGroup = useMemo(() => {
@@ -147,28 +190,38 @@ export const CreateOrUpdateEventDialog = ({
           throw new Error(t('events.creation.meetingTimeBeforeStartTime'));
 
       if (option === 'InsertEvent') {
+        const isRecurring = !!finalEvent.recurrence && finalEvent.recurrence !== 'None';
         try {
-          await insertEvent.mutateAsync({
-            event: eventChanges as Tables<'events'>,
-            currentUser: user,
-            items: bring_items.map((x) => ({
-              name: x.name,
-              required_qty: x.required_qty ?? 0,
-              unit: 'Stk.',
-              sort_order: 0,
-              notes: null,
-            })),
-          });
+          if (isRecurring) {
+            // Recurring events are a series template; occurrences are materialized by the expander.
+            await createSeries.mutateAsync({
+              ...buildSeriesFromEvent(finalEvent, bring_items),
+              created_by: user.id,
+            });
+          } else {
+            await insertEvent.mutateAsync({
+              event: eventChanges as Tables<'events'>,
+              currentUser: user,
+              items: bring_items.map((x) => ({
+                name: x.name,
+                required_qty: x.required_qty ?? 0,
+                unit: 'Stk.',
+                sort_order: 0,
+                notes: null,
+              })),
+            });
+          }
         } catch (error) {
           toast.error('Event konnte nicht erstellt werden: ' + errorMessage(error));
           return;
         }
-        toast.success('Event wurde erstellt');
+        toast.success(isRecurring ? 'Serie wurde erstellt' : 'Event wurde erstellt');
         onClose();
       } else if (option === 'UpdateSingle') {
         try {
           await updateSingleEvent.mutateAsync({
-            eventChanges,
+            // Detach this occurrence so later series edits / regeneration leave it alone.
+            eventChanges: { ...eventChanges, detached: true },
             id: finalEvent.id ?? '',
             currentUser: user,
             items: bring_items,
@@ -181,27 +234,32 @@ export const CreateOrUpdateEventDialog = ({
         onClose();
       } else if (option === 'UpdateRecurrence') {
         if (!event) throw new Error('Event not found.');
-
-        // Date changes are applied relative to every occurrence's start, so send all date fields
-        // together to keep end/meeting/deadline consistent with a moved start.
-        const dateFieldChanged = EVENT_DATE_FIELDS.some((field) => field in eventChanges);
-        const recurrenceChanges: TablesUpdate<'events'> = dateFieldChanged
-          ? {
-            ...eventChanges,
-            ...Object.fromEntries(
-              EVENT_DATE_FIELDS.filter((field) => finalEvent[field]).map((field) => [field, finalEvent[field]])
-            ),
-          }
-          : eventChanges;
+        const isRecurring = !!finalEvent.recurrence && finalEvent.recurrence !== 'None';
 
         try {
-          await updateRecurrenceEvents.mutateAsync({
-            eventChanges: recurrenceChanges,
-            key: event.key,
-            originalStartingDateTime: event.startingDateTime,
-            currentUser: user,
-            items: bring_items,
-          });
+          if (isRecurring) {
+            // "This and all following events" redefines the series template; the expander then
+            // updates future occurrences in place (preserving attendance) and prunes removed ones.
+            await updateSeries.mutateAsync({ key: event.key, patch: buildSeriesFromEvent(finalEvent, bring_items) });
+          } else {
+            // Recurrence removed: fall back to shifting the remaining occurrence rows directly.
+            const dateFieldChanged = EVENT_DATE_FIELDS.some((field) => field in eventChanges);
+            const recurrenceChanges: TablesUpdate<'events'> = dateFieldChanged
+              ? {
+                ...eventChanges,
+                ...Object.fromEntries(
+                  EVENT_DATE_FIELDS.filter((field) => finalEvent[field]).map((field) => [field, finalEvent[field]])
+                ),
+              }
+              : eventChanges;
+            await updateRecurrenceEvents.mutateAsync({
+              eventChanges: recurrenceChanges,
+              key: event.key,
+              originalStartingDateTime: event.startingDateTime,
+              currentUser: user,
+              items: bring_items,
+            });
+          }
         } catch (error) {
           toast.error('Events konnten nicht aktualisiert werden: ' + errorMessage(error));
           return;

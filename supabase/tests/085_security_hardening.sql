@@ -209,6 +209,8 @@ SELECT set_eq(
     'public.admin_analytics_drinks_ranking',
     'public.admin_challenge_zero_points_candidates',
     'public.create_next_occurrences',
+    'public.series_for_expansion',
+    'public.expand_series',
     'games.add_match_with_sets',
     'games.merge_guest_player',
     'notifications.upsert_webpush_subscription',

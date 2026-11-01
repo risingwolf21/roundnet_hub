@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase';
+import { RecurrenceExpander } from '@/lib/recurrence-expander';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, differenceInCalendarDays, Duration, isAfter, set, startOfDay, sub } from 'date-fns';
 import { EventTable } from 'types/supabase';
-import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
+import { Json, Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
 
 export const fetchEvents = () =>
@@ -446,5 +447,79 @@ export const EventRepository = {
       p_run_at: formatDateToDatabase(new Date()),
     }).throwOnError();
     return result.data ?? [];
+  },
+
+  /**
+   * Materialize occurrences for one series (or every series the caller may edit, when omitted).
+   * The RRULE is expanded in the browser (RecurrenceExpander); the DB only applies the slots via
+   * the authorized expand_series RPC. Replaces the former edge function.
+   */
+  async expandRecurrences(
+    seriesId?: string,
+    mode: 'fill' | 'sync' = 'fill'
+  ): Promise<{ processed: number }> {
+    const { data: series } = await supabase
+      .rpc('series_for_expansion', seriesId ? { p_series_id: seriesId } : {})
+      .throwOnError();
+
+    const now = new Date();
+    const rangeEnd = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000); // 60-day horizon
+    let processed = 0;
+
+    for (const s of series ?? []) {
+      const slots = RecurrenceExpander.expand(
+        {
+          rrule: s.rrule,
+          dtstart: s.dtstart,
+          timezone: s.timezone,
+          until: s.until,
+          durationMs: Math.round((s.duration_s ?? 0) * 1000),
+          meetingOffsetMs: s.meeting_offset_s != null ? Math.round(s.meeting_offset_s * 1000) : null,
+          answerOffsetMs: s.answer_offset_s != null ? Math.round(s.answer_offset_s * 1000) : null,
+        },
+        now,
+        rangeEnd
+      );
+      await supabase
+        .rpc('expand_series', { p_series_id: s.id, p_slots: slots as unknown as Json, p_mode: mode })
+        .throwOnError();
+      processed += 1;
+    }
+
+    return { processed };
+  },
+
+  /** Create a recurring-series template, then materialize its occurrences. */
+  async createSeries(series: TablesInsert<'event_series'>): Promise<Tables<'event_series'>> {
+    const result = await supabase.from('event_series').insert(series).select('*').single().throwOnError();
+    const created = result.data as Tables<'event_series'>;
+    await EventRepository.expandRecurrences(created.id);
+    return created;
+  },
+
+  /** Redefine a series (looked up by its stable key) and re-materialize its future occurrences. */
+  async updateSeriesByKey(key: string, patch: TablesUpdate<'event_series'>): Promise<Tables<'event_series'>> {
+    const result = await supabase.from('event_series').update(patch).eq('key', key).select('*').single().throwOnError();
+    const updated = result.data as Tables<'event_series'>;
+    // Deliberate template edit → propagate to the future occurrences (move/prune).
+    await EventRepository.expandRecurrences(updated.id, 'sync');
+    return updated;
+  },
+
+  /**
+   * End a series just before `fromIso` (the first occurrence to drop) and let the expander
+   * prune/cancel the now-removed future occurrences.
+   */
+  async endSeriesByKey(key: string, fromIso: string): Promise<void> {
+    const until = formatDateToDatabase(sub(new Date(fromIso), { seconds: 1 }));
+    const result = await supabase
+      .from('event_series')
+      .update({ until })
+      .eq('key', key)
+      .select('id')
+      .throwOnError();
+    assertRowsAffected(result.data, 'Serie konnte nicht beendet werden');
+    // Ending a series must drop/cancel the now-removed future occurrences → sync.
+    await EventRepository.expandRecurrences((result.data as { id: string }[])[0].id, 'sync');
   },
 };

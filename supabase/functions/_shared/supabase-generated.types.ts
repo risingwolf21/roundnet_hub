@@ -1949,6 +1949,102 @@ export type Database = {
           },
         ]
       }
+      event_series: {
+        Row: {
+          active: boolean
+          answer_offset: unknown | null
+          constellations_enabled: boolean
+          created_at: string
+          created_by: string | null
+          description: string
+          dtstart: string
+          duration: unknown
+          group: string
+          id: string
+          items_enabled: boolean
+          items_template: Json
+          key: string
+          max_attendees: number | null
+          max_trial_attendees: number | null
+          meeting_offset: unknown | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"]
+          reminder_before: string | null
+          required_item: Database["public"]["Enums"]["ItemType"] | null
+          rrule: string
+          timezone: string
+          title: string
+          until: string | null
+        }
+        Insert: {
+          active?: boolean
+          answer_offset?: unknown | null
+          constellations_enabled?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          dtstart: string
+          duration: unknown
+          group: string
+          id?: string
+          items_enabled?: boolean
+          items_template?: Json
+          key?: string
+          max_attendees?: number | null
+          max_trial_attendees?: number | null
+          meeting_offset?: unknown | null
+          place?: string | null
+          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
+          reminder_before?: string | null
+          required_item?: Database["public"]["Enums"]["ItemType"] | null
+          rrule: string
+          timezone?: string
+          title?: string
+          until?: string | null
+        }
+        Update: {
+          active?: boolean
+          answer_offset?: unknown | null
+          constellations_enabled?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          dtstart?: string
+          duration?: unknown
+          group?: string
+          id?: string
+          items_enabled?: boolean
+          items_template?: Json
+          key?: string
+          max_attendees?: number | null
+          max_trial_attendees?: number | null
+          meeting_offset?: unknown | null
+          place?: string | null
+          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
+          reminder_before?: string | null
+          required_item?: Database["public"]["Enums"]["ItemType"] | null
+          rrule?: string
+          timezone?: string
+          title?: string
+          until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_series_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_series_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_transformation_applications: {
         Row: {
           created_at: string | null
@@ -2063,6 +2159,7 @@ export type Database = {
           constellations_enabled: boolean
           created_at: string
           description: string
+          detached: boolean
           endDateTime: string
           group: string
           id: string
@@ -2072,12 +2169,14 @@ export type Database = {
           max_trial_attendees: number | null
           maxAttendees: number | null
           meetingDateTime: string | null
+          occurrence_date: string | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd: string | null
           reminder_before: string | null
           reminder_sent_at: string | null
           required_item: Database["public"]["Enums"]["ItemType"] | null
+          series_id: string | null
           startingDateTime: string
           title: string
         }
@@ -2086,6 +2185,7 @@ export type Database = {
           constellations_enabled?: boolean
           created_at?: string
           description?: string
+          detached?: boolean
           endDateTime: string
           group: string
           id?: string
@@ -2095,12 +2195,14 @@ export type Database = {
           max_trial_attendees?: number | null
           maxAttendees?: number | null
           meetingDateTime?: string | null
+          occurrence_date?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
           reminder_before?: string | null
           reminder_sent_at?: string | null
           required_item?: Database["public"]["Enums"]["ItemType"] | null
+          series_id?: string | null
           startingDateTime: string
           title?: string
         }
@@ -2109,6 +2211,7 @@ export type Database = {
           constellations_enabled?: boolean
           created_at?: string
           description?: string
+          detached?: boolean
           endDateTime?: string
           group?: string
           id?: string
@@ -2118,12 +2221,14 @@ export type Database = {
           max_trial_attendees?: number | null
           maxAttendees?: number | null
           meetingDateTime?: string | null
+          occurrence_date?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
           reminder_before?: string | null
           reminder_sent_at?: string | null
           required_item?: Database["public"]["Enums"]["ItemType"] | null
+          series_id?: string | null
           startingDateTime?: string
           title?: string
         }
@@ -2140,6 +2245,13 @@ export type Database = {
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "event_series"
             referencedColumns: ["id"]
           },
         ]
@@ -2955,6 +3067,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      apply_series_occurrences: {
+        Args: { p_series_id: string; p_slots: Json }
+        Returns: Json
+      }
+      expand_series: {
+        Args: { p_series_id: string; p_slots: Json }
+        Returns: Json
+      }
       apply_transformation_to_event: {
         Args: { p_event_id: string; p_transformation_id: string }
         Returns: undefined
@@ -3019,6 +3139,7 @@ export type Database = {
           constellations_enabled: boolean
           created_at: string
           description: string
+          detached: boolean
           endDateTime: string
           group: string
           id: string
@@ -3028,12 +3149,14 @@ export type Database = {
           max_trial_attendees: number | null
           maxAttendees: number | null
           meetingDateTime: string | null
+          occurrence_date: string | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd: string | null
           reminder_before: string | null
           reminder_sent_at: string | null
           required_item: Database["public"]["Enums"]["ItemType"] | null
+          series_id: string | null
           startingDateTime: string
           title: string
         }[]
@@ -3211,6 +3334,10 @@ export type Database = {
           key_id: number
         }[]
       }
+      repair_recurrence_local_time: {
+        Args: { p_tz?: string }
+        Returns: number
+      }
       revert_transformation_application: {
         Args: { p_application_id: string }
         Returns: undefined
@@ -3240,9 +3367,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      run_recurrence_expander_if_needed: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       send_answer_deadline_reminders: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      series_for_expansion: {
+        Args: { p_series_id?: string }
+        Returns: {
+          answer_offset_s: number
+          dtstart: string
+          duration_s: number
+          id: string
+          meeting_offset_s: number
+          rrule: string
+          timezone: string
+          until: string
+        }[]
       }
       update_attendance: {
         Args: {

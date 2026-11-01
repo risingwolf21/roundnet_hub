@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import { useCreateNextOccurences, useRecurringEvents } from '@/tanstack/events';
+import { useExpandRecurrences, useRecurringEvents } from '@/tanstack/events';
 import groupBy from 'lodash.groupby';
 import { Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -21,7 +21,7 @@ const RecurringEvents = () => {
 
   const navigate = useNavigate();
   const { data: recurringEvents = [], isLoading, refetch } = useRecurringEvents();
-  const createNextEvents = useCreateNextOccurences();
+  const createNextEvents = useExpandRecurrences();
 
   return (
     <div>
@@ -40,21 +40,15 @@ const RecurringEvents = () => {
                 <ItemTitle>Wiederkehrende Events</ItemTitle>
                 <ItemDescription>Hier kannst du wiederkehrende Events für die nächsten 30 Tage erstellen lassen</ItemDescription>
                 {
-                  (createNextEvents.data ?? []).length > 0 && <ol className='list-decimal pl-6 pt-2'>
-                    {
-                      createNextEvents.data?.map(x => (
-                        <li key={x.id} className='text-sm text-muted-foreground'>
-                          {`Event "${x.title}" am ${format(new Date(x.startingDateTime!), 'dd.MM.yyyy, HH:mm')} wurde erstellt.`}
-                        </li>
-                      ))
-                    }
-                  </ol>
+                  createNextEvents.data && <p className='text-sm text-muted-foreground pt-2'>
+                    {`${createNextEvents.data.processed} Serie(n) aktualisiert.`}
+                  </p>
                 }
               </ItemContent>
               <ItemActions>
                 <Button variant={"outline"} disabled={createNextEvents.isPending} onClick={() => {
                   createNextEvents.mutate(undefined, {
-                    onSuccess: (data) => toast.success(`Es wurden erfolgreich ${data.length} Events erstellt!`),
+                    onSuccess: (data) => toast.success(`${data.processed} Serie(n) aktualisiert!`),
                     onError: () => toast.error("Es ist ein Fehler aufgetreten beim Erstellen der Events!")
                   });
                 }}>
