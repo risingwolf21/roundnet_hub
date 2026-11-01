@@ -89,34 +89,40 @@ CREATE TRIGGER trg_enforce_attendance_capacity
   FOR EACH ROW
   EXECUTE FUNCTION public.enforce_attendance_capacity();
 
--- 2) Fix the trial cap-change promotion (was using maxAttendees instead of max_trial_attendees)
-CREATE OR REPLACE FUNCTION public.update_attendance_on_max_trial_attendees_change()
+-- 2) Fix the trial cap-change promotion. The live trigger calls
+--    trg_update_attendance_on_max_trial_attendees_change (renamed in 20251107130454); it used
+--    "maxAttendees" instead of max_trial_attendees in both the OFFSET and the LIMIT, so raising
+--    the trial cap promoted nobody (LIMIT = Δ maxAttendees = 0) and lowering it demoted by the
+--    wrong count.
+CREATE OR REPLACE FUNCTION public.trg_update_attendance_on_max_trial_attendees_change()
 RETURNS trigger
 LANGUAGE plpgsql
-SET search_path TO ''
+SET search_path TO 'public', 'pg_temp'
 AS $function$
 BEGIN
-  IF (NEW.max_trial_attendees < OLD.max_trial_attendees) THEN
-    WITH users_to_update AS (
-      SELECT m."user"
-      FROM public.event_attendance_user_mapping m
-      WHERE m.event = NEW.id AND m.state = 'AttendingAsTrial'
-      ORDER BY m."lastUpdate"
-      OFFSET NEW.max_trial_attendees)
-    UPDATE public.event_attendance_user_mapping
-      SET state = 'WaitingAsTrial'
-      WHERE event = NEW.id AND "user" IN (SELECT "user" FROM users_to_update);
-  ELSIF (NEW.max_trial_attendees > OLD.max_trial_attendees) THEN
-    WITH users_to_update AS (
-      SELECT m."user"
-      FROM public.event_attendance_user_mapping m
-      WHERE m.event = NEW.id AND m.state = 'WaitingAsTrial'
-      ORDER BY m."lastUpdate"
-      LIMIT (NEW.max_trial_attendees - OLD.max_trial_attendees))
-    UPDATE public.event_attendance_user_mapping
-      SET state = 'AttendingAsTrial'
-      WHERE event = NEW.id AND "user" IN (SELECT "user" FROM users_to_update);
+  IF (new."max_trial_attendees" < old."max_trial_attendees") THEN
+    WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                             FROM event_attendance_user_mapping
+                             WHERE event = new.id
+                               AND state = 'AttendingAsTrial'
+                             ORDER BY "lastUpdate"
+                             OFFSET new."max_trial_attendees")
+    UPDATE event_attendance_user_mapping
+    SET state = 'WaitingAsTrial'
+    WHERE event_attendance_user_mapping."event" = new.id
+      AND event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
+  ELSIF (new."max_trial_attendees" > old."max_trial_attendees") THEN
+    WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                             FROM event_attendance_user_mapping
+                             WHERE event = new.id
+                               AND state = 'WaitingAsTrial'
+                             ORDER BY "lastUpdate"
+                             LIMIT (new."max_trial_attendees" - old."max_trial_attendees"))
+    UPDATE event_attendance_user_mapping
+    SET state = 'AttendingAsTrial'
+    WHERE event_attendance_user_mapping."event" = new.id
+      AND event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
   END IF;
-  RETURN NEW;
+  RETURN new;
 END;
 $function$;
