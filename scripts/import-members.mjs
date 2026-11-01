@@ -14,10 +14,12 @@
 //   node scripts/import-members.mjs --list-groups            # find the group id
 //   node scripts/import-members.mjs --csv members.csv --group <group-uuid> [--dry-run] [--no-rg-link] [--reset-existing] [--out result.csv]
 //
-// --reset-existing: for a row whose account already exists, set a FRESH temp password
-//   (admin.updateUserById). Use this to recover after an interrupted run where the result CSV
-//   (and thus the generated passwords) was lost — re-run the same CSV with this flag and every
-//   row ends with a known password. Without it, existing accounts are left untouched.
+// --reset-existing: for a row whose account already exists, set a FRESH temp password AND
+//   confirm its email (admin.updateUserById; no email is sent). Use this to recover after an
+//   interrupted run where the result CSV (and thus the generated passwords) was lost, or where
+//   accounts were created unconfirmed (email_confirm:false) and therefore can't log in — re-run
+//   the same CSV with this flag and every row ends with a known password + confirmed email.
+//   Without it, existing accounts are left untouched.
 //
 // Output: result CSV, written row-by-row (an interrupted run keeps what it already did), with
 // email, name, status (created|reset|exists|error), tempPassword (for created/reset), userId,
@@ -149,9 +151,10 @@ async function run() {
     try {
       if (userId) {
         if (resetExisting && !dryRun) {
-          // Set a fresh known password for an account that already exists (recovery path).
+          // Recovery path: set a fresh known password AND confirm the email (fixes accounts
+          // that were created unconfirmed, which otherwise can't log in). No email is sent.
           tempPw = tempPassword();
-          const { error } = await admin.auth.admin.updateUserById(userId, { password: tempPw });
+          const { error } = await admin.auth.admin.updateUserById(userId, { password: tempPw, email_confirm: true });
           if (error) throw error;
           status = 'reset';
           reset++;
