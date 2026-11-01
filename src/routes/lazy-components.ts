@@ -18,6 +18,7 @@ export const AdminDashboard = lazyWithRetry(() => import('@/features/admin/Admin
 export const AdminUserList = lazyWithRetry(() => import('@/features/admin/AdminUserList'));
 export const AuthLayout = lazyWithRetry(() => import('@/features/auth/AuthLayout'));
 export const ForgotPassword = lazyWithRetry(() => import('@/features/auth/ForgotPassword'));
+export const ResetPassword = lazyWithRetry(() => import('@/features/auth/ResetPassword'));
 export const LoginForm = lazyWithRetry(() => import('@/features/auth/LoginForm'));
 export const SignUpForm = lazyWithRetry(() => import('@/features/auth/SignUpForm'));
 export const ChallengeList = lazyWithRetry(() => import('@/features/challenges/ChallengeList'));

@@ -52,6 +52,11 @@ const createRouter = (user: UserWithGroups | null) =>
           path: 'forgot-password',
           element: <Pages.ForgotPassword />,
           errorElement: <Pages.ErrorRouteElement />,
+        },
+        {
+          path: 'reset-password',
+          element: <Pages.ResetPassword />,
+          errorElement: <Pages.ErrorRouteElement />,
         }
       ],
     },

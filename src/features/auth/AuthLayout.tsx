@@ -10,7 +10,11 @@ const AuthLayout = () => {
 
   const home = import.meta.env.VITE_APP_HOMEPAGE;
 
-  if (user) {
+  // The recovery link establishes a (recovery) session, which makes `user` truthy — but the
+  // visitor still has to set a new password here, so never bounce away from reset-password.
+  const isResetPassword = location.pathname === '/auth/reset-password';
+
+  if (user && !isResetPassword) {
     return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || home : home} />;
   }
 
