@@ -40,7 +40,7 @@ SELECT public.apply_series_occurrences(:'sid'::uuid, jsonb_build_array(
 
 UPDATE public.events
   SET title = 'CUSTOM',
-      "startingDateTime" = (:'d0'::date + 14 + time '20:00') AT TIME ZONE 'Europe/Berlin'
+      "startingDateTime" = (:'d0'::date + 7 + time '20:00') AT TIME ZONE 'Europe/Berlin'
   WHERE series_id = :'sid'::uuid AND occurrence_date = :'d0'::date + 7;
 
 -- Fill again: d0+7 already exists (must stay as customised), d0+21 is new (insert),
