@@ -64,7 +64,9 @@ begin
   where t.gs_ts > v_now
     and (s.until is null or t.gs_ts <= s.until);
 
-  return public.apply_series_occurrences(p_series_id, v_slots);
+  -- 'fill': automatic generation only ADDS missing future occurrences; it never rewrites,
+  -- moves, cancels or deletes an existing occurrence (non-retroactive).
+  return public.apply_series_occurrences(p_series_id, v_slots, 'fill');
 end;
 $function$;
 

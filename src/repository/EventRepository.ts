@@ -454,7 +454,10 @@ export const EventRepository = {
    * The RRULE is expanded in the browser (RecurrenceExpander); the DB only applies the slots via
    * the authorized expand_series RPC. Replaces the former edge function.
    */
-  async expandRecurrences(seriesId?: string): Promise<{ processed: number }> {
+  async expandRecurrences(
+    seriesId?: string,
+    mode: 'fill' | 'sync' = 'fill'
+  ): Promise<{ processed: number }> {
     const { data: series } = await supabase
       .rpc('series_for_expansion', seriesId ? { p_series_id: seriesId } : {})
       .throwOnError();
@@ -478,7 +481,7 @@ export const EventRepository = {
         rangeEnd
       );
       await supabase
-        .rpc('expand_series', { p_series_id: s.id, p_slots: slots as unknown as Json })
+        .rpc('expand_series', { p_series_id: s.id, p_slots: slots as unknown as Json, p_mode: mode })
         .throwOnError();
       processed += 1;
     }
@@ -498,7 +501,8 @@ export const EventRepository = {
   async updateSeriesByKey(key: string, patch: TablesUpdate<'event_series'>): Promise<Tables<'event_series'>> {
     const result = await supabase.from('event_series').update(patch).eq('key', key).select('*').single().throwOnError();
     const updated = result.data as Tables<'event_series'>;
-    await EventRepository.expandRecurrences(updated.id);
+    // Deliberate template edit → propagate to the future occurrences (move/prune).
+    await EventRepository.expandRecurrences(updated.id, 'sync');
     return updated;
   },
 
@@ -515,6 +519,7 @@ export const EventRepository = {
       .select('id')
       .throwOnError();
     assertRowsAffected(result.data, 'Serie konnte nicht beendet werden');
-    await EventRepository.expandRecurrences((result.data as { id: string }[])[0].id);
+    // Ending a series must drop/cancel the now-removed future occurrences → sync.
+    await EventRepository.expandRecurrences((result.data as { id: string }[])[0].id, 'sync');
   },
 };

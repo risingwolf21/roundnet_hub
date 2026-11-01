@@ -100,8 +100,11 @@ create policy event_series_delete_with_perm on public.event_series
   using (public.authorize('event.delete') and public.is_full_member_of_group("group"));
 
 -- ============================================================
--- 4. Backfill: one series per existing recurring `key`, derived from the anchor
---    (earliest) occurrence. recurrence='None' events are left unlinked.
+-- 4. Backfill: one series per existing recurring `key`, derived from the CURRENT
+--    (latest) occurrence so the template reflects the schedule/settings in effect now
+--    (a training that changed weekday/time over its life keeps its CURRENT rhythm, and
+--    forward generation never reschedules existing future occurrences). recurrence='None'
+--    events are left unlinked.
 -- ============================================================
 insert into public.event_series (
   key, "group", title, description, place, timezone, rrule, recurrence, until, dtstart, duration,
@@ -141,7 +144,7 @@ from (
   select distinct on (e.key) e.*
   from public.events e
   where e.recurrence <> 'None'::public."EventRecurrence"
-  order by e.key, e."startingDateTime" asc           -- earliest occurrence = anchor
+  order by e.key, e."startingDateTime" desc          -- latest occurrence = current anchor
 ) a
 cross join lateral (select (a."startingDateTime" at time zone 'Europe/Berlin') as loc) l
 cross join lateral (

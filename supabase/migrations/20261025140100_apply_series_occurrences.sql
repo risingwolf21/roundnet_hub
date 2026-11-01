@@ -12,11 +12,19 @@
 --   * prune future occurrences the rule no longer produces: cancel them if they carry
 --     attendance/pledges/matches, otherwise delete
 --
+-- p_mode controls how much it may touch existing rows:
+--   * 'sync' (default) — full behaviour above; used for a deliberate series edit
+--     ("this & all future"), which may move/prune future occurrences.
+--   * 'fill' — INSERT-ONLY / non-retroactive: adds occurrences for slot dates that do not
+--     yet exist and never updates, cancels or deletes an existing occurrence. This is what
+--     automatic generation (the nightly cron and the "generate upcoming" button) uses, so
+--     turning the feature on / letting the cron run never rewrites what is already there.
+--
 -- p_slots: jsonb array of
 --   { "occurrence_date": "YYYY-MM-DD", "starting": <tstz>, "ending": <tstz>,
 --     "meeting": <tstz|null>, "deadline": <tstz|null> }
 
-create or replace function public.apply_series_occurrences(p_series_id uuid, p_slots jsonb)
+create or replace function public.apply_series_occurrences(p_series_id uuid, p_slots jsonb, p_mode text default 'sync')
  returns jsonb
  language plpgsql
  security definer
@@ -103,7 +111,8 @@ begin
         end if;
       end if;
 
-    elsif v_existing."startingDateTime" > now()
+    elsif p_mode = 'sync'
+          and v_existing."startingDateTime" > now()
           and v_existing.detached = false
           and v_existing."key" = s.key
           and v_existing."isCancelled" = false then
@@ -130,7 +139,8 @@ begin
     -- past or detached occurrences are left untouched
   end loop;
 
-  -- ---- prune future occurrences the rule no longer produces ------------
+  -- ---- prune future occurrences the rule no longer produces (sync only) ----
+  if p_mode = 'sync' then
   for v_existing in
     select * from public.events
     where series_id = p_series_id
@@ -150,6 +160,7 @@ begin
       v_deleted := v_deleted + 1;
     end if;
   end loop;
+  end if;
 
   return jsonb_build_object(
     'inserted', v_inserted, 'updated', v_updated,
@@ -159,5 +170,5 @@ end;
 $function$;
 
 -- Maintenance/RPC surface: callable by the edge function (service_role) only.
-revoke all on function public.apply_series_occurrences(uuid, jsonb) from public, anon, authenticated;
-grant execute on function public.apply_series_occurrences(uuid, jsonb) to service_role;
+revoke all on function public.apply_series_occurrences(uuid, jsonb, text) from public, anon, authenticated;
+grant execute on function public.apply_series_occurrences(uuid, jsonb, text) to service_role;

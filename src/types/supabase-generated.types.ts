@@ -3072,7 +3072,7 @@ export type Database = {
         Returns: Json
       }
       expand_series: {
-        Args: { p_series_id: string; p_slots: Json }
+        Args: { p_series_id: string; p_slots: Json; p_mode?: string }
         Returns: Json
       }
       apply_transformation_to_event: {
