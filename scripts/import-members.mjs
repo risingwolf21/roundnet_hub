@@ -12,14 +12,21 @@
 //   export SUPABASE_URL="https://<project>.supabase.co"
 //   export SUPABASE_SERVICE_ROLE_KEY="<service-role-key>"   # secret — never commit
 //   node scripts/import-members.mjs --list-groups            # find the group id
-//   node scripts/import-members.mjs --csv members.csv --group <group-uuid> [--dry-run] [--no-rg-link] [--out result.csv]
+//   node scripts/import-members.mjs --csv members.csv --group <group-uuid> [--dry-run] [--no-rg-link] [--reset-existing] [--out result.csv]
 //
-// Output: result CSV with email, name, status (created|exists|error), tempPassword (only for
-// newly created), userId, group, rgLinked. Handle it securely and delete it after handing out
-// the passwords.
+// --reset-existing: for a row whose account already exists, set a FRESH temp password AND
+//   confirm its email (admin.updateUserById; no email is sent). Use this to recover after an
+//   interrupted run where the result CSV (and thus the generated passwords) was lost, or where
+//   accounts were created unconfirmed (email_confirm:false) and therefore can't log in — re-run
+//   the same CSV with this flag and every row ends with a known password + confirmed email.
+//   Without it, existing accounts are left untouched.
+//
+// Output: result CSV, written row-by-row (an interrupted run keeps what it already did), with
+// email, name, status (created|reset|exists|error), tempPassword (for created/reset), userId,
+// group, rgLinked. Handle it securely and delete it after handing out the passwords.
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 
 // ---- args ----
 const args = process.argv.slice(2);
@@ -102,6 +109,7 @@ async function run() {
   const groupId = val('--group');
   const dryRun = has('--dry-run');
   const rgLink = !has('--no-rg-link');
+  const resetExisting = has('--reset-existing');
   const outPath = val('--out', 'import-result.csv');
   if (!csvPath) { console.error('Fehlt: --csv <pfad>'); process.exit(1); }
   if (!groupId) { console.error('Fehlt: --group <uuid>  (ermittele ihn mit --list-groups)'); process.exit(1); }
@@ -115,8 +123,13 @@ async function run() {
   if (iEmail < 0) { console.error('Keine Email-Spalte gefunden. Header:', headers.join(' | ')); process.exit(1); }
 
   const existing = await existingUsersByEmail();
-  const results = [];
-  let created = 0, exists = 0, errors = 0, grouped = 0, linked = 0;
+
+  // Write the result CSV incrementally so an interrupted run keeps what it already did.
+  const cols = ['email', 'name', 'status', 'tempPassword', 'userId', 'group', 'rgLinked', 'detail'];
+  if (!dryRun) writeFileSync(outPath, cols.join(',') + '\n', 'utf8');
+  const record = (r) => { if (!dryRun) appendFileSync(outPath, cols.map((c) => csvEscape(r[c])).join(',') + '\n', 'utf8'); };
+
+  let created = 0, reset = 0, exists = 0, errors = 0, grouped = 0, linked = 0;
 
   for (const r of rows) {
     const email = (r[iEmail] ?? '').trim().toLowerCase();
@@ -124,7 +137,8 @@ async function run() {
     const nachname = (iNach >= 0 ? r[iNach] : '').trim();
     const rgid = (iRg >= 0 ? r[iRg] : '').trim();
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      results.push({ email: email || '(leer)', name: `${vorname} ${nachname}`.trim(), status: 'error', detail: 'ungültige Email' });
+      const row = { email: email || '(leer)', name: `${vorname} ${nachname}`.trim(), status: 'error', detail: 'ungültige Email' };
+      record(row);
       errors++;
       continue;
     }
@@ -136,8 +150,18 @@ async function run() {
 
     try {
       if (userId) {
-        status = 'exists';
-        exists++;
+        if (resetExisting && !dryRun) {
+          // Recovery path: set a fresh known password AND confirm the email (fixes accounts
+          // that were created unconfirmed, which otherwise can't log in). No email is sent.
+          tempPw = tempPassword();
+          const { error } = await admin.auth.admin.updateUserById(userId, { password: tempPw, email_confirm: true });
+          if (error) throw error;
+          status = 'reset';
+          reset++;
+        } else {
+          status = 'exists';
+          exists++;
+        }
       } else {
         tempPw = tempPassword();
         if (dryRun) {
@@ -181,19 +205,15 @@ async function run() {
         if (!error && data && data.length) { rgLinked = true; linked++; }
       }
 
-      results.push({ email, name, status, tempPassword: tempPw, userId, group: groupAdded ? 'ok' : '', rgLinked: rgLinked ? 'ok' : (rgid ? 'kein Treffer' : '') });
+      record({ email, name, status, tempPassword: tempPw, userId, group: groupAdded ? 'ok' : '', rgLinked: rgLinked ? 'ok' : (rgid ? 'kein Treffer' : '') });
     } catch (e) {
       errors++;
-      results.push({ email, name, status: 'error', detail: e?.message ?? String(e) });
+      record({ email, name, status: 'error', detail: e?.message ?? String(e) });
     }
   }
 
-  const cols = ['email', 'name', 'status', 'tempPassword', 'userId', 'group', 'rgLinked', 'detail'];
-  const out = [cols.join(',')].concat(results.map((r) => cols.map((c) => csvEscape(r[c])).join(','))).join('\n');
-  writeFileSync(outPath, out, 'utf8');
-
   console.log(`\nFertig${dryRun ? ' (DRY RUN – nichts geschrieben)' : ''}:`);
-  console.log(`  erstellt: ${created} | existierten: ${exists} | Fehler: ${errors}`);
+  console.log(`  erstellt: ${created} | zurückgesetzt: ${reset} | existierten: ${exists} | Fehler: ${errors}`);
   console.log(`  Gruppen-Zuordnungen: ${grouped} | RG-Verknüpfungen: ${linked}`);
   console.log(`  Ergebnis-CSV: ${outPath}  (enthält temporäre Passwörter – sicher behandeln & danach löschen)`);
 }
