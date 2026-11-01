@@ -1,4 +1,5 @@
 import { Has } from '@/hooks/useGrants';
+import { pickDistinctColor } from '@/features/groups/groupColor';
 import { useCreateGroupMutation, useUpdateGroupMutation } from '@/tanstack/groups';
 import { Tables } from '@/types/supabase-generated.types';
 import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
@@ -26,13 +27,15 @@ export const CreateOrUpdateGroupDialog = ({
   onClose,
 }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | 'closed'>) => {
   const usersParentGroups = payload.user.groups.filter((x) => x.parent_group === null);
-  const [data, setData] = useState<Tables<'event_group'>>(
+  // Colours already in use (across the groups this user can see) so a new group gets a distinct one.
+  const existingColors = payload.user.groups.map((g) => (g as { color?: string }).color);
+  const [data, setData] = useState<Tables<'event_group'>>(() =>
     payload.group ?? {
       name: '',
       description: '',
       id: '',
       created_at: '',
-      color: '#000',
+      color: pickDistinctColor(existingColors),
       is_public: true,
       need_request_to_join: false,
       parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null,
@@ -115,12 +118,25 @@ export const CreateOrUpdateGroupDialog = ({
 
           <Field>
             <FieldLabel>Gruppen-Farbe</FieldLabel>
-            <Input
-              className='w-full'
-              placeholder='Farbe'
-              type='color'
-              value={data.color}
-              onChange={(e) => setData({ ...data, color: e.target.value })} />
+            <div className='flex w-full items-center gap-2'>
+              <Input
+                className='w-full'
+                placeholder='Farbe'
+                type='color'
+                value={data.color}
+                onChange={(e) => setData({ ...data, color: e.target.value })} />
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() =>
+                  setData((d) => ({ ...d, color: pickDistinctColor([...existingColors, d.color]) }))
+                }>
+                Neue Farbe
+              </Button>
+            </div>
+            <FieldDescription>
+              Vorgeschlagen wird automatisch eine Farbe, die sich von den bestehenden Gruppen abhebt.
+            </FieldDescription>
           </Field>
 
           <Has perm={'groups.manage.admin'}>
