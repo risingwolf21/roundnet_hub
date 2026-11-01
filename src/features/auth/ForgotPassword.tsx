@@ -29,7 +29,9 @@ const ForgotPasswordForm = () => {
     if (email) {
       const result = await supabase.auth
         .resetPasswordForEmail(email, {
-          redirectTo: import.meta.env.VITE_PUBLIC_URL + '/auth/reset-password',
+          // Trim a trailing slash so we never produce `…//auth/reset-password` (which would
+          // not match the project's allowed Redirect URLs and fall back to the Site URL).
+          redirectTo: (import.meta.env.VITE_PUBLIC_URL ?? '').replace(/\/$/, '') + '/auth/reset-password',
         });
 
       if (result.error) {
