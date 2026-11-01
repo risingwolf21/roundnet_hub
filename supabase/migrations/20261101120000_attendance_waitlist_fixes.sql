@@ -39,6 +39,7 @@ DECLARE
   v_max_trial   numeric;
   v_accepted    bigint;
   v_accepted_trial bigint;
+  v_is_trial    boolean;
   v_final_state public."EventAttendance";
 BEGIN
   -- 1) Actor muss Mitglied der Event-Gruppe sein
@@ -92,9 +93,29 @@ BEGIN
     AND m.state = 'AttendingAsTrial'
     AND m."user" <> p_user;
 
-  -- 5) Ziel-State bestimmen
+  -- 5) Ziel-State bestimmen. WICHTIG: Trial-Rolle ZUERST bestimmen, damit ein Trial-Nutzer
+  --    gegen die Trial-Kapazität geprüft wird und nicht fälschlich an der (ggf. vollen)
+  --    regulären Kapazität scheitert.
+  v_is_trial := EXISTS (
+    SELECT 1
+    FROM public.events e
+    JOIN public.group_user_mapping gum ON gum."group" = e."group"
+    WHERE e.id = p_event
+      AND gum."user" = p_user
+      AND gum."role" = 'trial'
+  );
+
   IF p_state = 'Declined' THEN
     v_final_state := 'Declined';
+
+  ELSIF v_is_trial THEN
+    -- Trial-Nutzer landen immer in den Trial-Zuständen; Kapazität = max_trial_attendees.
+    IF p_state IN ('Attending', 'AttendingAsTrial')
+       AND NOT (v_max_trial IS NOT NULL AND v_accepted_trial >= v_max_trial) THEN
+      v_final_state := 'AttendingAsTrial';
+    ELSE
+      v_final_state := 'WaitingAsTrial';
+    END IF;
 
   ELSIF p_state = 'Attending' AND v_max IS NOT NULL AND v_accepted >= v_max THEN
     v_final_state := 'Waiting';
@@ -104,22 +125,6 @@ BEGIN
 
   ELSE
     v_final_state := p_state;
-  END IF;
-
-  -- Trial-Rolle: als Trial-Nutzer nie regulär Attending/Waiting, sondern die Trial-Varianten.
-  IF (SELECT EXISTS (
-    SELECT 1
-    FROM public.events e
-    JOIN public.group_user_mapping gum ON gum."group" = e."group"
-    WHERE e.id = p_event
-      AND gum."user" = auth.uid()
-      AND gum."role" = 'trial'
-  )) THEN
-    IF v_final_state = 'Attending' THEN
-      v_final_state = 'AttendingAsTrial';
-    ELSIF v_final_state = 'Waiting' THEN
-      v_final_state = 'WaitingAsTrial';
-    END IF;
   END IF;
 
   -- 6) Upsert — lastUpdate IMMER mitschreiben, damit die Warteschlangen-Reihenfolge (FIFO nach
