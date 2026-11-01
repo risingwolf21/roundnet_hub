@@ -1416,6 +1416,24 @@ export type Database = {
         }
         Relationships: []
       }
+      bundesliga_cache: {
+        Row: {
+          cache_key: string
+          fetched_at: string
+          payload: Json
+        }
+        Insert: {
+          cache_key: string
+          fetched_at?: string
+          payload: Json
+        }
+        Update: {
+          cache_key?: string
+          fetched_at?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       challenge: {
         Row: {
           automated: boolean
@@ -3028,6 +3046,10 @@ export type Database = {
       }
     }
     Functions: {
+      _expand_series_sql: {
+        Args: { p_from?: string; p_horizon_days?: number; p_series_id: string }
+        Returns: Json
+      }
       _sum_challenge_points_for_self: {
         Args: {
           challenge_id: string
@@ -3068,11 +3090,7 @@ export type Database = {
         Returns: number
       }
       apply_series_occurrences: {
-        Args: { p_series_id: string; p_slots: Json }
-        Returns: Json
-      }
-      expand_series: {
-        Args: { p_series_id: string; p_slots: Json; p_mode?: string }
+        Args: { p_mode?: string; p_series_id: string; p_slots: Json }
         Returns: Json
       }
       apply_transformation_to_event: {
@@ -3082,6 +3100,10 @@ export type Database = {
       authorize: {
         Args: { requested_permission: string }
         Returns: boolean
+      }
+      bundesliga_cache_boundary: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       check_reply_to: {
         Args: { value: string }
@@ -3236,9 +3258,26 @@ export type Database = {
           type: Database["public"]["Enums"]["ItemType"]
         }
       }
+      expand_all_due_series: {
+        Args: { p_horizon_days?: number }
+        Returns: Json
+      }
+      expand_series: {
+        Args: { p_mode?: string; p_series_id: string; p_slots: Json }
+        Returns: Json
+      }
       expire_trial_memberships: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      get_bundesliga_cache: {
+        Args: { p_keys: string[] }
+        Returns: {
+          cache_key: string
+          fetched_at: string
+          is_fresh: boolean
+          payload: Json
+        }[]
       }
       get_or_create_payment_for_user: {
         Args: { user_id: string }
@@ -3333,6 +3372,10 @@ export type Database = {
           holder: string
           key_id: number
         }[]
+      }
+      purge_bundesliga_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       repair_recurrence_local_time: {
         Args: { p_tz?: string }
