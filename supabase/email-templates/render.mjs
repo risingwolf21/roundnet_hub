@@ -14,15 +14,21 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-/** Per-tenant branding. `iconPrefix` is the public folder that serves the app icons. */
+/**
+ * Per-tenant branding. `iconPrefix` is the public folder that serves the app icons;
+ * `siteUrl` is the deployed app origin (Firebase Hosting site, no trailing slash) — used to
+ * build an ABSOLUTE logo URL. We deliberately do NOT use {{ .SiteURL }} here: email clients
+ * need an absolute URL, and a mis-set/trailing-slash Site URL in Supabase would 404 into the
+ * SPA rewrite and break the image. Override `siteUrl` if you later add a custom domain.
+ */
 const TENANTS = [
-  { key: 'karlsruhe', name: 'Roundnet Karlsruhe', brand: '#0e876c', brandDark: '#14a884', iconPrefix: 'roundnet-karlsruhe' },
-  { key: 'munich',    name: 'Roundnet München',   brand: '#6d0b0b', brandDark: '#c0392b', iconPrefix: 'munich-roundnet' },
+  { key: 'karlsruhe', name: 'Roundnet Karlsruhe', brand: '#0e876c', brandDark: '#14a884', iconPrefix: 'roundnet-karlsruhe', siteUrl: 'https://roundnet-karlsruhe.web.app' },
+  { key: 'munich',    name: 'Roundnet München',   brand: '#6d0b0b', brandDark: '#c0392b', iconPrefix: 'munich-roundnet',    siteUrl: 'https://munich-roundnet.web.app' },
 ];
 
-// The logo is the app's apple-touch-icon, served per tenant and resolved at send time
-// against the project's configured Site URL.
-const logoUrl = (t) => `{{ .SiteURL }}/${t.iconPrefix}/apple-touch-icon.png`;
+// Absolute URL to the tenant's apple-touch-icon (a real static file; Firebase serves static
+// files ahead of the SPA rewrite, so this always returns the PNG).
+const logoUrl = (t) => `${t.siteUrl}/${t.iconPrefix}/apple-touch-icon.png`;
 
 const BTN = '{{ .ConfirmationURL }}';
 

@@ -50,10 +50,11 @@ Brevo-Tagesgrenze). So blockiert ein Schwung Passwort-Resets nicht sofort.
 ## 4. Site URL & Redirect URLs
 
 **Authentication → URL Configuration** je Projekt:
-- **Site URL** = die öffentliche App-URL des Tenants (wird in den Templates als `{{ .SiteURL }}`
-  für Logo und Links verwendet).
+- **Site URL** = die öffentliche App-URL des Tenants (Basis der Action-Links in den Mails).
 - Die App-URL zusätzlich unter **Redirect URLs** eintragen, damit die Links in den Mails nach dem
   Klick wieder in der richtigen App landen.
+
+> Das Logo hängt NICHT an der Site URL (siehe Design-Hinweise), nur die Links tun das.
 
 ## 5. Templates einsetzen
 
@@ -72,13 +73,16 @@ Brevo-Tagesgrenze). So blockiert ein Schwung Passwort-Resets nicht sofort.
 
 ## Verwendete GoTrue-Variablen
 
-`{{ .ConfirmationURL }}` (Action-Link), `{{ .Token }}` (6-stelliger Code, Magic Link &
-Reauthentication), `{{ .SiteURL }}` (Projekt-Site-URL, für Logo & Fallback), `{{ .NewEmail }}`
-(Change Email). Diese stehen bewusst wörtlich im HTML und werden von Supabase beim Versand ersetzt.
+`{{ .ConfirmationURL }}` (Action-Link, auch im „Link kopieren"-Fallback), `{{ .Token }}`
+(6-stelliger Code, Magic Link & Reauthentication), `{{ .NewEmail }}` (Change Email). Diese stehen
+bewusst wörtlich im HTML und werden von Supabase beim Versand ersetzt. Das Logo ist eine feste
+absolute URL (kein `{{ .SiteURL }}`).
 
 ## Design-Hinweise
 
 - Responsiv, zentrierte Karte max. 480px, Light-/Dark-Mode über `prefers-color-scheme`.
 - Bulletproof-Button (inkl. VML-Fallback für Outlook).
-- Logo = `apple-touch-icon` des Tenants, aufgelöst gegen `{{ .SiteURL }}` – erscheint also erst
-  korrekt, wenn die Site URL im Projekt gesetzt ist (beim lokalen Öffnen der Datei bleibt es leer).
+- Logo = `apple-touch-icon` des Tenants als **absolute URL** auf den Firebase-Host
+  (`https://<site>.web.app/<iconPrefix>/apple-touch-icon.png`). Bewusst **nicht** über
+  `{{ .SiteURL }}`, weil eine fehlende oder mit Slash gesetzte Site URL sonst in den SPA-Rewrite
+  läuft und das Bild bricht. Eigene Domain? `siteUrl` in `render.mjs` anpassen und neu rendern.
