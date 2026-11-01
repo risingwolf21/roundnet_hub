@@ -50,5 +50,11 @@ BEGIN
 END;
 $function$;
 
+-- A trigger function fires as part of the triggering statement regardless of EXECUTE
+-- grants, so no role needs to call it directly. Now that it is SECURITY DEFINER, revoke
+-- EXECUTE from the public roles so it is not a definer function reachable by anon /
+-- authenticated (enforced by the security-hardening matrix in pgTAP 085).
+REVOKE ALL ON FUNCTION public.trg_delete_user_from_subgroups() FROM public, anon, authenticated;
+
 -- Trigger definition is unchanged (AFTER DELETE ... EXECUTE FUNCTION trg_delete_user_from_subgroups());
 -- only the function's security context changed.
