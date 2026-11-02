@@ -195,16 +195,16 @@
           "title": "Kommentar schreiben"
         },
         {
-          "id": "comments.edit",
-          "title": "Eigenen Kommentar bearbeiten"
+          "id": "comments.reply",
+          "title": "Auf Kommentar antworten"
         },
         {
-          "id": "comments.delete",
-          "title": "Eigenen Kommentar löschen"
+          "id": "comments.noperm",
+          "title": "Ohne event.comment keine Kommentare"
         },
         {
-          "id": "comments.foreign",
-          "title": "Fremde Kommentare nicht bearbeitbar"
+          "id": "comments.past",
+          "title": "Vergangenes Event: keine Kommentare mehr"
         }
       ]
     },
@@ -435,7 +435,7 @@
         },
         {
           "id": "profile.notifications",
-          "title": "Benachrichtigungseinstellungen"
+          "title": "Benachrichtigungsthemen ein-/ausschalten"
         },
         {
           "id": "profile.calendar",
@@ -459,7 +459,11 @@
         },
         {
           "id": "notifications.read",
-          "title": "Als gelesen markieren"
+          "title": "Öffnen markiert als gelesen und springt zum Ziel"
+        },
+        {
+          "id": "notifications.clear",
+          "title": "Alle Benachrichtigungen löschen"
         },
         {
           "id": "notifications.push",

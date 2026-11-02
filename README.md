@@ -46,18 +46,18 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-02 14:39 UTC · Commit `c8cd290`
+Stand: 2026-11-02 16:02 UTC · Commit `10dbcb9`
 
-**Funktionsabdeckung: 31.5 %** (31 voll + 1 teilweise von 100 Funktionen) · **E2E-Tests:** 28/28 Desktop, 1/1 Mobil bestanden
+**Funktionsabdeckung: 56.9 %** (55 voll + 5 teilweise von 101 Funktionen) · **E2E-Tests:** 53/54 Desktop, 7/7 Mobil bestanden
 
 | Bereich | Funktionen | ✅ voll | 🟡 teilweise | ❌ fehlgeschlagen | 🐞 bekannter Fehler | ⬜ offen | Abdeckung |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Anmeldung & Konto | 7 | 2 | 1 | 0 | 0 | 4 | 35.7 % |
+| Anmeldung & Konto | 7 | 4 | 2 | 0 | 0 | 1 | 71.4 % |
 | Events / Training | 12 | 10 | 0 | 0 | 0 | 2 | 83.3 % |
 | Teilnahme & Warteliste | 9 | 9 | 0 | 0 | 0 | 0 | 100 % |
-| Probetraining | 5 | 2 | 0 | 0 | 0 | 3 | 40 % |
-| Mitbringliste & Zusagen (Pledges) | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
-| Kommentare | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
+| Probetraining | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
+| Mitbringliste & Zusagen (Pledges) | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
+| Kommentare | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
 | Gruppen | 11 | 3 | 0 | 0 | 0 | 8 | 27.3 % |
 | Rechte & Features | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
 | Getränke | 7 | 2 | 0 | 0 | 0 | 5 | 28.6 % |
@@ -66,11 +66,11 @@ Stand: 2026-11-02 14:39 UTC · Commit `c8cd290`
 | Spiele & Rangliste | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
 | Challenges | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
 | Bundesliga-Planer | 4 | 2 | 0 | 0 | 0 | 2 | 50 % |
-| Profil & Einstellungen | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
-| Benachrichtigungen | 3 | 0 | 0 | 0 | 0 | 3 | 0 % |
+| Profil & Einstellungen | 5 | 3 | 2 | 0 | 0 | 0 | 80 % |
+| Benachrichtigungen | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Administration | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
-| Allgemein | 5 | 1 | 0 | 0 | 0 | 4 | 20 % |
-| **Gesamt** | **100** | **31** | **1** | **0** | **0** | **68** | **31.5 %** |
+| Allgemein | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
+| **Gesamt** | **101** | **55** | **5** | **0** | **0** | **41** | **56.9 %** |
 
 Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird bis zur Grenze nach außen getestet (z. B. Push-Abo gespeichert, Mail-Anfrage gesendet), der externe Dienst selbst ist blockiert.
 
@@ -80,11 +80,11 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 - ✅ Login mit E-Mail/Passwort <sub>`auth.login`</sub>
 - ✅ Falsches Passwort zeigt Fehler <sub>`auth.login.wrong`</sub>
-- ⬜ Registrierung <sub>`auth.signup`</sub>
+- 🟡 Registrierung <sub>`auth.signup`</sub>
 - 🟡 Passwort vergessen anfordern <sub>`auth.forgot`</sub>
 - ⬜ Passwort zurücksetzen (Link aus Mail) <sub>`auth.reset`</sub>
-- ⬜ Logout <sub>`auth.logout`</sub>
-- ⬜ Geschützte Seite leitet ohne Login zum Login <sub>`auth.redirect`</sub>
+- ✅ Logout <sub>`auth.logout`</sub>
+- ✅ Geschützte Seite leitet ohne Login zum Login <sub>`auth.redirect`</sub>
 
 **Events / Training**
 
@@ -117,24 +117,24 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 - ✅ Beitrittsanfrage als Probenutzer annehmen <sub>`trials.accept`</sub>
 - ✅ Probenutzer landet im Probe-Pool <sub>`trials.attend`</sub>
-- ⬜ Limit für Probe-Teilnehmer <sub>`trials.limit`</sub>
-- ⬜ Probenutzer zum Mitglied machen <sub>`trials.promote`</sub>
-- ⬜ Probemitgliedschaft läuft ab <sub>`trials.expire`</sub>
+- ✅ Limit für Probe-Teilnehmer <sub>`trials.limit`</sub>
+- ✅ Probenutzer zum Mitglied machen <sub>`trials.promote`</sub>
+- ✅ Probemitgliedschaft läuft ab <sub>`trials.expire`</sub>
 
 **Mitbringliste & Zusagen (Pledges)**
 
-- ⬜ Mitbring-Item zum Event hinzufügen <sub>`items.add`</sub>
-- ⬜ Item zusagen (Pledge) <sub>`items.pledge`</sub>
-- ⬜ Zusage zurückziehen <sub>`items.unpledge`</sub>
-- ⬜ Pflicht-Item bei Zusage <sub>`items.required`</sub>
-- ⬜ Item entfernen <sub>`items.remove`</sub>
+- ✅ Mitbring-Item zum Event hinzufügen <sub>`items.add`</sub>
+- ✅ Item zusagen (Pledge) <sub>`items.pledge`</sub>
+- ✅ Zusage zurückziehen <sub>`items.unpledge`</sub>
+- ✅ Benötigten Gegenstand (Schlüssel/Halle) festlegen <sub>`items.required`</sub>
+- ✅ Item entfernen <sub>`items.remove`</sub>
 
 **Kommentare**
 
-- ⬜ Kommentar schreiben <sub>`comments.create`</sub>
-- ⬜ Eigenen Kommentar bearbeiten <sub>`comments.edit`</sub>
-- ⬜ Eigenen Kommentar löschen <sub>`comments.delete`</sub>
-- ⬜ Fremde Kommentare nicht bearbeitbar <sub>`comments.foreign`</sub>
+- ✅ Kommentar schreiben <sub>`comments.create`</sub>
+- ✅ Auf Kommentar antworten <sub>`comments.reply`</sub>
+- ✅ Ohne event.comment keine Kommentare <sub>`comments.noperm`</sub>
+- ✅ Vergangenes Event: keine Kommentare mehr <sub>`comments.past`</sub>
 
 **Gruppen**
 
@@ -203,17 +203,18 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 **Profil & Einstellungen**
 
-- ⬜ Profil bearbeiten <sub>`profile.account`</sub>
-- ⬜ Passwort ändern <sub>`profile.password`</sub>
-- ⬜ Benachrichtigungseinstellungen <sub>`profile.notifications`</sub>
-- ⬜ Kalender-Abo <sub>`profile.calendar`</sub>
-- ⬜ Playerzone verknüpfen <sub>`profile.playerzone`</sub>
+- ✅ Profil bearbeiten <sub>`profile.account`</sub>
+- ✅ Passwort ändern <sub>`profile.password`</sub>
+- ✅ Benachrichtigungsthemen ein-/ausschalten <sub>`profile.notifications`</sub>
+- 🟡 Kalender-Abo <sub>`profile.calendar`</sub>
+- 🟡 Playerzone verknüpfen <sub>`profile.playerzone`</sub>
 
 **Benachrichtigungen**
 
-- ⬜ Benachrichtigungsliste <sub>`notifications.list`</sub>
-- ⬜ Als gelesen markieren <sub>`notifications.read`</sub>
-- ⬜ Push-Abo wird gespeichert <sub>`notifications.push`</sub>
+- ✅ Benachrichtigungsliste <sub>`notifications.list`</sub>
+- ✅ Öffnen markiert als gelesen und springt zum Ziel <sub>`notifications.read`</sub>
+- ✅ Alle Benachrichtigungen löschen <sub>`notifications.clear`</sub>
+- 🟡 Push-Abo wird gespeichert <sub>`notifications.push`</sub>
 
 **Administration**
 
@@ -225,10 +226,10 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 **Allgemein**
 
 - ✅ Seitentitel <sub>`misc.title`</sub>
-- ⬜ Startseite <sub>`misc.home`</sub>
-- ⬜ Hilfe & Information <sub>`misc.help`</sub>
-- ⬜ Benutzersuche <sub>`misc.search`</sub>
-- ⬜ Navigation auf dem Handy <sub>`misc.nav.mobile`</sub>
+- ✅ Startseite <sub>`misc.home`</sub>
+- ✅ Hilfe & Information <sub>`misc.help`</sub>
+- ✅ Benutzersuche <sub>`misc.search`</sub>
+- ✅ Navigation auf dem Handy <sub>`misc.nav.mobile`</sub>
 
 **Bewusst nicht getestet**
 
@@ -246,12 +247,12 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 45.82 % | 1996 / 4356 |
-| Anweisungen | 44.84 % | 2244 / 5004 |
-| Funktionen | 36.87 % | 681 / 1847 |
-| Verzweigungen | 34.1 % | 870 / 2551 |
+| Zeilen | 54.53 % | 2598 / 4764 |
+| Anweisungen | 53.54 % | 2934 / 5480 |
+| Funktionen | 47.98 % | 953 / 1986 |
+| Verzweigungen | 43.59 % | 1262 / 2895 |
 
-Gemessen über die im Browser geladenen Dateien (124 von 227 Quelldateien unter `src/`; 103 wurden in keinem Test geladen und zählen oben nicht mit).
+Gemessen über die im Browser geladenen Dateien (137 von 227 Quelldateien unter `src/`; 90 wurden in keinem Test geladen und zählen oben nicht mit).
 <!-- E2E-STATUS:END -->
 
 Lokal ausführen: `yarn test:e2e:ci` (lokaler Supabase-Stack muss laufen), danach `yarn test:e2e:report`.

@@ -40,6 +40,9 @@ export default defineConfig({
       VITE_WEBSITE_PATH: process.env.VITE_WEBSITE_PATH ?? 'roundnet-karlsruhe',
       VITE_ICON_PREFIX: process.env.VITE_ICON_PREFIX ?? 'roundnet-karlsruhe',
       VITE_ENV: process.env.VITE_ENV ?? 'development',
+      // Dummy VAPID public key (any valid P-256 point format): the push UI only needs one to call
+      // pushManager.subscribe, which the push spec stubs — nothing is ever sent to a push service.
+      VITE_VAPID_PUBLIC_KEY: process.env.VITE_VAPID_PUBLIC_KEY ?? 'BIbzjRo-26J02OpLy8VLcHxMMXR9ACKx4IICJIcaeTuJxaAACnMTijz22ewScFVdyoi2CDRkZMNRoy5dFh3Cjv4',
       // Istanbul instrumentation for e2e code coverage (see vite.config.js / fixtures.ts).
       E2E_COVERAGE: process.env.E2E_COVERAGE ?? 'false',
       // Ensure the server is aware of the base URL

@@ -28,6 +28,25 @@ const UserSearchPage = () => {
     });
   }, [members, search]);
 
+  const searchBox = (
+    <div className="flex flex-col items-center gap-3 px-4 mb-3">
+      <div className="relative w-full flex-1">
+        <InputGroup>
+          <InputGroupInput
+            type="search"
+            placeholder={t('search.placeholder')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-full"
+          />
+          <InputGroupAddon>
+            <Search />
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <AppBar
@@ -52,27 +71,16 @@ const UserSearchPage = () => {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-muted-foreground py-12 text-sm">
-          {t('search.noResults')}
-        </p>
+        <div className="py-2">
+          {/* Keep the search box when nothing matches, so the query can be corrected. */}
+          {members.length > 0 && searchBox}
+          <p className="text-center text-muted-foreground py-12 text-sm">
+            {t('search.noResults')}
+          </p>
+        </div>
       ) : (
         <div className="py-2">
-          <div className="flex flex-col items-center gap-3 px-4 mb-3">
-            <div className="relative w-full flex-1">
-              <InputGroup>
-                <InputGroupInput
-                  type="search"
-                  placeholder={t('search.placeholder')}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-full"
-                />
-                <InputGroupAddon>
-                  <Search />
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-          </div>
+          {searchBox}
           <Separator />
           {filtered.map((member) => {
             const displayName = member.displayName ?? member.name ?? '?';
