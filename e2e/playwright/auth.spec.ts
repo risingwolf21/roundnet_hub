@@ -1,43 +1,16 @@
-import { test, expect, Page } from '@playwright/test';
-import { createClient } from '@supabase/supabase-js';
+import { test, expect } from '@playwright/test';
+import { adminClient, ensureUser, logPageOnFailure, PASSWORD } from './helpers';
 
-// Auth + password-reset UI flow.
-// Harness provides VITE_SUPABASE_URL/SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (local stack).
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const PASSWORD = process.env.TEST_USER_PASSWORD ?? 'password';
-
-// supabase-js persists the session under a key like `sb-<ref>-auth-token`.
-async function waitForSignedIn(page: Page) {
-  await page.waitForFunction(
-    () => {
-      try {
-        return Object.keys(window.localStorage).some((k) => k.includes('auth-token'));
-      } catch {
-        return false;
-      }
-    },
-    undefined,
-    { timeout: 30_000 },
-  );
-}
-
+// Auth + password-reset UI flow, selectors aligned to LoginForm / ForgotPassword.
 test.describe('Auth', () => {
-  let admin: ReturnType<typeof createClient>;
   const email = `e2e_auth_${Date.now()}@test.com`;
+  let userId = '';
 
   test.beforeAll(async () => {
-    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-      throw new Error('VITE_SUPABASE_URL/SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
-    }
-    admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-    await admin.auth.admin.createUser({
-      email,
-      password: PASSWORD,
-      email_confirm: true,
-      user_metadata: { name: 'Auth E2E', displayName: 'Auth E2E' },
-    } as never);
+    userId = await ensureUser(adminClient(), email, 'Auth E2E');
   });
+
+  test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
   test('a confirmed user can log in and reach the app', async ({ page }) => {
     await page.goto('/auth/login');
@@ -45,9 +18,13 @@ test.describe('Auth', () => {
     await page.fill('#password', PASSWORD);
     await page.click('button:has-text("Login")');
 
-    // LoginForm persists the session (no explicit redirect); once it exists, a protected
+    // LoginForm only persists the session (no explicit redirect); once it exists, a protected
     // route must not bounce back to the login page.
-    await waitForSignedIn(page);
+    await page.waitForFunction(
+      () => Object.keys(window.localStorage).some((k) => k.includes('auth-token')),
+      undefined,
+      { timeout: 30_000 },
+    );
     await page.goto('/');
     await expect(page).not.toHaveURL(/\/auth\/login/);
   });
@@ -58,29 +35,23 @@ test.describe('Auth', () => {
     await page.fill('#password', 'definitely-the-wrong-password');
     await page.click('button:has-text("Login")');
 
-    await expect(page.getByText('Login failed. Try again!')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Login failed. Try again!')).toBeVisible();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
   test('forgot-password is reachable from login and confirms the request', async ({ page }) => {
     await page.goto('/auth/login');
-    await page.click('text=Passwort vergessen?');
+    await page.getByText('Passwort vergessen?').click();
     await expect(page).toHaveURL(/\/auth\/forgot-password/);
 
     await page.fill('#email', email);
-    await page.click('button:has-text("Passwort zurücksetzen")');
+    await page.getByRole('button', { name: 'Abschicken' }).click();
 
-    // On success the form swaps to a confirmation message (mail goes to the local Inbucket).
-    await expect(page.getByText(/Es wurde eine Email/i)).toBeVisible({ timeout: 30_000 });
+    // On success the form is replaced by a confirmation card (mail goes to the local Inbucket).
+    await expect(page.getByText('Email wurde versendet')).toBeVisible();
   });
 
   test.afterAll(async () => {
-    try {
-      const { data } = await admin.from('user').select('id').eq('email', email).maybeSingle();
-      const id = (data as { id?: string } | null)?.id;
-      if (id) await admin.auth.admin.deleteUser(id);
-    } catch {
-      // best-effort cleanup
-    }
+    if (userId) await adminClient().auth.admin.deleteUser(userId).catch(() => undefined);
   });
 });

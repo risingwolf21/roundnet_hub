@@ -2,11 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'e2e/playwright',
-  timeout: 120_000,
-  expect: { timeout: 30_000 },
+  // Keep timeouts tight so a broken selector/assertion fails fast instead of hanging the
+  // whole job (the earlier 120s action/nav timeouts × retries made a failing run take 30min+).
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
     // Playwright uses baseURL for relative navigations. Vite dev server runs on :5173 by default.
@@ -14,9 +16,8 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
-    // Increase action and navigation timeouts (default 30s)
-    actionTimeout: 120_000,
-    navigationTimeout: 120_000,
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
   },
   webServer: {
     // Start the Vite dev server automatically for tests (useful locally and in CI).
