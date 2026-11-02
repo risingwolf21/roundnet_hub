@@ -415,18 +415,16 @@ RESET ROLE;
 SELECT is((SELECT count(*)::int FROM public.group_user_mapping WHERE "user" = pg_temp.u('sm_user2') AND "group" = 'a1000000-0000-0000-0000-00000000000a'),
   0, 'gum delete: leaving the root group removes own subgroup memberships');
 
--- BUG: trg_delete_user_from_subgroups runs with invoker rights. When a group
--- admin removes a member from the root group, the member's subgroup mappings
--- are hidden by RLS (the root admin is not admin of the subgroup), so they are
--- silently kept and the removed user keeps access to the subgroup's events.
+-- trg_delete_user_from_subgroups is now SECURITY DEFINER (20261102090000): when a group
+-- admin removes a member from the root group, the cascade into the subgroups bypasses RLS,
+-- so the member's subgroup mappings are removed too and they lose access to the subgroup's
+-- events (previously they silently survived).
 SELECT tests.authenticate_as('sm_gadmin');
 SELECT is(pg_temp.rows(format($$ DELETE FROM public.group_user_mapping WHERE "user" = %L AND "group" = 'a1000000-0000-0000-0000-000000000001' $$, pg_temp.u('sm_user'))),
   1, 'gum delete: group admin removes member that is also in a subgroup');
 RESET ROLE;
-SELECT todo_start('trg_delete_user_from_subgroups is SECURITY INVOKER; subgroup mappings survive removal by a group admin');
 SELECT is((SELECT count(*)::int FROM public.group_user_mapping WHERE "user" = pg_temp.u('sm_user') AND "group" = 'a1000000-0000-0000-0000-000000000009'),
   0, 'gum delete: removal by group admin also removes subgroup memberships');
-SELECT todo_end();
 
 SELECT * FROM finish();
 ROLLBACK;
