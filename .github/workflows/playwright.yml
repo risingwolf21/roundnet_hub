@@ -81,7 +81,9 @@ jobs:
           node scripts/e2e-report.mjs --stdout >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Commit README test status to the PR branch
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        # Only for PRs into production: stacked PRs would each rewrite the same generated block
+        # and conflict with one another (they still get the table in the job summary).
+        if: always() && github.event_name == 'pull_request' && github.base_ref == 'production' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
           git diff --quiet README.md && { echo "README unchanged"; exit 0; }
           git config user.name "github-actions[bot]"
