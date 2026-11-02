@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { test, expect, flow } from './fixtures';
-import { adminClient, ensureUser, logPageOnFailure, PASSWORD, signIn } from './helpers';
+import { adminClient, ensureUser, logPageOnFailure, PASSWORD, signIn, SUPABASE_URL } from './helpers';
 
 // Profile page (/user): account data, password, calendar subscription, Playerzone link, logout.
 const stamp = Date.now();
@@ -143,3 +143,29 @@ test('protected pages redirect to the login when signed out', { annotation: flow
   await expect(page).toHaveURL(/auth\/login/);
   await expect(page.locator('#email')).toBeVisible();
 });
+
+test('a recovery link lets the user set a new password', { annotation: flow('auth.reset') }, async ({ page }) => {
+  // The e-mail itself is the external part: create the recovery token like the mail would carry,
+  // exchange it as GoTrue's verify endpoint does, and open the link target with the session in
+  // the hash (implicit flow) — exactly what /auth/reset-password receives from a real mail.
+  const admin3 = adminClient();
+  const email = `e2e_reset_${Date.now()}@test.com`;
+  const userId = await ensureUser(admin3, email, 'E2E Vergesslich');
+  const { data: link, error } = await admin3.auth.admin.generateLink({ type: 'recovery', email });
+  expect(error).toBeNull();
+  const anon = createClient(SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY ?? '', { auth: { persistSession: false } });
+  const { data: verified } = await anon.auth.verifyOtp({ type: 'recovery', token_hash: link!.properties.hashed_token });
+  const s = verified.session!;
+  await page.goto(`/auth/reset-password#access_token=${s.access_token}&refresh_token=${s.refresh_token}&type=recovery`);
+
+  await expect(page.getByText('Neues Passwort festlegen')).toBeVisible();
+  await page.locator('#password').fill('Neu-123456');
+  await page.locator('#repeat').fill('Neu-123456');
+  await page.locator('form button[type="submit"]').click();
+  await expect(page.getByText('Dein Passwort wurde geändert.', { exact: false })).toBeVisible();
+
+  const { error: loginError } = await anon.auth.signInWithPassword({ email, password: 'Neu-123456' });
+  expect(loginError).toBeNull();
+  await admin3.auth.admin.deleteUser(userId).catch(() => undefined);
+});
+

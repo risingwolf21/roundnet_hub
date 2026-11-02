@@ -144,6 +144,12 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
               </div>
             </div>
 
+            {/* The form had an onSubmit handler but no submit button (the password "Speichern" is
+                type="button" and with several inputs Enter does not submit), so name changes could
+                never be saved. */}
+            <Button type="submit" className="w-full mt-4">
+              Änderungen speichern
+            </Button>
           </form>
         </DialogBody>
       </DialogContent>
