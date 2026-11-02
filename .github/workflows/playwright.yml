@@ -21,6 +21,8 @@ jobs:
       contents: write
     env:
       E2E_COVERAGE: 'true'
+      # Shown in the README table: the PR's head commit, not GitHub's temporary merge commit.
+      E2E_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -3,10 +3,8 @@ on:
   push:
     branches:
       - master
+  # All PRs (checks only, no deploys) — stacked PRs (e.g. test waves) need DB/function/unit tests too.
   pull_request:
-    branches:
-      - master
-      - production
 env:
   CI: ""
 

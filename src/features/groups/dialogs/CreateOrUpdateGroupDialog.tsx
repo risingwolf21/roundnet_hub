@@ -107,14 +107,6 @@ export const CreateOrUpdateGroupDialog = ({
               onChange={(e) => setData({ ...data, description: e.target.value })} />
           </Field>
 
-          <Field>
-            <FieldLabel>Gruppen-Beschreibung</FieldLabel>
-            <Input
-              className='w-full'
-              placeholder='Beschreibung'
-              value={data.description}
-              onChange={(e) => setData({ ...data, description: e.target.value })} />
-          </Field>
 
           <Field>
             <FieldLabel>Gruppen-Farbe</FieldLabel>
@@ -180,11 +172,11 @@ export const CreateOrUpdateGroupDialog = ({
         <DialogFooter variant={"fullscreen"}>
           <Button onClick={async () => {
             if (data.name.length < 6) {
-              toast.warning('Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.');
+              toast.warning('Der Name der Gruppe muss aus mindestens 6 Zeichen bestehen.');
               return;
             }
             if (data.description.length < 6) {
-              toast.warning('Die Beschreibung der Challenge muss aus mindestens 6 Zeichen bestehen.');
+              toast.warning('Die Beschreibung der Gruppe muss aus mindestens 6 Zeichen bestehen.');
               return;
             }
 

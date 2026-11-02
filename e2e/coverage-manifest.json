@@ -251,10 +251,6 @@
         {
           "id": "groups.remove",
           "title": "Mitglied entfernen"
-        },
-        {
-          "id": "groups.leave",
-          "title": "Gruppe verlassen"
         }
       ]
     },
@@ -537,6 +533,11 @@
       "id": "events.transform",
       "title": "Event umwandeln (Transformation)",
       "reason": "im UI deaktiviert (Menüpunkt disabled)"
+    },
+    {
+      "id": "groups.leave",
+      "title": "Gruppe verlassen",
+      "reason": "keine Funktion im UI (Mutation useLeaveGroupMutation vorhanden, aber nirgends eingebunden)"
     }
   ]
 }

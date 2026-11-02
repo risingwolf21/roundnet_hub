@@ -31,7 +31,8 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
       {
         onError: () =>
           toast.error('Berechtigungen konnten nicht aktualisiert werden'),
-        onSettled: () =>
+        // onSuccess, not onSettled: a failed save must not also report success.
+        onSuccess: () =>
           toast.success('Berechtigungen wurden aktualisiert'),
       }
     );
@@ -44,7 +45,8 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
       {
         onError: () =>
           toast.error('Berechtigungen konnten nicht aktualisiert werden'),
-        onSettled: () =>
+        // onSuccess, not onSettled: a failed save must not also report success.
+        onSuccess: () =>
           toast.success('Berechtigungen wurden aktualisiert'),
       }
     );
@@ -98,7 +100,8 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
       {
         onError: () =>
           toast.error('Berechtigungen konnten nicht aktualisiert werden'),
-        onSettled: () =>
+        // onSuccess, not onSettled: a failed save must not also report success.
+        onSuccess: () =>
           toast.success('Berechtigungen wurden aktualisiert'),
       }
     );
@@ -111,7 +114,8 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
       {
         onError: () =>
           toast.error('Berechtigungen konnten nicht aktualisiert werden'),
-        onSettled: () =>
+        // onSuccess, not onSettled: a failed save must not also report success.
+        onSuccess: () =>
           toast.success('Berechtigungen wurden aktualisiert'),
       }
     );
