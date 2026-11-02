@@ -23,13 +23,36 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/%VITE_ICON_PREFIX%/favicon-16x16.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="/%VITE_ICON_PREFIX%/android-chrome-192x192.png" />
 
-<title>%VITE_WEBSITE_NAME%</title>
+  <title>%VITE_WEBSITE_NAME%</title>
 
   <script type="module" src="/src/index.tsx"></script>
+
+  <style>
+    /*
+      * iOS 26+ blurs the top edge of a web app (Liquid Glass) unless WebKit finds
+      * a fixed box there; it then shows that box's colour instead. WebKit's check
+      * (LocalFrameView::fixedContainerEdges): the box hit 4 px below the middle of
+      * the top edge, ignoring pointer-events, is fixed or sticky, at least 90 % of
+      * the width and more than 10 px tall, with a background colour. This strip is
+      * that box. `background-clip: text` keeps the colour from painting (the strip
+      * has no text), so it covers nothing and takes no input.
+    */
+    .top-edge {
+      position: fixed;
+      inset-inline: 0;
+      top: 0;
+      height: 12px;
+      z-index: 2147483647;
+      pointer-events: none;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+  </style>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div aria-hidden="true" class="top-edge" />
   <div id="root"></div>
   <script>
     // If React never mounts (e.g. stale SW serving old chunk hashes that 404),
