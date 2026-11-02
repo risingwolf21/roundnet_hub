@@ -23,6 +23,19 @@ const player = (id: string, name: string, gender: 'male' | 'female') => ({
   id, slug: `p-${id}`, name, gender, rgIndex: 1500, avatarUrl: null, pro: false,
 });
 
+/**
+ * The planner must be served from the seeded cache only: block the scraping edge function and
+ * record any attempt, so a cache miss fails the test instead of silently scraping live data.
+ */
+async function forbidLiveScrape(page: import('@playwright/test').Page) {
+  const calls: string[] = [];
+  await page.route('**/functions/v1/fetch-bundesliga**', (route) => {
+    calls.push(route.request().url());
+    return route.abort();
+  });
+  return calls;
+}
+
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Bundesliga planner', () => {
@@ -52,6 +65,7 @@ test.describe('Bundesliga planner', () => {
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
   test('picking my team loads its roster from cache and detects the opponent', async ({ page }) => {
+    const liveCalls = await forbidLiveScrape(page);
     await signIn(page, EMAIL);
     await page.goto('/bundesliga');
     await expect(page.getByText('Spieltag einrichten')).toBeVisible();
@@ -67,14 +81,18 @@ test.describe('Bundesliga planner', () => {
 
     // A non-admin never gets the hard-reload (re-scrape) control.
     await expect(page.getByTitle('Daten neu laden (Admin)')).toHaveCount(0);
+    // Everything came from the cache — the scraping edge function was never called.
+    expect(liveCalls).toEqual([]);
   });
 
   test('a bundesliga.admin gets the hard-reload control', async ({ page }) => {
+    const liveCalls = await forbidLiveScrape(page);
     await grantUser(admin, userId, { perms: ['bundesliga.admin'] });
     await signIn(page, EMAIL);
     await page.goto('/bundesliga');
     await expect(page.getByText('Spieltag einrichten')).toBeVisible();
     await expect(page.getByTitle('Daten neu laden (Admin)')).toBeVisible();
+    expect(liveCalls).toEqual([]);
   });
 
   test.afterAll(async () => {
