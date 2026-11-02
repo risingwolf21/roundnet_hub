@@ -42,10 +42,19 @@ jobs:
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error
 
+  # E2E gate: the same Playwright run as on PRs. Without branch protection (paid feature for
+  # private repos) a PR can be merged while its e2e check is red or still running — this keeps
+  # such a merge from reaching the databases, edge functions and hosting.
+  e2e:
+    name: "E2E"
+    uses: ./.github/workflows/playwright.yml
+    permissions:
+      contents: write
+
   migrate-karlsruhe:
     name: "Migrate Database Karlsruhe"
     runs-on: ubuntu-latest
-    needs: [db-test]
+    needs: [db-test, e2e]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
@@ -63,7 +72,7 @@ jobs:
   migrate-munich:
     name: "Migrate Database Munich"
     runs-on: ubuntu-latest
-    needs: [db-test]
+    needs: [db-test, e2e]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Munich Roundnet' }}
@@ -81,7 +90,7 @@ jobs:
   deploy-functions-karlsruhe:
     name: "Deploy Edge Functions Karlsruhe"
     runs-on: ubuntu-latest
-    needs: [db-test]
+    needs: [db-test, e2e]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
@@ -101,7 +110,7 @@ jobs:
   deploy-functions-munich:
     name: "Deploy Edge Functions Munich"
     runs-on: ubuntu-latest
-    needs: [db-test]
+    needs: [db-test, e2e]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Munich Roundnet' }}

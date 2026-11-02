@@ -2,9 +2,12 @@ name: Playwright tests
 
 on:
   push:
-    branches: [ master, production ]
+    # production is not listed: there the Production workflow calls this one (workflow_call)
+    # and only migrates/deploys once it passes.
+    branches: [ master ]
   # All PRs (not only those into production), so stacked test-wave PRs get a run too.
   pull_request:
+  workflow_call:
 
 jobs:
   playwright-tests:
@@ -12,8 +15,9 @@ jobs:
     # Pinned: ubuntu-latest is now 26.04, which Playwright 1.59's `install --with-deps`
     # cannot provision system deps for ("does not support chromium on ubuntu26.04-x64").
     runs-on: ubuntu-24.04
-    # Blocking: a failing e2e test fails this check (mark "E2E (Playwright)" as required in the
-    # branch protection of production). The README/report steps below still run (if: always()).
+    # Blocking: a failing e2e test fails this check, and on production the Production workflow
+    # does not migrate or deploy (required checks need a paid plan for private repos, so the
+    # deploy is gated instead of the merge). The README/report steps below still run (if: always()).
     # contents: write — the run commits the recalculated README test-status table back to the
     # PR branch (pushes made with GITHUB_TOKEN never trigger another workflow run).
     permissions:
