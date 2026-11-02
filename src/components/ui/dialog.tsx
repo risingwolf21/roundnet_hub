@@ -46,7 +46,7 @@ const dialogContentVariants = cva(
     variants: {
       variant: {
         default:
-          "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 sm:max-w-sm data-open:zoom-in-95 data-closed:zoom-out-95",
+          "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 sm:max-w-sm data-open:zoom-in-95 data-closed:zoom-out-95",
 
         drawer:
           "inset-x-0 bottom-0 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
@@ -84,7 +84,6 @@ function DialogContent({
         className={cn(dialogContentVariants({ variant }), className)}
         {...props}
       >
-        <div className="fixed top-0 left-0 z-[100] h-[7px] w-full bg-background" />
         {needsFlexWrapper ? (
           <div className="flex flex-col overflow-hidden h-full w-full">
             {children}

@@ -147,53 +147,59 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
           </div>
         </div>
         <Separator className="my-6" />
-        <div className="space-y-6">
-          {player_data?.rg_id && (
-            <Field orientation="horizontal" className="max-w-sm">
-              <FieldContent>
-                <FieldLabel htmlFor="rg-id">{player_data.rg_id}</FieldLabel>
-                <FieldDescription>{t('profile.playerzone.rgId')}</FieldDescription>
-              </FieldContent>
-            </Field>
-          )}
-          {player_data?.rg_index && (
-            <Field orientation="horizontal">
-              <FieldContent>
-                <FieldLabel htmlFor="rg-index">{player_data.rg_index}</FieldLabel>
-                <FieldDescription>{t('profile.playerzone.rgIndex')}</FieldDescription>
-              </FieldContent>
-            </Field>
-          )}
-          {player_data?.effective_rating_cached && (
-            <Field orientation={"horizontal"} className="flex !items-center">
-              <FieldContent>
-                <FieldLabel htmlFor="elo-trend">{player_data.effective_rating_cached.toFixed()}</FieldLabel>
-                <FieldDescription>{t('profile.playerzone.internalIndex')}</FieldDescription>
-              </FieldContent>
-              {elo_change_last_30_days > 0 ? (
-                <TrendingUp className="text-success" />
-              ) : elo_change_last_30_days < 0 ? (
-                <TrendingDown className="text-error" />
-              ) : (
-                <MoveRight className="text-info" />
+        {
+          player_data !== null && (
+            <div className="space-y-6">
+              {player_data.rg_id !== null && (
+                <Field orientation="horizontal" className="max-w-sm">
+                  <FieldContent>
+                    <FieldLabel htmlFor="rg-id">{player_data.rg_id}</FieldLabel>
+                    <FieldDescription>{t('profile.playerzone.rgId')}</FieldDescription>
+                  </FieldContent>
+                </Field>
               )}
-            </Field>
-          )}
-          <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="switch-hide-rating">{t('profile.playerzone.hideIndex')}</FieldLabel>
-              <FieldDescription>
-                {t('profile.playerzone.hideIndexDescription')}
-              </FieldDescription>
-            </FieldContent>
-            <Switch
-              id="switch-hide-rating"
-              disabled={updateHideRatingMutation.isPending}
-              checked={player_data?.hide_rating ?? false}
-              onCheckedChange={(e) => updateHideRatingMutation.mutate({ hide_rating: e })}
-            />
-          </Field>
-        </div>
+              {
+                (player_data.rg_index !== null && player_data.rg_index > 0) && (
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldLabel htmlFor="rg-index">{player_data.rg_index}</FieldLabel>
+                      <FieldDescription>{t('profile.playerzone.rgIndex')}</FieldDescription>
+                    </FieldContent>
+                  </Field>
+                )
+              }
+              {(player_data?.effective_rating_cached !== null && player_data?.effective_rating_cached > 0) && (
+                <Field orientation={"horizontal"} className="flex !items-center">
+                  <FieldContent>
+                    <FieldLabel htmlFor="elo-trend">{player_data.effective_rating_cached.toFixed()}</FieldLabel>
+                    <FieldDescription>{t('profile.playerzone.internalIndex')}</FieldDescription>
+                  </FieldContent>
+                  {elo_change_last_30_days > 0 ? (
+                    <TrendingUp className="text-success" />
+                  ) : elo_change_last_30_days < 0 ? (
+                    <TrendingDown className="text-error" />
+                  ) : (
+                    <MoveRight className="text-info" />
+                  )}
+                </Field>
+              )}
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="switch-hide-rating">{t('profile.playerzone.hideIndex')}</FieldLabel>
+                  <FieldDescription>
+                    {t('profile.playerzone.hideIndexDescription')}
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  id="switch-hide-rating"
+                  disabled={updateHideRatingMutation.isPending}
+                  checked={player_data?.hide_rating ?? false}
+                  onCheckedChange={(e) => updateHideRatingMutation.mutate({ hide_rating: e })}
+                />
+              </Field>
+            </div>
+          )
+        }
       </CardContent>
     </>
   );

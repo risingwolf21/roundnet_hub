@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
 import groupBy from "lodash.groupby";
-import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, MoveDownIcon, Pencil, Plus, Shapes, ShieldCheck, User, UserStar, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -196,7 +196,6 @@ const PublicGroupInformation = () => {
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         primaryAction="back"
-        navigateBackPath="/training"
         user={user}
         actions={
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
@@ -304,91 +303,159 @@ const PublicGroupInformation = () => {
               </div>
             ) : (
               groupedUsers.map(([role, users]) => (
-                  <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
-                    hidden: (role === 'admin' && !filter?.admin) ||
-                      (role === 'user' && !filter?.user) ||
-                      (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
-                      (role === 'trial' && !filter?.trials)
-                  })}>
-                    <div className="text-sm font-semibold">
-                      {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
-                      {` (${users.length})`}
-                    </div>
-                    {users
-                      .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((x) => (
-                        <Item variant={"outline"} key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
-                          <ItemMedia>
-                            <Avatar className="cursor-pointer" {...(
-                              (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
-                                onClick: () => {
-                                  if (selectedUsers.includes(x.user)) {
-                                    setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                                  } else {
-                                    setSelectedUsers([...selectedUsers, x.user]);
-                                  }
+                <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
+                  hidden: (role === 'admin' && !filter?.admin) ||
+                    (role === 'user' && !filter?.user) ||
+                    (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
+                    (role === 'trial' && !filter?.trials)
+                })}>
+                  <div className="text-sm font-semibold">
+                    {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
+                    {` (${users.length})`}
+                  </div>
+                  {users
+                    .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .sort((a, b) => a.user.name.localeCompare(b.user.name))
+                    .map((x) => (
+                      <Item variant={"outline"} key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
+                        <ItemMedia>
+                          <Avatar className="cursor-pointer" {...(
+                            (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
+                              onClick: () => {
+                                if (selectedUsers.includes(x.user)) {
+                                  setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                                } else {
+                                  setSelectedUsers([...selectedUsers, x.user]);
                                 }
                               }
-                            )}>
-                              {
-                                selectedUsers.includes(x.user)
-                                  ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
-                                    <CheckCircle2 className="size-6" />
-                                  </div>
-                                  : <>
-                                    <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
-                                    <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
-                                  </>
-                              }
-                            </Avatar>
-                          </ItemMedia>
-                          <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
-                            <ItemTitle>{x.user.name}</ItemTitle>
-                            <ItemDescription>
-                              {x.user.email}
-                              {x.user.last_seen_at && (
-                                <span className="ml-2 text-xs">
-                                  · {t('user.lastActive', { date: new Date(x.user.last_seen_at) })}
-                                </span>
-                              )}
-                            </ItemDescription>
-                          </ItemContent>
-                          <ItemActions>
+                            }
+                          )}>
                             {
-                              x.role === 'admin' && (
+                              selectedUsers.includes(x.user)
+                                ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
+                                  <CheckCircle2 className="size-6" />
+                                </div>
+                                : <>
+                                  <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                                  <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                                </>
+                            }
+                          </Avatar>
+                        </ItemMedia>
+                        <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
+                          <ItemTitle>{x.user.name}</ItemTitle>
+                          <ItemDescription>
+                            {x.user.email}
+                            {x.user.last_seen_at && (
+                              <span className="ml-2 text-xs">
+                                · {t('user.lastActive', { date: new Date(x.user.last_seen_at) })}
+                              </span>
+                            )}
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                          {
+                            x.role === 'admin' && (
+                              <>
                                 <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
-                              )
-                            }
-                            {
-                              role === "trial" && (() => {
-                                const daysLeft = trialDaysLeft(x.trial_started_at);
-                                if (daysLeft === null) return null;
-                                return (
-                                  <Badge
-                                    variant="outline"
-                                    className={cn("text-xs", daysLeft <= 3
-                                      ? "text-destructive border-destructive/20 bg-destructive/10"
-                                      : "text-muted-foreground")}
-                                  >
-                                    {daysLeft > 0
-                                      ? t('groups.trialDaysLeft', { count: daysLeft })
-                                      : t('groups.trialExpiring')}
-                                  </Badge>
-                                );
-                              })()
-                            }
-                            {
-                              role === "trial" && <AcceptTrialButton group={group} user={x.user} />
-                            }
-                            {
-                              role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
-                            }
-                          </ItemActions>
-                        </Item>
-                      ))}
-                  </div>
-                ))
+                                <Button
+                                  variant="outline"
+                                  className={cn("ml-2", {
+                                    "hidden": group.user_group_role !== "admin"
+                                  })}
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const result = await dialogs.confirm(
+                                      `Möchtest du wirklich ${x.user.name} von den Admins dieser Gruppe entfernen?`,
+                                      {
+                                        okText: 'Bestätigen',
+                                        cancelText: 'Abbrechen',
+                                      }
+                                    );
+                                    if (result) {
+                                      changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
+                                    }
+                                  }}
+                                >
+                                  <MoveDownIcon />
+                                </Button>
+                              </>
+                            )
+                          }
+                          {
+                            role === "trial" && (() => {
+                              const daysLeft = trialDaysLeft(x.trial_started_at);
+                              if (daysLeft === null) return null;
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className={cn("text-xs", daysLeft <= 3
+                                    ? "text-destructive border-destructive/20 bg-destructive/10"
+                                    : "text-muted-foreground")}
+                                >
+                                  {daysLeft > 0
+                                    ? t('groups.trialDaysLeft', { count: daysLeft })
+                                    : t('groups.trialExpiring')}
+                                </Badge>
+                              );
+                            })()
+                          }
+                          {
+                            role === "user" && <div className={cn("flex items-center gap-2", {
+                              "hidden": group.user_group_role !== "admin"
+                            })}>
+                              <Button
+                                variant="outline"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  const result = await dialogs.confirm(
+                                    `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                                    {
+                                      okText: 'Bestätigen',
+                                      cancelText: 'Abbrechen',
+                                    }
+                                  );
+                                  if (result) {
+                                    changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'admin' });
+                                  }
+                                }}
+                              >
+                                <ShieldCheck />
+                              </Button>
+                              <Has feat={'events.trials'}>
+                                <Button
+                                  variant="outline"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const result = await dialogs.confirm(
+                                      `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
+                                      {
+                                        okText: 'Bestätigen',
+                                        cancelText: 'Abbrechen',
+                                      }
+                                    );
+                                    if (result) {
+                                      changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'trial' });
+                                    }
+                                  }}
+                                >
+                                  <MoveDownIcon />
+                                </Button>
+                              </Has>
+                            </div>
+                          }
+                          {
+                            role === "trial" && group.user_group_role === "admin" && <AcceptTrialButton group={group} user={x.user} />
+                          }
+                          {
+                            role === "joinRequested" && group.user_group_role === "admin" && <RequestedGroupJoinButton group={group} user={x.user} />
+                          }
+                        </ItemActions>
+                      </Item>
+                    ))}
+                </div>
+              ))
             )}
           </div>
         </PullToRefresh>

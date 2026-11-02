@@ -36,6 +36,7 @@ const UserSearchPage = () => {
         searchPlaceholder={t('search.placeholder')}
         searchValue={search}
         onSearchChange={setSearch}
+        primaryAction="back"
       />
 
       {isLoading ? (
