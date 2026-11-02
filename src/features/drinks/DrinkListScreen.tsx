@@ -122,7 +122,8 @@ const DrinkListScreen = () => {
     (a.name ?? "").localeCompare(b.name ?? "", "de")
   );
   const filteredDrinks = activeDrinks.filter((x: Drink) => visibleTypes.includes(x.type));
-  const groupedDrinks = groupBy(filteredDrinks, (x) => x.type).entries();
+  // A real array: `.map` on a Map iterator needs iterator helpers (missing before Safari 18.4).
+  const groupedDrinks = Array.from(groupBy(filteredDrinks, (x) => x.type).entries());
 
   const addedDrinksCount = Object.keys(addedDrinks).length;
   const hasMultipleTypes = new Set(activeDrinks.map((x) => x.type)).size > 1;

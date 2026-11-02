@@ -41,7 +41,8 @@ test.describe('Drinks', () => {
     await grantUser(admin, userId, { feats: ['drinks'], perms: ['drinks.purchase'] });
 
     const { data } = await admin.from('drink')
-      .insert({ name: DRINK_NAME, price: PRICE, active: true })
+      // type 'Drink': the list only shows visibleTypes, which default to ['Drink'].
+      .insert({ name: DRINK_NAME, price: PRICE, active: true, type: 'Drink' })
       .select('id').single().throwOnError();
     drinkId = (data as { id: string }).id;
   });
