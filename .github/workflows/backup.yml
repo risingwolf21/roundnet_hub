@@ -51,7 +51,8 @@ jobs:
     name: Backup Munich Roundnet
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Munich Roundnet' }}
+      || github.event.inputs.publish == 'Munich Roundnet'
+      || false }}
     runs-on: ubuntu-latest
     environment: "Munich Roundnet"
     steps:

@@ -1120,7 +1120,7 @@
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.28.4.tgz#a70226016fabe25c5783b2f22d3e1c9bc5ca3326"
   integrity sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==
 
-"@babel/runtime@^7.28.4", "@babel/runtime@^7.29.2":
+"@babel/runtime@^7.29.2":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.29.7.tgz#12022450c45a4da6d8d8287b18a4ff2ddb23f768"
   integrity sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==
@@ -2839,11 +2839,6 @@
     magic-string "^0.25.0"
     string.prototype.matchall "^4.0.6"
 
-"@tabby_ai/hijri-converter@1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@tabby_ai/hijri-converter/-/hijri-converter-1.0.5.tgz#b664994892348a402ae7529e648c819eee39208b"
-  integrity sha512-r5bClKrcIusDoo049dSL8CawnHR6mRdDwhlQuIgZRNty68q0x8k3Lf1BtPAMxRf/GgnHBnIO4ujd3+GQdLWzxQ==
-
 "@tailwindcss/node@4.2.2":
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/@tailwindcss/node/-/node-4.2.2.tgz#840e904226dc1b379609de8a72323fc211568993"
@@ -2971,10 +2966,10 @@
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.99.0.tgz#d45dca04cdf8bc68ba4f02e11a6a7e00cc04f79b"
   integrity sha512-3Jv3WQG0BCcH7G+7lf/bP8QyBfJOXeY+T08Rin3GZ1bshvwlbPt7NrDHMEzGdKIOmOzvIQmxjk28YEQX60k7pQ==
 
-"@tanstack/query-devtools@5.93.0":
-  version "5.93.0"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-devtools/-/query-devtools-5.93.0.tgz#517f61d4e2cfb9af671e34ad5e7e871052bca814"
-  integrity sha512-+kpsx1NQnOFTZsw6HAFCW3HkKg0+2cepGtAWXjiiSOJJ1CtQpt72EE2nyZb+AjAbLRPoeRmPJ8MtQd8r8gsPdg==
+"@tanstack/query-devtools@5.99.0":
+  version "5.99.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-devtools/-/query-devtools-5.99.0.tgz#1ce4f42d0934db08f0c4c76f88433ab8f80fc925"
+  integrity sha512-m4ufXaJ8FjWXw7xDtyzE/6fkZAyQFg9WrbMrUpt8ZecRJx58jiFOZ2lxZMphZdIpAnIeto/S8stbwLKLusyckQ==
 
 "@tanstack/query-persist-client-core@5.99.0":
   version "5.99.0"
@@ -2983,12 +2978,12 @@
   dependencies:
     "@tanstack/query-core" "5.99.0"
 
-"@tanstack/react-query-devtools@5.91.3":
-  version "5.91.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query-devtools/-/react-query-devtools-5.91.3.tgz#0f65340fa3f7e7d5575de928ad70cfa6b5f74ff1"
-  integrity sha512-nlahjMtd/J1h7IzOOfqeyDh5LNfG0eULwlltPEonYy0QL+nqrBB+nyzJfULV+moL7sZyxc2sHdNJki+vLA9BSA==
+"@tanstack/react-query-devtools@5.99.0":
+  version "5.99.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query-devtools/-/react-query-devtools-5.99.0.tgz#0c6a1af420d7b85d970663fc6080b20bb3743314"
+  integrity sha512-CqqX7LCU9yOfCY/vBURSx2YSD83ryfX+QkfkaKionTfg1s2Hdm572Ro99gW3QPoJjzvsj1HM4pnN4nbDy3MXKA==
   dependencies:
-    "@tanstack/query-devtools" "5.93.0"
+    "@tanstack/query-devtools" "5.99.0"
 
 "@tanstack/react-query-persist-client@5.99.0":
   version "5.99.0"
@@ -4619,11 +4614,6 @@ data-view-byte-offset@^1.0.1:
     es-errors "^1.3.0"
     is-data-view "^1.0.1"
 
-date-fns-jalali@4.1.0-0:
-  version "4.1.0-0"
-  resolved "https://registry.yarnpkg.com/date-fns-jalali/-/date-fns-jalali-4.1.0-0.tgz#9c7fb286004fab267a300d3e9f1ada9f10b4b6b0"
-  integrity sha512-hTIP/z+t+qKwBDcmmsnmjWTduxCg+5KfdqWQvb2X/8C9+knYY6epN/pfxdDuyVlSVeFz0sM5eEfwIUQ70U4ckg==
-
 date-fns@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-3.2.0.tgz#c97cf685b62c829aa4ecba554e4a51768cf0bffc"
@@ -6015,12 +6005,10 @@ i18next-browser-languagedetector@8.2.0:
   dependencies:
     "@babel/runtime" "^7.23.2"
 
-i18next@25.8.10:
-  version "25.8.10"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-25.8.10.tgz#5bfe20c167761a7c4e33427aae54e33615ce944a"
-  integrity sha512-CtPJLMAz1G8sxo+mIzfBjGgLxWs7d6WqIjlmmv9BTsOat4pJIfwZ8cm07n3kFS6bP9c6YwsYutYrwsEeJVBo2g==
-  dependencies:
-    "@babel/runtime" "^7.28.4"
+i18next@26.3.1:
+  version "26.3.1"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-26.3.1.tgz#94762857f5aae0c6282d87f8f0039cbbc9f7b42d"
+  integrity sha512-txQqd5EULsqEh9OJqRH15aCaOuy/nLJyhw5EHCSKLKJE1aBbb3Zve2+uQIxgWhPm1QqUQoWyQBm2kfmmIrzkcQ==
 
 iceberg-js@^0.8.1:
   version "0.8.1"
@@ -8260,15 +8248,13 @@ raw-body@^3.0.0, raw-body@^3.0.1:
     iconv-lite "~0.7.0"
     unpipe "~1.0.0"
 
-react-day-picker@9.14.0:
-  version "9.14.0"
-  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-9.14.0.tgz#b2975b48366d0c3a180520e1a4063b5a7d6c5a57"
-  integrity sha512-tBaoDWjPwe0M5pGrum4H0SR6Lyk+BO9oHnp9JbKpGKW2mlraNPgP9BMfsg5pWpwrssARmeqk7YBl2oXutZTaHA==
+react-day-picker@^10.0.1:
+  version "10.0.2"
+  resolved "https://registry.yarnpkg.com/react-day-picker/-/react-day-picker-10.0.2.tgz#0bc95cb1ff49c31a65aefe2e3aa5ed44dba4fa4a"
+  integrity sha512-QetiKtZWE9Uaw/pM/SYNv6WPYOTRnSJ2puL0GgwkmUFMIwiY0dtjH1W4B7DOVXVNQM0ZOClGpH/heOfBSzWeiA==
   dependencies:
     "@date-fns/tz" "^1.4.1"
-    "@tabby_ai/hijri-converter" "1.0.5"
     date-fns "^4.1.0"
-    date-fns-jalali "4.1.0-0"
 
 react-dom@19.0.0:
   version "19.0.0"
@@ -8277,10 +8263,10 @@ react-dom@19.0.0:
   dependencies:
     scheduler "^0.25.0"
 
-react-easy-crop@5.5.6:
-  version "5.5.6"
-  resolved "https://registry.yarnpkg.com/react-easy-crop/-/react-easy-crop-5.5.6.tgz#1a1ea3a90f83559d93b0636a5d984df143b40fe4"
-  integrity sha512-Jw3/ozs8uXj3NpL511Suc4AHY+mLRO23rUgipXvNYKqezcFSYHxe4QXibBymkOoY6oOtLVMPO2HNPRHYvMPyTw==
+react-easy-crop@5.5.7:
+  version "5.5.7"
+  resolved "https://registry.yarnpkg.com/react-easy-crop/-/react-easy-crop-5.5.7.tgz#220518895ef1ed28bd889cbdfbd5baed0f0009bb"
+  integrity sha512-kYo4NtMeXFQB7h1U+h5yhUkE46WQbQdq7if54uDlbMdZHdRgNehfvaFrXnFw5NR1PNoUOJIfTwLnWmEx/MaZnA==
   dependencies:
     normalize-wheel "^1.0.1"
     tslib "^2.0.1"
