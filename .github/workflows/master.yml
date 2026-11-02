@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # Pinned: "latest" makes setup-cli query the GitHub API on every run, which fails under
+      # rate limiting ("Failed to resolve latest Supabase CLI release") before any test runs.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - run: supabase start --ignore-health-check
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error

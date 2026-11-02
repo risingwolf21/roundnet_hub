@@ -85,6 +85,22 @@ test.describe('Bundesliga planner', () => {
     expect(liveCalls).toEqual([]);
   });
 
+  test('placing a player in an encounter counts their games', { annotation: flow('bundesliga.lineup') }, async ({ page }) => {
+    const liveCalls = await forbidLiveScrape(page);
+    await signIn(page, EMAIL);
+    await page.goto('/bundesliga');
+    await page.getByRole('combobox').filter({ hasText: 'Team wählen' }).click();
+    await page.getByRole('option', { name: TEAM_A.name }).click();
+
+    await expect(page.getByText('Spiele pro Spieler')).toBeVisible();
+    await expect(page.getByText(`${PLAYER_1}: 0`)).toBeVisible();
+    // First seat of the first encounter (empty seats read "— frei —").
+    await page.getByRole('combobox').filter({ hasText: '— frei —' }).first().click();
+    await page.getByRole('option').filter({ hasText: PLAYER_1 }).first().click();
+    await expect(page.getByText(`${PLAYER_1}: 1`)).toBeVisible();
+    expect(liveCalls).toEqual([]);
+  });
+
   test('a bundesliga.admin gets the hard-reload control', { annotation: flow('bundesliga.admin') }, async ({ page }) => {
     const liveCalls = await forbidLiveScrape(page);
     await grantUser(admin, userId, { perms: ['bundesliga.admin'] });

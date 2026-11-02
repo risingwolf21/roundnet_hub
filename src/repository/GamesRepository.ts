@@ -28,8 +28,12 @@ export const GamesRepository = {
       supabase.schema('games').from('players').select('*').is('linked_user_id', null),
     ]);
 
+    // Join on linked_user_id (the canonical link, cf. ownPlayerFilter in PlayerDataRepository).
+    // Older accounts happen to have player = user id, but players created by trg_user_to_player
+    // get a random player id — keyed by `player`, such users showed up twice in the picker: once as
+    // "Unknown" (their real player) and once as a bare user without player data.
     const merged: PlayerWithSimpleUser[] = _(linkedPlayers)
-      .keyBy('player')
+      .keyBy('linked_user_id')
       .merge(_.keyBy(simpleUsers, 'id'))
       .values()
       .value()
