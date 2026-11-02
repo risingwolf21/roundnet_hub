@@ -171,7 +171,7 @@ const SignUpForm = () => {
       </form>
       <Separator className={"my-4"} />
       <div className='flex justify-center'>
-        {`Version ${APP_VERSION}-${version.slice(0, 8)}`}
+        {`Version ${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}`}
       </div>
     </CardContent>
   </Card>
