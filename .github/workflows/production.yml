@@ -34,9 +34,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - run: supabase start --ignore-health-check
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error
@@ -52,9 +53,10 @@ jobs:
       name: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - name: Push unpublished migrations
         run: supabase db push --db-url ${{ secrets.SUPABASE_CONNECTION_STRING }}
 
@@ -69,9 +71,10 @@ jobs:
       name: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - name: Push unpublished migrations
         run: supabase db push --db-url ${{ secrets.SUPABASE_CONNECTION_STRING }}
 
@@ -86,9 +89,10 @@ jobs:
       name: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - name: Deploy Edge Functions
         run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
         env:
@@ -105,9 +109,10 @@ jobs:
       name: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       - name: Deploy Edge Functions
         run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
         env:
