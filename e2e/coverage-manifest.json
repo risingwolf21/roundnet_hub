@@ -178,7 +178,7 @@
         },
         {
           "id": "items.required",
-          "title": "Pflicht-Item bei Zusage"
+          "title": "Benötigten Gegenstand (Schlüssel/Halle) festlegen"
         },
         {
           "id": "items.remove",

@@ -19,6 +19,7 @@ export const eventKeys = {
   eventComments: (id?: string) => [...eventKeys.event(id), 'comments'] as const,
   eventBringOverview: (id?: string) => [...eventKeys.event(id), 'bringOverview'] as const,
   eventBringPledges: (id?: string) => [...eventKeys.event(id), 'bringPledges'] as const,
+  eventBringItems: (id?: string) => [...eventKeys.event(id), 'bringItems'] as const,
   eventAttendance: (id?: string) => [...eventKeys.event(id), 'attendance'] as const,
   eventUserAttendanceInMonth: (userId: string, month: number) => [...eventKeys.all, 'userAttendance', userId, "month", month] as const,
   eventMatches: (id?: string) => [...eventKeys.event(id), 'matches'] as const,
@@ -176,7 +177,9 @@ export const useBringOverview = (eventId: string) =>
 
 export const useBringItems = (eventId?: string) =>
   useQuery<BringItems[]>({
-    queryKey: eventKeys.eventBringPledges(eventId),
+    // Own key: sharing eventBringPledges with useBringPledges made the two queries overwrite
+    // each other's cache (items vs. pledges), so other members' pledges never showed.
+    queryKey: eventKeys.eventBringItems(eventId),
     enabled: !!eventId,
     staleTime: 60_000,
     queryFn: async () => {
