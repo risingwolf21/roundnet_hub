@@ -46,14 +46,14 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-02 17:52 UTC · Commit `9012151`
+Stand: 2026-11-02 18:06 UTC · Commit `0853479`
 
-**Funktionsabdeckung: 93.4 %** (89 voll + 7 teilweise von 99 Funktionen) · **E2E-Tests:** 88/91 Desktop, 9/9 Mobil bestanden
+**Funktionsabdeckung: 95.5 %** (91 voll + 7 teilweise von 99 Funktionen) · **E2E-Tests:** 90/91 Desktop, 9/9 Mobil bestanden
 
 | Bereich | Funktionen | ✅ voll | 🟡 teilweise | ❌ fehlgeschlagen | 🐞 bekannter Fehler | ⬜ offen | Abdeckung |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Anmeldung & Konto | 7 | 4 | 3 | 0 | 0 | 0 | 78.6 % |
-| Events / Training | 12 | 11 | 0 | 0 | 1 | 0 | 91.7 % |
+| Events / Training | 12 | 12 | 0 | 0 | 0 | 0 | 100 % |
 | Teilnahme & Warteliste | 9 | 9 | 0 | 0 | 0 | 0 | 100 % |
 | Probetraining | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
 | Mitbringliste & Zusagen (Pledges) | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
@@ -63,14 +63,14 @@ Stand: 2026-11-02 17:52 UTC · Commit `9012151`
 | Getränke | 6 | 6 | 0 | 0 | 0 | 0 | 100 % |
 | Turnierkosten | 3 | 3 | 0 | 0 | 0 | 0 | 100 % |
 | Schlüssel & Material | 3 | 3 | 0 | 0 | 0 | 0 | 100 % |
-| Spiele & Rangliste | 5 | 4 | 0 | 0 | 1 | 0 | 80 % |
+| Spiele & Rangliste | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
 | Challenges | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
 | Bundesliga-Planer | 4 | 3 | 0 | 0 | 0 | 1 | 75 % |
 | Profil & Einstellungen | 5 | 3 | 2 | 0 | 0 | 0 | 80 % |
 | Benachrichtigungen | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Administration | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Allgemein | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
-| **Gesamt** | **99** | **89** | **7** | **0** | **2** | **1** | **93.4 %** |
+| **Gesamt** | **99** | **91** | **7** | **0** | **0** | **1** | **95.5 %** |
 
 Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird bis zur Grenze nach außen getestet (z. B. Push-Abo gespeichert, Mail-Anfrage gesendet), der externe Dienst selbst ist blockiert.
 
@@ -98,7 +98,7 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 - ✅ Übersicht wiederkehrende Events <sub>`events.recurring.list`</sub>
 - ✅ Nächste Termine generieren <sub>`events.recurring.generate`</sub>
 - ✅ Eventdetails (Zeit, Ort, Beschreibung) <sub>`events.details`</sub>
-- 🐞 Konstellationen / Teams erstellen <sub>`events.constellations`</sub>
+- ✅ Konstellationen / Teams erstellen <sub>`events.constellations`</sub>
 - ✅ Spiele-Tab eines Events <sub>`events.matches`</sub>
 
 **Teilnahme & Warteliste**
@@ -181,7 +181,7 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 - ✅ Spieleliste <sub>`games.list`</sub>
 - ✅ Spieldetails <sub>`games.detail`</sub>
-- 🐞 Ergebnis melden <sub>`games.report`</sub>
+- ✅ Ergebnis melden <sub>`games.report`</sub>
 - ✅ Rangliste / ELO <sub>`games.leaderboard`</sub>
 - ✅ Spielverlauf eines Spielers <sub>`games.history`</sub>
 
@@ -240,17 +240,16 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 **Bekannte Fehler (Test als `fixme` markiert)**
 
-- 🐞 a match is booked on the players' own player records — Spiele neuer Accounts landen auf erfundenen Gastspielern (player-ID ≠ user-ID in add_match_with_sets, Benachrichtigungs-Trigger) <sub>`games.spec.ts`</sub>
-- 🐞 a trainer generates constellations for the attendees and saves the round — Konstellationen: neue Accounts gelten als "ohne Index", die Runde lässt sich nicht speichern (player-ID ≠ user-ID) <sub>`games.spec.ts`</sub>
+- keine
 
 **Code-Abdeckung (E2E, Istanbul)**
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 66.7 % | 3985 / 5974 |
-| Anweisungen | 65.83 % | 4539 / 6894 |
-| Funktionen | 62.01 % | 1569 / 2530 |
-| Verzweigungen | 52.58 % | 1956 / 3720 |
+| Zeilen | 69.03 % | 4124 / 5974 |
+| Anweisungen | 68.11 % | 4694 / 6891 |
+| Funktionen | 64.54 % | 1631 / 2527 |
+| Verzweigungen | 54.19 % | 2017 / 3722 |
 
 Gemessen über die im Browser geladenen Dateien (177 von 227 Quelldateien unter `src/`; 50 wurden in keinem Test geladen und zählen oben nicht mit).
 <!-- E2E-STATUS:END -->
