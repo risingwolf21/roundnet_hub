@@ -26,6 +26,14 @@ const notifications = async () => {
 async function stubPush(page: Page, endpoint: string) {
   await page.context().grantPermissions(['notifications']);
   await page.addInitScript((ep) => {
+    // Headless Chromium in CI keeps Notification.permission at "denied" despite grantPermissions,
+    // so pin the browser-side permission as well (the user having allowed notifications).
+    try {
+      Object.defineProperty(Notification, 'permission', { configurable: true, get: () => 'granted' });
+      Notification.requestPermission = async () => 'granted';
+    } catch {
+      /* ignore */
+    }
     const key = (n: number) => new Uint8Array(Array.from({ length: n }, (_, i) => (i * 7 + 3) % 256)).buffer;
     let current: unknown = null;
     const subscription = {
