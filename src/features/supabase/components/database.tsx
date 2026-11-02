@@ -324,7 +324,7 @@ const DatabaseManager = () => {
 
           {tables && tables.length > 0 ? (
             <div>
-              {groupBy(tables, (x: TableMetadata) => x.schema).entries().map(([key, groupedTables]) => (
+              {Array.from(groupBy(tables, (x: TableMetadata) => x.schema).entries()).map(([key, groupedTables]) => (
                 <div key={key}>
                   <div className='text-base font-bold'>{key}</div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
