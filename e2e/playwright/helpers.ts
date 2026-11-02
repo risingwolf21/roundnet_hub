@@ -80,7 +80,21 @@ export async function grantUser(
  * away from /auth/login, so drop any existing session first — this lets one test switch
  * between users on the same page.
  */
+const pageErrors = new WeakMap<Page, string[]>();
+
+/** Collects uncaught page errors and console errors so a failing test can print them. */
+export function trackErrors(page: Page) {
+  if (pageErrors.has(page)) return;
+  const errors: string[] = [];
+  pageErrors.set(page, errors);
+  page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(`console.error: ${m.text().slice(0, 300)}`);
+  });
+}
+
 export async function signIn(page: Page, email: string, password = PASSWORD) {
+  trackErrors(page);
   await page.goto('/auth/login');
   await page.evaluate(() => {
     try {
@@ -111,7 +125,8 @@ export async function signIn(page: Page, email: string, password = PASSWORD) {
 export async function logPageOnFailure(page: Page, testInfo: TestInfo) {
   if (testInfo.status === testInfo.expectedStatus) return;
   const text = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 600);
-  console.log(`[e2e-fail] ${testInfo.title}\n  url: ${page.url()}\n  body: ${text}`);
+  const errors = (pageErrors.get(page) ?? []).slice(-8).map((e) => `  ${e}`).join('\n');
+  console.log(`[e2e-fail] ${testInfo.title}\n  url: ${page.url()}\n  body: ${text}${errors ? `\n${errors}` : ''}`);
 }
 
 export { expect };

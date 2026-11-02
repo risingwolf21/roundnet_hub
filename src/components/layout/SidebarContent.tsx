@@ -297,7 +297,7 @@ export function AppSidebar() {
           icon: isUpdating ? <Spinner /> : <RefreshCcw />
         },
         {
-          title: import.meta.env.VITE_APP_VERSION + '.' + import.meta.env.VITE_GIT_COMMIT.slice(0, 6),
+          title: [import.meta.env.VITE_APP_VERSION, import.meta.env.VITE_GIT_COMMIT?.slice(0, 6)].filter(Boolean).join('.'),
           icon: <Package />
         }
       ]
