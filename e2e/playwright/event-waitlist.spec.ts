@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantGroup, logPageOnFailure, signIn } from './helpers';
 
@@ -61,7 +61,7 @@ test.describe('Event waitlist', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('first attendee takes the only seat, second lands on the waitlist, decline promotes', async ({ page }) => {
+  test('first attendee takes the only seat, second lands on the waitlist, decline promotes', { annotation: flow('attendance.waitlist', 'attendance.promote', 'attendance.decline') }, async ({ page }) => {
     // U1 attends -> takes the only seat.
     await signIn(page, U1);
     await openEvent(page);

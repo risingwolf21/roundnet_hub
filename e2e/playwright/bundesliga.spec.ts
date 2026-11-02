@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantUser, logPageOnFailure, signIn } from './helpers';
 
@@ -64,7 +64,7 @@ test.describe('Bundesliga planner', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('picking my team loads its roster from cache and detects the opponent', async ({ page }) => {
+  test('picking my team loads its roster from cache and detects the opponent', { annotation: flow('bundesliga.team') }, async ({ page }) => {
     const liveCalls = await forbidLiveScrape(page);
     await signIn(page, EMAIL);
     await page.goto('/bundesliga');
@@ -85,7 +85,7 @@ test.describe('Bundesliga planner', () => {
     expect(liveCalls).toEqual([]);
   });
 
-  test('a bundesliga.admin gets the hard-reload control', async ({ page }) => {
+  test('a bundesliga.admin gets the hard-reload control', { annotation: flow('bundesliga.admin') }, async ({ page }) => {
     const liveCalls = await forbidLiveScrape(page);
     await grantUser(admin, userId, { perms: ['bundesliga.admin'] });
     await signIn(page, EMAIL);

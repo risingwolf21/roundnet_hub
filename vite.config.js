@@ -18,7 +18,7 @@ function pathFromPublicUrl(publicUrl) {
   }
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   const APP_NAME = env.VITE_WEBSITE_NAME ?? 'App';
@@ -37,6 +37,16 @@ export default defineConfig(({ mode }) => {
     base: BASE_PATH,
     envDir: './environments',
     plugins: [
+      // e2e code coverage (playwright.yml sets E2E_COVERAGE=true); never active in normal dev/prod.
+      process.env.E2E_COVERAGE === 'true' &&
+        // ESM-only package and the config is bundled as CJS → load it lazily.
+        (await import('vite-plugin-istanbul')).default({
+          include: 'src/**/*',
+          exclude: ['node_modules', 'src/**/*.test.*', 'src/types/**'],
+          extension: ['.ts', '.tsx'],
+          requireEnv: false,
+          forceBuildInstrument: false,
+        }),
       react(),
       tailwindcss(),
       sentryVitePlugin({

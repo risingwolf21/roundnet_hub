@@ -1,0 +1,538 @@
+{
+  "$comment": "Every user-facing function of the app. Tests link to a flow via test(..., { annotation: flow('<id>') }). 'boundary: true' = the external side (push service, mail delivery, live scrape, OS calendar) is blocked/simulated, so a passing test counts as 'teilweise'. 'excluded' areas are listed but not counted.",
+  "areas": [
+    {
+      "id": "auth",
+      "title": "Anmeldung & Konto",
+      "flows": [
+        {
+          "id": "auth.login",
+          "title": "Login mit E-Mail/Passwort"
+        },
+        {
+          "id": "auth.login.wrong",
+          "title": "Falsches Passwort zeigt Fehler"
+        },
+        {
+          "id": "auth.signup",
+          "title": "Registrierung",
+          "boundary": true
+        },
+        {
+          "id": "auth.forgot",
+          "title": "Passwort vergessen anfordern",
+          "boundary": true
+        },
+        {
+          "id": "auth.reset",
+          "title": "Passwort zurücksetzen (Link aus Mail)",
+          "boundary": true
+        },
+        {
+          "id": "auth.logout",
+          "title": "Logout"
+        },
+        {
+          "id": "auth.redirect",
+          "title": "Geschützte Seite leitet ohne Login zum Login"
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "title": "Events / Training",
+      "flows": [
+        {
+          "id": "events.list",
+          "title": "Eventliste zeigt nur Events der eigenen Gruppen"
+        },
+        {
+          "id": "events.create",
+          "title": "Einzelnes Event anlegen"
+        },
+        {
+          "id": "events.create.recurring",
+          "title": "Wiederkehrendes Event (Serie) anlegen"
+        },
+        {
+          "id": "events.edit.single",
+          "title": "Einzelnes Event bearbeiten"
+        },
+        {
+          "id": "events.edit.series",
+          "title": "Serie bearbeiten (dieses & zukünftige)"
+        },
+        {
+          "id": "events.cancel",
+          "title": "Event absagen"
+        },
+        {
+          "id": "events.delete",
+          "title": "Event löschen"
+        },
+        {
+          "id": "events.recurring.list",
+          "title": "Übersicht wiederkehrende Events"
+        },
+        {
+          "id": "events.recurring.generate",
+          "title": "Nächste Termine generieren"
+        },
+        {
+          "id": "events.details",
+          "title": "Eventdetails (Zeit, Ort, Beschreibung)"
+        },
+        {
+          "id": "events.constellations",
+          "title": "Konstellationen / Teams erstellen"
+        },
+        {
+          "id": "events.matches",
+          "title": "Spiele-Tab eines Events"
+        }
+      ]
+    },
+    {
+      "id": "attendance",
+      "title": "Teilnahme & Warteliste",
+      "flows": [
+        {
+          "id": "attendance.attend",
+          "title": "Zusagen"
+        },
+        {
+          "id": "attendance.decline",
+          "title": "Absagen"
+        },
+        {
+          "id": "attendance.trainer",
+          "title": "Als Trainer zusagen"
+        },
+        {
+          "id": "attendance.noperm",
+          "title": "Ohne event.signup keine Buttons"
+        },
+        {
+          "id": "attendance.deadline",
+          "title": "Nach Antwortfrist: Anfrage statt Zusage"
+        },
+        {
+          "id": "attendance.waitlist",
+          "title": "Warteliste bei vollem Event"
+        },
+        {
+          "id": "attendance.promote",
+          "title": "Nachrücken von der Warteliste"
+        },
+        {
+          "id": "attendance.list",
+          "title": "Teilnehmerliste ansehen"
+        },
+        {
+          "id": "attendance.admin",
+          "title": "Trainer/Admin setzt Teilnahme anderer"
+        }
+      ]
+    },
+    {
+      "id": "trials",
+      "title": "Probetraining",
+      "flows": [
+        {
+          "id": "trials.accept",
+          "title": "Beitrittsanfrage als Probenutzer annehmen"
+        },
+        {
+          "id": "trials.attend",
+          "title": "Probenutzer landet im Probe-Pool"
+        },
+        {
+          "id": "trials.limit",
+          "title": "Limit für Probe-Teilnehmer"
+        },
+        {
+          "id": "trials.promote",
+          "title": "Probenutzer zum Mitglied machen"
+        },
+        {
+          "id": "trials.expire",
+          "title": "Probemitgliedschaft läuft ab"
+        }
+      ]
+    },
+    {
+      "id": "items",
+      "title": "Mitbringliste & Zusagen (Pledges)",
+      "flows": [
+        {
+          "id": "items.add",
+          "title": "Mitbring-Item zum Event hinzufügen"
+        },
+        {
+          "id": "items.pledge",
+          "title": "Item zusagen (Pledge)"
+        },
+        {
+          "id": "items.unpledge",
+          "title": "Zusage zurückziehen"
+        },
+        {
+          "id": "items.required",
+          "title": "Pflicht-Item bei Zusage"
+        },
+        {
+          "id": "items.remove",
+          "title": "Item entfernen"
+        }
+      ]
+    },
+    {
+      "id": "comments",
+      "title": "Kommentare",
+      "flows": [
+        {
+          "id": "comments.create",
+          "title": "Kommentar schreiben"
+        },
+        {
+          "id": "comments.edit",
+          "title": "Eigenen Kommentar bearbeiten"
+        },
+        {
+          "id": "comments.delete",
+          "title": "Eigenen Kommentar löschen"
+        },
+        {
+          "id": "comments.foreign",
+          "title": "Fremde Kommentare nicht bearbeitbar"
+        }
+      ]
+    },
+    {
+      "id": "groups",
+      "title": "Gruppen",
+      "flows": [
+        {
+          "id": "groups.list",
+          "title": "Öffentliche Gruppenliste"
+        },
+        {
+          "id": "groups.join",
+          "title": "Gruppe direkt beitreten"
+        },
+        {
+          "id": "groups.request",
+          "title": "Beitritt anfragen"
+        },
+        {
+          "id": "groups.accept",
+          "title": "Anfrage annehmen"
+        },
+        {
+          "id": "groups.decline",
+          "title": "Anfrage ablehnen"
+        },
+        {
+          "id": "groups.create",
+          "title": "Gruppe anlegen"
+        },
+        {
+          "id": "groups.edit",
+          "title": "Gruppe bearbeiten"
+        },
+        {
+          "id": "groups.role",
+          "title": "Rolle eines Mitglieds ändern"
+        },
+        {
+          "id": "groups.addusers",
+          "title": "Mitglieder hinzufügen"
+        },
+        {
+          "id": "groups.remove",
+          "title": "Mitglied entfernen"
+        },
+        {
+          "id": "groups.leave",
+          "title": "Gruppe verlassen"
+        }
+      ]
+    },
+    {
+      "id": "grants",
+      "title": "Rechte & Features",
+      "flows": [
+        {
+          "id": "grants.manager",
+          "title": "Rechteverwaltung öffnen"
+        },
+        {
+          "id": "grants.edit",
+          "title": "Recht/Feature vergeben und entziehen"
+        },
+        {
+          "id": "grants.featurelock",
+          "title": "Gesperrte Feature-Route zeigt Hinweis"
+        },
+        {
+          "id": "grants.unauthorized",
+          "title": "Admin-Route ohne Recht verweigert"
+        }
+      ]
+    },
+    {
+      "id": "drinks",
+      "title": "Getränke",
+      "flows": [
+        {
+          "id": "drinks.book",
+          "title": "Getränke buchen"
+        },
+        {
+          "id": "drinks.payments",
+          "title": "Offener Betrag auf Bezahlseite"
+        },
+        {
+          "id": "drinks.pay",
+          "title": "Bezahlung melden"
+        },
+        {
+          "id": "drinks.history",
+          "title": "Eigene Historie"
+        },
+        {
+          "id": "drinks.admin.history",
+          "title": "Admin: Historie aller"
+        },
+        {
+          "id": "drinks.admin.confirm",
+          "title": "Admin: Zahlung bestätigen"
+        },
+        {
+          "id": "drinks.admin.manage",
+          "title": "Admin: Getränke anlegen/bearbeiten"
+        }
+      ]
+    },
+    {
+      "id": "costs",
+      "title": "Turnierkosten",
+      "flows": [
+        {
+          "id": "costs.view",
+          "title": "Kostenübersicht"
+        },
+        {
+          "id": "costs.add",
+          "title": "Kosten hinzufügen"
+        },
+        {
+          "id": "costs.edit",
+          "title": "Kosten bearbeiten/löschen"
+        }
+      ]
+    },
+    {
+      "id": "keys",
+      "title": "Schlüssel & Material",
+      "flows": [
+        {
+          "id": "keys.list",
+          "title": "Wer hat welchen Schlüssel"
+        },
+        {
+          "id": "keys.add",
+          "title": "Item anlegen/bearbeiten"
+        },
+        {
+          "id": "keys.handover",
+          "title": "Schlüssel übergeben"
+        }
+      ]
+    },
+    {
+      "id": "games",
+      "title": "Spiele & Rangliste",
+      "flows": [
+        {
+          "id": "games.list",
+          "title": "Spieleliste"
+        },
+        {
+          "id": "games.detail",
+          "title": "Spieldetails"
+        },
+        {
+          "id": "games.report",
+          "title": "Ergebnis melden"
+        },
+        {
+          "id": "games.leaderboard",
+          "title": "Rangliste / ELO"
+        },
+        {
+          "id": "games.history",
+          "title": "Spielverlauf eines Spielers"
+        }
+      ]
+    },
+    {
+      "id": "challenges",
+      "title": "Challenges",
+      "flows": [
+        {
+          "id": "challenges.list",
+          "title": "Challenge-Liste"
+        },
+        {
+          "id": "challenges.create",
+          "title": "Challenge anlegen/bearbeiten"
+        },
+        {
+          "id": "challenges.points",
+          "title": "Punkte eintragen"
+        },
+        {
+          "id": "challenges.leaderboard",
+          "title": "Challenge-Rangliste"
+        }
+      ]
+    },
+    {
+      "id": "bundesliga",
+      "title": "Bundesliga-Planer",
+      "flows": [
+        {
+          "id": "bundesliga.team",
+          "title": "Team wählen, Kader aus Cache, Gegner erkannt"
+        },
+        {
+          "id": "bundesliga.admin",
+          "title": "Admin-Neuladen nur mit bundesliga.admin"
+        },
+        {
+          "id": "bundesliga.lineup",
+          "title": "Aufstellung planen"
+        },
+        {
+          "id": "bundesliga.scrape",
+          "title": "Live-Daten laden",
+          "boundary": true
+        }
+      ]
+    },
+    {
+      "id": "profile",
+      "title": "Profil & Einstellungen",
+      "flows": [
+        {
+          "id": "profile.account",
+          "title": "Profil bearbeiten"
+        },
+        {
+          "id": "profile.password",
+          "title": "Passwort ändern"
+        },
+        {
+          "id": "profile.notifications",
+          "title": "Benachrichtigungseinstellungen"
+        },
+        {
+          "id": "profile.calendar",
+          "title": "Kalender-Abo",
+          "boundary": true
+        },
+        {
+          "id": "profile.playerzone",
+          "title": "Playerzone verknüpfen",
+          "boundary": true
+        }
+      ]
+    },
+    {
+      "id": "notifications",
+      "title": "Benachrichtigungen",
+      "flows": [
+        {
+          "id": "notifications.list",
+          "title": "Benachrichtigungsliste"
+        },
+        {
+          "id": "notifications.read",
+          "title": "Als gelesen markieren"
+        },
+        {
+          "id": "notifications.push",
+          "title": "Push-Abo wird gespeichert",
+          "boundary": true
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Administration",
+      "flows": [
+        {
+          "id": "admin.dashboard",
+          "title": "Admin-Dashboard"
+        },
+        {
+          "id": "admin.users",
+          "title": "Benutzer verwalten"
+        },
+        {
+          "id": "admin.notify",
+          "title": "Benutzer benachrichtigen",
+          "boundary": true
+        },
+        {
+          "id": "admin.merge",
+          "title": "Accounts/Spieler zusammenführen"
+        }
+      ]
+    },
+    {
+      "id": "misc",
+      "title": "Allgemein",
+      "flows": [
+        {
+          "id": "misc.title",
+          "title": "Seitentitel"
+        },
+        {
+          "id": "misc.home",
+          "title": "Startseite"
+        },
+        {
+          "id": "misc.help",
+          "title": "Hilfe & Information"
+        },
+        {
+          "id": "misc.search",
+          "title": "Benutzersuche"
+        },
+        {
+          "id": "misc.nav.mobile",
+          "title": "Navigation auf dem Handy"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "id": "supabase.database",
+      "title": "Datenbank-Browser (/supabase/database)",
+      "reason": "bewusst ausgenommen"
+    },
+    {
+      "id": "admin.analytics",
+      "title": "Analytics-Dashboard (/admin/analytics)",
+      "reason": "bewusst ausgenommen"
+    },
+    {
+      "id": "events.transform",
+      "title": "Event umwandeln (Transformation)",
+      "reason": "im UI deaktiviert (Menüpunkt disabled)"
+    }
+  ]
+}

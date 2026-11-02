@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantGroup, grantUser, logPageOnFailure, signIn } from './helpers';
 
@@ -73,14 +74,14 @@ test.describe('Event attendance', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('a member sees the events of their own groups and not of others', async ({ page }) => {
+  test('a member sees the events of their own groups and not of others', { annotation: flow('events.list') }, async ({ page }) => {
     await signIn(page, memberEmail);
     await page.goto('/training/list');
     await expect(page.getByText(TITLE_A, { exact: true })).toBeVisible();
     await expect(page.getByText(TITLE_B, { exact: true })).toHaveCount(0);
   });
 
-  test('a member with event.signup can attend; a member without it gets no signup buttons', async ({ page }) => {
+  test('a member with event.signup can attend; a member without it gets no signup buttons', { annotation: flow('attendance.attend', 'attendance.noperm') }, async ({ page }) => {
     await signIn(page, memberEmail);
     await openEvent(page, EVENT_A, TITLE_A);
     await page.getByRole('button', { name: 'Teilnehmen', exact: true }).click();
@@ -92,7 +93,7 @@ test.describe('Event attendance', () => {
     await expect(page.getByRole('button', { name: 'Absagen', exact: true })).toHaveCount(0);
   });
 
-  test('past the answer deadline the member gets the request flow instead', async ({ page }) => {
+  test('past the answer deadline the member gets the request flow instead', { annotation: flow('attendance.deadline') }, async ({ page }) => {
     await signIn(page, memberEmail);
     await openEvent(page, EVENT_DEADLINE_PAST, TITLE_PAST);
     await expect(page.getByRole('button', { name: 'Teilnehmen', exact: true })).toHaveCount(0);
@@ -100,7 +101,7 @@ test.describe('Event attendance', () => {
     await expect.poll(() => stateFor(EVENT_DEADLINE_PAST, memberId)).toBe('RequestedAttendance');
   });
 
-  test('a trainer can attend as trainer', async ({ page }) => {
+  test('a trainer can attend as trainer', { annotation: flow('attendance.trainer') }, async ({ page }) => {
     await signIn(page, trainerEmail);
     await openEvent(page, EVENT_A, TITLE_A);
     await page.getByRole('button', { name: 'Als Trainer teilnehmen', exact: true }).click();

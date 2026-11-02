@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantUser, logPageOnFailure, signIn } from './helpers';
 
@@ -49,7 +50,7 @@ test.describe('Drinks', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('a user books two drinks', async ({ page }) => {
+  test('a user books two drinks', { annotation: flow('drinks.book') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await page.goto('/drinks/list');
 
@@ -67,7 +68,7 @@ test.describe('Drinks', () => {
     await expect.poll(bookedTotals).toEqual({ count: 2, amount: 2 * PRICE });
   });
 
-  test('the payments screen shows the open amount', async ({ page }) => {
+  test('the payments screen shows the open amount', { annotation: flow('drinks.payments') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await page.goto('/drinks/payments');
 

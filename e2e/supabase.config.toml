@@ -1,0 +1,9 @@
+# Supabase config for the CI / local e2e stack only. supabase/config.toml is gitignored, so
+# playwright.yml copies this file into place when none exists. Without it the stack runs on CLI
+# defaults, which expose only `public` — every query against games/notifications/util then fails
+# with PGRST106 ("Invalid schema") although production exposes them.
+project_id = "roundnet_karlsruhe_app"
+
+[api]
+schemas = ["public", "graphql_public", "games", "notifications", "util"]
+extra_search_path = ["public", "extensions"]
