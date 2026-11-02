@@ -9,7 +9,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
+  // results.json feeds scripts/e2e-report.mjs (README test-status table).
+  reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }], ['json', { outputFile: 'test-results/results.json' }]],
   use: {
     // Playwright uses baseURL for relative navigations. Vite dev server runs on :5173 by default.
     baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
@@ -18,6 +19,8 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
+    // Optional: use a preinstalled Chromium instead of the one bundled with this Playwright version.
+    launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
   },
   webServer: {
     // Start the Vite dev server automatically for tests (useful locally and in CI).
@@ -37,6 +40,8 @@ export default defineConfig({
       VITE_WEBSITE_PATH: process.env.VITE_WEBSITE_PATH ?? 'roundnet-karlsruhe',
       VITE_ICON_PREFIX: process.env.VITE_ICON_PREFIX ?? 'roundnet-karlsruhe',
       VITE_ENV: process.env.VITE_ENV ?? 'development',
+      // Istanbul instrumentation for e2e code coverage (see vite.config.js / fixtures.ts).
+      E2E_COVERAGE: process.env.E2E_COVERAGE ?? 'false',
       // Ensure the server is aware of the base URL
       BASE_URL: process.env.BASE_URL ?? 'http://localhost:5173',
     },
@@ -45,6 +50,20 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      // The most important flows again on a phone-sized screen (most members use the PWA on
+      // iPhones). Chromium with the iPhone viewport/touch — no extra browser download needed.
+      name: 'mobile',
+      grep: /@mobile/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: devices['iPhone 13'].viewport,
+        deviceScaleFactor: devices['iPhone 13'].deviceScaleFactor,
+        isMobile: true,
+        hasTouch: true,
+        userAgent: devices['iPhone 13'].userAgent,
+      },
     },
   ],
 });

@@ -3,8 +3,8 @@ name: Playwright tests
 on:
   push:
     branches: [ master, production ]
+  # All PRs (not only those into production), so stacked test-wave PRs get a run too.
   pull_request:
-    branches: [ master, production ]
 
 jobs:
   playwright-tests:
@@ -15,15 +15,27 @@ jobs:
     # Informational only: e2e is still being stabilised, so a failure here must never
     # block a merge. The uploaded report shows what passed/failed.
     continue-on-error: true
+    # contents: write — the run commits the recalculated README test-status table back to the
+    # PR branch (pushes made with GITHUB_TOKEN never trigger another workflow run).
+    permissions:
+      contents: write
+    env:
+      E2E_COVERAGE: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # On PRs check out the branch itself (not the merge ref) so the README can be pushed.
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
       # Local Supabase stack (same proven steps as the db-test job). Brings up the DB,
       # auth (GoTrue) and API gateway on :54321 that the app and the specs talk to.
       - uses: supabase/setup-cli@v1
         with:
           version: latest
+      # Expose the app's API schemas (games, notifications, util) like production does.
+      - name: Use the e2e Supabase config
+        run: test -f supabase/config.toml || cp e2e/supabase.config.toml supabase/config.toml
       - run: supabase start --ignore-health-check
 
       - name: Export local stack env for app + tests
@@ -57,13 +69,36 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       # playwright.config.ts starts the Vite dev server (yarn start) itself via webServer.
+      # Reporters come from playwright.config.ts (list + html + json → test-results/results.json).
       - name: Run Playwright tests
-        run: npx playwright test --reporter=list
+        run: npx playwright test
+
+      - name: Recalculate README test status
+        if: always()
+        run: |
+          npx nyc report --reporter=json-summary --reporter=text-summary --report-dir=coverage/e2e || true
+          node scripts/e2e-report.mjs
+          node scripts/e2e-report.mjs --stdout >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Commit README test status to the PR branch
+        # Only for PRs into production: stacked PRs would each rewrite the same generated block
+        # and conflict with one another (they still get the table in the job summary).
+        if: always() && github.event_name == 'pull_request' && github.base_ref == 'production' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git diff --quiet README.md && { echo "README unchanged"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs(readme): E2E-Teststatus aktualisiert [skip ci]"
+          # The branch may have moved while the tests ran; never clobber newer commits.
+          git pull --rebase origin "${{ github.head_ref }}" && git push origin "HEAD:${{ github.head_ref }}" || echo "::warning::README push skipped (branch moved)"
 
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report
+          path: |
+            playwright-report
+            coverage/e2e
           retention-days: 7

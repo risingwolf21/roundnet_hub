@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantGroup, logPageOnFailure, signIn } from './helpers';
 
@@ -69,7 +70,7 @@ test.describe('Trial membership', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('an admin accepts a join request as trial member', async ({ page }) => {
+  test('an admin accepts a join request as trial member', { annotation: flow('trials.accept') }, async ({ page }) => {
     await signIn(page, ADMIN_EMAIL);
     await page.goto(`/groups/${GROUP}`);
 
@@ -80,7 +81,7 @@ test.describe('Trial membership', () => {
     await expect.poll(() => roleOf(trialId)).toBe('trial');
   });
 
-  test('a trial member signing up lands in the trial pool', async ({ page }) => {
+  test('a trial member signing up lands in the trial pool', { annotation: flow('trials.attend') }, async ({ page }) => {
     await signIn(page, TRIAL_EMAIL);
     await page.goto(`/training/event/${EVENT}`);
     await expect(page.getByText(EVENT_TITLE).first()).toBeVisible();

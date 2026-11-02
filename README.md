@@ -27,6 +27,7 @@
 
 ## 📋 Table of Contents
 
+- [Teststatus](#-teststatus)
 - [Overview](#overview)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -37,6 +38,223 @@
 - [Database Management](#database-management)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
+
+## 🧪 Teststatus
+
+Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen lokalen Supabase-Stack. Die Tabelle wird bei jedem Lauf von `playwright.yml` neu berechnet (`scripts/e2e-report.mjs`, Funktionsliste in `e2e/coverage-manifest.json`).
+
+<!-- E2E-STATUS:START -->
+<!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
+
+Stand: 2026-11-02 14:39 UTC · Commit `c8cd290`
+
+**Funktionsabdeckung: 31.5 %** (31 voll + 1 teilweise von 100 Funktionen) · **E2E-Tests:** 28/28 Desktop, 1/1 Mobil bestanden
+
+| Bereich | Funktionen | ✅ voll | 🟡 teilweise | ❌ fehlgeschlagen | 🐞 bekannter Fehler | ⬜ offen | Abdeckung |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Anmeldung & Konto | 7 | 2 | 1 | 0 | 0 | 4 | 35.7 % |
+| Events / Training | 12 | 10 | 0 | 0 | 0 | 2 | 83.3 % |
+| Teilnahme & Warteliste | 9 | 9 | 0 | 0 | 0 | 0 | 100 % |
+| Probetraining | 5 | 2 | 0 | 0 | 0 | 3 | 40 % |
+| Mitbringliste & Zusagen (Pledges) | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
+| Kommentare | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
+| Gruppen | 11 | 3 | 0 | 0 | 0 | 8 | 27.3 % |
+| Rechte & Features | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
+| Getränke | 7 | 2 | 0 | 0 | 0 | 5 | 28.6 % |
+| Turnierkosten | 3 | 0 | 0 | 0 | 0 | 3 | 0 % |
+| Schlüssel & Material | 3 | 0 | 0 | 0 | 0 | 3 | 0 % |
+| Spiele & Rangliste | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
+| Challenges | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
+| Bundesliga-Planer | 4 | 2 | 0 | 0 | 0 | 2 | 50 % |
+| Profil & Einstellungen | 5 | 0 | 0 | 0 | 0 | 5 | 0 % |
+| Benachrichtigungen | 3 | 0 | 0 | 0 | 0 | 3 | 0 % |
+| Administration | 4 | 0 | 0 | 0 | 0 | 4 | 0 % |
+| Allgemein | 5 | 1 | 0 | 0 | 0 | 4 | 20 % |
+| **Gesamt** | **100** | **31** | **1** | **0** | **0** | **68** | **31.5 %** |
+
+Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird bis zur Grenze nach außen getestet (z. B. Push-Abo gespeichert, Mail-Anfrage gesendet), der externe Dienst selbst ist blockiert.
+
+<details><summary>Alle Funktionen im Detail</summary>
+
+**Anmeldung & Konto**
+
+- ✅ Login mit E-Mail/Passwort <sub>`auth.login`</sub>
+- ✅ Falsches Passwort zeigt Fehler <sub>`auth.login.wrong`</sub>
+- ⬜ Registrierung <sub>`auth.signup`</sub>
+- 🟡 Passwort vergessen anfordern <sub>`auth.forgot`</sub>
+- ⬜ Passwort zurücksetzen (Link aus Mail) <sub>`auth.reset`</sub>
+- ⬜ Logout <sub>`auth.logout`</sub>
+- ⬜ Geschützte Seite leitet ohne Login zum Login <sub>`auth.redirect`</sub>
+
+**Events / Training**
+
+- ✅ Eventliste zeigt nur Events der eigenen Gruppen <sub>`events.list`</sub>
+- ✅ Einzelnes Event anlegen <sub>`events.create`</sub>
+- ✅ Wiederkehrendes Event (Serie) anlegen <sub>`events.create.recurring`</sub>
+- ✅ Einzelnes Event bearbeiten <sub>`events.edit.single`</sub>
+- ✅ Serie bearbeiten (dieses & zukünftige) <sub>`events.edit.series`</sub>
+- ✅ Event absagen <sub>`events.cancel`</sub>
+- ✅ Event löschen <sub>`events.delete`</sub>
+- ✅ Übersicht wiederkehrende Events <sub>`events.recurring.list`</sub>
+- ✅ Nächste Termine generieren <sub>`events.recurring.generate`</sub>
+- ✅ Eventdetails (Zeit, Ort, Beschreibung) <sub>`events.details`</sub>
+- ⬜ Konstellationen / Teams erstellen <sub>`events.constellations`</sub>
+- ⬜ Spiele-Tab eines Events <sub>`events.matches`</sub>
+
+**Teilnahme & Warteliste**
+
+- ✅ Zusagen <sub>`attendance.attend`</sub>
+- ✅ Absagen <sub>`attendance.decline`</sub>
+- ✅ Als Trainer zusagen <sub>`attendance.trainer`</sub>
+- ✅ Ohne event.signup keine Buttons <sub>`attendance.noperm`</sub>
+- ✅ Nach Antwortfrist: Anfrage statt Zusage <sub>`attendance.deadline`</sub>
+- ✅ Warteliste bei vollem Event <sub>`attendance.waitlist`</sub>
+- ✅ Nachrücken von der Warteliste <sub>`attendance.promote`</sub>
+- ✅ Teilnehmerliste ansehen <sub>`attendance.list`</sub>
+- ✅ Trainer/Admin setzt Teilnahme anderer <sub>`attendance.admin`</sub>
+
+**Probetraining**
+
+- ✅ Beitrittsanfrage als Probenutzer annehmen <sub>`trials.accept`</sub>
+- ✅ Probenutzer landet im Probe-Pool <sub>`trials.attend`</sub>
+- ⬜ Limit für Probe-Teilnehmer <sub>`trials.limit`</sub>
+- ⬜ Probenutzer zum Mitglied machen <sub>`trials.promote`</sub>
+- ⬜ Probemitgliedschaft läuft ab <sub>`trials.expire`</sub>
+
+**Mitbringliste & Zusagen (Pledges)**
+
+- ⬜ Mitbring-Item zum Event hinzufügen <sub>`items.add`</sub>
+- ⬜ Item zusagen (Pledge) <sub>`items.pledge`</sub>
+- ⬜ Zusage zurückziehen <sub>`items.unpledge`</sub>
+- ⬜ Pflicht-Item bei Zusage <sub>`items.required`</sub>
+- ⬜ Item entfernen <sub>`items.remove`</sub>
+
+**Kommentare**
+
+- ⬜ Kommentar schreiben <sub>`comments.create`</sub>
+- ⬜ Eigenen Kommentar bearbeiten <sub>`comments.edit`</sub>
+- ⬜ Eigenen Kommentar löschen <sub>`comments.delete`</sub>
+- ⬜ Fremde Kommentare nicht bearbeitbar <sub>`comments.foreign`</sub>
+
+**Gruppen**
+
+- ✅ Öffentliche Gruppenliste <sub>`groups.list`</sub>
+- ✅ Gruppe direkt beitreten <sub>`groups.join`</sub>
+- ✅ Beitritt anfragen <sub>`groups.request`</sub>
+- ⬜ Anfrage annehmen <sub>`groups.accept`</sub>
+- ⬜ Anfrage ablehnen <sub>`groups.decline`</sub>
+- ⬜ Gruppe anlegen <sub>`groups.create`</sub>
+- ⬜ Gruppe bearbeiten <sub>`groups.edit`</sub>
+- ⬜ Rolle eines Mitglieds ändern <sub>`groups.role`</sub>
+- ⬜ Mitglieder hinzufügen <sub>`groups.addusers`</sub>
+- ⬜ Mitglied entfernen <sub>`groups.remove`</sub>
+- ⬜ Gruppe verlassen <sub>`groups.leave`</sub>
+
+**Rechte & Features**
+
+- ⬜ Rechteverwaltung öffnen <sub>`grants.manager`</sub>
+- ⬜ Recht/Feature vergeben und entziehen <sub>`grants.edit`</sub>
+- ⬜ Gesperrte Feature-Route zeigt Hinweis <sub>`grants.featurelock`</sub>
+- ⬜ Admin-Route ohne Recht verweigert <sub>`grants.unauthorized`</sub>
+
+**Getränke**
+
+- ✅ Getränke buchen <sub>`drinks.book`</sub>
+- ✅ Offener Betrag auf Bezahlseite <sub>`drinks.payments`</sub>
+- ⬜ Bezahlung melden <sub>`drinks.pay`</sub>
+- ⬜ Eigene Historie <sub>`drinks.history`</sub>
+- ⬜ Admin: Historie aller <sub>`drinks.admin.history`</sub>
+- ⬜ Admin: Zahlung bestätigen <sub>`drinks.admin.confirm`</sub>
+- ⬜ Admin: Getränke anlegen/bearbeiten <sub>`drinks.admin.manage`</sub>
+
+**Turnierkosten**
+
+- ⬜ Kostenübersicht <sub>`costs.view`</sub>
+- ⬜ Kosten hinzufügen <sub>`costs.add`</sub>
+- ⬜ Kosten bearbeiten/löschen <sub>`costs.edit`</sub>
+
+**Schlüssel & Material**
+
+- ⬜ Wer hat welchen Schlüssel <sub>`keys.list`</sub>
+- ⬜ Item anlegen/bearbeiten <sub>`keys.add`</sub>
+- ⬜ Schlüssel übergeben <sub>`keys.handover`</sub>
+
+**Spiele & Rangliste**
+
+- ⬜ Spieleliste <sub>`games.list`</sub>
+- ⬜ Spieldetails <sub>`games.detail`</sub>
+- ⬜ Ergebnis melden <sub>`games.report`</sub>
+- ⬜ Rangliste / ELO <sub>`games.leaderboard`</sub>
+- ⬜ Spielverlauf eines Spielers <sub>`games.history`</sub>
+
+**Challenges**
+
+- ⬜ Challenge-Liste <sub>`challenges.list`</sub>
+- ⬜ Challenge anlegen/bearbeiten <sub>`challenges.create`</sub>
+- ⬜ Punkte eintragen <sub>`challenges.points`</sub>
+- ⬜ Challenge-Rangliste <sub>`challenges.leaderboard`</sub>
+
+**Bundesliga-Planer**
+
+- ✅ Team wählen, Kader aus Cache, Gegner erkannt <sub>`bundesliga.team`</sub>
+- ✅ Admin-Neuladen nur mit bundesliga.admin <sub>`bundesliga.admin`</sub>
+- ⬜ Aufstellung planen <sub>`bundesliga.lineup`</sub>
+- ⬜ Live-Daten laden <sub>`bundesliga.scrape`</sub>
+
+**Profil & Einstellungen**
+
+- ⬜ Profil bearbeiten <sub>`profile.account`</sub>
+- ⬜ Passwort ändern <sub>`profile.password`</sub>
+- ⬜ Benachrichtigungseinstellungen <sub>`profile.notifications`</sub>
+- ⬜ Kalender-Abo <sub>`profile.calendar`</sub>
+- ⬜ Playerzone verknüpfen <sub>`profile.playerzone`</sub>
+
+**Benachrichtigungen**
+
+- ⬜ Benachrichtigungsliste <sub>`notifications.list`</sub>
+- ⬜ Als gelesen markieren <sub>`notifications.read`</sub>
+- ⬜ Push-Abo wird gespeichert <sub>`notifications.push`</sub>
+
+**Administration**
+
+- ⬜ Admin-Dashboard <sub>`admin.dashboard`</sub>
+- ⬜ Benutzer verwalten <sub>`admin.users`</sub>
+- ⬜ Benutzer benachrichtigen <sub>`admin.notify`</sub>
+- ⬜ Accounts/Spieler zusammenführen <sub>`admin.merge`</sub>
+
+**Allgemein**
+
+- ✅ Seitentitel <sub>`misc.title`</sub>
+- ⬜ Startseite <sub>`misc.home`</sub>
+- ⬜ Hilfe & Information <sub>`misc.help`</sub>
+- ⬜ Benutzersuche <sub>`misc.search`</sub>
+- ⬜ Navigation auf dem Handy <sub>`misc.nav.mobile`</sub>
+
+**Bewusst nicht getestet**
+
+- Datenbank-Browser (/supabase/database) — bewusst ausgenommen
+- Analytics-Dashboard (/admin/analytics) — bewusst ausgenommen
+- Event umwandeln (Transformation) — im UI deaktiviert (Menüpunkt disabled)
+
+</details>
+
+**Bekannte Fehler (Test als `fixme` markiert)**
+
+- keine
+
+**Code-Abdeckung (E2E, Istanbul)**
+
+| Metrik | Abdeckung | Abgedeckt / Gesamt |
+|---|---:|---:|
+| Zeilen | 45.82 % | 1996 / 4356 |
+| Anweisungen | 44.84 % | 2244 / 5004 |
+| Funktionen | 36.87 % | 681 / 1847 |
+| Verzweigungen | 34.1 % | 870 / 2551 |
+
+Gemessen über die im Browser geladenen Dateien (124 von 227 Quelldateien unter `src/`; 103 wurden in keinem Test geladen und zählen oben nicht mit).
+<!-- E2E-STATUS:END -->
+
+Lokal ausführen: `yarn test:e2e:ci` (lokaler Supabase-Stack muss laufen), danach `yarn test:e2e:report`.
 
 ## 🎯 Overview
 

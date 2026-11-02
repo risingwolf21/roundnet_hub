@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
+import { test, expect, flow } from './fixtures';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, logPageOnFailure, signIn } from './helpers';
 
@@ -43,7 +44,7 @@ test.describe('Gruppenbeitritt', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('a user joins a group without approval', async ({ page }) => {
+  test('a user joins a group without approval', { annotation: flow('groups.list', 'groups.join') }, async ({ page }) => {
     await signIn(page, USER_EMAIL);
     await page.goto('/groups/list');
 
@@ -54,7 +55,7 @@ test.describe('Gruppenbeitritt', () => {
     await expect(joinBtn).toBeHidden();
   });
 
-  test('a user requests to join an approval group and an admin accepts', async ({ page }) => {
+  test('a user requests to join an approval group and an admin accepts', { annotation: flow('groups.request') }, async ({ page }) => {
     await signIn(page, USER_EMAIL);
     await page.goto('/groups/list');
 

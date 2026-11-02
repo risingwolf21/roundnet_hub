@@ -55,3 +55,5 @@ supabase/backup/
 *dump*.sql
 
 **/node_modules/*
+# e2e code coverage (Istanbul dumps)
+/.nyc_output
