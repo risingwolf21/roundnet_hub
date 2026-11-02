@@ -31,9 +31,11 @@ jobs:
 
       # Local Supabase stack (same proven steps as the db-test job). Brings up the DB,
       # auth (GoTrue) and API gateway on :54321 that the app and the specs talk to.
+      # Pinned: "latest" makes setup-cli query the GitHub API on every run, which fails under
+      # rate limiting ("Failed to resolve latest Supabase CLI release") before any test runs.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
       # Expose the app's API schemas (games, notifications, util) like production does.
       - name: Use the e2e Supabase config
         run: test -f supabase/config.toml || cp e2e/supabase.config.toml supabase/config.toml
