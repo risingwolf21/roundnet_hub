@@ -30,7 +30,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.1.4
+          # Latest stable 2.x: the committed tests/deno.lock is lockfile v5, which
+          # older Deno (e.g. 2.1.x) cannot read.
+          deno-version: v2.x
       # Runs the pure parser/proxy-allowlist unit tests. The stack-integration suite
       # (edgeFunctionAuthz) carries `ignore: !configured`, so it self-skips without a
       # running local stack rather than failing — keeping this a reliable required check.
