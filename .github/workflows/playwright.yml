@@ -8,14 +8,41 @@ on:
 
 jobs:
   playwright-tests:
-    if: false
+    name: "E2E (Playwright, non-blocking)"
     runs-on: ubuntu-latest
-    services: {}
+    # Informational only: e2e is still being stabilised, so a failure here must never
+    # block a merge. The uploaded report shows what passed/failed.
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # Local Supabase stack (same proven steps as the db-test job). Brings up the DB,
+      # auth (GoTrue) and API gateway on :54321 that the app and the specs talk to.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase start --ignore-health-check
+
+      - name: Export local stack env for app + tests
+        run: |
+          supabase status -o env > .supabase-status.env
+          set -a; . ./.supabase-status.env; set +a
+          {
+            echo "VITE_SUPABASE_URL=${API_URL}"
+            echo "SUPABASE_URL=${API_URL}"
+            echo "VITE_SUPABASE_ANON_KEY=${ANON_KEY}"
+            echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}"
+            echo "VITE_SUPABASE_PROJECT_ID=local"
+            echo "VITE_WEBSITE_NAME=Roundnet Karlsruhe"
+            echo "VITE_WEBSITE_PATH=roundnet-karlsruhe"
+            echo "VITE_ICON_PREFIX=roundnet-karlsruhe"
+            echo "VITE_ENV=development"
+            echo "TEST_USER_PASSWORD=password"
+            echo "BASE_URL=http://localhost:5173"
+          } >> "$GITHUB_ENV"
+
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -24,31 +51,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
 
-      - name: Install Playwright system deps (best-effort)
-        run: npx playwright install-deps || true
-
-      - name: Start Supabase local (Docker)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          # Start supabase in background; requires Docker on runner
-          npx supabase start &
-          # give Supabase some time to initialize
-          for i in {1..30}; do
-            curl -sSf http://localhost:54321 || true
-            sleep 1
-          done
-
+      # playwright.config.ts starts the Vite dev server (yarn start) itself via webServer.
       - name: Run Playwright tests
-        env:
-          BASE_URL: http://localhost:5173
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SKIP_RUNTIME_SEED: 'true'
         run: npx playwright test --reporter=list
 
       - name: Upload Playwright HTML report
@@ -57,3 +64,4 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report
+          retention-days: 7
