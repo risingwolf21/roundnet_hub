@@ -44,7 +44,7 @@ test.describe('Gruppenbeitritt', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('a user joins a group without approval', { annotation: flow('groups.list', 'groups.join') }, async ({ page }) => {
+  test('a user joins a group without approval @mobile', { annotation: flow('groups.list', 'groups.join') }, async ({ page }) => {
     await signIn(page, USER_EMAIL);
     await page.goto('/groups/list');
 

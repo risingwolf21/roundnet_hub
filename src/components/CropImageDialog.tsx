@@ -43,7 +43,7 @@ const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<C
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
-        <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
+        <DialogTitle className="flex-1">Bild zuschneiden</DialogTitle>
         <DialogClose />
       </DialogHeader>
       <DialogBody>

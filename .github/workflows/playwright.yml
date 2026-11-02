@@ -40,6 +40,10 @@ jobs:
       - name: Use the e2e Supabase config
         run: test -f supabase/config.toml || cp e2e/supabase.config.toml supabase/config.toml
       - run: supabase start --ignore-health-check
+      # Storage policies exist only in the production dashboard, not in the repo — give the local
+      # stack the minimum the app needs (own-folder access in the `user` bucket) for upload tests.
+      - name: Apply e2e storage policies
+        run: docker exec -i supabase_db_roundnet_karlsruhe_app psql -U postgres -v ON_ERROR_STOP=1 -q < e2e/storage-policies.sql
 
       - name: Export local stack env for app + tests
         run: |

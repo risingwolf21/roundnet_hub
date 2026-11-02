@@ -50,7 +50,7 @@ test.describe('Drinks', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('a user books two drinks', { annotation: flow('drinks.book') }, async ({ page }) => {
+  test('a user books two drinks @mobile', { annotation: flow('drinks.book') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await page.goto('/drinks/list');
 

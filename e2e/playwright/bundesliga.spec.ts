@@ -111,6 +111,40 @@ test.describe('Bundesliga planner', () => {
     expect(liveCalls).toEqual([]);
   });
 
+  test('an admin hard-reload fetches fresh data (live scrape stubbed)', { annotation: flow('bundesliga.scrape') }, async ({ page }) => {
+    // The forced reload calls the fetch-bundesliga edge function, which would scrape the live
+    // playerzone. Answer it here instead and check the planner shows the fresh data.
+    const RENAMED = `${TEAM_A.name} (neu)`;
+    const calls: string[] = [];
+    await page.route('**/functions/v1/fetch-bundesliga**', async (route) => {
+      const body = JSON.parse(route.request().postData() ?? '{}') as { action?: string; force?: boolean };
+      calls.push(`${body.action}:${body.force ? 'force' : 'cache'}`);
+      if (body.action === 'league') {
+        const team = (t: typeof TEAM_A, name = t.name) => ({ ...t, name, logoUrl: null, rgxTotal: null, firstNames: [] });
+        const payload = {
+          league: { id: LEAGUE_ID, name: 'E2E Liga' },
+          leagues: [{ id: LEAGUE_ID, name: 'E2E Liga' }],
+          teams: [team(TEAM_A, RENAMED), team(TEAM_B)],
+          matchDays: [{ id: '7001', md: '1', name: 'Gruppe Z', date: '01.12.2026', city: 'Karlsruhe', teams: [TEAM_A, TEAM_B] }],
+        };
+        // What the real function does after scraping: refresh the shared cache the planner reads.
+        await admin.from('bundesliga_cache').upsert({ cache_key: `league:${LEAGUE_ID}`, fetched_at: new Date().toISOString(), payload }, { onConflict: 'cache_key' });
+        return route.fulfill({ contentType: 'application/json', body: JSON.stringify(payload) });
+      }
+      return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+        rosters: { [TEAM_A.teamId]: [player('1', PLAYER_1, 'female')], [TEAM_B.teamId]: [player('3', OPP_PLAYER, 'male')] },
+      }) });
+    });
+    await grantUser(admin, userId, { perms: ['bundesliga.admin'] });
+    await signIn(page, EMAIL);
+    await page.goto('/bundesliga');
+    await page.getByTitle('Daten neu laden (Admin)').click();
+
+    await expect.poll(() => calls.some((c) => c === 'league:force')).toBe(true);
+    await page.getByRole('combobox').filter({ hasText: /Team wählen|E2E Team/ }).first().click();
+    await expect(page.getByRole('option', { name: RENAMED })).toBeVisible();
+  });
+
   test.afterAll(async () => {
     try {
       await admin.from('bundesliga_cache').delete().in('cache_key', CACHE_KEYS);
