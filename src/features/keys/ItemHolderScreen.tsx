@@ -99,7 +99,7 @@ const ItemHolderScreen = () => {
         user={user}
         actions={
           <>
-            <Has perm={"drinks.edit"}>
+            <Has perm={"items.manage"}>
               <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
                 dialogs.open(EditOrAddItemDialog, {
                   itemToEdit: EMPTY_KEY
@@ -108,7 +108,7 @@ const ItemHolderScreen = () => {
                 <Plus />
               </Button>
             </Has>
-            <Has perm={"drinks.edit"}>
+            <Has perm={"items.manage"}>
               <Button size={"icon-lg"} variant={"ghost"} onClick={() => setToggleEdit(!toggleEdit)}>
                 {
                   toggleEdit ? <PencilOff /> : <Pencil />
