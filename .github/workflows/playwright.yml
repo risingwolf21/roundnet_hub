@@ -9,7 +9,9 @@ on:
 jobs:
   playwright-tests:
     name: "E2E (Playwright, non-blocking)"
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is now 26.04, which Playwright 1.59's `install --with-deps`
+    # cannot provision system deps for ("does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     # Informational only: e2e is still being stabilised, so a failure here must never
     # block a merge. The uploaded report shows what passed/failed.
     continue-on-error: true
