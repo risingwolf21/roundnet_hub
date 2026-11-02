@@ -154,8 +154,8 @@ test('a recovery link lets the user set a new password', { annotation: flow('aut
   const { data: link, error } = await admin3.auth.admin.generateLink({ type: 'recovery', email });
   expect(error).toBeNull();
   const anon = createClient(SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY ?? '', { auth: { persistSession: false } });
-  const { data: verified } = await anon.auth.verifyOtp({ type: 'recovery', token_hash: link!.properties.hashed_token });
-  const s = verified.session!;
+  const { data: verified } = await anon.auth.verifyOtp({ type: 'recovery', token_hash: link!.properties!.hashed_token });
+  const s = verified!.session!;
   await page.goto(`/auth/reset-password#access_token=${s.access_token}&refresh_token=${s.refresh_token}&type=recovery`);
 
   await expect(page.getByText('Neues Passwort festlegen')).toBeVisible();
