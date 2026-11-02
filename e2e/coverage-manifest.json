@@ -289,10 +289,6 @@
           "title": "Offener Betrag auf Bezahlseite"
         },
         {
-          "id": "drinks.pay",
-          "title": "Bezahlung melden"
-        },
-        {
           "id": "drinks.history",
           "title": "Eigene Historie"
         },
@@ -302,7 +298,7 @@
         },
         {
           "id": "drinks.admin.confirm",
-          "title": "Admin: Zahlung bestätigen"
+          "title": "Admin: offene Zahlung bestätigen"
         },
         {
           "id": "drinks.admin.manage",
@@ -338,7 +334,7 @@
         },
         {
           "id": "keys.add",
-          "title": "Item anlegen/bearbeiten"
+          "title": "Schlüsselverwaltung: Schlüssel anlegen/bearbeiten"
         },
         {
           "id": "keys.handover",
