@@ -23,6 +23,22 @@ jobs:
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error
 
+  functions-test:
+    name: "Test edge functions (Deno)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          # Latest stable 2.x: the committed tests/deno.lock is lockfile v5, which
+          # older Deno (e.g. 2.1.x) cannot read.
+          deno-version: v2.x
+      # Runs the pure parser/proxy-allowlist unit tests. The stack-integration suite
+      # (edgeFunctionAuthz) carries `ignore: !configured`, so it self-skips without a
+      # running local stack rather than failing — keeping this a reliable required check.
+      - name: Edge function unit tests (Deno)
+        run: deno test --allow-read --allow-env --allow-net --config supabase/functions/tests/deno.json supabase/functions/tests
+
   build:
     name: "Build"
     runs-on: ubuntu-latest

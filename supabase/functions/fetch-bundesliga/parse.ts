@@ -33,7 +33,11 @@ export interface ScrapedPlayer {
 
 export const num = (s: string | undefined | null): number | null => {
   if (!s) return null;
-  const n = Number(String(s).replace(/[^0-9.]/g, ''));
+  const cleaned = String(s).replace(/[^0-9.]/g, '');
+  // No digits at all (e.g. a "Pro" badge, "-", "N/A") → unknown, not 0.
+  // (Number('') is 0, which would otherwise masquerade as a real score.)
+  if (cleaned === '') return null;
+  const n = Number(cleaned);
   return Number.isFinite(n) ? n : null;
 };
 
@@ -88,7 +92,8 @@ export function parseMatchDays(html: string): ScrapedMatchDay[] {
       const nm = anchor.find('.name').first().text().trim();
       teamsById.set(m[1], { teamId: m[1], teamVersionId: m[2], name: nm });
     });
-    const mdMatch = (group.html() ?? '').match(/[?&]md=(\d+)/);
+    // href query params are serialized with &amp;, so allow the encoded form too.
+    const mdMatch = (group.html() ?? '').match(/[?&](?:amp;)?md=(\d+)/);
     const md = mdMatch ? mdMatch[1] : null;
 
     // Only groups that actually rendered games carry teams; skip empty tab shells.
