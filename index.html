@@ -26,34 +26,10 @@
   <title>%VITE_WEBSITE_NAME%</title>
 
   <script type="module" src="/src/index.tsx"></script>
-
-  <style>
-    /*
-      * iOS 26+ (Liquid Glass) blurs the top edge of a standalone web app unless WebKit
-      * finds a fixed/sticky box there that actually PAINTS an opaque background; it then
-      * samples that box's rendered colour and shows it instead of blurring
-      * (LocalFrameView::fixedContainerEdges: >=90% width, >10px tall, fixed/sticky, opaque
-      * background, ignores pointer-events). It samples the painted pixels, not the computed
-      * style, so the box must truly paint: `background-clip: text` (clips the paint to the
-      * strip's non-existent text) or a missing background-color leaves nothing painted and
-      * the blur stays. var(--background) keeps the strip matched to the app's theme once the
-      * app stylesheet has defined it; the opaque fallback covers the brief pre-CSS window.
-    */
-    .top-edge {
-      position: fixed;
-      inset-inline: 0;
-      top: 0;
-      height: 12px;
-      z-index: 2147483647;
-      pointer-events: none;
-      background-color: var(--background, #fff);
-    }
-  </style>
 </head>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div aria-hidden="true" class="top-edge"></div>
   <div id="root"></div>
   <script>
     // If React never mounts (e.g. stale SW serving old chunk hashes that 404),

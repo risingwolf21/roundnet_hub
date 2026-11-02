@@ -58,6 +58,7 @@ const Fallback = (e: { error: unknown; componentStack: string; eventId: string; 
 
 root.render(
   <Sentry.ErrorBoundary fallback={Fallback}>
+    <div aria-hidden className="top-edge bg-background" />
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
         <FeatureToggleProvider>
