@@ -26,9 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
 
       - name: Dump Karlsruhe (full/roles/schema/data)
         env:
@@ -58,9 +59,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.0.0
 
       - name: Dump Munich (full/roles/schema/data)
         env:
