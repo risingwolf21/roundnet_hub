@@ -109,7 +109,7 @@ if (existsSync(COVERAGE)) {
 }
 
 // ---- render ----------------------------------------------------------------------------------
-const commit = (process.env.GITHUB_SHA ?? '').slice(0, 7);
+const commit = (process.env.E2E_COMMIT ?? process.env.GITHUB_SHA ?? '').slice(0, 7);
 const date = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
 const lines = [];
 lines.push(START);
