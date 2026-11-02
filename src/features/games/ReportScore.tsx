@@ -150,7 +150,10 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
     const resolveInfo = (p: Player | PlayerWithSimpleUser) => {
       if ('name' in p) {
         return {
-          id: p.id,
+          // The player id, not the user id: they differ for accounts created since the
+          // random-player-id change (linked via linked_user_id). Fallback for a user without a
+          // player row, which add_match_with_sets then creates.
+          id: (p as PlayerWithSimpleUser & { player?: string }).player ?? p.id,
           name: p.name,
           rating: p.ka_index
         };

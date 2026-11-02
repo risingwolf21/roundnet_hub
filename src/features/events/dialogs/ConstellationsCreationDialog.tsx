@@ -355,18 +355,18 @@ export const ConstellationCreationDialog = ({
             {loading && <p style={{ padding: '16px' }}>Lade Spielerdaten...</p>}
 
             {/* FEHLENDE INDEXE */}
-            {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length > 0 && (
+            {payload.users.filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id)).length > 0 && (
               <Card className="w-full py-1">
                 <CardContent className='px-1'>
                   <Collapsible>
                     <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
-                      Von {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length} Spielern
+                      Von {payload.users.filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id)).length} Spielern
                       kein Index gefunden
                       <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                     <CollapsibleContent className={"w-full"}>
                       <div>
                         {payload.users
-                          .filter((x) => !foundPlayers.map((y) => y.player).includes(x.id))
+                          .filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id))
                           .map((x) => (
                             <Item key={x.id} variant={"outline"}>
                               <ItemContent className='flex flex-row'>
@@ -375,12 +375,12 @@ export const ConstellationCreationDialog = ({
                                   <Input
                                     className='w-32'
                                     type='number'
-                                    value={players.find((y) => y.player === x.id)?.rg_index ?? 0}
+                                    value={players.find((y) => userIdOfPlayer(y) === x.id)?.rg_index ?? 0}
                                     onChange={(e) => {
                                       const parsed = Number.parseInt(e.target.value);
                                       if (!Number.isNaN(parsed) && parsed >= 0) {
                                         setPlayers((prev) => [
-                                          ...prev.filter((y) => x.id !== y.player),
+                                          ...prev.filter((y) => x.id !== userIdOfPlayer(y)),
                                           {
                                             gender: 'm',
                                             player: x.id,

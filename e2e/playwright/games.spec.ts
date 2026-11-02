@@ -26,9 +26,7 @@ async function pickPlayer(page: Page, slot: number, name: string) {
   await dialog.locator('[data-slot="item"]').nth(slot).click();
   const picker = page.getByRole('dialog').last();
   await picker.getByRole('searchbox').fill(name);
-  // After a first match the ghost guest players (see the fixme test) show up under the same
-  // name — pick the real account, not the "Gastspieler".
-  await picker.locator('[data-slot="item"]', { hasText: name }).filter({ hasNotText: 'Gastspieler' }).first().click();
+  await picker.getByText(name, { exact: true }).click();
   await expect(dialog.getByText(name, { exact: true })).toBeVisible();
 }
 
@@ -106,15 +104,19 @@ test.describe('Spiele', () => {
   });
 
   test('a match is booked on the players\' own player records', { annotation: flow('games.report') }, async () => {
-    // Since 20260302 new accounts get a random games.players.player id (linked via linked_user_id),
-    // but match entry still treats the user id as player id: the picker hands over user ids,
-    // add_match_with_sets creates a ghost guest player for each unknown id and books the match
-    // (and its rating) there, and its participant check plus the trg_game_added_to_notify trigger
-    // also assume player = user. Too broad to fix inside the test PR — documented here.
-    test.fixme(true, 'Spiele neuer Accounts landen auf erfundenen Gastspielern (player-ID ≠ user-ID in add_match_with_sets, Benachrichtigungs-Trigger)');
+    // New accounts have a random player id linked via linked_user_id — the match must be booked
+    // on that real player, not on a ghost guest created for the user id.
     const { data } = await admin.schema('games').from('match').select('a_player_1').eq('id', matchId).single();
     const { data: me } = await admin.schema('games').from('players').select('player').eq('linked_user_id', ids.ME).single();
     expect((data as { a_player_1: string }).a_player_1).toBe((me as { player: string }).player);
+    // No ghost guest players (player = user id, unlinked) were created…
+    const { data: ghosts } = await admin.schema('games').from('players').select('player').in('player', Object.values(ids));
+    expect(ghosts ?? []).toEqual([]);
+    // …and the other participants got the "new game" notification (user ids, not player ids).
+    await expect.poll(async () => {
+      const { data: n } = await admin.schema('notifications').from('notifications').select('user').eq('topic', 'game.added').eq('user', ids.MATE);
+      return (n ?? []).length;
+    }).toBeGreaterThan(0);
   });
 
   test('a match entered from an event shows up in the event\'s games tab', { annotation: flow('events.matches') }, async ({ page }) => {
@@ -148,10 +150,6 @@ test.describe('Spiele', () => {
       Object.values(ids).map((user) => ({ event: CONST_EVENT, user, state: 'Attending' })),
     ).throwOnError();
 
-    // Same root cause as the fixme above: the dialog finds the players via linked_user_id, but its
-    // "kein Index gefunden" check and the save compare player ids with user ids, so for accounts
-    // whose player id differs the round can't be saved.
-    test.fixme(true, 'Konstellationen: neue Accounts gelten als "ohne Index", die Runde lässt sich nicht speichern (player-ID ≠ user-ID)');
     await signIn(page, P.ME.email);
     await page.goto(`/training/event/${CONST_EVENT}`);
     await page.getByRole('button', { name: 'Konstellationen erstellen' }).click();
@@ -162,6 +160,7 @@ test.describe('Spiele', () => {
     await expect(dialog.getByRole('button', { name: /Spiele \([1-9]/ })).toBeVisible();
     await dialog.getByRole('button', { name: 'Matches speichern' }).click();
 
+    await expect(dialog.getByText('kein Index gefunden')).toHaveCount(0);
     await expect(page.getByText('Alle Matches der Runde erfolgreich erstellt!')).toBeVisible();
     await expect.poll(async () => (await admin.schema('games').from('match').select('id').eq('event', CONST_EVENT)).data?.length)
       .toBeGreaterThan(0);
