@@ -41,6 +41,33 @@ test.describe('Profil', () => {
     }).toEqual({ name: 'Erika Musterfrau', displayName: 'Kojote' });
   });
 
+  test('a user uploads and crops a profile picture', { annotation: flow('profile.avatar') }, async ({ page }) => {
+    // 64×64 red PNG, generated in the browser so the test needs no fixture file.
+    await signIn(page, EMAIL);
+    await openTab(page, 'Account');
+    const png = await page.evaluate(async () => {
+      const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+      const ctx = c.getContext('2d')!; ctx.fillStyle = '#c00'; ctx.fillRect(0, 0, 64, 64);
+      return c.toDataURL('image/png').split(',')[1];
+    });
+    await page.locator('input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from(png, 'base64') });
+    const crop = page.getByRole('dialog', { name: 'Bild zuschneiden' });
+    await expect(crop).toBeVisible();
+    // The crop area is computed once the image has loaded — retry until the dialog takes it.
+    await expect(async () => {
+      if (await crop.isVisible()) await page.getByRole('button', { name: 'Zuschneiden & Speichern' }).click();
+      await expect(crop).toBeHidden({ timeout: 1000 });
+    }).toPass({ timeout: 10_000 });
+    await expect(page.getByAltText('avatar preview')).toBeVisible();
+    await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
+
+    await expect(page.getByText('Profil erfolgreich aktualisiert')).toBeVisible();
+    await expect.poll(async () => (await admin.from('user').select('avatarUrl').eq('id', userId).single()).data?.avatarUrl ?? '')
+      .toContain(userId);
+    const { data: files } = await admin.storage.from('user').list(userId);
+    expect((files ?? []).length).toBeGreaterThan(0);
+  });
+
   test('a user links their Playerzone profile', { annotation: flow('profile.playerzone') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openTab(page, 'Playerzone Profil');
@@ -113,6 +140,8 @@ test.describe('Profil', () => {
 
   test.afterAll(async () => {
     try {
+      const { data: files } = await admin.storage.from('user').list(userId);
+      if (files?.length) await admin.storage.from('user').remove(files.map((f) => `${userId}/${f.name}`));
       if (userId) await admin.auth.admin.deleteUser(userId);
     } catch {
       // best-effort
