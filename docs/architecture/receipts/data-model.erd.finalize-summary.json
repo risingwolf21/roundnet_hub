@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "erd",
+  "quality": "standard",
+  "specification": {
+    "path": "/home/user/roundnet_karlsruhe_app/docs/architecture/data-model.erd.json",
+    "sha256": "57f4b47fcf35c7456c75ab71206897b599ae3d2e8ea036d147c88d95d2bab920",
+    "bytes": 19619
+  },
+  "artifact": {
+    "path": "/home/user/roundnet_karlsruhe_app/docs/architecture/data-model.erd.html",
+    "sha256": "996112912b529d58494255bc96c62e6a2c64c906a3d7173315fdfdc12f6b01b6",
+    "bytes": 933967
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/data-model.erd.finalize.json",
+    "summaryReceipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/data-model.erd.finalize-summary.json",
+    "browserCheckReceipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/data-model.erd.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 5327,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
