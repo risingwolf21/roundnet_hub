@@ -338,7 +338,7 @@ jobs:
   cleanup-artifact-munich:
     name: "Cleanup Artifacts Munich"
     runs-on: ubuntu-latest
-    needs: [update-hash-munich]
+    needs: [deploy-munich]
     environment: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v6
@@ -352,7 +352,7 @@ jobs:
   cleanup-artifact-karlsruhe:
     name: "Cleanup Artifacts Karlsruhe"
     runs-on: ubuntu-latest
-    needs: [update-hash-karlsruhe]
+    needs: [deploy-karlsruhe]
     environment: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v6
