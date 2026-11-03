@@ -5,15 +5,17 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { ImageIcon, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FullHistoryUpdate } from '../types';
 
 const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<FullHistory, FullHistoryUpdate | null>) => {
+  const { t } = useTranslation();
   const [newCount, setNewCount] = useState<number>(entry.count);
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"drawer"}>
       <DialogHeader variant={"default"}>
-        <DialogTitle className={"px-4"}>Getränk bearbeiten</DialogTitle>
+        <DialogTitle className={"px-4"}>{t('drinks.editDrink')}</DialogTitle>
       </DialogHeader>
       <DialogBody>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -56,14 +58,14 @@ const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<F
       <DialogFooter className="p-4 border-t flex-shrink m-0">
         <div className='flex w-full justify-even gap-4'>
           <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
-            Abbrechen
+            {t('common.cancel')}
           </Button>
           <Button className="flex-1" onClick={() => onClose({
             ...entry,
             count: newCount, newCount,
             amount: newCount * (entry.drink.price ?? 0)
           })}>
-            Speichern
+            {t('common.save')}
           </Button>
         </div>
       </DialogFooter>

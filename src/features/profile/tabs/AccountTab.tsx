@@ -1,33 +1,40 @@
-import { lazy } from "react";
 import { Button } from "@/components/ui/button";
-
-const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useDialogs } from "@/contexts/DialogsProvider";
-import { useUpdateUserProfile } from "@/tanstack/user";
+import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
 import { Image, Trash, UploadCloud } from "lucide-react";
-import { useRef, useState } from "react";
+import { lazy, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
+
+const LANGUAGES = [
+  { value: 'de', label: 'Deutsch' },
+  { value: 'en', label: 'English' },
+];
+
 export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; handleSignOut: () => void }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [displayName, setDisplayName] = useState(user.displayName);
   const [name, setName] = useState(user.name.split(' ')[0] ?? '');
   const [surname, setSurname] = useState(user.name.split(' ')[1] ?? '');
+  const [language, setLanguage] = useState<'de' | 'en'>((i18n.resolvedLanguage ?? 'de') as 'de' | 'en');
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState(user);
   const [loadingSave, setLoadingSave] = useState(false);
   const dialogs = useDialogs();
 
   const updateUserMutation = useUpdateUserProfile(user);
+  const updateLanguage = useUpdateLanguage(user);
 
   const onSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -57,6 +64,10 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
         toast.warning(t('profile.account.nameIncomplete'));
         return;
       }
+      const previous = i18n.resolvedLanguage;
+      i18n.changeLanguage(language);
+      await updateLanguage.mutateAsync(language, { onError: () => i18n.changeLanguage(previous) });
+
       await updateUserMutation.mutateAsync(
         { displayName, fullName, croppedImage, avatarUrl: currentUser.avatarUrl },
         {
@@ -96,9 +107,9 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
                 className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'
               >
                 {croppedImage ? (
-                  <img src={croppedImage} alt='avatar preview' className='h-full w-full object-cover' />
+                  <img src={croppedImage} alt={t('profile.account.avatarPreview')} className='h-full w-full object-cover' />
                 ) : currentUser.avatarUrl ? (
-                  <img src={currentUser.avatarUrl} alt="avatar logo" className='h-full w-full object-cover' />
+                  <img src={currentUser.avatarUrl} alt={t('profile.account.avatar')} className='h-full w-full object-cover' />
                 ) : (
                   <Image />
                 )}
@@ -139,6 +150,29 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
             <div className='flex flex-col items-start gap-2'>
               <Label htmlFor='multi-step-personal-info-last-name'>{t('profile.account.lastName')}</Label>
               <Input id='multi-step-personal-info-last-name' placeholder={t('profile.account.lastNamePlaceholder')} value={surname} onChange={(e) => setSurname(e.target.value)} />
+            </div>
+            <div className='flex flex-col items-start gap-2'>
+              <Label htmlFor='multi-step-personal-info-language'>{t('profile.account.language')}</Label>
+              {/* Languages are shown by their own name so everyone can find theirs. */}
+              <Select
+                id='multi-step-personal-info-language'
+                items={LANGUAGES}
+                value={language}
+                onValueChange={(value) => value && setLanguage(value as 'de' | 'en')}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {LANGUAGES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className='flex justify-end'>

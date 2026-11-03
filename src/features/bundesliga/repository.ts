@@ -4,6 +4,7 @@
 // invoked when the cache is missing/stale, or when an admin forces a hard reload — so we
 // neither re-run the function nor re-scrape playerzone on every view.
 import { supabase } from '@/lib/supabase';
+import i18n from 'i18next';
 
 export interface ScrapedTeam {
   teamId: string;
@@ -78,13 +79,14 @@ async function readFreshCache(keys: string[]): Promise<Map<string, unknown>> {
 async function invokeEdge<T>(body: Record<string, unknown>): Promise<T> {
   const { data: session } = await supabase.auth.getSession();
   const accessToken = session?.session?.access_token;
-  if (!accessToken) throw new Error('Nicht angemeldet');
+  if (!accessToken) throw new Error(i18n.t('bundesliga.notAuthenticated'));
 
   const resp = await fetch(`${FN_BASE}/fetch-bundesliga`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      'Accept-Language': i18n.resolvedLanguage ?? 'de', // the function answers errors in this language
     },
     body: JSON.stringify(body),
   });

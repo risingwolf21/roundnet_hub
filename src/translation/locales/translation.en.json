@@ -8,7 +8,13 @@
     "close": "Close",
     "filter": "Filter",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "color": "Color",
+    "searchPlaceholder": "Search...",
+    "loading": "Loading",
+    "loadingData": "Loading data",
+    "logo": "Logo",
+    "ok": "OK"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "The same day",
@@ -28,7 +34,36 @@
     "updateSuccess": "Drink updated successfully",
     "updateError": "An error occurred while updating. {{error}} ",
     "addSuccess": "Drink added successfully",
-    "addError": "An error occurred while adding: {{error}}"
+    "addError": "An error occurred while adding: {{error}}",
+    "bookSuccess": "Drinks booked successfully!",
+    "bookError": "Drink could not be added",
+    "entryUpdated": "Entry updated",
+    "loadMore": "Loading more...",
+    "editDrink": "Edit drink",
+    "createDrink": "Create drink",
+    "edit": {
+      "uploadImage": "Upload image",
+      "name": "Name",
+      "price": "Price",
+      "quantity": "Quantity",
+      "active": "Active",
+      "activeDescription": "If this drink is not active, it is not shown to users."
+    },
+    "pay": {
+      "paymentInfo": "Payment information",
+      "qrHint": "Scan the QR code with your banking app to make the bank transfer quickly and easily.",
+      "recipient": "Recipient",
+      "recipientCopied": "Recipient copied",
+      "iban": "IBAN",
+      "ibanCopied": "IBAN copied",
+      "bic": "BIC",
+      "bicCopied": "BIC copied",
+      "sendViaPayPal": "Send via PayPal",
+      "vouchers": "Vouchers",
+      "totalCost": "Total cost"
+    },
+    "productTypeSpecial": "Other",
+    "productTypeNone": "No type"
   },
   "attendees": "Attendees",
   "browse": {
@@ -78,7 +113,8 @@
       "title": "Spezi (optional)",
       "teamA": "Team A Spezi Points",
       "teamB": "Team B Spezi Points",
-      "setAwarded": "Spezi set awarded"
+      "setAwarded": "Spezi set awarded",
+      "enable": "Record Spezi points"
     }
   },
   "events": {
@@ -105,14 +141,51 @@
       "titleTooShort": "The title of this event needs at least 6 characters",
       "notMemberOfGroupTitle": "You are not a member of this group",
       "notMemberOfGroup": "The event will be saved, but it will not appear in your event list afterwards because only members of the group can see its events.",
-      "reminderBefore": "Send reminder",
-      "reminderNone": "None",
-      "reminderPT30M": "30 minutes before",
-      "reminderPT1H": "1 hour before",
-      "reminderPT6H": "6 hours before",
-      "reminderPT12H": "12 hours before",
-      "reminderPT24H": "24 hours before",
-      "reminderP2D": "2 days before"
+      "noRecurrenceSelected": "No recurrence selected.",
+      "unknownError": "Unknown error.",
+      "eventNotFound": "Event not found.",
+      "itemMtvGymPalazzo": "MTV Gym and Palazzo",
+      "itemNone": "Nothing selected",
+      "createFailed": "Event could not be created: {{message}}",
+      "seriesCreated": "Series created",
+      "eventCreated": "Event created",
+      "updateFailed": "Event could not be updated: {{message}}",
+      "eventSaved": "Event saved",
+      "updateRecurrenceFailed": "Events could not be updated: {{message}}",
+      "eventsSaved": "Events saved",
+      "titleCreate": "Create Event",
+      "titleLabel": "Event title",
+      "descriptionLabel": "Event description",
+      "groupLabel": "Event group",
+      "noGroupChosen": "No group selected",
+      "dateTimes": "Date and times",
+      "startDate": "Start date",
+      "time": "Time",
+      "endDate": "End date",
+      "meetingBeforeTraining": "Meeting point before training",
+      "location": "Location",
+      "noLocation": "No location selected",
+      "recurrence": "Recurrence",
+      "endsAt": "Ends: {{date}}",
+      "recurrenceNone": "No recurrence",
+      "recurrenceWeekly": "Weekly",
+      "recurrenceFortnightly": "Every 2 weeks",
+      "recurrenceMonthly": "Monthly",
+      "optionalFields": "Optional fields",
+      "signupDeadline": "Registration deadline",
+      "maxAttendees": "Maximum number of participants",
+      "maxTrialAttendees": "Maximum trial participants",
+      "requiredItem": "Required item",
+      "selectItem": "Select item",
+      "constellationsEnabled": "Constellations enabled",
+      "constellationsEnabledHint": "Should trainers be able to create constellations?",
+      "bringItems": "Bring items",
+      "recurrenceEnd": "Recurrence end",
+      "recurrenceEndQuestion": "Until when should the recurrence continue?",
+      "deleteRecurrenceEnd": "Delete recurrence end",
+      "item": "Item",
+      "quantity": "Quantity",
+      "add": "Add"
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -124,7 +197,7 @@
       "startTime": "Starts at {{ startTime, HH:mm }}",
       "startTimeAndEndTime": "Starts at {{ startTime, HH:mm }} and ends at {{ endTime, HH:mm }}",
       "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
-      "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
+      "waitingListPlace": "Waiting list place ({{ place }} / {{ waitingListLength }})",
       "attending_one": "{{count}} attendance",
       "attending_other": "{{count}} attendances",
       "attending_trial_one": "{{count}} trial attendance",
@@ -133,7 +206,35 @@
       "waiting_trial_other": "{{count}} trials waiting",
       "declined_one": "{{count}} declined",
       "declined_other": "{{count}} declined",
-      "commentTimeAgo": "{{time}} ago"
+      "commentTimeAgo": "{{time}} ago",
+      "attendanceUpdateError": "Attendance could not be updated.",
+      "yourAttendance": "Your attendance",
+      "waitingList": "Waiting list",
+      "requestAttendance": "Request attendance",
+      "attend": "Attend",
+      "decline": "Decline",
+      "attendAsTrainer": "Attend as trainer",
+      "title": "Event details",
+      "cancelTrainingTitle": "Cancel training?",
+      "reinstateTrainingTitle": "Reinstate training?",
+      "cancelTrainingMessage": "Do you really want to cancel the training?",
+      "reinstateTrainingMessage": "Do you really want to reinstate the training?",
+      "cancelAction": "Cancel",
+      "reinstateAction": "Reinstate",
+      "general": "General",
+      "until": "until {{end}}",
+      "planRoute": "Plan route",
+      "eventCancelled": "This event has been <strong>cancelled</strong>",
+      "createConstellations": "Create constellations",
+      "tabInformation": "Information",
+      "tabAttendance": "Attendees ({{n}})",
+      "tabComments": "Comments ({{n}})",
+      "tabMatches": "Matches ({{n}})",
+      "adminInformation": "Admin information",
+      "errorTitle": "Error",
+      "notLoaded": "Event not loaded",
+      "notLoadedDescription": "Unfortunately, the event could not be loaded. It may have been deleted, you may be offline, or you may not have permission to view it.",
+      "backToOverview": "Back to overview"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -167,7 +268,101 @@
       "noLocation": "No location specified"
     },
     "replyTo": "Replying to @{{name}}",
-    "reply": "Reply"
+    "reply": "Reply",
+    "deleteDialog": {
+      "title": "Update event",
+      "onlyThis": "Only this event",
+      "thisAndFollowing": "Delete this and all following events"
+    },
+    "editOptionsDialog": {
+      "title": "Update event",
+      "onlyThis": "Update only this event",
+      "thisAndFollowing": "Update this and all following events"
+    },
+    "searchPlaces": {
+      "name": "Name",
+      "hint": "Tap the map to select a place.",
+      "unnamedPlace": "Unnamed place"
+    },
+    "constellations": {
+      "title": "Constellations",
+      "loadPlayersFailed": "Error loading player data",
+      "matchFailed": "Error with a match: {{message}}",
+      "allMatchesCreated": "All matches of the round created successfully!",
+      "loadingPlayers": "Loading player data...",
+      "missingIndex": "No index found for {{number}} players",
+      "initialIndex": "Initial index",
+      "editPlayers": "Edit players - {{number}}",
+      "addPlayer": "Add player",
+      "index": "Index: {{value}}",
+      "round": "Round {{number}}",
+      "settings": "Settings",
+      "gameMode": "Game mode (heterogeneous/homogeneous)",
+      "balanced": "Balanced",
+      "random": "Random",
+      "teamMode": "Team mode",
+      "teamModeAny": "Any",
+      "teamModeSeparate": "Men / Women",
+      "teamModeMixed": "Mixed",
+      "reuseBench": "Play players who sat out before.",
+      "lockedTeams": "Fixed teams ({{number}})",
+      "player1": "Player 1",
+      "player2": "Player 2",
+      "lockedPlayers": "Fixed players ({{number}})",
+      "player": "Player",
+      "saveMatches": "Save matches",
+      "generate": "Generate",
+      "matches": "Matches ({{number}})",
+      "bench": "Sitting out ({{number}})",
+      "invalidIndex": "Some players have an invalid index. Please adjust them.",
+      "addRound": "Add new round"
+    },
+    "attendanceTab": {
+      "title": "Attendee list",
+      "attending": "Attending ({{n}})",
+      "requested": "Requests ({{n}})",
+      "waiting": "Waiting list ({{n}})",
+      "declined": "Declined ({{n}})",
+      "trainer": "Trainer",
+      "trial": "Trial session",
+      "noAttendances": "No attendances yet.",
+      "pending": "Pending"
+    },
+    "commentsTab": {
+      "addError": "Comment could not be added.",
+      "title": "Comments",
+      "empty": "No comments yet.<br />Be the first!",
+      "placeholder": "Write a comment..."
+    },
+    "detailsTab": {
+      "title": "Information",
+      "description": "Description",
+      "noDescription": "No description provided.",
+      "meetingPoint": "Meeting point",
+      "recurrence": "Recurrence",
+      "location": "Location",
+      "planRouteHere": "Plan route here"
+    },
+    "matchesTab": {
+      "empty": "No matches yet.<br />Be the first!",
+      "addMatch": "Add match"
+    },
+    "recurring": {
+      "title": "Recurring events",
+      "description": "Here you can have recurring events created for the next 30 days",
+      "seriesUpdated": "{{processed}} series updated.",
+      "seriesUpdatedToast": "{{processed}} series updated!",
+      "createError": "An error occurred while creating the events!",
+      "create": "Create"
+    },
+    "repositoryErrors": {
+      "seriesNotFound": "The events of the series could not be found (missing permission or already deleted).",
+      "saveFailed": "Event could not be saved (missing permission or event not visible).",
+      "deleteFailed": "Event could not be deleted (missing permission or event not visible).",
+      "deleteManyFailed": "Events could not be deleted (missing permission or event not visible).",
+      "updateFailed": "Event could not be updated (missing permission or event not visible).",
+      "endSeriesFailed": "Series could not be ended (missing permission or event not visible)."
+    }
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",
@@ -185,12 +380,19 @@
     "groups": "Groups",
     "search": "Search",
     "costs": "Tournament Costs",
-    "bundesliga": "Bundesliga"
+    "bundesliga": "Bundesliga",
+    "home": "Home",
+    "account": "Account",
+    "adminHeader": "Admin",
+    "help": "Help and information",
+    "refresh": "Refresh"
   },
   "search": {
     "title": "Search players",
     "placeholder": "Search by name...",
-    "noResults": "No players found"
+    "noResults": "No players found",
+    "noGroups": "No groups found",
+    "noUsers": "No users found"
   },
   "groups": {
     "trialDaysLeft_one": "{{count}} day left",
@@ -203,7 +405,77 @@
     "joinRequestedSheet": {
       "title": "Join request pending",
       "body": "Your join request is being reviewed. A group admin will process it shortly."
-    }
+    },
+    "group": "Group",
+    "admin": "Admin",
+    "admins": "Admins",
+    "members": "Members",
+    "joinRequest": "Join request",
+    "requests": "Request",
+    "trials": "Trials",
+    "trial": "Trial",
+    "trialUser": "Trial user",
+    "requested": "Requested",
+    "join": "Join",
+    "joining": "Joining...",
+    "joinError": "Could not join the group.",
+    "createSuccess": "Group created successfully.",
+    "createError": "Group could not be created.",
+    "editSuccess": "Group updated successfully.",
+    "editError": "Group could not be updated.",
+    "loadErrorDescription": "The groups could not be loaded. Please try again later.",
+    "empty": "No groups found",
+    "emptyDescription": "There are currently no public groups. Create a new group to get started.",
+    "usersAdded_one": "{{count}} user was added to the group {{group}}",
+    "usersAdded_other": "{{count}} users were added to the group {{group}}",
+    "usersAddError": "Users could not be added to the group {{group}}. {{error}}",
+    "usersRemoved_one": "{{count}} user was removed from the group {{group}}",
+    "usersRemoved_other": "{{count}} users were removed from the group {{group}}",
+    "usersRemoveError": "Users could not be removed from the group {{group}}. {{error}}",
+    "notFound": "Group not found",
+    "notFoundDescription": "The requested group does not exist, was deleted or you do not have access.",
+    "backToOverview": "Back to overview",
+    "noDescription": "No description available.",
+    "toggleRequests": "Show or hide requests",
+    "toggleTrials": "Show or hide trials",
+    "toggleAdmins": "Show or hide admins",
+    "toggleUsers": "Show or hide users",
+    "removeSelectedTitle": "Remove selected users from the group?",
+    "removeSelectedConfirm": "Do you really want to remove the {{count}} selected users from the group?",
+    "remove": "Remove",
+    "error": "Error",
+    "usersLoadError": "Users could not be loaded.",
+    "confirmDemote": "Do you really want to remove {{name}} from the admins of this group?",
+    "confirmPromote": "Do you really want to make {{name}} an admin of this group?",
+    "confirmTrial": "Do you really want to make {{name}} a trial user of this group?",
+    "confirmAcceptTrial": "Do you really want to accept the user as a regular user?",
+    "confirmAcceptTrialUser": "Do you really want to accept the user as a trial user?",
+    "accept": "Accept",
+    "decline": "Decline",
+    "manageRequest": "Edit",
+    "requestAccepted": "Request accepted successfully.",
+    "requestAcceptError": "Request could not be accepted. {{error}}",
+    "requestDeclined": "Request deleted successfully.",
+    "requestDeclineError": "Request could not be deleted. {{error}}",
+    "confirmDecline": "Do you really want to decline the join request?",
+    "confirmAcceptRequest": "Do you really want to accept the join request?",
+    "create": "Create group",
+    "edit": "Edit group",
+    "save": "Save group",
+    "parentGroup": "Main group",
+    "newParentGroup": "New main group",
+    "nameLabel": "Group name",
+    "namePlaceholder": "Name",
+    "descriptionLabel": "Group description",
+    "colorLabel": "Group color",
+    "newColor": "New color",
+    "colorHint": "A color that stands out from the existing groups is suggested automatically.",
+    "publicLabel": "Visibility",
+    "publicHint": "Should the group be publicly visible?",
+    "confirmLabel": "Approval",
+    "confirmHint": "Do users need to be approved?",
+    "nameTooShort": "The group name must be at least 6 characters long.",
+    "descriptionTooShort": "The group description must be at least 6 characters long."
   },
   "costs": {
     "title": "Tournament Costs",
@@ -245,7 +517,68 @@
   "updateAvailableMessage": "There are new features available. Please update the app.",
   "challenge": {
     "automatedChallenge": "In this challenge, the points are updated automatically!",
-    "startsInFuture": "This challenge starts at {{startDate, dd.MM.yyyy}}"
+    "startsInFuture": "This challenge starts at {{startDate, dd.MM.yyyy}}",
+    "activity": {
+      "month": "Monthly activity",
+      "week": "Weekly activity"
+    },
+    "somethingWentWrong": "Something went wrong! Try again later",
+    "pointAdded": "Point added successfully",
+    "pointAddedImageFailed": "Point added successfully. Unfortunately, the image could not be saved.",
+    "updateError": "Challenge could not be updated. {{error}}",
+    "updateSuccess": "Challenge updated successfully.",
+    "createError": "Challenge could not be created. {{error}}",
+    "createSuccess": "Challenge created successfully.",
+    "noDescription": "No description available.",
+    "ended": "This challenge ended on {{endDate}}",
+    "tabs": {
+      "activity": "Activity",
+      "leaderboard": "Leaderboard"
+    },
+    "createPoint": "Create new challenge point",
+    "list": {
+      "retry": "Try again",
+      "unknownError": "Unknown error",
+      "archived": "Archived challenges"
+    },
+    "dialog": {
+      "titleUpdate": "Update challenge",
+      "titleCreate": "Create new challenge",
+      "nameLabel": "Challenge title",
+      "descriptionLabel": "Challenge description",
+      "groupLabel": "Challenge group",
+      "noGroupCreated": "No group was created.",
+      "groupPlaceholder": "Group",
+      "optionalSettings": "Optional settings",
+      "maxPointsPerWeek": "Maximum points per week",
+      "maxPointsPerDay": "Maximum points per day",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "showAllMembers": "Shows all participants of the challenge (including those with 0 points)",
+      "commentsEnabled": "Comments enabled",
+      "categoriesEnabled": "Categories enabled",
+      "categories": "Categories",
+      "newCategoryPlaceholder": "New category...",
+      "groupRequired": "The challenge must be assigned to a group.",
+      "nameTooShort": "The name of the challenge must be at least 6 characters long.",
+      "descriptionTooShort": "The description of the challenge must be at least 6 characters long.",
+      "update": "Update",
+      "create": "Create"
+    },
+    "enterPoint": {
+      "title": "Add point",
+      "count": "Number of points",
+      "countDescription": "How many points do you want to enter?",
+      "singlePoint": "This enters one point for this challenge",
+      "commentPlaceholder": "Comment",
+      "change": "Change",
+      "remove": "Remove",
+      "uploadImage": "Upload image",
+      "selectedImage": "Selected image",
+      "errorTitle": "An error occurred",
+      "uploadError": "Something went wrong uploading your image. Please try again.",
+      "compressError": "Something went wrong compressing your image. Please try again."
+    }
   },
   "filter": "Filter",
   "itemType": {
@@ -288,11 +621,34 @@
     "eventAttendance": "🟢🔴 Attendance responses (yes/no) for the event can be viewed in detail by clicking on the respective row.",
     "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it.",
     "pullToRefresh": "Most pages offer a pull-to-refresh feature. Simply pull the page down to refresh the data.",
-    "refreshApplication": "To refresh all application data, click 'App refresh' in the page navigation at the bottom."
+    "refreshApplication": "To refresh all application data, click 'App refresh' in the page navigation at the bottom.",
+    "title": "Information",
+    "toGroups": "Go to groups"
   },
   "errors": {
     "mutation": "An error occurred. Please try again.",
-    "query": "Failed to load data. Please refresh the page."
+    "query": "Failed to load data. Please refresh the page.",
+    "route": {
+      "whoops": "Whoops!",
+      "title": "Something went wrong",
+      "description": "The page you're looking for isn't found, we suggest you back to home.",
+      "backHome": "Back to home page",
+      "illustrationAlt": "404 illustration"
+    },
+    "featureLocked": {
+      "title": "Too bad!",
+      "subtitle": "Feature not unlocked",
+      "description": "This feature isn't enabled for your current account. Upgrade to unlock its full potential.",
+      "upgrade": "Upgrade now",
+      "later": "Maybe later",
+      "illustrationAlt": "Feature locked illustration"
+    },
+    "unauthorized": {
+      "title": "Stop!",
+      "subtitle": "Access denied",
+      "description": "Unfortunately you don't have the required permissions to view this page. Please contact your administrator if this is a mistake.",
+      "illustrationAlt": "Unauthorized illustration"
+    }
   },
   "games": {
     "list": {
@@ -311,6 +667,49 @@
     },
     "leaderboard": {
       "empty": "No entries yet"
+    },
+    "index": "Index",
+    "sets": "Sets",
+    "editSets": "Edit sets",
+    "setsSaveError": "The sets could not be saved.",
+    "unknown": "Unknown",
+    "information": {
+      "title": "Match Information",
+      "notFound": "Match not found",
+      "notFoundDescription": "The match you are looking for does not exist, was deleted, or you do not have permission to see it.",
+      "deleteConfirm": "Do you really want to delete this match?",
+      "deleteError": "Match could not be deleted. {{error}}",
+      "awarded": "Awarded",
+      "adminActions": "Admin - Actions",
+      "applyElo": "Apply Elo",
+      "applyEloDescription": "Restarts the ELO calculation for this match",
+      "start": "Start",
+      "adminInformation": "Admin - Information",
+      "player": "Player",
+      "delta": "Delta",
+      "oldRating": "Old rating",
+      "newRating": "New rating"
+    },
+    "report": {
+      "title": "Create match",
+      "teamA": "Team A",
+      "teamB": "Team B",
+      "player1": "Player 1",
+      "player2": "Player 2",
+      "loading": "Loading...",
+      "notSelected": "Not selected",
+      "guestPlayer": "Guest player",
+      "playerMissing": "Player {{player}} of Team {{team}} not defined",
+      "noSets": "Need at least one recorded set of this match",
+      "scoresNeeded": "Scores needed in set {{set}}",
+      "noDraw": "Cannot have a draw in set {{set}}",
+      "ratingDescription": "Should the match count towards the index rating?",
+      "visibility": "Visibility",
+      "visibilityDescription": "Should the match be publicly visible?",
+      "newGuestPlayer": "New guest player",
+      "create": "Create",
+      "createGuestPlayer": "Create guest player",
+      "playerName": "Player name"
     }
   },
   "keys": {
@@ -321,6 +720,16 @@
       "empty": "No keys found",
       "emptyDescription": "No keys are currently registered in the system.",
       "noHolder": "Unassigned"
+    },
+    "dialog": {
+      "nameTooShort": "The key name is too short!",
+      "typeRequired": "The key needs a type",
+      "noType": "None",
+      "edit": "Edit key",
+      "create": "Create key",
+      "name": "Key name",
+      "type": "Key type",
+      "typePlaceholder": "Type"
     }
   },
   "user": {
@@ -340,7 +749,9 @@
       "nameTooShort": "Name or display name must be at least 6 or 4 characters",
       "nameIncomplete": "You must provide your full name, including first and last name",
       "updateSuccess": "Profile updated successfully",
-      "updateError": "Error updating profile: {{error}}"
+      "updateError": "Error updating profile: {{error}}",
+      "language": "Language",
+      "avatarPreview": "Avatar preview"
     },
     "password": {
       "title": "Change password",
@@ -396,7 +807,8 @@
       "registerDevice": "Register device",
       "rebind": "Re-bind",
       "disable": "Disable notifications",
-      "vapidMissing": "VAPID public key missing."
+      "vapidMissing": "VAPID public key missing.",
+      "serviceWorkerNotSupported": "Service worker is not supported"
     },
     "lastSeenAt": "Last active {{ date, ago }}",
     "offline": "You are offline. Cached data is displayed.",
@@ -405,7 +817,37 @@
       "ratio": "Wins (W), Draws (D), Losses (L)",
       "wins": "H2H Wins",
       "losses": "H2H Losses"
-    }
+    },
+    "title": "Profile",
+    "tabs": {
+      "account": "Account",
+      "playerzone": "Playerzone profile",
+      "testlab": "Test lab"
+    },
+    "dialog": {
+      "error": "Error",
+      "loadFailed": "{{label}} could not be loaded",
+      "place1": "1st place",
+      "place2": "2nd place",
+      "place3": "3rd place",
+      "playerData": "Player data",
+      "effectiveIndex": "Effective index",
+      "matchesPlayed": "Matches played",
+      "ranking": "Ranking",
+      "winRate": "Win rate",
+      "pzLogoAlt": "Playerzone logo",
+      "rgId": "RG ID",
+      "rgIdCopied": "RG ID copied to clipboard",
+      "rgIndex": "RG Index",
+      "pro": "Pro",
+      "eloHistory": "ELO history",
+      "points": "{{score}} pts"
+    },
+    "avatarErrors": {
+      "uploadFailed": "Error uploading the image",
+      "listFailed": "Failed to list avatar files"
+    },
+    "unknownPlayer": "Unknown player"
   },
   "admin": {
     "dashboard": {
@@ -465,12 +907,215 @@
       "sending": "Sending…",
       "sendTo": "Send to {{count}} recipient(s)",
       "success": "Notification sent to {{count}} user(s)"
+    },
+    "users": {
+      "updateSuccess": "User updated successfully!",
+      "updateError": "An error occurred while updating the user. {{error}}",
+      "notAuthenticated": "Not signed in",
+      "edit": "Edit user",
+      "email": "Email",
+      "password": "Password",
+      "passwordResetSuccess": "Password reset successfully",
+      "passwordResetError": "Error resetting the password: {{error}}",
+      "saveChanges": "Save changes"
+    },
+    "payments": {
+      "searchPlaceholder": "Search for a user",
+      "name": "Name",
+      "email": "Email",
+      "confirmDialog": {
+        "title": "Confirm payment",
+        "intro": "You hereby confirm that",
+        "amountIntro": "has paid",
+        "outro": "in total."
+      }
+    },
+    "merge": {
+      "confirm": "Do you really want to merge these two accounts? {{guest}} and {{user}}",
+      "cancelled": "The merge was cancelled",
+      "success": "The accounts were merged successfully!",
+      "assign": "Assign"
     }
   },
   "notifications": {
     "screen": {
       "title": "Notifications",
       "empty": "You have no new notifications."
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "repeatPassword": "Repeat password",
+    "haveAccount": "Already have an account? Log in here.",
+    "version": "Version {{version}}",
+    "login": {
+      "failed": "Login failed. Try again!",
+      "titleFor": "Login for",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in...",
+      "noAccount": "Don't have an account yet?"
+    },
+    "signup": {
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordTooShort": "The password must be at least 6 characters long",
+      "nameRequired": "Please enter your first name.",
+      "surnameRequired": "Please enter your last name.",
+      "failed": "Sign-up failed. [{{message}}]",
+      "titleAt": "Sign up for",
+      "submit": "Sign up",
+      "submitting": "Creating account..."
+    },
+    "forgot": {
+      "failed": "Password reset failed. Try again!",
+      "sent": "Email sent",
+      "sentDescription": "An email with instructions for resetting your password has been sent 🎉",
+      "backToLogin": "Back to login",
+      "title": "Reset password",
+      "submit": "Submit",
+      "submitting": "Sending..."
+    },
+    "reset": {
+      "invalidLink": "The link is invalid or has expired.",
+      "noValidLink": "No valid reset link. Please request a new one.",
+      "passwordTooShort": "The password must be at least 6 characters long.",
+      "title": "Set new password",
+      "verifying": "Checking link…",
+      "requestNewLink": "Request new link",
+      "done": "Your password has been changed. 🎉",
+      "toApp": "To the app",
+      "save": "Save password"
+    }
+  },
+  "grants": {
+    "features": "Features",
+    "updateError": "Permissions could not be updated",
+    "updateSuccess": "Permissions were updated",
+    "editUser": "Edit user \"{{name}}\""
+  },
+  "bundesliga": {
+    "title": "Bundesliga lineup",
+    "reloadData": "Reload data (admin)",
+    "setup": "Set up match day",
+    "league": "League",
+    "selectLeague": "Select league",
+    "loadingTeams": "Loading teams…",
+    "leagueLoadError": "Could not load league data: {{error}}",
+    "myTeam": "My team",
+    "selectTeam": "Select team",
+    "opponents": "Opponents",
+    "manual": "Manual",
+    "loadingSquads": "Loading squads…",
+    "mySquad": "My squad ({{present}}/{{total}} present)",
+    "squadHint": "Who is playing on match day? Only players marked present are available for the lineup. Gender is detected automatically – correct it if needed (counts for Women & Mixed).",
+    "gamesPerPlayer": "Games per player",
+    "reset": "Reset",
+    "chooseLeagueAndTeam": "Choose your league and team to plan the lineup.",
+    "gender": {
+      "male": "M",
+      "female": "F",
+      "unknown": "?"
+    },
+    "freeSeat": "— free —",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "versus": "vs",
+    "we": "We",
+    "issuePrefixed": "{{team}}: {{message}}",
+    "notAuthenticated": "Not signed in",
+    "issues": {
+      "incomplete": "{{label}}: not fully filled yet.",
+      "duplicate": "{{label}}: a player is entered twice.",
+      "womenFemale": "Women: both players must be female.",
+      "mixedGender": "{{label}}: must be 1 male + 1 female.",
+      "oneGameOpenWomen": "{{name}} is assigned to {{labels}} — only one game per Open/Women block is allowed.",
+      "oneGameMixed": "{{name}} is assigned to {{labels}} — only one game per Mixed block is allowed.",
+      "rgxOrder": "{{label}} 1 must have a higher (or equal) combined RGX than {{label}} 2."
+    }
+  },
+  "home": {
+    "title": "Home",
+    "events": "Events",
+    "eventsLoadError": "Error loading events",
+    "noUpcomingEvents": "No upcoming events",
+    "attending": "Attending",
+    "declined": "Declined",
+    "drinksLoadError": "Error loading drinks",
+    "noDrinksAvailable": "No drinks available",
+    "drinkBooked": "Drink booked successfully!",
+    "drinkBookError": "Drink could not be booked. {{error}}",
+    "order": "Order",
+    "keys": "Keys",
+    "keysLoadError": "Error loading keys",
+    "noKeys": "No keys registered"
+  },
+  "pwa": {
+    "updateReady": {
+      "title": "New version ready",
+      "description": "A new version of the app has been downloaded. Update now to use it.",
+      "updating": "Updating…",
+      "updateNow": "Update now"
+    },
+    "updateSuccess": {
+      "title": "App updated",
+      "description": "You are on the latest version."
+    }
+  },
+  "cropImage": {
+    "title": "Crop image",
+    "save": "Crop & save"
+  },
+  "dialogs": {
+    "confirmTitle": "Are you sure?"
+  },
+  "ui": {
+    "dataTable": {
+      "comparison": "COMPARISON",
+      "equals": "Equals",
+      "notEqual": "Not equal !=",
+      "greaterThan": "Greater than >",
+      "lessThan": "Less than <",
+      "greaterOrEqual": "Greater or equal =<",
+      "lessOrEqual": "Less or equal <=",
+      "patternMatching": "PATTERN MATCHING",
+      "setAndNullChecks": "SET & NULL CHECKS",
+      "inList": "In list in",
+      "isIs": "is is",
+      "selectPlaceholder": "Select...",
+      "valuePlaceholder": "Value...",
+      "reset": "Reset",
+      "noResults": "No results.",
+      "pageOf": "Page {{page}} of {{total}}",
+      "firstPage": "Go to first page",
+      "previousPage": "Go to previous page",
+      "nextPage": "Go to next page",
+      "lastPage": "Go to last page"
+    },
+    "sidebar": {
+      "title": "Sidebar",
+      "description": "Displays the mobile sidebar.",
+      "toggle": "Toggle sidebar"
+    },
+    "map": {
+      "selectLayers": "Select layers",
+      "mapType": "Map type",
+      "layers": "Layers",
+      "zoomControls": "Zoom controls",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "enterFullscreen": "Enter fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "locating": "Locating...",
+      "stopTracking": "Stop tracking",
+      "trackLocation": "Track location",
+      "stopLocationTracking": "Stop location tracking",
+      "startLocationTracking": "Start location tracking"
+    },
+    "placeAutocomplete": {
+      "error": "Error: {{message}}",
+      "notFound": "Can't find {{value}}.",
+      "unknown": "Unknown"
     }
   }
 }

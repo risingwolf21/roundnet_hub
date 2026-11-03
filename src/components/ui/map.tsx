@@ -78,6 +78,7 @@ import React, {
     type Ref,
 } from "react"
 import { renderToString } from "react-dom/server"
+import { useTranslation } from "react-i18next"
 import {
     useMap,
     useMapEvents,
@@ -440,8 +441,8 @@ function MapLayers({
 }
 
 function MapLayersControl({
-    tileLayersLabel = "Map Type",
-    layerGroupsLabel = "Layers",
+    tileLayersLabel,
+    layerGroupsLabel,
     position = "top-1 right-1",
     className,
     ...props
@@ -450,6 +451,7 @@ function MapLayersControl({
     layerGroupsLabel?: string
     position?: string
 }) {
+    const { t } = useTranslation()
     const map = useMap()
     const layersContext = useMapLayersContext()
     if (!layersContext) {
@@ -486,7 +488,7 @@ function MapLayersControl({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button type="button" variant="secondary" size="icon-sm" aria-label="Select layers" title="Select layers" className={cn(
+            <DropdownMenuTrigger render={<Button type="button" variant="secondary" size="icon-sm" aria-label={t("ui.map.selectLayers")} title={t("ui.map.selectLayers")} className={cn(
                 "absolute z-1000 border",
                 position,
                 className
@@ -497,7 +499,7 @@ function MapLayersControl({
                 container={map.getContainer()}>
                 {showTileLayersDropdown && (
                     <>
-                        <DropdownMenuLabel>{tileLayersLabel}</DropdownMenuLabel>
+                        <DropdownMenuLabel>{tileLayersLabel ?? t("ui.map.mapType")}</DropdownMenuLabel>
                         <DropdownMenuRadioGroup
                             value={selectedTileLayer}
                             onValueChange={setSelectedTileLayer}>
@@ -517,7 +519,7 @@ function MapLayersControl({
                 {showLayerGroupsDropdown && (
                     <>
                         <DropdownMenuLabel>
-                            {layerGroupsLabel}
+                            {layerGroupsLabel ?? t("ui.map.layers")}
                         </DropdownMenuLabel>
                         {layerGroups.map((layerGroup) => (
                             <DropdownMenuCheckboxItem
@@ -752,6 +754,7 @@ function MapZoomControl({
     className,
     ...props
 }: React.ComponentProps<"div"> & { position?: string }) {
+    const { t } = useTranslation()
     const map = useMap()
     const [zoomLevel, setZoomLevel] = useState(map.getZoom())
 
@@ -765,14 +768,14 @@ function MapZoomControl({
         <MapControlContainer className={cn(position, className)}>
             <ButtonGroup
                 orientation="vertical"
-                aria-label="Zoom controls"
+                aria-label={t("ui.map.zoomControls")}
                 {...props}>
                 <Button
                     type="button"
                     size="icon-sm"
                     variant="secondary"
-                    aria-label="Zoom in"
-                    title="Zoom in"
+                    aria-label={t("ui.map.zoomIn")}
+                    title={t("ui.map.zoomIn")}
                     className="border"
                     disabled={zoomLevel >= map.getMaxZoom()}
                     onClick={() => map.zoomIn()}>
@@ -782,8 +785,8 @@ function MapZoomControl({
                     type="button"
                     size="icon-sm"
                     variant="secondary"
-                    aria-label="Zoom out"
-                    title="Zoom out"
+                    aria-label={t("ui.map.zoomOut")}
+                    title={t("ui.map.zoomOut")}
                     className="border"
                     disabled={zoomLevel <= map.getMinZoom()}
                     onClick={() => map.zoomOut()}>
@@ -799,6 +802,7 @@ function MapFullscreenControl({
     className,
     ...props
 }: React.ComponentProps<"button"> & { position?: string }) {
+    const { t } = useTranslation()
     const map = useMap()
     const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -836,9 +840,9 @@ function MapFullscreenControl({
                 variant="secondary"
                 onClick={() => map.toggleFullscreen()}
                 aria-label={
-                    isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+                    isFullscreen ? t("ui.map.exitFullscreen") : t("ui.map.enterFullscreen")
                 }
-                title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                title={isFullscreen ? t("ui.map.exitFullscreen") : t("ui.map.enterFullscreen")}
                 className="border"
                 {...props}>
                 {isFullscreen ? <MinimizeIcon /> : <MaximizeIcon />}
@@ -868,6 +872,7 @@ function MapLocateControl({
         onLocationFound?: (location: LocationEvent) => void
         onLocationError?: (error: ErrorEvent) => void
     } & { position?: string }) {
+    const { t } = useTranslation()
     const map = useMap()
     const [isLocating, setIsLocating] = useDebounceLoadingState(200)
     const [location, setLocation] = useState<LatLngExpression | null>(null)
@@ -907,17 +912,17 @@ function MapLocateControl({
                 disabled={isLocating}
                 title={
                     isLocating
-                        ? "Locating..."
+                        ? t("ui.map.locating")
                         : location
-                            ? "Stop tracking"
-                            : "Track location"
+                            ? t("ui.map.stopTracking")
+                            : t("ui.map.trackLocation")
                 }
                 aria-label={
                     isLocating
-                        ? "Locating..."
+                        ? t("ui.map.locating")
                         : location
-                            ? "Stop location tracking"
-                            : "Start location tracking"
+                            ? t("ui.map.stopLocationTracking")
+                            : t("ui.map.startLocationTracking")
                 }
                 className="border"
                 {...props}>

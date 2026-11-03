@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { getInitials } from "@/utils";
 import { ArrowLeft, Search, WifiOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { SidebarTrigger } from "./sidebar";
@@ -26,7 +27,7 @@ export function AppBar({
   title,
   user,
   showSearch = false,
-  searchPlaceholder = "Suchen...",
+  searchPlaceholder,
   searchValue,
   onSearchChange,
   primaryAction = "default",
@@ -36,6 +37,7 @@ export function AppBar({
   className,
   ...props
 }: AppBarProps) {
+  const { t } = useTranslation();
   const isOffline = useIsOffline();
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -89,7 +91,7 @@ export function AppBar({
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder={searchPlaceholder}
+                placeholder={searchPlaceholder ?? t('common.searchPlaceholder')}
                 value={searchValue}
                 onChange={(e) => onSearchChange?.(e.target.value)}
                 // OPTIMIERT: Nutzt die definierten Muted- und Background-Farben
@@ -109,7 +111,7 @@ export function AppBar({
             >
               <Avatar className="h-8 w-8 border border-border/50 shadow-sm">
                 {user.avatarUrl ? (
-                  <AvatarImage src={user.avatarUrl} alt={user.name ?? "User Avatar"} />
+                  <AvatarImage src={user.avatarUrl} alt={user.name ?? t('profile.account.avatar')} />
                 ) : (
                   // Nutzt perfekt deine --primary und --primary-foreground Farben
                   <AvatarFallback className="bg-primary text-primary-foreground font-medium">
@@ -127,7 +129,7 @@ export function AppBar({
         <div className="w-full bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground shadow-sm">
           <WifiOff className="size-4 shrink-0" />
           <span className="text-xs font-medium">
-            Du bist offline. Es werden gespeicherte Daten angezeigt.
+            {t('profile.offline')}
           </span>
         </div>
       )}

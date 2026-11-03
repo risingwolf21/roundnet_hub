@@ -12,6 +12,7 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { iOS } from "@/utils";
 import { AlertTriangle, Bell, BellOff, CalendarIcon, CheckCircle2, Info, Swords, Trophy, Users, XCircle } from "lucide-react";
 import { ElementType, Fragment, useEffect, useMemo, useState } from "react";
+import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 
 // --- Web Push helpers -------------------------------------------------------
@@ -41,7 +42,7 @@ function detectPlatform() {
 }
 
 async function getSW() {
-  if (!('serviceWorker' in navigator)) throw new Error('Service Worker not supported');
+  if (!('serviceWorker' in navigator)) throw new Error(i18n.t('profile.notifications.serviceWorkerNotSupported'));
   return navigator.serviceWorker.ready;
 }
 

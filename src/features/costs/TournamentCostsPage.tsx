@@ -10,6 +10,7 @@ import {
   useTournamentCosts,
   useUpdateCostMutation,
 } from '@/tanstack/tournamentCosts';
+import i18n from 'i18next';
 import groupBy from 'lodash.groupby';
 import {
   BedDouble,
@@ -40,7 +41,7 @@ const getCategoryIcon = (category: string) =>
   CATEGORY_ICONS[category] ?? <HelpCircle className="size-4" />;
 
 const formatAmount = (amount: number) =>
-  amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+  amount.toLocaleString(i18n.resolvedLanguage === 'en' ? 'en-GB' : 'de-DE', { style: 'currency', currency: 'EUR' });
 
 const TournamentCostsPage = () => {
   const { t } = useTranslation();

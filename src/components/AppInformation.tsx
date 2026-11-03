@@ -21,7 +21,7 @@ const AppInformation = () => {
   return <div className="flex flex-col min-h-screen">
     <AppBar
       className='!border-b !shadow-sm'
-      title="Informationen"
+      title={t('title')}
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>
@@ -83,7 +83,7 @@ const AppInformation = () => {
               <div style={{ justifyContent: 'center', width: '100%', display: 'flex', marginTop: '16px' }}>
                 <Button onClick={() => navigate('/groups/list')}>
                   <Users2 />
-                  Zu den Gruppen
+                  {t('toGroups')}
                 </Button>
               </div>
               <p className='text-muted-foreground leading-relaxed'>{t('eventsFromGroupInfo')}</p>

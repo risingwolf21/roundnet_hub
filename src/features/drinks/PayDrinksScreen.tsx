@@ -44,7 +44,7 @@ const PayDrinksScreen = () => {
 
   useEffect(() => {
     if (error)
-      toast.error(error.message, { action: <Button onClick={() => refetch()}>Neu laden</Button> })
+      toast.error(error.message, { action: <Button onClick={() => refetch()}>{t('events.list.reload')}</Button> })
   }, [error, refetch]);
 
   return (
@@ -62,14 +62,13 @@ const PayDrinksScreen = () => {
           <div className='flex flex-col gap-2 p-2'>
             <Item variant={"outline"}>
               <div className='flex w-full justify-between'>
-                <div className='text-base font-bold'>Zahlungsinformationen</div>
+                <div className='text-base font-bold'>{t('drinks.pay.paymentInfo')}</div>
                 {
                   PAYMENT_INFO?.type === 'bank_transfer' && <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
                     dialogs.alert(<div>
                       <Alert variant={"info"}>
                         <InfoIcon className='!size-5' />
-                        <AlertDescription>Scanne den QR-Code mit deiner Banking-App, um die Banküberweisung schnell und einfach
-                          durchzuführen.</AlertDescription>
+                        <AlertDescription>{t('drinks.pay.qrHint')}</AlertDescription>
                       </Alert>
                       <div className='flex flex-row justify-center align-center mt-4'>
                         <QRCode
@@ -91,13 +90,13 @@ const PayDrinksScreen = () => {
                           {PAYMENT_INFO.recipient}
                         </ItemTitle>
                         <ItemDescription>
-                          Empfänger
+                          {t('drinks.pay.recipient')}
                         </ItemDescription>
                       </ItemContent>
                       <ItemActions>
                         <Button variant={"ghost"} onClick={() => {
                           navigator.clipboard.writeText(PAYMENT_INFO.recipient);
-                          toast.info('Empfänger kopiert');
+                          toast.info(t('drinks.pay.recipientCopied'));
                         }}>
                           <Copy className='size-4' />
                         </Button>
@@ -112,13 +111,13 @@ const PayDrinksScreen = () => {
                           {PAYMENT_INFO.iban}
                         </ItemTitle>
                         <ItemDescription>
-                          IBAN
+                          {t('drinks.pay.iban')}
                         </ItemDescription>
                       </ItemContent>
                       <ItemActions>
                         <Button variant={"ghost"} onClick={() => {
                           navigator.clipboard.writeText(PAYMENT_INFO.iban);
-                          toast.info('IBAN kopiert');
+                          toast.info(t('drinks.pay.ibanCopied'));
                         }}>
                           <Copy className='size-4' />
                         </Button>
@@ -133,13 +132,13 @@ const PayDrinksScreen = () => {
                           {PAYMENT_INFO.bic}
                         </ItemTitle>
                         <ItemDescription>
-                          BIC
+                          {t('drinks.pay.bic')}
                         </ItemDescription>
                       </ItemContent>
                       <ItemActions>
                         <Button variant={"ghost"} onClick={() => {
                           navigator.clipboard.writeText(PAYMENT_INFO.bic);
-                          toast.info('BIC kopiert');
+                          toast.info(t('drinks.pay.bicCopied'));
                         }}>
                           <Copy className='size-4' />
                         </Button>
@@ -153,7 +152,7 @@ const PayDrinksScreen = () => {
                     <Item key={"paypal"} className='p-0'>
                       <ItemContent>
                         <ItemTitle>
-                          Per PayPal senden
+                          {t('drinks.pay.sendViaPayPal')}
                         </ItemTitle>
                         <ItemDescription>
                           {PAYMENT_INFO.paypalMeLink}
@@ -177,7 +176,7 @@ const PayDrinksScreen = () => {
               </ItemContent>
             </Item>
             <div className="text-sm font-semibold">
-              Verlauf
+              {t('browse.history')}
             </div>
             <div className='flex flex-col gap-2'>
               {
@@ -235,7 +234,7 @@ const PayDrinksScreen = () => {
                       {x.name}
                     </ItemTitle>
                     <ItemDescription>
-                      Gutscheine
+                      {t('drinks.pay.vouchers')}
                     </ItemDescription>
                   </ItemContent>
                   <ItemActions>
@@ -247,7 +246,7 @@ const PayDrinksScreen = () => {
               <>
                 <Separator />
                 <div className='flex justify-between mx-2'>
-                  <div className='text-base font-bold'>Gesamtkosten</div>
+                  <div className='text-base font-bold'>{t('drinks.pay.totalCost')}</div>
                   <div className='text-base font-bold'>{amountToPay} €</div>
                 </div>
               </>

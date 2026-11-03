@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useExpandRecurrences, useRecurringEvents } from '@/tanstack/events';
 import groupBy from 'lodash.groupby';
 import { Calendar, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
@@ -17,6 +18,7 @@ import { formatDateRange } from './components/EventItem';
 import { PlaceType } from './types';
 
 const RecurringEvents = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
 
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ const RecurringEvents = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title={"Eventdetails"}
+        title={t('events.information.title')}
         primaryAction="back"
         user={user}
       />
@@ -37,23 +39,23 @@ const RecurringEvents = () => {
 
             <Item variant={"outline"}>
               <ItemContent>
-                <ItemTitle>Wiederkehrende Events</ItemTitle>
-                <ItemDescription>Hier kannst du wiederkehrende Events für die nächsten 30 Tage erstellen lassen</ItemDescription>
+                <ItemTitle>{t('events.recurring.title')}</ItemTitle>
+                <ItemDescription>{t('events.recurring.description')}</ItemDescription>
                 {
                   createNextEvents.data && <p className='text-sm text-muted-foreground pt-2'>
-                    {`${createNextEvents.data.processed} Serie(n) aktualisiert.`}
+                    {t('events.recurring.seriesUpdated', { processed: createNextEvents.data.processed })}
                   </p>
                 }
               </ItemContent>
               <ItemActions>
                 <Button variant={"outline"} disabled={createNextEvents.isPending} onClick={() => {
                   createNextEvents.mutate(undefined, {
-                    onSuccess: (data) => toast.success(`${data.processed} Serie(n) aktualisiert!`),
-                    onError: () => toast.error("Es ist ein Fehler aufgetreten beim Erstellen der Events!")
+                    onSuccess: (data) => toast.success(t('events.recurring.seriesUpdatedToast', { processed: data.processed })),
+                    onError: () => toast.error(t('events.recurring.createError'))
                   });
                 }}>
                   {
-                    createNextEvents.isPending ? <Spinner /> : "Erstellen"
+                    createNextEvents.isPending ? <Spinner /> : t('events.recurring.create')
                   }
                 </Button>
               </ItemActions>
@@ -92,7 +94,7 @@ const RecurringEvents = () => {
                                 <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
                                   <MapPin className='size-4 shrink-0' />
                                   <span className='truncate'>
-                                    {place.name ?? 'Kein Ort angegeben'}
+                                    {place.name ?? t('events.item.noLocation')}
                                   </span>
                                 </div>
                               )

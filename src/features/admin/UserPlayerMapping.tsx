@@ -9,11 +9,13 @@ import { supabase } from "@/lib/supabase";
 import { adminKeys, useUnlinkedPlayers } from "@/tanstack/admin";
 import { gamesKeys } from "@/tanstack/games";
 import { playerDataKeys } from "@/tanstack/player_data";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 
 const UserPlayerMapping = () => {
 
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const { data = [], refetch } = useUnlinkedPlayers();
@@ -45,10 +47,10 @@ const UserPlayerMapping = () => {
 
                       if (result) {
 
-                        const isConfirmed = await dialogs.confirm("Möchtest du wirklich diese beiden Accounts mergen? " + x.display_name + " und " + result.name);
+                        const isConfirmed = await dialogs.confirm(t('admin.merge.confirm', { guest: x.display_name, user: result.name }));
 
                         if (!isConfirmed) {
-                          toast.info("Der Merge wurde abgebrochen");
+                          toast.info(t('admin.merge.cancelled'));
                           return;
                         }
 
@@ -59,7 +61,7 @@ const UserPlayerMapping = () => {
                         if (error) {
                           toast.error(error.message);
                         } else {
-                          toast.success("Die Accounts wurden erfolgreich gemerged!");
+                          toast.success(t('admin.merge.success'));
 
                           queryClient.invalidateQueries({ queryKey: gamesKeys.all });
                           queryClient.invalidateQueries({ queryKey: adminKeys.unlinkedPlayers() });
@@ -67,7 +69,7 @@ const UserPlayerMapping = () => {
                         }
                       }
                     }}>
-                      Zuordnen
+                      {t('admin.merge.assign')}
                     </Button>
                   </ItemActions>
                 </Item>

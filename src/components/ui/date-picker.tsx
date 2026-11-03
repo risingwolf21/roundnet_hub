@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { de } from "date-fns/locale"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   id?: string;
@@ -24,6 +24,7 @@ type Props = {
 }
 
 export const DatePicker = ({ value, onValueChange, placeholder, dateFormat, id, name, className }: Props) => {
+  const { t } = useTranslation()
 
   return (
     <Popover>
@@ -40,7 +41,7 @@ export const DatePicker = ({ value, onValueChange, placeholder, dateFormat, id, 
         }
       >
         <CalendarIcon />
-        {value ? format(value, dateFormat ?? "PPP", { locale: de }) : <span>{placeholder ?? 'Pick a date'}</span>}
+        {value ? format(value, dateFormat ?? "PPP") : <span>{placeholder ?? t('admin.analytics.datePlaceholder')}</span>}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar id={id} mode="single" selected={value} onSelect={(date) => onValueChange(date)} />

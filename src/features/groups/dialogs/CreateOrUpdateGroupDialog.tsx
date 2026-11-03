@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 type CreateOrUpdateGroupDialogProps = {
@@ -26,6 +27,7 @@ export const CreateOrUpdateGroupDialog = ({
   open,
   onClose,
 }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | 'closed'>) => {
+  const { t } = useTranslation();
   const usersParentGroups = payload.user.groups.filter((x) => x.parent_group === null);
   // Colours already in use (across the groups this user can see) so a new group gets a distinct one.
   const existingColors = payload.user.groups.map((g) => (g as { color?: string }).color);
@@ -51,7 +53,7 @@ export const CreateOrUpdateGroupDialog = ({
         <DialogHeader variant={"appbar"}>
           <DialogTitle className={"flex-1"}>
             {
-              data.id === '' ? "Gruppe erstellen" : "Gruppe bearbeiten"
+              data.id === '' ? t('groups.create') : t('groups.edit')
             }
           </DialogTitle>
           <DialogClose />
@@ -61,7 +63,7 @@ export const CreateOrUpdateGroupDialog = ({
           <Has perm={'groups.manage.admin'}>
             {usersParentGroups.length > 0 && (
               <Field className="w-full">
-                <FieldLabel>Hauptgruppe</FieldLabel>
+                <FieldLabel>{t('groups.parentGroup')}</FieldLabel>
                 <Select
                   items={usersParentGroups.map(x => ({ label: x.name, value: x.id }))}
                   value={data.parent_group ?? 'none'}
@@ -71,7 +73,7 @@ export const CreateOrUpdateGroupDialog = ({
                   })}
                   disabled={usersParentGroups.length === 1}>
                   <SelectTrigger className={"w-full"}>
-                    <SelectValue placeholder="Gruppe" />
+                    <SelectValue placeholder={t('groups.group')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -82,7 +84,7 @@ export const CreateOrUpdateGroupDialog = ({
                           </SelectItem>
                         ))
                       }
-                      <SelectItem value={"none"}>Neue Hauptgruppe</SelectItem>
+                      <SelectItem value={"none"}>{t('groups.newParentGroup')}</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -90,30 +92,30 @@ export const CreateOrUpdateGroupDialog = ({
             )}
           </Has>
           <Field>
-            <FieldLabel>Gruppen-Name</FieldLabel>
+            <FieldLabel>{t('groups.nameLabel')}</FieldLabel>
             <Input
               className='w-full'
-              placeholder='Name'
+              placeholder={t('groups.namePlaceholder')}
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })} />
           </Field>
 
           <Field>
-            <FieldLabel>Gruppen-Beschreibung</FieldLabel>
+            <FieldLabel>{t('groups.descriptionLabel')}</FieldLabel>
             <Input
               className='w-full'
-              placeholder='Beschreibung'
+              placeholder={t('costs.description')}
               value={data.description}
               onChange={(e) => setData({ ...data, description: e.target.value })} />
           </Field>
 
 
           <Field>
-            <FieldLabel>Gruppen-Farbe</FieldLabel>
+            <FieldLabel>{t('groups.colorLabel')}</FieldLabel>
             <div className='flex w-full items-center gap-2'>
               <Input
                 className='w-full'
-                placeholder='Farbe'
+                placeholder={t('common.color')}
                 type='color'
                 value={data.color}
                 onChange={(e) => setData({ ...data, color: e.target.value })} />
@@ -123,20 +125,20 @@ export const CreateOrUpdateGroupDialog = ({
                 onClick={() =>
                   setData((d) => ({ ...d, color: pickDistinctColor([...existingColors, d.color]) }))
                 }>
-                Neue Farbe
+                {t('groups.newColor')}
               </Button>
             </div>
             <FieldDescription>
-              Vorgeschlagen wird automatisch eine Farbe, die sich von den bestehenden Gruppen abhebt.
+              {t('groups.colorHint')}
             </FieldDescription>
           </Field>
 
           <Has perm={'groups.manage.admin'}>
             <Field orientation="horizontal">
               <FieldContent>
-                <FieldLabel htmlFor="switch-is-public">Öffentlichkeit</FieldLabel>
+                <FieldLabel htmlFor="switch-is-public">{t('groups.publicLabel')}</FieldLabel>
                 <FieldDescription>
-                  Soll die Gruppe öffentlich sichtbar sein?
+                  {t('groups.publicHint')}
                 </FieldDescription>
               </FieldContent>
               <Switch
@@ -153,9 +155,9 @@ export const CreateOrUpdateGroupDialog = ({
 
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel htmlFor="switch-confirm">Bestätigung</FieldLabel>
+              <FieldLabel htmlFor="switch-confirm">{t('groups.confirmLabel')}</FieldLabel>
               <FieldDescription>
-                Sollen Benutzer bestätigt werden müssen?
+                {t('groups.confirmHint')}
               </FieldDescription>
             </FieldContent>
             <Switch
@@ -172,11 +174,11 @@ export const CreateOrUpdateGroupDialog = ({
         <DialogFooter variant={"fullscreen"}>
           <Button onClick={async () => {
             if (data.name.length < 6) {
-              toast.warning('Der Name der Gruppe muss aus mindestens 6 Zeichen bestehen.');
+              toast.warning(t('groups.nameTooShort'));
               return;
             }
             if (data.description.length < 6) {
-              toast.warning('Die Beschreibung der Gruppe muss aus mindestens 6 Zeichen bestehen.');
+              toast.warning(t('groups.descriptionTooShort'));
               return;
             }
 
@@ -214,7 +216,7 @@ export const CreateOrUpdateGroupDialog = ({
               );
             }
           }}>
-            {data.id === '' ? "Gruppe erstellen" : "Gruppe speichern"}
+            {data.id === '' ? t('groups.create') : t('groups.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

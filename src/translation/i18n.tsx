@@ -1,4 +1,4 @@
-import { format as formatDate, formatDistance, formatRelative, isDate, Locale } from 'date-fns';
+import { format as formatDate, formatDistance, formatRelative, isDate, Locale, setDefaultOptions } from 'date-fns';
 import { de, enGB } from 'date-fns/locale';
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -7,7 +7,7 @@ import translationDE from './locales/translation.de.json';
 import translationEN from './locales/translation.en.json';
 
 const resources = {
-  enGB: {
+  en: {
     translation: translationEN,
   },
   de: {
@@ -43,7 +43,7 @@ export const LOCALE_EN: Locale = {
   formatRelative: (token) => formatRelativeLocaleEN[token],
 };
 
-const locales = { enGB: LOCALE_EN, de: LOCALE_DE };
+const locales = { en: LOCALE_EN, de: LOCALE_DE };
 type Lang = keyof typeof locales;
 
 i18n
@@ -51,7 +51,10 @@ i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     resources,
-    lng: 'de',
+    // German unless the user picked English (profile switcher; remembered on the device and in user.language).
+    fallbackLng: 'de',
+    supportedLngs: ['de', 'en'],
+    detection: { order: ['localStorage'], caches: ['localStorage'] },
     interpolation: {
       escapeValue: false, // react already safes from xss
       format: (value, format, lng) => {
@@ -76,3 +79,12 @@ i18n
       },
     },
   });
+
+// Month/weekday names from date-fns and the <html lang> attribute follow the selected language.
+const applyLanguage = (lng: string) => {
+  const lang: Lang = lng === 'en' ? 'en' : 'de';
+  setDefaultOptions({ locale: locales[lang] });
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
+};
+i18n.on('languageChanged', applyLanguage);
+applyLanguage(i18n.language);

@@ -10,6 +10,7 @@ import { TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
 import { CheckIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
@@ -20,6 +21,7 @@ const ForgotPasswordForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const { version } = useApplication();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ const ForgotPasswordForm = () => {
         });
 
       if (result.error) {
-        setError("Password reset failed. Try again!")
+        setError(t('auth.forgot.failed'))
         captureException(new Error('Could not sign in user.'), (scope) => {
           scope.clear();
           scope.setExtra('email', email);
@@ -62,14 +64,14 @@ const ForgotPasswordForm = () => {
       </CardHeader>
       <CardContent>
         <div className='space-y-3.5 text-center'>
-          <div className='leading-7'>Email wurde versendet</div>
+          <div className='leading-7'>{t('auth.forgot.sent')}</div>
           <div className='max-w-sm'>
-            Es wurde eine Email mit den Informationen für das Zurücksetzen deines Passwort versendet 🎉
+            {t('auth.forgot.sentDescription')}
           </div>
         </div>
       </CardContent>
       <CardFooter className='flex justify-center'>
-        <Button size='lg' onClick={() => navigate("/auth/login")}>Zurück zum Login</Button>
+        <Button size='lg' onClick={() => navigate("/auth/login")}>{t('auth.forgot.backToLogin')}</Button>
       </CardFooter>
     </Card>
   }
@@ -82,7 +84,7 @@ const ForgotPasswordForm = () => {
       </div>
       <div>
         <CardTitle className="text-2xl">
-          Passwort zurücksetzen
+          {t('auth.forgot.title')}
         </CardTitle>
       </div>
     </CardHeader>
@@ -90,7 +92,7 @@ const ForgotPasswordForm = () => {
       <form onSubmit={forgotPassword}>
         <div className="flex flex-col gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -103,18 +105,18 @@ const ForgotPasswordForm = () => {
 
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Senden...' : 'Abschicken'}
+            {isLoading ? t('auth.forgot.submitting') : t('auth.forgot.submit')}
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">
           <a href="#" className="underline underline-offset-4" onClick={() => navigate('/auth/login')}>
-            Account vorhanden? Hier einloggen.
+            {t('auth.haveAccount')}
           </a>
         </div>
       </form>
       <Separator className={"my-4"} />
       <div className='flex justify-center'>
-        {`Version ${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}`}
+        {t('auth.version', { version: `${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}` })}
       </div>
     </CardContent>
   </Card>

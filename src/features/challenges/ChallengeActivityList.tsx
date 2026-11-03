@@ -10,14 +10,15 @@ import { format, isSameDay } from 'date-fns';
 import groupBy from 'lodash.groupby';
 import { BadgeCheck, ChevronDown, ChevronUp } from 'lucide-react';
 
-import { de } from 'date-fns/locale';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Day, MonthCaption, Nav, Week } from 'react-day-picker';
 
 export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_stats: ChallengeStats[] }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date());
 
@@ -32,7 +33,7 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
         setMonth(new Date());
       }}>
         <ItemTitle className='font-semibold'>
-          {isOpen ? "Monatsaktivität" : "Wochenaktivität"}
+          {isOpen ? t('challenge.activity.month') : t('challenge.activity.week')}
         </ItemTitle>
         <Button variant={"ghost"} size={"icon-lg"} >
           {isOpen ? <ChevronUp /> : <ChevronDown />}
@@ -42,7 +43,6 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
       <ItemContent className="w-full">
         <Calendar
           mode="single"
-          locale={de}
           className="p-0 pt-2 w-full"
           month={month}
           onMonthChange={(m) => setMonth(m)}

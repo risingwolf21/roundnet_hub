@@ -10,11 +10,13 @@ import { useDialogs } from '@/contexts/DialogsProvider';
 import { useDirectUserGrants, useGrantGroupPermissions, useGrantUserPermissions, useGroupFeatures, useGroupPermissions, useRevokeGroupPermissions, useRevokeUserPermissions, useUserFeatures, useUserPermissions } from '@/tanstack/grants';
 import { useGroups } from '@/tanstack/groups';
 import { ChevronRight, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { GrantsEditorDialog, GroupResult } from './GrantsEditorDialog';
 
 const GroupTab = ({ searchValue }: { searchValue: string }) => {
+  const { t } = useTranslation();
   const { data = [], refetch } = useGroups();
   const dialogs = useDialogs();
 
@@ -30,10 +32,10 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
       },
       {
         onError: () =>
-          toast.error('Berechtigungen konnten nicht aktualisiert werden'),
+          toast.error(t('grants.updateError')),
         // onSuccess, not onSettled: a failed save must not also report success.
         onSuccess: () =>
-          toast.success('Berechtigungen wurden aktualisiert'),
+          toast.success(t('grants.updateSuccess')),
       }
     );
     revoke.mutate(
@@ -44,10 +46,10 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
       },
       {
         onError: () =>
-          toast.error('Berechtigungen konnten nicht aktualisiert werden'),
+          toast.error(t('grants.updateError')),
         // onSuccess, not onSettled: a failed save must not also report success.
         onSuccess: () =>
-          toast.success('Berechtigungen wurden aktualisiert'),
+          toast.success(t('grants.updateSuccess')),
       }
     );
   };
@@ -61,7 +63,7 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
             .map(group => (
               <Item variant={"outline"} key={group.id} onClick={async () => {
                 const result = await dialogs.open(GrantsEditorDialog, {
-                  title: 'Gruppe bearbeiten',
+                  title: t('groups.edit'),
                   id: group.id,
                   currentPermissions: useGroupPermissions,
                   currentFeatures: useGroupFeatures,
@@ -84,6 +86,7 @@ const GroupTab = ({ searchValue }: { searchValue: string }) => {
 
 const UserTab = ({ searchValue }: { searchValue: string }) => {
 
+  const { t } = useTranslation();
   const { data = [], refetch } = useDirectUserGrants();
   const dialogs = useDialogs();
 
@@ -99,10 +102,10 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
       },
       {
         onError: () =>
-          toast.error('Berechtigungen konnten nicht aktualisiert werden'),
+          toast.error(t('grants.updateError')),
         // onSuccess, not onSettled: a failed save must not also report success.
         onSuccess: () =>
-          toast.success('Berechtigungen wurden aktualisiert'),
+          toast.success(t('grants.updateSuccess')),
       }
     );
     revoke.mutate(
@@ -113,10 +116,10 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
       },
       {
         onError: () =>
-          toast.error('Berechtigungen konnten nicht aktualisiert werden'),
+          toast.error(t('grants.updateError')),
         // onSuccess, not onSettled: a failed save must not also report success.
         onSuccess: () =>
-          toast.success('Berechtigungen wurden aktualisiert'),
+          toast.success(t('grants.updateSuccess')),
       }
     );
   };
@@ -130,7 +133,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
             .map(user => (
               <Item variant={"outline"} key={user.id} onClick={async () => {
                 const result = await dialogs.open(GrantsEditorDialog, {
-                  title: `Benutzer "${user.name}" bearbeiten`,
+                  title: t('grants.editUser', { name: user.name }),
                   id: user.id,
                   currentPermissions: useUserPermissions,
                   currentFeatures: useUserFeatures,
@@ -169,7 +172,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
             if (!userResult) return;
 
             const result = await dialogs.open(GrantsEditorDialog, {
-              title: `Benutzer "${userResult.name}" bearbeiten`,
+              title: t('grants.editUser', { name: userResult.name }),
               id: userResult.id,
               currentPermissions: useUserPermissions,
               currentFeatures: useUserFeatures,
@@ -186,6 +189,7 @@ const UserTab = ({ searchValue }: { searchValue: string }) => {
 }
 
 const GrantsManager = () => {
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState('');
   const { user } = useGrants();
 
@@ -199,8 +203,8 @@ const GrantsManager = () => {
     <main className='flex-1 size-full pb-safe-bottom'>
       <Tabs defaultValue={"groups"} className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-white border !h-12 rounded-none shadow-sm border-b">
-          <TabsTrigger value="groups" className="h-10 data-[state=active]:bg-primary/5">Gruppen</TabsTrigger>
-          <TabsTrigger value="user" className="h-10 data-[state=active]:bg-primary/5">Benutzer</TabsTrigger>
+          <TabsTrigger value="groups" className="h-10 data-[state=active]:bg-primary/5">{t('navigation.groups')}</TabsTrigger>
+          <TabsTrigger value="user" className="h-10 data-[state=active]:bg-primary/5">{t('browse.user')}</TabsTrigger>
         </TabsList>
         <div>
           <GroupTab searchValue={searchValue} />

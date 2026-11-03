@@ -16,8 +16,8 @@ import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
-import { t } from 'i18next';
 import { Minus, Plus, Search, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 
@@ -32,9 +32,10 @@ type Props = {
   onRemove?: () => void;
 };
 const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSelect, onRemove }: Props) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
 
-  const displayName = value && 'name' in value ? value.name : value?.display_name ?? 'Unknown';
+  const displayName = value && 'name' in value ? value.name : value?.display_name ?? t('games.unknown');
   const avatarUrl = value && 'avatarUrl' in value ? value?.avatarUrl ?? value?.rg_avatar_url ?? '' : '';
   const isGuest = value && value.linked_user_id === null;
 
@@ -62,12 +63,12 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
             <div className={cn('truncate', {
               disabled: "text-muted-foreground"
             })}>
-              {loading ? "Wird geladen..." : displayName ?? 'Nicht gewählt'}
+              {loading ? t('games.report.loading') : displayName ?? t('games.report.notSelected')}
             </div>
             <div className={cn('text-xs text-muted-foreground truncate', {
               disabled: "text-muted"
             })}>
-              {isGuest ? 'Gastspieler' : value?.rg_id ?? label}
+              {isGuest ? t('games.report.guestPlayer') : value?.rg_id ?? label}
             </div>
           </div >
         </ItemContent >
@@ -90,6 +91,7 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
 export type PlayerSelection = PlayerWithSimpleUser | Player | null;
 
 const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string }>) => {
+  const { t } = useTranslation();
   const { eventId } = payload ?? {};
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0, type: 'normal', set_awarded: null },
@@ -117,32 +119,32 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
 
   const saveScores = () => {
     if (!player1a) {
-      toast.error('Player 1 of Team A not defined');
+      toast.error(t('games.report.playerMissing', { player: 1, team: 'A' }));
       return;
     }
     if (!player2a) {
-      toast.error('Player 2 of Team A not defined');
+      toast.error(t('games.report.playerMissing', { player: 2, team: 'A' }));
       return;
     }
     if (!player1b) {
-      toast.error('Player 1 of Team B not defined');
+      toast.error(t('games.report.playerMissing', { player: 1, team: 'B' }));
       return;
     }
     if (!player2b) {
-      toast.error('Player 2 of Team B not defined');
+      toast.error(t('games.report.playerMissing', { player: 2, team: 'B' }));
       return;
     }
     if (sets.length <= 0) {
-      toast.error('Need at least one recorded set of this match');
+      toast.error(t('games.report.noSets'));
       return;
     }
     for (const set of sets) {
       if (set.team_a_score === 0 && set.team_b_score === 0) {
-        toast.error(`Scores need in ${set.set_number} set`);
+        toast.error(t('games.report.scoresNeeded', { set: set.set_number }));
         return;
       }
       if (set.team_a_score === set.team_b_score) {
-        toast.error(`Cannot have a draw in ${set.set_number} set`);
+        toast.error(t('games.report.noDraw', { set: set.set_number }));
         return;
       }
     }
@@ -226,15 +228,15 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
-        <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
+        <DialogTitle className="flex-1">{t('games.report.title')}</DialogTitle>
         <DialogClose />
       </DialogHeader>
       <DialogBody>
         <div className='flex flex-col w-full gap-2'>
 
           <div className='flex flex-row w-full px-2 gap-2'>
-            <div className='font-bold flex-1'>Team A</div>
-            <div className='font-bold flex-1'>Team B</div>
+            <div className='font-bold flex-1'>{t('games.report.teamA')}</div>
+            <div className='font-bold flex-1'>{t('games.report.teamB')}</div>
           </div>
 
           <div className='flex flex-row w-full gap-2'>
@@ -243,7 +245,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
                 loading={isLoading}
-                label={'Player 1'}
+                label={t('games.report.player1')}
                 value={player1a}
                 disabled={data?.me ? true : false}
                 onSelect={(value) => setPlayer1a(value)}
@@ -254,7 +256,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
                 loading={isLoading}
-                label={'Player 1'}
+                label={t('games.report.player1')}
                 value={player1b}
                 disabled={false}
                 onSelect={(value) => setPlayer1b(value)}
@@ -269,7 +271,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
                 loading={isLoading}
-                label={'Player 2'}
+                label={t('games.report.player2')}
                 value={player2a}
                 disabled={false}
                 onSelect={(value) => setPlayer2a(value)}
@@ -281,7 +283,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
                 loading={isLoading}
-                label={'Player 2'}
+                label={t('games.report.player2')}
                 value={player2b}
                 disabled={false}
                 onSelect={(value) => setPlayer2b(value)}
@@ -294,7 +296,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
 
             <Item variant={"outline"}>
               <ItemHeader>
-                <ItemTitle>Sätze</ItemTitle>
+                <ItemTitle>{t('games.sets')}</ItemTitle>
               </ItemHeader>
               <ItemContent>
                 {sets.map((x) => (
@@ -375,14 +377,14 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                       }}
                     />
                     <label htmlFor="spezi-enabled" className="text-sm font-medium cursor-pointer">
-                      Spezi-Punkte erfassen
+                      {t('matches.spezi.enable')}
                     </label>
                   </div>
                   {speziEnabled && (
                     <>
                       <div className="flex gap-4">
                         <div className="flex-1 flex flex-col gap-1">
-                          <span className="text-xs text-muted-foreground">Team A Spezi-Punkte</span>
+                          <span className="text-xs text-muted-foreground">{t('matches.spezi.teamA')}</span>
                           <Input
                             type="number"
                             min={0}
@@ -392,7 +394,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                           />
                         </div>
                         <div className="flex-1 flex flex-col gap-1">
-                          <span className="text-xs text-muted-foreground">Team B Spezi-Punkte</span>
+                          <span className="text-xs text-muted-foreground">{t('matches.spezi.teamB')}</span>
                           <Input
                             type="number"
                             min={0}
@@ -409,7 +411,7 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                           onCheckedChange={(v) => setSpeziSetAwarded(!!v)}
                         />
                         <label htmlFor="spezi-set-awarded" className="text-sm cursor-pointer">
-                          Spezi-Satz zugesprochen
+                          {t('matches.spezi.setAwarded')}
                         </label>
                       </div>
                     </>
@@ -423,10 +425,10 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 <Field orientation={"horizontal"}>
                   <FieldContent>
                     <FieldLabel htmlFor="switch-index">
-                      Index
+                      {t('games.index')}
                     </FieldLabel>
                     <FieldDescription>
-                      Soll das Spiel in die Indexwertung eingehen?
+                      {t('games.report.ratingDescription')}
                     </FieldDescription>
                   </FieldContent>
                   <Switch id="switch-index" checked={rating_enabled} onCheckedChange={(e) => setRatingEnabled(e)} />
@@ -439,10 +441,10 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
                 <Field orientation={"horizontal"}>
                   <FieldContent>
                     <FieldLabel htmlFor="switch-public">
-                      Sichtbarkeit
+                      {t('games.report.visibility')}
                     </FieldLabel>
                     <FieldDescription>
-                      Soll das Spiel öffentlich sichtbar sein?
+                      {t('games.report.visibilityDescription')}
                     </FieldDescription>
                   </FieldContent>
                   <Switch id="switch-public" checked={is_public} onCheckedChange={(e) => setIsPublic(e)} />
@@ -455,8 +457,8 @@ const ReportScore = ({ open, onClose, payload }: DialogProps<{ eventId?: string 
       </DialogBody>
       <DialogFooter variant="fullscreen">
         <div className='flex w-full justify-even gap-4'>
-          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
-          <Button onClick={saveScores}>Speichern</Button>
+          <DialogClose render={<Button variant="outline">{t('common.cancel')}</Button>} />
+          <Button onClick={saveScores}>{t('common.save')}</Button>
         </div>
       </DialogFooter>
     </DialogContent>
@@ -466,6 +468,7 @@ export default ReportScore;
 
 
 const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (Player | PlayerWithSimpleUser)[], selectedPlayers: PlayerWithSimpleUser[] }, PlayerSelection>) => {
+  const { t } = useTranslation();
 
   const [searchString, setSearchString] = useState('');
   const dialogs = useDialogs();
@@ -502,7 +505,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                 </ItemMedia>
                 <ItemContent className='flex flex-row w-full'>
                   <ItemTitle className='flex-1'>
-                    Neuer Gastspieler
+                    {t('games.report.newGuestPlayer')}
                   </ItemTitle>
                   <ItemActions className='flex-shrink'>
                     <Button onClick={async () => {
@@ -511,7 +514,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                         onClose(result);
                       }
                     }}>
-                      Erstellen
+                      {t('games.report.create')}
                     </Button>
                   </ItemActions>
                 </ItemContent>
@@ -526,7 +529,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                     searchString === '' || (('name' in x) ? x.name : x.display_name ?? '').toLowerCase().includes(searchString.toLowerCase())
                 )
                 .map((user) => {
-                  const displayName = 'name' in user ? user.name : user?.display_name ?? 'Unknown';
+                  const displayName = 'name' in user ? user.name : user?.display_name ?? t('games.unknown');
                   const avatarUrl = 'avatarUrl' in user ? user?.avatarUrl ?? user?.rg_avatar_url ?? '' : '';
                   const disabled = payload.selectedPlayers.map(x => x.player).includes(user.player);
 
@@ -545,7 +548,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
                         <div className='truncate'>{displayName}</div>
                         <div className="text-xs text-muted-foreground truncate">
                           {
-                            user.linked_user_id === null ? 'Gastspieler' : t('userName')
+                            user.linked_user_id === null ? t('games.report.guestPlayer') : t('userName')
                           }
                         </div>
                       </div>
@@ -562,6 +565,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: (
 };
 
 const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
 
   const [index, setIndex] = useState(1000);
@@ -591,14 +595,14 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
-          <DialogTitle className="flex-1">Gastspieler erstellen</DialogTitle>
+          <DialogTitle className="flex-1">{t('games.report.createGuestPlayer')}</DialogTitle>
           <DialogClose />
         </DialogHeader>
         <DialogBody>
           <div className='flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 p-1'>
             <Field key={"name"}>
               <FieldLabel htmlFor="name">
-                Spielername
+                {t('games.report.playerName')}
               </FieldLabel>
               <Input
                 id="name"
@@ -611,7 +615,7 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
             <Has perm={"games.create.guest-player.with_index"}>
               <Field key={"index"}>
                 <FieldLabel htmlFor="index">
-                  Index
+                  {t('games.index')}
                 </FieldLabel>
                 <div className='flex flex-row gap-2 w-full'>
                   <Input
@@ -637,7 +641,7 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
         </DialogBody>
         <DialogFooter variant={"fullscreen"}>
           <Button onClick={submit}>
-            Speichern
+            {t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

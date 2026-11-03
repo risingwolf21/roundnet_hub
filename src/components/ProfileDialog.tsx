@@ -33,24 +33,30 @@ const StatTileSkeleton = () => (
   </Item>
 );
 
-const StatTileError = ({ label }: { label: string }) => (
-  <Item variant="outline" className="border-destructive/30">
-    <ItemContent>
-      <ItemTitle className="text-destructive/70 gap-1">
-        <AlertCircle className="size-3.5" />
-        Fehler
-      </ItemTitle>
-      <ItemDescription>{label}</ItemDescription>
-    </ItemContent>
-  </Item>
-);
+const StatTileError = ({ label }: { label: string }) => {
+  const { t } = useTranslation();
+  return (
+    <Item variant="outline" className="border-destructive/30">
+      <ItemContent>
+        <ItemTitle className="text-destructive/70 gap-1">
+          <AlertCircle className="size-3.5" />
+          {t('profile.dialog.error')}
+        </ItemTitle>
+        <ItemDescription>{label}</ItemDescription>
+      </ItemContent>
+    </Item>
+  );
+};
 
-const SectionError = ({ label }: { label: string }) => (
-  <div className="mt-4 rounded-lg border border-destructive/20 p-3 flex items-center gap-2 text-sm text-muted-foreground">
-    <AlertCircle className="size-4 shrink-0 text-destructive/70" />
-    {label} konnte nicht geladen werden
-  </div>
-);
+const SectionError = ({ label }: { label: string }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-4 rounded-lg border border-destructive/20 p-3 flex items-center gap-2 text-sm text-muted-foreground">
+      <AlertCircle className="size-4 shrink-0 text-destructive/70" />
+      {t('profile.dialog.loadFailed', { label })}
+    </div>
+  );
+};
 
 const EloSparkline = ({ history }: { history: EloPoint[] }) => {
   if (history.length < 2) return null;
@@ -144,9 +150,9 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
   const trend = leaderboardEntry?.trend_30_days;
 
   const rankStyle: Record<number, { color: string; label: string }> = {
-    1: { color: 'text-yellow-500', label: '1. Platz' },
-    2: { color: 'text-slate-400', label: '2. Platz' },
-    3: { color: 'text-amber-700', label: '3. Platz' },
+    1: { color: 'text-yellow-500', label: t('profile.dialog.place1') },
+    2: { color: 'text-slate-400', label: t('profile.dialog.place2') },
+    3: { color: 'text-amber-700', label: t('profile.dialog.place3') },
   };
 
   return (
@@ -195,14 +201,14 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 <StatTileSkeleton />
               </>
             ) : profileError ? (
-              <StatTileError label="Spielerdaten" />
+              <StatTileError label={t('profile.dialog.playerData')} />
             ) : (
               <>
                 {profile?.player?.effective_rating_cached && (
                   <Item variant={"outline"}>
                     <ItemContent>
                       <ItemTitle>{profile.player.effective_rating_cached.toFixed()}</ItemTitle>
-                      <ItemDescription>Effektiver Index</ItemDescription>
+                      <ItemDescription>{t('profile.dialog.effectiveIndex')}</ItemDescription>
                     </ItemContent>
                   </Item>
                 )}
@@ -210,7 +216,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                   <Item variant={"outline"}>
                     <ItemContent>
                       <ItemTitle>{profile.player.matches_played.toFixed()}</ItemTitle>
-                      <ItemDescription>Gespielte Matches</ItemDescription>
+                      <ItemDescription>{t('profile.dialog.matchesPlayed')}</ItemDescription>
                     </ItemContent>
                   </Item>
                 )}
@@ -221,7 +227,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             {leaderboardLoading ? (
               <StatTileSkeleton />
             ) : leaderboardError ? (
-              <StatTileError label="Ranking" />
+              <StatTileError label={t('profile.dialog.ranking')} />
             ) : leaderboardEntry?.position ? (
               <Item variant={"outline"}>
                 <ItemContent>
@@ -234,7 +240,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                       </span>
                     )}
                   </ItemTitle>
-                  <ItemDescription>Ranking</ItemDescription>
+                  <ItemDescription>{t('profile.dialog.ranking')}</ItemDescription>
                 </ItemContent>
               </Item>
             ) : null}
@@ -243,12 +249,12 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
             {matchesLoading ? (
               <StatTileSkeleton />
             ) : matchesError ? (
-              <StatTileError label="Gewinnrate" />
+              <StatTileError label={t('profile.dialog.winRate')} />
             ) : winRate !== null ? (
               <Item variant={"outline"}>
                 <ItemContent>
                   <ItemTitle>{winRate.rate}%</ItemTitle>
-                  <ItemDescription>Gewinnrate</ItemDescription>
+                  <ItemDescription>{t('profile.dialog.winRate')}</ItemDescription>
                 </ItemContent>
               </Item>
             ) : null}
@@ -271,16 +277,16 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 {profile?.player?.rg_id && (
                   <Item variant={"outline"}>
                     <ItemMedia className='flex flex-row h-full align-center justify-center'>
-                      <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
+                      <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
                     </ItemMedia>
                     <ItemContent>
                       <ItemTitle>{profile.player.rg_id}</ItemTitle>
-                      <ItemDescription>RG ID</ItemDescription>
+                      <ItemDescription>{t('profile.dialog.rgId')}</ItemDescription>
                     </ItemContent>
                     <ItemActions>
                       <Button variant={"outline"} size={"icon-lg"} onClick={() => {
                         navigator.clipboard.writeText(profile?.player?.rg_id ?? '');
-                        toast.success('RG ID in die Zwischenablage kopiert');
+                        toast.success(t('profile.dialog.rgIdCopied'));
                       }}>
                         <Copy />
                       </Button>
@@ -290,16 +296,16 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                 {profile?.player?.rg_index && (
                   <Item variant={"outline"}>
                     <ItemMedia className='flex flex-row h-full align-center justify-center'>
-                      <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
+                      <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
                     </ItemMedia>
                     <ItemContent>
                       <ItemTitle>{profile.player.rg_index}</ItemTitle>
-                      <ItemDescription>RG Index</ItemDescription>
+                      <ItemDescription>{t('profile.dialog.rgIndex')}</ItemDescription>
                     </ItemContent>
                     <ItemActions>
                       {profile.player.pro_status && (
                         <Badge variant="outline" className='border-2 border-black bg-black text-white'>
-                          Pro
+                          {t('profile.dialog.pro')}
                         </Badge>
                       )}
                     </ItemActions>
@@ -319,11 +325,11 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               <Skeleton className="h-12 w-full" />
             </div>
           ) : eloError ? (
-            <SectionError label="ELO Verlauf" />
+            <SectionError label={t('profile.dialog.eloHistory')} />
           ) : sortedEloHistory.length >= 2 ? (
             <div className="mt-4 rounded-lg border p-3">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">ELO Verlauf</span>
+                <span className="text-sm text-muted-foreground">{t('profile.dialog.eloHistory')}</span>
                 <span className={`text-sm font-medium ${sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
                   ? 'text-green-500'
                   : 'text-red-500'
@@ -344,10 +350,10 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
               <Skeleton className="h-11 w-full rounded-lg" />
             </div>
           ) : trophiesError ? (
-            <SectionError label="Challenges" />
+            <SectionError label={t('navigation.challenges')} />
           ) : trophies.length > 0 ? (
             <div className='flex flex-col gap-2 mt-4'>
-              <div className="text-sm font-semibold ml-2">Challenges</div>
+              <div className="text-sm font-semibold ml-2">{t('navigation.challenges')}</div>
               {trophies.map((trophy) => {
                 const style = rankStyle[trophy.rank];
                 return (
@@ -360,7 +366,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                       <ItemDescription>{style.label}</ItemDescription>
                     </ItemContent>
                     <ItemActions>
-                      <span className="text-sm font-medium">{trophy.score} Pkt</span>
+                      <span className="text-sm font-medium">{t('profile.dialog.points', { score: trophy.score })}</span>
                     </ItemActions>
                   </Item>
                 );

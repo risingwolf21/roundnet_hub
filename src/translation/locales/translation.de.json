@@ -8,7 +8,13 @@
     "close": "Schließen",
     "filter": "Filter",
     "save": "Speichern",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "color": "Farbe",
+    "searchPlaceholder": "Suchen...",
+    "loading": "Lädt",
+    "loadingData": "Daten werden geladen",
+    "logo": "Logo",
+    "ok": "OK"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
@@ -28,7 +34,36 @@
     "updateSuccess": "Getränk erfolgreich aktualisiert",
     "updateError": "Beim aktualisieren ist ein Fehler aufgetreten. {{error}} ",
     "addSuccess": "Getränk erfolgreich hinzugefügt",
-    "addError": "Beim Hinzufügen ist ein Fehler aufgetreten: {{error}}"
+    "addError": "Beim Hinzufügen ist ein Fehler aufgetreten: {{error}}",
+    "bookSuccess": "Getränke erfolgreich gebucht!",
+    "bookError": "Getränk konnte nicht hinzugefügt werden",
+    "entryUpdated": "Eintrag aktualisiert",
+    "loadMore": "Lade mehr...",
+    "editDrink": "Getränk bearbeiten",
+    "createDrink": "Getränk erstellen",
+    "edit": {
+      "uploadImage": "Bild hochladen",
+      "name": "Name",
+      "price": "Preis",
+      "quantity": "Anzahl",
+      "active": "Aktiv",
+      "activeDescription": "Wenn dieses Getränk nicht aktiv ist, wird es den Nutzern nicht angezeigt."
+    },
+    "pay": {
+      "paymentInfo": "Zahlungsinformationen",
+      "qrHint": "Scanne den QR-Code mit deiner Banking-App, um die Banküberweisung schnell und einfach durchzuführen.",
+      "recipient": "Empfänger",
+      "recipientCopied": "Empfänger kopiert",
+      "iban": "IBAN",
+      "ibanCopied": "IBAN kopiert",
+      "bic": "BIC",
+      "bicCopied": "BIC kopiert",
+      "sendViaPayPal": "Per PayPal senden",
+      "vouchers": "Gutscheine",
+      "totalCost": "Gesamtkosten"
+    },
+    "productTypeSpecial": "Anderes",
+    "productTypeNone": "Ohne Typ"
   },
   "attendees": "Teilnehmer",
   "browse": {
@@ -78,7 +113,8 @@
       "title": "Spezi (optional)",
       "teamA": "Team A Spezi-Punkte",
       "teamB": "Team B Spezi-Punkte",
-      "setAwarded": "Spezi-Satz zugesprochen"
+      "setAwarded": "Spezi-Satz zugesprochen",
+      "enable": "Spezi-Punkte erfassen"
     }
   },
   "events": {
@@ -105,14 +141,51 @@
       "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
       "notMemberOfGroupTitle": "Du bist nicht Mitglied dieser Gruppe",
       "notMemberOfGroup": "Das Event wird gespeichert, erscheint danach aber nicht in deiner Eventliste, da nur Mitglieder der Gruppe die Events sehen können.",
-      "reminderBefore": "Erinnerung senden",
-      "reminderNone": "Keine",
-      "reminderPT30M": "30 Minuten vorher",
-      "reminderPT1H": "1 Stunde vorher",
-      "reminderPT6H": "6 Stunden vorher",
-      "reminderPT12H": "12 Stunden vorher",
-      "reminderPT24H": "24 Stunden vorher",
-      "reminderP2D": "2 Tage vorher"
+      "noRecurrenceSelected": "Keine Wiederholung ausgewählt.",
+      "unknownError": "Unbekannter Fehler.",
+      "eventNotFound": "Event nicht gefunden.",
+      "itemMtvGymPalazzo": "MTV Gym und Palazzo",
+      "itemNone": "Nichts gewählt",
+      "createFailed": "Event konnte nicht erstellt werden: {{message}}",
+      "seriesCreated": "Serie wurde erstellt",
+      "eventCreated": "Event wurde erstellt",
+      "updateFailed": "Event konnte nicht aktualisiert werden: {{message}}",
+      "eventSaved": "Event wurde gespeichert",
+      "updateRecurrenceFailed": "Events konnten nicht aktualisiert werden: {{message}}",
+      "eventsSaved": "Events wurden gespeichert",
+      "titleCreate": "Event erstellen",
+      "titleLabel": "Event-Titel",
+      "descriptionLabel": "Event-Beschreibung",
+      "groupLabel": "Event-Gruppe",
+      "noGroupChosen": "Keine Gruppe gewählt",
+      "dateTimes": "Datum-und Uhrzeiten",
+      "startDate": "Startdatum",
+      "time": "Uhrzeit",
+      "endDate": "Enddatum",
+      "meetingBeforeTraining": "Treffpunkt vor dem Training",
+      "location": "Standort",
+      "noLocation": "Kein Standort gewählt",
+      "recurrence": "Wiederholung",
+      "endsAt": "Endet: {{date}}",
+      "recurrenceNone": "Keine Wiederholung",
+      "recurrenceWeekly": "Wöchentlich",
+      "recurrenceFortnightly": "Alle 2 Wochen",
+      "recurrenceMonthly": "Monatlich",
+      "optionalFields": "Optionale Felder",
+      "signupDeadline": "Anmeldedeadline",
+      "maxAttendees": "Maximale Teilnehmeranzahl",
+      "maxTrialAttendees": "Maximale Probeteilnehmer",
+      "requiredItem": "Benötigter Gegenstand",
+      "selectItem": "Gegenstand auswählen",
+      "constellationsEnabled": "Konstellationen aktiviert",
+      "constellationsEnabledHint": "Soll es möglich sein für Trainer, Konstellationen zu erstellen?",
+      "bringItems": "Gegenstände mitbringen",
+      "recurrenceEnd": "Wiederholungsende",
+      "recurrenceEndQuestion": "Bis wann soll die Wiederholung fortgesetzt werden?",
+      "deleteRecurrenceEnd": "Wiederholungsende löschen",
+      "item": "Gegenstand",
+      "quantity": "Anzahl",
+      "add": "Hinzufügen"
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -133,7 +206,35 @@
       "waiting_trial_other": "{{count}} Probetraining warten",
       "declined_one": "{{count}} Absage",
       "declined_other": "{{count}} Absagen",
-      "commentTimeAgo": "vor {{time}}"
+      "commentTimeAgo": "vor {{time}}",
+      "attendanceUpdateError": "An/Abweseneheit konnte nicht aktualisiert werden.",
+      "yourAttendance": "Deine Teilnahme",
+      "waitingList": "Warteliste",
+      "requestAttendance": "Teilnahme anfragen",
+      "attend": "Teilnehmen",
+      "decline": "Absagen",
+      "attendAsTrainer": "Als Trainer teilnehmen",
+      "title": "Eventdetails",
+      "cancelTrainingTitle": "Training absagen?",
+      "reinstateTrainingTitle": "Training stattfinden lassen?",
+      "cancelTrainingMessage": "Möchtest du das Training wirklich absagen?",
+      "reinstateTrainingMessage": "Möchtest du das Training wirklich stattfinden lassen?",
+      "cancelAction": "Absagen",
+      "reinstateAction": "Stattfinden",
+      "general": "Allgemein",
+      "until": "bis {{end}}",
+      "planRoute": "Route planen",
+      "eventCancelled": "Dieses Event wurde <strong>abgesagt</strong>",
+      "createConstellations": "Konstellationen erstellen",
+      "tabInformation": "Information",
+      "tabAttendance": "Teilnehmer ({{n}})",
+      "tabComments": "Kommentare ({{n}})",
+      "tabMatches": "Spiele ({{n}})",
+      "adminInformation": "Admin-Informationen",
+      "errorTitle": "Fehler",
+      "notLoaded": "Event nicht geladen",
+      "notLoadedDescription": "Das Event konnte leider nicht geladen werden. Möglicherweise wurde es gelöscht, du bist offline oder du hast keine Berechtigung, es zu sehen.",
+      "backToOverview": "Zurück zur Übersicht"
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -167,7 +268,101 @@
       "noLocation": "Kein Ort angegeben"
     },
     "replyTo": "Antworte auf @{{name}}",
-    "reply": "Antworten"
+    "reply": "Antworten",
+    "deleteDialog": {
+      "title": "Event aktualisieren",
+      "onlyThis": "Nur dieses Event",
+      "thisAndFollowing": "Dieses und alle folgenden Events löschen"
+    },
+    "editOptionsDialog": {
+      "title": "Event aktualisieren",
+      "onlyThis": "Nur dieses Event aktualisieren",
+      "thisAndFollowing": "Dieses und alle folgenden Events aktualisieren"
+    },
+    "searchPlaces": {
+      "name": "Name",
+      "hint": "Klicke auf die Karte, um einen Ort auszuwählen.",
+      "unnamedPlace": "Unbenannter Ort"
+    },
+    "constellations": {
+      "title": "Konstellationen",
+      "loadPlayersFailed": "Fehler beim Laden der Spielerdaten",
+      "matchFailed": "Fehler bei einem Match: {{message}}",
+      "allMatchesCreated": "Alle Matches der Runde erfolgreich erstellt!",
+      "loadingPlayers": "Lade Spielerdaten...",
+      "missingIndex": "Von {{number}} Spielern kein Index gefunden",
+      "initialIndex": "Initialer Index",
+      "editPlayers": "Spieler bearbeiten - {{number}}",
+      "addPlayer": "Spieler hinzufügen",
+      "index": "Index: {{value}}",
+      "round": "Runde {{number}}",
+      "settings": "Einstellungen",
+      "gameMode": "Spielmodus (heterogen/homogen)",
+      "balanced": "Ausgeglichen",
+      "random": "Zufällig",
+      "teamMode": "Teammodus",
+      "teamModeAny": "Gemischt",
+      "teamModeSeparate": "Herren / Damen",
+      "teamModeMixed": "Mixed",
+      "reuseBench": "Setze zuvor ausgesetzte Spieler ein.",
+      "lockedTeams": "Feste Teams ({{number}})",
+      "player1": "Spieler 1",
+      "player2": "Spieler 2",
+      "lockedPlayers": "Feste Spieler ({{number}})",
+      "player": "Spieler",
+      "saveMatches": "Matches speichern",
+      "generate": "Generieren",
+      "matches": "Spiele ({{number}})",
+      "bench": "Aussetzer ({{number}})",
+      "invalidIndex": "Einige Spieler haben einen ungültigen Index. Bitte passe diese an.",
+      "addRound": "Neue Runde hinzufügen"
+    },
+    "attendanceTab": {
+      "title": "Teilnehmerliste",
+      "attending": "Zusagen ({{n}})",
+      "requested": "Anfragen ({{n}})",
+      "waiting": "Warteliste ({{n}})",
+      "declined": "Absagen ({{n}})",
+      "trainer": "Trainer",
+      "trial": "Probetraining",
+      "noAttendances": "Noch keine Zusagen.",
+      "pending": "Wartend"
+    },
+    "commentsTab": {
+      "addError": "Kommentar konnte nicht hinzugefügt werden.",
+      "title": "Kommentare",
+      "empty": "Noch keine Kommentare.<br />Sei der Erste!",
+      "placeholder": "Kommentar schreiben..."
+    },
+    "detailsTab": {
+      "title": "Information",
+      "description": "Beschreibung",
+      "noDescription": "Keine Beschreibung angegeben.",
+      "meetingPoint": "Treffpunkt",
+      "recurrence": "Wiederholung",
+      "location": "Standort",
+      "planRouteHere": "Route hierher planen"
+    },
+    "matchesTab": {
+      "empty": "Noch keine Spiele.<br />Sei der Erste!",
+      "addMatch": "Spiel hinzufügen"
+    },
+    "recurring": {
+      "title": "Wiederkehrende Events",
+      "description": "Hier kannst du wiederkehrende Events für die nächsten 30 Tage erstellen lassen",
+      "seriesUpdated": "{{processed}} Serie(n) aktualisiert.",
+      "seriesUpdatedToast": "{{processed}} Serie(n) aktualisiert!",
+      "createError": "Es ist ein Fehler aufgetreten beim Erstellen der Events!",
+      "create": "Erstellen"
+    },
+    "repositoryErrors": {
+      "seriesNotFound": "Die Events der Serie konnten nicht gefunden werden (fehlende Berechtigung oder bereits gelöscht).",
+      "saveFailed": "Event konnte nicht gespeichert werden (fehlende Berechtigung oder Event nicht sichtbar).",
+      "deleteFailed": "Event konnte nicht gelöscht werden (fehlende Berechtigung oder Event nicht sichtbar).",
+      "deleteManyFailed": "Events konnten nicht gelöscht werden (fehlende Berechtigung oder Event nicht sichtbar).",
+      "updateFailed": "Event konnte nicht aktualisiert werden (fehlende Berechtigung oder Event nicht sichtbar).",
+      "endSeriesFailed": "Serie konnte nicht beendet werden (fehlende Berechtigung oder Event nicht sichtbar)."
+    }
   },
   "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
   "handover_key": "Abgeben",
@@ -185,12 +380,19 @@
     "groups": "Gruppen",
     "search": "Suchen",
     "costs": "Turnierkosten",
-    "bundesliga": "Bundesliga"
+    "bundesliga": "Bundesliga",
+    "home": "Home",
+    "account": "Account",
+    "adminHeader": "Admin",
+    "help": "Hilfe und Information",
+    "refresh": "Aktualisieren"
   },
   "search": {
     "title": "Spieler suchen",
     "placeholder": "Name suchen...",
-    "noResults": "Keine Spieler gefunden"
+    "noResults": "Keine Spieler gefunden",
+    "noGroups": "Keine Gruppen gefunden",
+    "noUsers": "Keine Nutzer gefunden"
   },
   "groups": {
     "trialDaysLeft_one": "noch {{count}} Tag",
@@ -203,7 +405,77 @@
     "joinRequestedSheet": {
       "title": "Anfrage ausstehend",
       "body": "Deine Beitrittsanfrage wird geprüft. Ein Admin wird sie in Kürze bearbeiten."
-    }
+    },
+    "group": "Gruppe",
+    "admin": "Admin",
+    "admins": "Admins",
+    "members": "Mitglieder",
+    "joinRequest": "Anfrage zum Beitritt",
+    "requests": "Anfragen",
+    "trials": "Trials",
+    "trial": "Trial",
+    "trialUser": "Probenutzer",
+    "requested": "Angefragt",
+    "join": "Beitreten",
+    "joining": "Tritt bei...",
+    "joinError": "Der Gruppe konnte nicht beigetreten werden.",
+    "createSuccess": "Gruppe wurde erfolgreich erstellt.",
+    "createError": "Gruppe konnte nicht erstellt werden.",
+    "editSuccess": "Gruppe wurde erfolgreich bearbeitet.",
+    "editError": "Gruppe konnte nicht bearbeitet werden.",
+    "loadErrorDescription": "Die Gruppen konnten nicht geladen werden. Bitte versuche es später erneut.",
+    "empty": "Keine Gruppen gefunden",
+    "emptyDescription": "Es gibt aktuell keine öffentlichen Gruppen. Erstelle eine neue Gruppe, um zu beginnen.",
+    "usersAdded_one": "{{count}} Benutzer wurde zur Gruppe {{group}} hinzugefügt",
+    "usersAdded_other": "{{count}} Benutzer wurden zur Gruppe {{group}} hinzugefügt",
+    "usersAddError": "Benutzer konnten nicht zur Gruppe {{group}} hinzugefügt werden. {{error}}",
+    "usersRemoved_one": "{{count}} Benutzer wurde aus der Gruppe {{group}} entfernt",
+    "usersRemoved_other": "{{count}} Benutzer wurden aus der Gruppe {{group}} entfernt",
+    "usersRemoveError": "Benutzer konnten nicht aus der Gruppe {{group}} entfernt werden. {{error}}",
+    "notFound": "Gruppe nicht gefunden",
+    "notFoundDescription": "Die angeforderte Gruppe existiert nicht, wurde gelöscht oder du hast keine Zugriffsberechtigung.",
+    "backToOverview": "Zurück zur Übersicht",
+    "noDescription": "Keine Beschreibung vorhanden.",
+    "toggleRequests": "Anfragen ein- oder ausblenden",
+    "toggleTrials": "Trials ein- oder ausblenden",
+    "toggleAdmins": "Admins ein- oder ausblenden",
+    "toggleUsers": "Benutzer ein- oder ausblenden",
+    "removeSelectedTitle": "Gewählte Benutzer aus der Gruppe entfernen?",
+    "removeSelectedConfirm": "Möchtest du die {{count}} ausgewählten Benutzer wirklich aus der Gruppe entfernen?",
+    "remove": "Entfernen",
+    "error": "Fehler",
+    "usersLoadError": "Benutzer konnten nicht geladen werden.",
+    "confirmDemote": "Möchtest du wirklich {{name}} von den Admins dieser Gruppe entfernen?",
+    "confirmPromote": "Möchtest du wirklich {{name}} zu einem Admin dieser Gruppe machen?",
+    "confirmTrial": "Möchtest du wirklich {{name}} zu einem Probenutzer dieser Gruppe machen?",
+    "confirmAcceptTrial": "Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?",
+    "confirmAcceptTrialUser": "Möchtest du den Benutzer wirklich als Probenutzer akzeptieren?",
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen",
+    "manageRequest": "Bearbeiten",
+    "requestAccepted": "Anfrage erfolgreich akzeptiert.",
+    "requestAcceptError": "Anfrage konnte nicht akzeptiert werden. {{error}}",
+    "requestDeclined": "Anfrage erfolgreich gelöscht.",
+    "requestDeclineError": "Anfrage konnte nicht gelöscht werden. {{error}}",
+    "confirmDecline": "Möchtest du die Beitrittsanfrage wirklich ablehnen?",
+    "confirmAcceptRequest": "Möchtest du die Beitrittsanfrage wirklich akzeptieren?",
+    "create": "Gruppe erstellen",
+    "edit": "Gruppe bearbeiten",
+    "save": "Gruppe speichern",
+    "parentGroup": "Hauptgruppe",
+    "newParentGroup": "Neue Hauptgruppe",
+    "nameLabel": "Gruppen-Name",
+    "namePlaceholder": "Name",
+    "descriptionLabel": "Gruppen-Beschreibung",
+    "colorLabel": "Gruppen-Farbe",
+    "newColor": "Neue Farbe",
+    "colorHint": "Vorgeschlagen wird automatisch eine Farbe, die sich von den bestehenden Gruppen abhebt.",
+    "publicLabel": "Öffentlichkeit",
+    "publicHint": "Soll die Gruppe öffentlich sichtbar sein?",
+    "confirmLabel": "Bestätigung",
+    "confirmHint": "Sollen Benutzer bestätigt werden müssen?",
+    "nameTooShort": "Der Name der Gruppe muss aus mindestens 6 Zeichen bestehen.",
+    "descriptionTooShort": "Die Beschreibung der Gruppe muss aus mindestens 6 Zeichen bestehen."
   },
   "costs": {
     "title": "Turnierkosten",
@@ -245,7 +517,68 @@
   "updateAvailableMessage": "Es sind neue Features verfügbar. Bitte aktualisiere die App.",
   "challenge": {
     "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!",
-    "startsInFuture": "Diese Challenge startet am {{startDate, dd.MM.yyyy}}"
+    "startsInFuture": "Diese Challenge startet am {{startDate, dd.MM.yyyy}}",
+    "activity": {
+      "month": "Monatsaktivität",
+      "week": "Wochenaktivität"
+    },
+    "somethingWentWrong": "Etwas ist schiefgelaufen! Versuche es später erneut.",
+    "pointAdded": "Punkt erfolgreich hinzugefügt",
+    "pointAddedImageFailed": "Punkt erfolgreich hinzugefügt. Das Bild konnte leider nicht gespeichert werden.",
+    "updateError": "Challenge konnte nicht aktualisiert werden. {{error}}",
+    "updateSuccess": "Challenge wurde erfolgreich aktualisiert.",
+    "createError": "Challenge konnte nicht erstellt werden. {{error}}",
+    "createSuccess": "Challenge wurde erfolgreich erstellt.",
+    "noDescription": "Keine Beschreibung vorhanden.",
+    "ended": "Diese Challenge ist seit dem {{endDate}} beendet",
+    "tabs": {
+      "activity": "Aktivität",
+      "leaderboard": "Leaderboard"
+    },
+    "createPoint": "Neuen Challengepunkt erstellen",
+    "list": {
+      "retry": "Erneut versuchen",
+      "unknownError": "Unbekannter Fehler",
+      "archived": "Archivierte Challenges"
+    },
+    "dialog": {
+      "titleUpdate": "Challenge aktualisieren",
+      "titleCreate": "Neue Challenge erstellen",
+      "nameLabel": "Challenge Titel",
+      "descriptionLabel": "Challenge Beschreibung",
+      "groupLabel": "Challenge Gruppe",
+      "noGroupCreated": "Es wurde keine Gruppe erstellt.",
+      "groupPlaceholder": "Gruppe",
+      "optionalSettings": "Optionale Einstellungen",
+      "maxPointsPerWeek": "Maximale Punkte pro Woche",
+      "maxPointsPerDay": "Maximale Punkte pro Tag",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "showAllMembers": "Zeigt alle Teilnehmer der Challenge an (auch mit 0 Punkten)",
+      "commentsEnabled": "Kommentare aktiviert",
+      "categoriesEnabled": "Kategorien aktiviert",
+      "categories": "Kategorien",
+      "newCategoryPlaceholder": "Neue Kategorie...",
+      "groupRequired": "Der Challenge muss eine Gruppe zugeordnet sein.",
+      "nameTooShort": "Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.",
+      "descriptionTooShort": "Die Beschreibung der Challenge muss aus mindestens 6 Zeichen bestehen.",
+      "update": "Aktualisieren",
+      "create": "Erstellen"
+    },
+    "enterPoint": {
+      "title": "Punkt hinzufügen",
+      "count": "Anzahl Punkte",
+      "countDescription": "Wie viele Punkte möchtest du eintragen?",
+      "singlePoint": "Hiermit trägst du einen Punkt für diese Challenge ein",
+      "commentPlaceholder": "Kommentar",
+      "change": "Ändern",
+      "remove": "Entfernen",
+      "uploadImage": "Bild hochladen",
+      "selectedImage": "Ausgewähltes Bild",
+      "errorTitle": "Es ist ein Fehler aufgetreten",
+      "uploadError": "Beim Hochladen deines Bildes ist etwas schiefgelaufen. Bitte versuche es erneut.",
+      "compressError": "Beim Komprimieren deines Bildes ist etwas schiefgelaufen. Bitte versuche es erneut."
+    }
   },
   "filter": "Filtern",
   "itemType": {
@@ -288,11 +621,34 @@
     "eventAttendance": "🟢🔴 Die Zu-und Absagen zu dem Event können detailliert durch einen Klick auf die jeweilige Zeile angezeigt werden.",
     "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten",
     "pullToRefresh": "Auf den meisten Seiten gibt es eine Pull-to-Refresh Funktionalität. Ziehe die Seite einfach nach unten um die Daten zu aktualisieren.",
-    "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten"
+    "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten",
+    "title": "Informationen",
+    "toGroups": "Zu den Gruppen"
   },
   "errors": {
     "mutation": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
-    "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu."
+    "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu.",
+    "route": {
+      "whoops": "Ups!",
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Die gesuchte Seite wurde nicht gefunden. Wir empfehlen dir, zur Startseite zurückzukehren.",
+      "backHome": "Zurück zur Startseite",
+      "illustrationAlt": "404-Illustration"
+    },
+    "featureLocked": {
+      "title": "Schade!",
+      "subtitle": "Feature nicht freigeschaltet",
+      "description": "Diese Funktion ist in deinem aktuellen Account nicht aktiviert. Führe ein Upgrade durch, um das volle Potenzial zu nutzen.",
+      "upgrade": "Jetzt upgraden",
+      "later": "Später vielleicht",
+      "illustrationAlt": "Illustration: Feature gesperrt"
+    },
+    "unauthorized": {
+      "title": "Halt!",
+      "subtitle": "Zugriff verweigert",
+      "description": "Du hast leider nicht die nötigen Berechtigungen, um diese Seite aufzurufen. Bitte wende dich an deinen Administrator, falls das ein Fehler ist.",
+      "illustrationAlt": "Illustration: Zugriff verweigert"
+    }
   },
   "games": {
     "list": {
@@ -311,6 +667,49 @@
     },
     "leaderboard": {
       "empty": "Noch keine Einträge"
+    },
+    "index": "Index",
+    "sets": "Sätze",
+    "editSets": "Sätze bearbeiten",
+    "setsSaveError": "Die Sätze konnten nicht gespeichert werden.",
+    "unknown": "Unbekannt",
+    "information": {
+      "title": "Spielinformationen",
+      "notFound": "Spiel nicht gefunden",
+      "notFoundDescription": "Das gesuchte Spiel existiert nicht, wurde gelöscht oder du hast keine Berechtigung es zu sehen.",
+      "deleteConfirm": "Möchtest du dieses Spiel wirklich löschen?",
+      "deleteError": "Spiel konnte nicht gelöscht werden. {{error}}",
+      "awarded": "Zugesprochen",
+      "adminActions": "Admin - Aktionen",
+      "applyElo": "Elo anwenden",
+      "applyEloDescription": "Startet die ELO Berechnung für dieses Spiel neu",
+      "start": "Start",
+      "adminInformation": "Admin - Informationen",
+      "player": "Spieler",
+      "delta": "Delta",
+      "oldRating": "Altes Rating",
+      "newRating": "Neues Rating"
+    },
+    "report": {
+      "title": "Spiel erstellen",
+      "teamA": "Team A",
+      "teamB": "Team B",
+      "player1": "Spieler 1",
+      "player2": "Spieler 2",
+      "loading": "Wird geladen...",
+      "notSelected": "Nicht gewählt",
+      "guestPlayer": "Gastspieler",
+      "playerMissing": "Spieler {{player}} von Team {{team}} ist nicht festgelegt",
+      "noSets": "Mindestens ein Satz des Spiels muss eingetragen sein",
+      "scoresNeeded": "Satz {{set}}: Es müssen Punkte eingetragen werden",
+      "noDraw": "Satz {{set}}: Unentschieden ist nicht möglich",
+      "ratingDescription": "Soll das Spiel in die Indexwertung eingehen?",
+      "visibility": "Sichtbarkeit",
+      "visibilityDescription": "Soll das Spiel öffentlich sichtbar sein?",
+      "newGuestPlayer": "Neuer Gastspieler",
+      "create": "Erstellen",
+      "createGuestPlayer": "Gastspieler erstellen",
+      "playerName": "Spielername"
     }
   },
   "keys": {
@@ -321,6 +720,16 @@
       "empty": "Keine Schlüssel gefunden",
       "emptyDescription": "Es sind aktuell keine Schlüssel im System hinterlegt.",
       "noHolder": "Nicht vergeben"
+    },
+    "dialog": {
+      "nameTooShort": "Der Schlüsselname ist zu kurz!",
+      "typeRequired": "Der Schlüssel braucht einen Typ",
+      "noType": "Nichts",
+      "edit": "Schlüssel bearbeiten",
+      "create": "Schlüssel erstellen",
+      "name": "Schlüsselname",
+      "type": "Schlüsseltyp",
+      "typePlaceholder": "Typ"
     }
   },
   "user": {
@@ -340,7 +749,9 @@
       "nameTooShort": "Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein",
       "nameIncomplete": "Du musst deinen vollen Name, mit Vor- und Nachname angeben",
       "updateSuccess": "Profil erfolgreich aktualisiert",
-      "updateError": "Fehler beim Aktualisieren des Profils: {{error}}"
+      "updateError": "Fehler beim Aktualisieren des Profils: {{error}}",
+      "language": "Sprache",
+      "avatarPreview": "Vorschau des Profilbilds"
     },
     "password": {
       "title": "Passwort ändern",
@@ -396,7 +807,8 @@
       "registerDevice": "Gerät registrieren",
       "rebind": "Neu koppeln",
       "disable": "Keine Benachrichtigungen",
-      "vapidMissing": "VAPID Public Key fehlt."
+      "vapidMissing": "VAPID Public Key fehlt.",
+      "serviceWorkerNotSupported": "Service Worker wird nicht unterstützt"
     },
     "lastSeenAt": "Zuletzt aktiv {{ date, ago }}",
     "offline": "Du bist offline. Es werden gespeicherte Daten angezeigt.",
@@ -405,7 +817,37 @@
       "ratio": "Siege (W), Unentschieden (D), Niederlagen (L)",
       "wins": "H2H Siege",
       "losses": "H2H Niederlagen"
-    }
+    },
+    "title": "Profil",
+    "tabs": {
+      "account": "Account",
+      "playerzone": "Playerzone Profil",
+      "testlab": "Test-Labor"
+    },
+    "dialog": {
+      "error": "Fehler",
+      "loadFailed": "{{label}} konnte nicht geladen werden",
+      "place1": "1. Platz",
+      "place2": "2. Platz",
+      "place3": "3. Platz",
+      "playerData": "Spielerdaten",
+      "effectiveIndex": "Effektiver Index",
+      "matchesPlayed": "Gespielte Matches",
+      "ranking": "Ranking",
+      "winRate": "Gewinnrate",
+      "pzLogoAlt": "Playerzone-Logo",
+      "rgId": "RG ID",
+      "rgIdCopied": "RG ID in die Zwischenablage kopiert",
+      "rgIndex": "RG Index",
+      "pro": "Pro",
+      "eloHistory": "ELO Verlauf",
+      "points": "{{score}} Pkt"
+    },
+    "avatarErrors": {
+      "uploadFailed": "Fehler beim Hochladen des Bildes",
+      "listFailed": "Avatar-Dateien konnten nicht aufgelistet werden"
+    },
+    "unknownPlayer": "Unbekannter Spieler"
   },
   "admin": {
     "dashboard": {
@@ -465,12 +907,215 @@
       "sending": "Wird gesendet…",
       "sendTo": "An {{count}} Empfänger senden",
       "success": "Benachrichtigung an {{count}} Nutzer gesendet"
+    },
+    "users": {
+      "updateSuccess": "Benutzer erfolgreich aktualisiert!",
+      "updateError": "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. {{error}}",
+      "notAuthenticated": "Nicht angemeldet",
+      "edit": "Benutzer bearbeiten",
+      "email": "Email",
+      "password": "Passwort",
+      "passwordResetSuccess": "Passwort erfolgreich zurückgesetzt",
+      "passwordResetError": "Fehler beim Zurücksetzen des Passworts: {{error}}",
+      "saveChanges": "Änderungen speichern"
+    },
+    "payments": {
+      "searchPlaceholder": "Suche nach einem Nutzer",
+      "name": "Name",
+      "email": "Email",
+      "confirmDialog": {
+        "title": "Zahlung bestätigen",
+        "intro": "Hiermit bestätigst du, dass",
+        "amountIntro": "eine Zahlung in Höhe von",
+        "outro": "getätigt hat."
+      }
+    },
+    "merge": {
+      "confirm": "Möchtest du wirklich diese beiden Accounts mergen? {{guest}} und {{user}}",
+      "cancelled": "Der Merge wurde abgebrochen",
+      "success": "Die Accounts wurden erfolgreich gemerged!",
+      "assign": "Zuordnen"
     }
   },
   "notifications": {
     "screen": {
       "title": "Benachrichtigungen",
       "empty": "Du hast keine neuen Benachrichtigungen."
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Passwort",
+    "repeatPassword": "Passwort wiederholen",
+    "haveAccount": "Account vorhanden? Hier einloggen.",
+    "version": "Version {{version}}",
+    "login": {
+      "failed": "Login fehlgeschlagen. Versuche es erneut!",
+      "titleFor": "Login für",
+      "forgotPassword": "Passwort vergessen?",
+      "submit": "Login",
+      "submitting": "Einloggen...",
+      "noAccount": "Noch keinen Account?"
+    },
+    "signup": {
+      "invalidEmail": "Bitte gib eine gültige Emailadresse an.",
+      "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen beinhalten",
+      "nameRequired": "Bitte gib deinen Vornamen an.",
+      "surnameRequired": "Bitte gib deinen Nachnamen an.",
+      "failed": "Registrierung fehlgeschlagen. [{{message}}]",
+      "titleAt": "Registrierung bei",
+      "submit": "Registrieren",
+      "submitting": "Account wird erstellt..."
+    },
+    "forgot": {
+      "failed": "Zurücksetzen des Passworts fehlgeschlagen. Versuche es erneut!",
+      "sent": "Email wurde versendet",
+      "sentDescription": "Es wurde eine Email mit den Informationen für das Zurücksetzen deines Passwort versendet 🎉",
+      "backToLogin": "Zurück zum Login",
+      "title": "Passwort zurücksetzen",
+      "submit": "Abschicken",
+      "submitting": "Senden..."
+    },
+    "reset": {
+      "invalidLink": "Der Link ist ungültig oder abgelaufen.",
+      "noValidLink": "Kein gültiger Zurücksetzen-Link. Bitte fordere einen neuen an.",
+      "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen beinhalten.",
+      "title": "Neues Passwort festlegen",
+      "verifying": "Link wird geprüft…",
+      "requestNewLink": "Neuen Link anfordern",
+      "done": "Dein Passwort wurde geändert. 🎉",
+      "toApp": "Zur App",
+      "save": "Passwort speichern"
+    }
+  },
+  "grants": {
+    "features": "Features",
+    "updateError": "Berechtigungen konnten nicht aktualisiert werden",
+    "updateSuccess": "Berechtigungen wurden aktualisiert",
+    "editUser": "Benutzer \"{{name}}\" bearbeiten"
+  },
+  "bundesliga": {
+    "title": "Bundesliga-Aufstellung",
+    "reloadData": "Daten neu laden (Admin)",
+    "setup": "Spieltag einrichten",
+    "league": "Liga",
+    "selectLeague": "Liga wählen",
+    "loadingTeams": "Teams werden geladen…",
+    "leagueLoadError": "Konnte Ligadaten nicht laden: {{error}}",
+    "myTeam": "Mein Team",
+    "selectTeam": "Team wählen",
+    "opponents": "Gegner",
+    "manual": "Manuell",
+    "loadingSquads": "Kader werden geladen…",
+    "mySquad": "Mein Kader ({{present}}/{{total}} dabei)",
+    "squadHint": "Wer ist am Spieltag dabei? Nur dabei-Spieler stehen zur Aufstellung. Geschlecht wird automatisch erkannt – bei Bedarf korrigieren (zählt für Women & Mixed).",
+    "gamesPerPlayer": "Spiele pro Spieler",
+    "reset": "Zurücksetzen",
+    "chooseLeagueAndTeam": "Wähle deine Liga und dein Team, um die Aufstellung zu planen.",
+    "gender": {
+      "male": "M",
+      "female": "W",
+      "unknown": "?"
+    },
+    "freeSeat": "— frei —",
+    "player1": "Spieler 1",
+    "player2": "Spieler 2",
+    "versus": "gegen",
+    "we": "Wir",
+    "issuePrefixed": "{{team}}: {{message}}",
+    "notAuthenticated": "Nicht angemeldet",
+    "issues": {
+      "incomplete": "{{label}}: noch nicht vollständig besetzt.",
+      "duplicate": "{{label}}: ein Spieler ist doppelt eingetragen.",
+      "womenFemale": "Women: beide Spielerinnen müssen weiblich sein.",
+      "mixedGender": "{{label}}: muss 1 männlich + 1 weiblich sein.",
+      "oneGameOpenWomen": "{{name}} ist in {{labels}} eingeteilt — pro Open/Women-Block ist nur ein Spiel erlaubt.",
+      "oneGameMixed": "{{name}} ist in {{labels}} eingeteilt — pro Mixed-Block ist nur ein Spiel erlaubt.",
+      "rgxOrder": "{{label}} 1 muss einen höheren (oder gleichen) kombinierten RGX als {{label}} 2 haben."
+    }
+  },
+  "home": {
+    "title": "Startseite",
+    "events": "Events",
+    "eventsLoadError": "Fehler beim Laden der Events",
+    "noUpcomingEvents": "Keine anstehenden Events",
+    "attending": "Zugesagt",
+    "declined": "Abgesagt",
+    "drinksLoadError": "Fehler beim Laden der Getränke",
+    "noDrinksAvailable": "Keine Getränke verfügbar",
+    "drinkBooked": "Getränk erfolgreich gebucht!",
+    "drinkBookError": "Getränk konnte nicht gebucht werden. {{error}}",
+    "order": "Bestellen",
+    "keys": "Schlüssel",
+    "keysLoadError": "Fehler beim Laden der Schlüssel",
+    "noKeys": "Keine Schlüssel hinterlegt"
+  },
+  "pwa": {
+    "updateReady": {
+      "title": "Neue Version bereit",
+      "description": "Eine neue Version der App wurde heruntergeladen. Aktualisiere jetzt, um sie zu nutzen.",
+      "updating": "Aktualisiere…",
+      "updateNow": "Jetzt aktualisieren"
+    },
+    "updateSuccess": {
+      "title": "App aktualisiert",
+      "description": "Du nutzt die neueste Version."
+    }
+  },
+  "cropImage": {
+    "title": "Bild zuschneiden",
+    "save": "Zuschneiden & Speichern"
+  },
+  "dialogs": {
+    "confirmTitle": "Sind Sie sich sicher?"
+  },
+  "ui": {
+    "dataTable": {
+      "comparison": "VERGLEICH",
+      "equals": "Gleich",
+      "notEqual": "Ungleich !=",
+      "greaterThan": "Größer als >",
+      "lessThan": "Kleiner als <",
+      "greaterOrEqual": "Größer oder gleich =<",
+      "lessOrEqual": "Kleiner oder gleich <=",
+      "patternMatching": "MUSTERSUCHE",
+      "setAndNullChecks": "MENGEN- & NULL-PRÜFUNGEN",
+      "inList": "In Liste in",
+      "isIs": "ist is",
+      "selectPlaceholder": "Auswählen...",
+      "valuePlaceholder": "Wert...",
+      "reset": "Zurücksetzen",
+      "noResults": "Keine Ergebnisse.",
+      "pageOf": "Seite {{page}} von {{total}}",
+      "firstPage": "Zur ersten Seite",
+      "previousPage": "Zur vorherigen Seite",
+      "nextPage": "Zur nächsten Seite",
+      "lastPage": "Zur letzten Seite"
+    },
+    "sidebar": {
+      "title": "Seitenleiste",
+      "description": "Zeigt die mobile Seitenleiste an.",
+      "toggle": "Seitenleiste umschalten"
+    },
+    "map": {
+      "selectLayers": "Ebenen auswählen",
+      "mapType": "Kartentyp",
+      "layers": "Ebenen",
+      "zoomControls": "Zoom-Steuerung",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "enterFullscreen": "Vollbild öffnen",
+      "exitFullscreen": "Vollbild beenden",
+      "locating": "Standort wird gesucht...",
+      "stopTracking": "Verfolgung beenden",
+      "trackLocation": "Standort verfolgen",
+      "stopLocationTracking": "Standortverfolgung beenden",
+      "startLocationTracking": "Standortverfolgung starten"
+    },
+    "placeAutocomplete": {
+      "error": "Fehler: {{message}}",
+      "notFound": "{{value}} wurde nicht gefunden.",
+      "unknown": "Unbekannt"
     }
   }
 }

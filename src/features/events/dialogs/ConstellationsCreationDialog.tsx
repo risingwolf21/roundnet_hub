@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { EventsUserView, GamesTable } from '@/types/supabaseTypes';
 import { useEffect, useState } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -208,6 +210,7 @@ export const ConstellationCreationDialog = ({
 
   console.log(payload)
 
+  const { t } = useTranslation();
   const dialogs = useDialogs();
 
   const [loading, setLoading] = useState(true);
@@ -229,7 +232,7 @@ export const ConstellationCreationDialog = ({
         .or(playersOfUsersFilter(payload.users.map((x) => x.id)));
 
       if (error) {
-        toast.error('Fehler beim Laden der Spielerdaten');
+        toast.error(i18n.t('events.constellations.loadPlayersFailed'));
         setLoading(false);
         return;
       }
@@ -305,12 +308,12 @@ export const ConstellationCreationDialog = ({
       } catch (error: any) {
         hasError = true;
         captureException(error, { extra: { match, eventId: payload.event.id } });
-        toast.error(`Fehler bei einem Match: ${error.message}`);
+        toast.error(t('events.constellations.matchFailed', { message: error.message }));
       }
     }
 
     if (!hasError) {
-      toast.success('Alle Matches der Runde erfolgreich erstellt!');
+      toast.success(t('events.constellations.allMatchesCreated'));
     }
   };
 
@@ -347,12 +350,12 @@ export const ConstellationCreationDialog = ({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
-          <DialogTitle>Konstellationen</DialogTitle>
+          <DialogTitle>{t('events.constellations.title')}</DialogTitle>
           <DialogClose />
         </DialogHeader>
         <DialogBody className='p-0'>
           <div className='p-2 flex flex-col gap-2'>
-            {loading && <p style={{ padding: '16px' }}>Lade Spielerdaten...</p>}
+            {loading && <p style={{ padding: '16px' }}>{t('events.constellations.loadingPlayers')}</p>}
 
             {/* FEHLENDE INDEXE */}
             {payload.users.filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id)).length > 0 && (
@@ -360,8 +363,7 @@ export const ConstellationCreationDialog = ({
                 <CardContent className='px-1'>
                   <Collapsible>
                     <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
-                      Von {payload.users.filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id)).length} Spielern
-                      kein Index gefunden
+                      {t('events.constellations.missingIndex', { number: payload.users.filter((x) => !foundPlayers.map(userIdOfPlayer).includes(x.id)).length })}
                       <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                     <CollapsibleContent className={"w-full"}>
                       <div>
@@ -402,7 +404,7 @@ export const ConstellationCreationDialog = ({
                                       }
                                     }}
                                     step={10}
-                                    placeholder="Initialer Index" />
+                                    placeholder={t('events.constellations.initialIndex')} />
                                 </ItemDescription>
                               </ItemContent>
                             </Item>
@@ -419,7 +421,7 @@ export const ConstellationCreationDialog = ({
             <Card className="w-full py-1">
               <CardContent className='px-1'>
                 <Collapsible >
-                  <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{`Spieler bearbeiten - ${players.length}`}
+                  <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.editPlayers', { number: players.length })}
                     <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                   <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
 
@@ -453,14 +455,14 @@ export const ConstellationCreationDialog = ({
                         }}
                       >
                         <Plus />
-                        Spieler hinzufügen
+                        {t('events.constellations.addPlayer')}
                       </Button>
 
                       {players.map((x) => (
                         <Item key={x.player}>
                           <ItemContent className='flex w-full flex-row justify-between'>
                             <ItemTitle>{x.name}</ItemTitle>
-                            <ItemDescription>{'Index: ' + x.rg_index}</ItemDescription>
+                            <ItemDescription>{t('events.constellations.index', { value: x.rg_index })}</ItemDescription>
                           </ItemContent>
                           <ItemActions>
                             <Button variant={"ghost"} size={"icon-lg"}
@@ -483,31 +485,31 @@ export const ConstellationCreationDialog = ({
               <Card key={index} className="w-full py-1">
                 <CardContent className='px-1'>
                   <Collapsible >
-                    <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Runde {index + 1}
+                    <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.round', { number: index + 1 })}
                       <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                     <CollapsibleContent className="flex flex-col w-full gap-2 pt-2">
 
                       <Collapsible >
-                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Einstellungen
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.settings')}
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
                           <Field>
                             <FieldLabel htmlFor='gameMode'>
-                              Spielmodus (heterogen/homogen)
+                              {t('events.constellations.gameMode')}
                             </FieldLabel>
                             <Select id='gameMode'
                               value={x.options.mode ?? 'balanced'}
-                              items={{ random: "Zufällig", balanced: "Ausgeglichen" }}
+                              items={{ random: t('events.constellations.random'), balanced: t('events.constellations.balanced') }}
                               onValueChange={(val) => updateRoundOption(index, { mode: val as 'balanced' | 'random' })}>
                               <SelectTrigger className="w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem key={'balanced'} value={'balanced'}>
-                                  Ausgeglichen
+                                  {t('events.constellations.balanced')}
                                 </SelectItem>
                                 <SelectItem key={'random'} value={'random'}>
-                                  Zufällig
+                                  {t('events.constellations.random')}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -515,24 +517,24 @@ export const ConstellationCreationDialog = ({
 
                           <Field className='w-full'>
                             <FieldLabel htmlFor='gameMode'>
-                              Teammodus
+                              {t('events.constellations.teamMode')}
                             </FieldLabel>
                             <Select id='gameMode'
                               value={x.options.matchupMode ?? 'any'}
-                              items={{ any: "Gemischt", separate: "Herren / Damen", mixed: "Mixed" }}
+                              items={{ any: t('events.constellations.teamModeAny'), separate: t('events.constellations.teamModeSeparate'), mixed: t('events.constellations.teamModeMixed') }}
                               onValueChange={(val) => updateRoundOption(index, { matchupMode: val as 'any' | 'separate' | 'mixed' })}>
                               <SelectTrigger className="w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem key={'any'} value={'any'}>
-                                  Gemischt
+                                  {t('events.constellations.teamModeAny')}
                                 </SelectItem>
                                 <SelectItem key={'separate'} value={'separate'}>
-                                  Herren / Damen
+                                  {t('events.constellations.teamModeSeparate')}
                                 </SelectItem>
                                 <SelectItem key={'mixed'} value={'mixed'}>
-                                  Mixed
+                                  {t('events.constellations.teamModeMixed')}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -540,7 +542,7 @@ export const ConstellationCreationDialog = ({
 
                           {
                             index > 0 && <Field orientation={"horizontal"}>
-                              <FieldLabel>Setze zuvor ausgesetzte Spieler ein.</FieldLabel>
+                              <FieldLabel>{t('events.constellations.reuseBench')}</FieldLabel>
                               <Switch
                                 checked={x.options.benchFromLastMatchMustPlay ?? false}
                                 onCheckedChange={(val) => updateRoundOption(index, { benchFromLastMatchMustPlay: val })} />
@@ -551,7 +553,7 @@ export const ConstellationCreationDialog = ({
                       </Collapsible>
 
                       <Collapsible >
-                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Feste Teams ({x.options.lockedTeams?.length ?? 0})
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.lockedTeams', { number: x.options.lockedTeams?.length ?? 0 })}
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
                           {x.options.lockedTeams &&
@@ -585,7 +587,7 @@ export const ConstellationCreationDialog = ({
                           }
                           <div className='flex flex-row w-full gap-2'>
                             <Field className='flex-1'>
-                              <FieldLabel>Spieler 1</FieldLabel>
+                              <FieldLabel>{t('events.constellations.player1')}</FieldLabel>
                               <Select
                                 value={preSelectedPlayer1?.player ?? 'none'}
                                 items={players
@@ -610,7 +612,7 @@ export const ConstellationCreationDialog = ({
 
                             </Field>
                             <Field className='flex-1'>
-                              <FieldLabel>Spieler 2</FieldLabel>
+                              <FieldLabel>{t('events.constellations.player2')}</FieldLabel>
                               <Select
                                 value={preSelectedPlayer2?.player ?? 'none'}
                                 items={players
@@ -651,7 +653,7 @@ export const ConstellationCreationDialog = ({
                       </Collapsible>
 
                       <Collapsible >
-                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Feste Spieler ({x.options.lockedTeams?.length ?? 0})
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.lockedPlayers', { number: x.options.lockedTeams?.length ?? 0 })}
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
 
@@ -681,7 +683,7 @@ export const ConstellationCreationDialog = ({
 
                           <div className='flex flex-row w-full gap-2'>
                             <Field className='flex-1'>
-                              <FieldLabel>Spieler</FieldLabel>
+                              <FieldLabel>{t('events.constellations.player')}</FieldLabel>
                               <Select
                                 value={preMustPlay?.player ?? 'none'}
                                 items={players
@@ -734,7 +736,7 @@ export const ConstellationCreationDialog = ({
                           disabled={x.game.matches.length === 0}
                         >
                           <Save />
-                          Matches speichern
+                          {t('events.constellations.saveMatches')}
                         </Button>
 
                         <Button
@@ -745,14 +747,14 @@ export const ConstellationCreationDialog = ({
                           }}
                         >
                           <RefreshCcw />
-                          Generieren
+                          {t('events.constellations.generate')}
                         </Button>
                       </div>
 
                       <Separator />
 
                       <Collapsible >
-                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">Spiele ({x.game.matches.length})
+                        <CollapsibleTrigger render={<Button variant="ghost" className="w-full">{t('events.constellations.matches', { number: x.game.matches.length })}
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
                           {
@@ -789,7 +791,7 @@ export const ConstellationCreationDialog = ({
 
                       <Collapsible className={cn(x.game.bench.length < 1 && "hidden")}>
                         <CollapsibleTrigger render={<Button variant="ghost" className="w-full">
-                          Aussetzer ({x.game.bench.length})
+                          {t('events.constellations.bench', { number: x.game.bench.length })}
                           <ChevronDownIcon className="ml-auto group-data-panel-open/button:rotate-180" /></Button>} />
                         <CollapsibleContent className="flex flex-col w-full gap-2 p-2.5 pt-2">
                           {
@@ -819,7 +821,7 @@ export const ConstellationCreationDialog = ({
             {/* NEUE RUNDE BUTTON */}
             <Button onClick={() => {
               if (players.length !== payload.users.length) {
-                toast.error('Einige Spieler haben einen ungültigen Index. Bitte passe diese an.');
+                toast.error(t('events.constellations.invalidIndex'));
                 return;
               }
               const options: MatchmakingOptions = {
@@ -831,7 +833,7 @@ export const ConstellationCreationDialog = ({
               const result = generateMatches(options);
               setRounds([...rounds, { game: result, options }]);
             }}>
-              Neue Runde hinzufügen
+              {t('events.constellations.addRound')}
             </Button>
           </div >
         </DialogBody >

@@ -84,7 +84,7 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             <div className='flex items-center gap-4'>
               <div className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'>
                 {player_data?.rg_avatar_url ? (
-                  <img src={player_data.rg_avatar_url} alt='avatar preview' className='h-full w-full object-cover' />
+                  <img src={player_data.rg_avatar_url} alt={t('profile.account.avatarPreview')} className='h-full w-full object-cover' />
                 ) : (
                   <Image />
                 )}

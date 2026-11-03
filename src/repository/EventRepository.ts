@@ -3,6 +3,7 @@ import { RecurrenceExpander } from '@/lib/recurrence-expander';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, differenceInCalendarDays, Duration, isAfter, set, startOfDay, sub } from 'date-fns';
+import { t } from 'i18next';
 import { EventTable } from 'types/supabase';
 import { Json, Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
@@ -20,7 +21,7 @@ export const fetchEventBringPledges = () => supabase
 
 const assertRowsAffected = (rows: unknown[] | null, message: string) => {
   if (!rows || rows.length === 0) {
-    throw new Error(`${message} (fehlende Berechtigung oder Event nicht sichtbar).`);
+    throw new Error(message);
   }
 };
 
@@ -41,7 +42,7 @@ export const EventRepository = {
 
     if (error) throw error;
     if (!data || data.length === 0) {
-      throw new Error('Die Events der Serie konnten nicht gefunden werden (fehlende Berechtigung oder bereits gelöscht).');
+      throw new Error(t('events.repositoryErrors.seriesNotFound'));
     }
 
     const recurrenceFrom = (recurrence: EventRecurrence, index: number): Duration => {
@@ -117,7 +118,7 @@ export const EventRepository = {
         .maybeSingle();
       if (result.error) throw result.error;
       if (!result.data) {
-        throw new Error('Event konnte nicht gespeichert werden (fehlende Berechtigung oder Event nicht sichtbar).');
+        throw new Error(t('events.repositoryErrors.saveFailed'));
       }
       updatedEvents.push(result.data);
     }
@@ -173,7 +174,7 @@ export const EventRepository = {
 
   async deleteEvent(eventId: string): Promise<void> {
     const result = await supabase.from('events').delete().eq('id', eventId).select('id').throwOnError();
-    assertRowsAffected(result.data, 'Event konnte nicht gelöscht werden');
+    assertRowsAffected(result.data, t('events.repositoryErrors.deleteFailed'));
   },
 
   async deleteEventAndUpcomingEvents(key: string, startDateTime: string): Promise<void> {
@@ -184,7 +185,7 @@ export const EventRepository = {
       .gte('startingDateTime', startDateTime)
       .select('id')
       .throwOnError();
-    assertRowsAffected(result.data, 'Events konnten nicht gelöscht werden');
+    assertRowsAffected(result.data, t('events.repositoryErrors.deleteManyFailed'));
 
     // End the series on the remaining occurrences, otherwise create_next_occurrences would
     // regenerate the deleted events from the latest remaining occurrence.
@@ -205,7 +206,7 @@ export const EventRepository = {
       .eq('id', eventId)
       .select('id')
       .throwOnError();
-    assertRowsAffected(result.data, 'Event konnte nicht aktualisiert werden');
+    assertRowsAffected(result.data, t('events.repositoryErrors.updateFailed'));
   },
 
   async fetchUserEvent(eventId: string): Promise<EventsUserView | null> {
@@ -437,7 +438,7 @@ export const EventRepository = {
   async updateSingleEvent(id: string, eventChanges: TablesUpdate<'events'>) {
     const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
     // RLS silently filters rows instead of raising an error, so 0 updated rows means nothing was saved.
-    assertRowsAffected(result.data, 'Event konnte nicht gespeichert werden');
+    assertRowsAffected(result.data, t('events.repositoryErrors.saveFailed'));
     return result.data;
   },
 
@@ -518,7 +519,7 @@ export const EventRepository = {
       .eq('key', key)
       .select('id')
       .throwOnError();
-    assertRowsAffected(result.data, 'Serie konnte nicht beendet werden');
+    assertRowsAffected(result.data, t('events.repositoryErrors.endSeriesFailed'));
     // Ending a series must drop/cancel the now-removed future occurrences → sync.
     await EventRepository.expandRecurrences((result.data as { id: string }[])[0].id, 'sync');
   },

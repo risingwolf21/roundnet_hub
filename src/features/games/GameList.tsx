@@ -1,6 +1,6 @@
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
-import { format, intlFormatDistance, isAfter } from 'date-fns';
+import { format, intlFormatDistance, isAfter, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router';
 
 import { AppBar } from '@/components/ui/appbar';
@@ -19,7 +19,7 @@ import { useGrants } from '../auth/GrantsContext';
 import ReportScore from './ReportScore';
 
 const GameList = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dialogs = useDialogs();
   const { user } = useGrants();
@@ -57,13 +57,13 @@ const GameList = () => {
                 </EmptyHeader>
               </Empty>
             ) : (
-              Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
+              Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'yyyy-MM-dd')))
                 .sort(([key1], [key2]) => (isAfter(key1, key2) ? -1 : 1))
                 .map(([key, value]: [string, UserMatchesView[]]) => (
                   <div key={key} className="flex w-full gap-2 flex-col">
                     <div className="text-sm font-semibold ml-2">
                       {
-                        intlFormatDistance(new Date(key), new Date(), { unit: 'day' })
+                        intlFormatDistance(parseISO(key), new Date(), { unit: 'day', locale: i18n.resolvedLanguage })
                       }
                     </div>
                     {

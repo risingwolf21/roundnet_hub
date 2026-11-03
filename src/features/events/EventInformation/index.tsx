@@ -27,7 +27,6 @@ import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView,
 import { formatSafeDateFromDatabase } from "@/utils";
 import { captureException } from "@sentry/react";
 import { format, isBefore } from 'date-fns';
-import { t } from "i18next";
 import {
   Ban,
   Calendar,
@@ -47,7 +46,7 @@ import {
   XCircle
 } from "lucide-react";
 import { TFunction } from 'node_modules/i18next/typescript/t';
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../../auth/GrantsContext";
@@ -88,7 +87,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
       { user, event, newState },
       {
         onError: () => {
-          toast.error('An/Abweseneheit konnte nicht aktualisiert werden.');
+          toast.error(t('events.information.attendanceUpdateError'));
         },
       }
     );
@@ -96,11 +95,11 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
 
   return (
     <div className="flex flex-col gap-y-4">
-      <p className="font-medium">Deine Teilnahme</p>
+      <p className="font-medium">{t('events.information.yourAttendance')}</p>
       {event.user_state === 'Waiting' && (
         <Alert variant={"info"}>
           <InfoIcon />
-          <AlertTitle>Warteliste</AlertTitle>
+          <AlertTitle>{t('events.information.waitingList')}</AlertTitle>
           <AlertDescription>
             {t('events.information.waitingListAccepted', {
               place:
@@ -121,7 +120,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
       {event.user_state === 'WaitingAsTrial' && (
         <Alert variant={"info"}>
           <InfoIcon />
-          <AlertTitle>Warteliste</AlertTitle>
+          <AlertTitle>{t('events.information.waitingList')}</AlertTitle>
           <AlertDescription>
             {t('events.information.waitingListAccepted', {
               place:
@@ -149,7 +148,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
               disabled={event.isCancelled || event.user_state === 'Waiting' || eventInThePast(event) || eventHasStarted(event)}
             >
               {(updateAttendance.isPending || isLoading) ? <Spinner /> : <Hourglass className="size-4 mr-1" />}
-              Warteliste
+              {t('events.information.waitingList')}
             </Button>
             : answerDeadlineExpired(event) && !eventInThePast(event)
               ? <Button
@@ -159,7 +158,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
                 disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
               >
                 {(updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />}
-                Teilnahme anfragen
+                {t('events.information.requestAttendance')}
               </Button>
               : <Button
                 onClick={() => changeAttendance({ event: event, newState: 'Attending', user })}
@@ -168,7 +167,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
                 disabled={event.isCancelled || maxAttendeesExceeded(event, attendance) || answerDeadlineExpired(event) || eventInThePast(event) || eventHasStarted(event)}
               >
                 {(updateAttendance.isPending || isLoading) ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />}
-                Teilnehmen
+                {t('events.information.attend')}
               </Button>
           }
           <Button
@@ -178,7 +177,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
             disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
           >
             {(updateAttendance.isPending || isLoading) ? <Spinner /> : <XCircle className="size-4 mr-1" />}
-            Absagen
+            {t('events.information.decline')}
           </Button>
         </div>
       </Has>
@@ -191,7 +190,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
             disabled={event.isCancelled || eventInThePast(event) || eventHasStarted(event)}
           >
             {(updateAttendance.isPending || isLoading) ? <Spinner /> : <Megaphone className="size-4 mr-1" />}
-            Als Trainer teilnehmen
+            {t('events.information.attendAsTrainer')}
           </Button>
         </div>
       </Has>
@@ -200,6 +199,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
 };
 
 export const EventInformation = ({ event, selectedEventPlace }: EventInformationProps) => {
+  const { t } = useTranslation();
   const updateAttendance = useUpdateAttendanceMutation();
   const cancelTrainingMutation = useCancelTrainingMutation();
   const deleteTrainingMutation = useDeleteTrainingMutation();
@@ -232,7 +232,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
       { user, event, newState },
       {
         onError: () => {
-          toast.error('An/Abweseneheit konnte nicht aktualisiert werden.');
+          toast.error(t('events.information.attendanceUpdateError'));
         },
       }
     );
@@ -242,7 +242,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title={"Eventdetails"}
+        title={t('events.information.title')}
         primaryAction="back"
         navigateBackPath="/training"
         user={user}
@@ -285,9 +285,9 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
 
                 <Has perm={'event.cancel'}>
                   <DropdownMenuItem className={"text-base"} onClick={async () => {
-                    const result = await dialogs.confirm(`Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`, {
-                      title: `Training ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`,
-                      message: `Möchtest du das Training wirklich ${event.isCancelled ? "stattfinden lassen?" : "absagen?"}`
+                    const result = await dialogs.confirm(event.isCancelled ? t('events.information.reinstateTrainingTitle') : t('events.information.cancelTrainingTitle'), {
+                      title: event.isCancelled ? t('events.information.reinstateTrainingTitle') : t('events.information.cancelTrainingTitle'),
+                      message: event.isCancelled ? t('events.information.reinstateTrainingMessage') : t('events.information.cancelTrainingMessage')
                     });
                     if (result)
                       cancelTrainingMutation.mutate(
@@ -301,7 +301,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                       );
                   }}>
                     {event.isCancelled ? <CircleCheck /> : <Ban />}
-                    {event.isCancelled ? 'Stattfinden' : 'Absagen'}
+                    {event.isCancelled ? t('events.information.reinstateAction') : t('events.information.cancelAction')}
                   </DropdownMenuItem>
                 </Has>
 
@@ -323,7 +323,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                       );
                   }}>
                     <Trash2 />
-                    Löschen
+                    {t('common.delete')}
                   </DropdownMenuItem>
                 </Has>
               </DropdownMenuContent>
@@ -340,7 +340,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                 <div className="flex justify-between items-start gap-4">
                   <div className="space-y-1.5">
                     <Badge variant="outline" className="mb-2 w-fit font-medium border-[color:var(--group-color)] bg-[color:var(--group-color)]/5 text-[color:var(--group-color)]">
-                      {event.group?.name || "Allgemein"}
+                      {event.group?.name || t('events.information.general')}
                     </Badge>
                     <CardTitle className="text-xl sm:text-2xl font-semibold leading-tight">
                       {event.title}
@@ -354,7 +354,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                     <Calendar className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                     <div>
                       <p className="font-medium truncate">{format(event.startingDateTime, "dd.MM.yyyy HH:mm")}</p>
-                      <p className="text-muted-foreground text-xs mt-0.5 truncate">bis {format(event.endDateTime, "dd.MM.yyyy HH:mm")}</p>
+                      <p className="text-muted-foreground text-xs mt-0.5 truncate">{t('events.information.until', { end: format(event.endDateTime, "dd.MM.yyyy HH:mm") })}</p>
                     </div>
                   </div>
 
@@ -373,7 +373,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                           rel="noopener noreferrer"
                           className="text-primary text-xs hover:underline mt-0.5 inline-block"
                         >
-                          Route planen
+                          {t('events.information.planRoute')}
                         </a>
                       </div>
                     </div>
@@ -383,7 +383,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                 {event.isCancelled && (
                   <Alert variant={"error"}>
                     <InfoIcon />
-                    <AlertTitle>Dieses Event wurde <strong>abgesagt</strong></AlertTitle>
+                    <AlertTitle><Trans i18nKey="events.information.eventCancelled" components={{ strong: <strong /> }} /></AlertTitle>
                   </Alert>
                 )}
                 {answerDeadlineExpired(event) && event.answerDeadline && !event.isCancelled && (
@@ -405,7 +405,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                       });
                     }}>
                       <Volleyball />
-                      Konstellationen erstellen
+                      {t('events.information.createConstellations')}
                     </Button>
                   </Has>
                 )}
@@ -418,21 +418,21 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                   value="information"
                   className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                 >
-                  Information
+                  {t('events.information.tabInformation')}
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="attendance"
                   className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                 >
-                  Teilnehmer ({attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length})
+                  {t('events.information.tabAttendance', { n: attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length })}
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="comments"
                   className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                 >
-                  Kommentare ({comments.reduce((a, c) => a + c.replies.length + 1, 0)})
+                  {t('events.information.tabComments', { n: comments.reduce((a, c) => a + c.replies.length + 1, 0) })}
                 </TabsTrigger>
 
                 <Has feat={"games"}>
@@ -440,7 +440,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                     value="matches"
                     className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
                   >
-                    Spiele ({matches.length})
+                    {t('events.information.tabMatches', { n: matches.length })}
                   </TabsTrigger>
                 </Has>
 
@@ -450,7 +450,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                     className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5 gap-1.5"
                   >
                     <ShoppingBag className="size-4" />
-                    Mitbringen
+                    {t('events.bringItems.tab')}
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -468,7 +468,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                 <CardHeader className="border-b !py-2">
                   <div className="flex justify-between items-center !p-0">
                     <CardTitle className="text-lg flex items-center">
-                      Admin-Informationen
+                      {t('events.information.adminInformation')}
                     </CardTitle>
                   </div>
                 </CardHeader>
@@ -600,6 +600,7 @@ export const EventInformationSkeleton = () => {
 };
 
 export const EventInformationError = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const navigate = useNavigate();
 
@@ -608,7 +609,7 @@ export const EventInformationError = () => {
       <div className="shrink-0 bg-background relative z-10">
         <AppBar
           className='!border-b !shadow-sm'
-          title={"Fehler"}
+          title={t('events.information.errorTitle')}
           primaryAction="back"
           user={user}
         />
@@ -620,14 +621,14 @@ export const EventInformationError = () => {
             <EmptyMedia variant="icon">
               <CircleAlert />
             </EmptyMedia>
-            <EmptyTitle>Event nicht geladen</EmptyTitle>
+            <EmptyTitle>{t('events.information.notLoaded')}</EmptyTitle>
             <EmptyDescription>
-              Das Event konnte leider nicht geladen werden. Möglicherweise wurde es gelöscht, du bist offline oder du hast keine Berechtigung, es zu sehen.
+              {t('events.information.notLoadedDescription')}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" size="sm" onClick={() => navigate("events")}>
-              Zurück zur Übersicht
+              {t('events.information.backToOverview')}
             </Button>
           </EmptyContent>
         </Empty>

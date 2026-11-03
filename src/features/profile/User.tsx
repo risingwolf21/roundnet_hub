@@ -5,6 +5,7 @@ import { useUserAttendanceInMonth } from "@/tanstack/events";
 import { usePlayer } from "@/tanstack/player_data";
 import { Bell, CalendarIcon, FlaskConical, RectangleEllipsis, User as UserIcon, Volleyball } from "lucide-react";
 import { getMonth } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { useGrants } from "../auth/GrantsContext";
 import { AccountTab } from "./tabs/AccountTab";
 import { CalendarTab } from "./tabs/CalendarTab";
@@ -30,32 +31,32 @@ export type SettingsTabs = {
 
 const tabs: SettingsTabs = {
   account: {
-    title: "Account",
+    title: "profile.tabs.account",
     icon: <UserIcon />,
     disabled: false,
   },
   changePassword: {
-    title: "Passwort ändern",
+    title: "profile.password.title",
     icon: <RectangleEllipsis />,
     disabled: false,
   },
   playerzone: {
-    title: "Playerzone Profil",
+    title: "profile.tabs.playerzone",
     icon: <Volleyball />,
     disabled: false,
   },
   calendar: {
-    title: "Kalender",
+    title: "profile.calendar.title",
     icon: <CalendarIcon />,
     disabled: false,
   },
   notifications: {
-    title: "Benachrichtigungen",
+    title: "navigation.notifications",
     icon: <Bell />,
     disabled: false,
   },
   testlab: {
-    title: "Test-Labor",
+    title: "profile.tabs.testlab",
     icon: <FlaskConical />,
     disabled: AVAILABLE_FEATURES.length < 1,
   },
@@ -64,6 +65,7 @@ const tabs: SettingsTabs = {
 type Tab = keyof typeof tabs;
 
 const User = () => {
+  const { t } = useTranslation();
   const { user, signOut } = useGrants();
   const { data: player_data = null } = usePlayer(user);
 
@@ -72,7 +74,7 @@ const User = () => {
 
   return (
     <div>
-      <AppBar title="Profil" />
+      <AppBar title={t('profile.title')} />
       <main className='flex-1 size-full pb-safe-bottom'>
         <div className="flex flex-col px-4">
           <Tabs defaultValue="overview" className="gap-4">
@@ -80,7 +82,7 @@ const User = () => {
               {Object.entries(tabs).filter(([, tab]) => !tab.disabled).map(([key, { title, icon }]) => (
                 <TabsTrigger key={key} value={key as Tab} className="flex items-center gap-2">
                   {icon}
-                  {title}
+                  {t(title)}
                 </TabsTrigger>
               ))}
             </TabsList>

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { Search, Users, X } from 'lucide-react';
@@ -16,6 +17,7 @@ type BasePayload = {
 
 const SearchAndSelectGroupDialog = (props: DialogProps<BasePayload, Group | null>) => {
 
+  const { t } = useTranslation();
   const { open, payload: { groupsToFilter } } = props;
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
@@ -79,7 +81,7 @@ const SearchAndSelectGroupDialog = (props: DialogProps<BasePayload, Group | null
           users.length === 0 && <div className='flex-1 flex flex-col items-center justify-center p-4'>
             <div className='rounded-md border border-dashed p-6 text-center'>
               <Users className='text-muted-foreground mx-auto size-12' />
-              <p className='mt-2 text-sm font-medium'>Keine Gruppen gefunden</p>
+              <p className='mt-2 text-sm font-medium'>{t('search.noGroups')}</p>
             </div>
           </div>
         }

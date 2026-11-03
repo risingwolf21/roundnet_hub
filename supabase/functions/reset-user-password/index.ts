@@ -1,5 +1,6 @@
 import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
+import { localized } from '../_shared/lang.ts';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
       return new Response('Invalid payload', { status: 400, headers: corsHeaders });
     }
     if (newPassword.length < 6) {
-      return new Response('Das Passwort muss mindestens 6 Zeichen enthalten', { status: 400, headers: corsHeaders });
+      return new Response(localized(req, 'Das Passwort muss mindestens 6 Zeichen enthalten', 'The password must be at least 6 characters long'), { status: 400, headers: corsHeaders });
     }
 
     // 1) Client acting as the caller, so auth.uid() / authorize() refer to them
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
         user_id: me.user.id,
         for_user_id: userId,
       })));
-      return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      return new Response(JSON.stringify({ error: localized(req, 'Keine Berechtigung', 'Forbidden') }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

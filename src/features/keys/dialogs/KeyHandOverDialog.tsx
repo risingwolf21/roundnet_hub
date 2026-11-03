@@ -32,8 +32,8 @@ export const KeyHandOverDialog = ({
           <Avatar className="size-20">
             {
               selectedUser.avatarUrl
-                ? <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name ?? "User Avatar"} />
-                : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(selectedUser.name ?? "User")}</AvatarFallback>
+                ? <AvatarImage src={selectedUser.avatarUrl} alt={selectedUser.name ?? t('browse.user')} />
+                : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(selectedUser.name ?? t('browse.user'))}</AvatarFallback>
             }
           </Avatar>
         </div>

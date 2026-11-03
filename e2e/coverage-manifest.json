@@ -447,6 +447,10 @@
           "title": "Profilbild hochladen und zuschneiden"
         },
         {
+          "id": "profile.language",
+          "title": "Sprache wechseln (Deutsch/Englisch)"
+        },
+        {
           "id": "profile.password",
           "title": "Passwort ändern"
         },

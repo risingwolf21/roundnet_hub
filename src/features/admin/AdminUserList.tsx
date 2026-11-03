@@ -49,8 +49,8 @@ const AdminUserList = () => {
                 const result = await dialogs.open(EditUserDialog, { user: user });
                 if (result) {
                   updateUserMutation.mutate({ update: result }, {
-                    onSuccess: () => toast.success("Benutzer erfolgreich aktualisiert!"),
-                    onError: (error) => toast.error("Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. " + error.message)
+                    onSuccess: () => toast.success(t('admin.users.updateSuccess')),
+                    onError: (error) => toast.error(t('admin.users.updateError', { error: error.message }))
                   });
                 }
               }}>

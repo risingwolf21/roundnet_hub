@@ -2,6 +2,7 @@ import { useGroups } from '@/tanstack/groups';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -46,6 +47,7 @@ export const CreateOrUpdateChallengeDialog = ({
   open,
   onClose,
 }: DialogProps<CreateChallengePayload, Challenge | null>) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
   const [data, setData] = useState<Challenge>(payload.challenge ?? EMPTY_CHALLENGE);
 
@@ -64,19 +66,19 @@ export const CreateOrUpdateChallengeDialog = ({
       <DialogContent variant={"drawer"} className='flex flex-col max-h-[95dvh]'>
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>
-            {payload.challenge ? 'Challenge aktualisieren' : 'Neue Challenge erstellen'}
+            {payload.challenge ? t('challenge.dialog.titleUpdate') : t('challenge.dialog.titleCreate')}
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 gap-4 flex flex-col no-scrollbar">
           <Field>
-            <FieldLabel htmlFor="challenge-title">Challenge Titel</FieldLabel>
+            <FieldLabel htmlFor="challenge-title">{t('challenge.dialog.nameLabel')}</FieldLabel>
             <Input
               id='challenge-title'
               value={data.name}
               onChange={(e) => setData({ ...data, name: e.target.value })} />
           </Field>
           <Field>
-            <FieldLabel htmlFor="challenge-description">Challenge Beschreibung</FieldLabel>
+            <FieldLabel htmlFor="challenge-description">{t('challenge.dialog.descriptionLabel')}</FieldLabel>
             <Textarea
               id='challenge-description'
               value={data.description}
@@ -84,7 +86,7 @@ export const CreateOrUpdateChallengeDialog = ({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="challenge-group">Challenge Gruppe</FieldLabel>
+            <FieldLabel htmlFor="challenge-group">{t('challenge.dialog.groupLabel')}</FieldLabel>
             <Select
               id='challenge-group'
               value={selectedGroup?.id ?? payload.challenge?.group ?? 'none'}
@@ -94,14 +96,14 @@ export const CreateOrUpdateChallengeDialog = ({
                   if (result && result !== 'closed') {
                     setData({ ...data, group: result.id });
                   } else {
-                    toast.error('Es wurde keine Gruppe erstellt.');
+                    toast.error(t('challenge.dialog.noGroupCreated'));
                   }
                 } else if (val) {
                   setData({ ...data, group: val });
                 }
               }}>
               <SelectTrigger>
-                <SelectValue placeholder="Gruppe" className="text-base" >
+                <SelectValue placeholder={t('challenge.dialog.groupPlaceholder')} className="text-base" >
                   {selectedGroup?.name}
                 </SelectValue>
               </SelectTrigger>
@@ -121,12 +123,12 @@ export const CreateOrUpdateChallengeDialog = ({
           </Field>
 
           <div className="text-sm font-semibold">
-            Optionale Einstellungen
+            {t('challenge.dialog.optionalSettings')}
           </div>
 
           <div className='flex flex-row w-full justify-between items-center'>
             <div>
-              <div className='text-base font-medium'>Maximale Punkte pro Woche</div>
+              <div className='text-base font-medium'>{t('challenge.dialog.maxPointsPerWeek')}</div>
             </div>
             <div className='flex flex-row items-center gap-2'>
               {
@@ -163,7 +165,7 @@ export const CreateOrUpdateChallengeDialog = ({
 
           <div className='flex flex-row w-full justify-between items-center'>
             <div>
-              <div className='text-base font-medium'>Maximale Punkte pro Tag</div>
+              <div className='text-base font-medium'>{t('challenge.dialog.maxPointsPerDay')}</div>
             </div>
             <div className='flex flex-row items-center gap-2'>
               {
@@ -201,7 +203,7 @@ export const CreateOrUpdateChallengeDialog = ({
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel className='text-base'>
-                Startdatum
+                {t('challenge.dialog.startDate')}
               </FieldLabel>
               <FieldDescription className='flex gap-4'>
                 <Popover modal={true}>
@@ -209,7 +211,7 @@ export const CreateOrUpdateChallengeDialog = ({
                     render={
                       <Button variant="outline" id="date-picker-simple" className="flex-1 justify-start font-normal text-base"
                         disabled={data.start_date === null}>
-                        {data.start_date ? format(data.start_date, "PPP") : <span>Datum wählen</span>}
+                        {data.start_date ? format(data.start_date, "PPP") : <span>{t('admin.analytics.datePlaceholder')}</span>}
                       </Button>
                     }
                   />
@@ -243,7 +245,7 @@ export const CreateOrUpdateChallengeDialog = ({
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel className='text-base'>
-                Enddatum
+                {t('challenge.dialog.endDate')}
               </FieldLabel>
               <FieldDescription className='flex gap-4'>
                 <Popover modal={true}>
@@ -251,7 +253,7 @@ export const CreateOrUpdateChallengeDialog = ({
                     render={
                       <Button variant="outline" id="date-picker-simple" className="flex-1 justify-start font-normal text-base"
                         disabled={data.end_date === null}>
-                        {data.end_date ? format(data.end_date, "PPP") : <span>Datum wählen</span>}
+                        {data.end_date ? format(data.end_date, "PPP") : <span>{t('admin.analytics.datePlaceholder')}</span>}
                       </Button>
                     }
                   />
@@ -285,7 +287,7 @@ export const CreateOrUpdateChallengeDialog = ({
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel htmlFor="switch-all-members" className='text-base'>
-                Zeigt alle Teilnehmer der Challenge an (auch mit 0 Punkten)
+                {t('challenge.dialog.showAllMembers')}
               </FieldLabel>
             </FieldContent>
             <Switch id="switch-all-members"
@@ -301,7 +303,7 @@ export const CreateOrUpdateChallengeDialog = ({
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel htmlFor="switch-comments_enabled" className='text-base'>
-                Kommentare aktiviert
+                {t('challenge.dialog.commentsEnabled')}
               </FieldLabel>
             </FieldContent>
             <Switch id="switch-comments_enabled"
@@ -317,7 +319,7 @@ export const CreateOrUpdateChallengeDialog = ({
           <Field orientation="horizontal">
             <FieldContent>
               <FieldLabel htmlFor="switch-category_enabled" className='text-base'>
-                Kategorien aktiviert
+                {t('challenge.dialog.categoriesEnabled')}
               </FieldLabel>
             </FieldContent>
             <Switch id="switch-category_enabled"
@@ -333,7 +335,7 @@ export const CreateOrUpdateChallengeDialog = ({
           {
             data.category_enabled && <>
               <div className="text-sm font-semibold">
-                Kategorien
+                {t('challenge.dialog.categories')}
               </div>
               {
                 data.category_options.map((x, index) => <InputGroup key={x}>
@@ -374,7 +376,7 @@ export const CreateOrUpdateChallengeDialog = ({
                 }
               }}>
                 <Field orientation="horizontal">
-                  <Input id="new-categoroy" name="new-category" type="text" placeholder="Neue Kategorie..." />
+                  <Input id="new-categoroy" name="new-category" type="text" placeholder={t('challenge.dialog.newCategoryPlaceholder')} />
                   <Button type='submit'>
                     <Plus />
                   </Button>
@@ -387,22 +389,22 @@ export const CreateOrUpdateChallengeDialog = ({
           <Button
             onClick={async () => {
               if (!selectedGroup) {
-                toast.warning('Der Challenge muss eine Gruppe zugeordnet sein.');
+                toast.warning(t('challenge.dialog.groupRequired'));
                 return;
               }
               if (data.name.length < 6) {
-                toast.warning('Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.');
+                toast.warning(t('challenge.dialog.nameTooShort'));
                 return;
               }
               if (data.description.length < 6) {
-                toast.warning('Die Beschreibung der Challenge muss aus mindestens 6 Zeichen bestehen.');
+                toast.warning(t('challenge.dialog.descriptionTooShort'));
                 return;
               }
 
               onClose(data);
             }}
           >
-            {payload.challenge ? 'Aktualisieren' : 'Erstellen'}
+            {payload.challenge ? t('challenge.dialog.update') : t('challenge.dialog.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

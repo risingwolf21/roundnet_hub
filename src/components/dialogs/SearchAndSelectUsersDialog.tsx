@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ type SearchAndSelectUserDialogProps = DialogProps<BasePayload, User[] | User | n
 
 const SearchAndSelectUserDialog = (props: SearchAndSelectUserDialogProps) => {
 
+  const { t } = useTranslation();
   const { open, payload: { usersToFilter } } = props;
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
@@ -80,7 +82,7 @@ const SearchAndSelectUserDialog = (props: SearchAndSelectUserDialogProps) => {
             <Button className="ml-1" disabled={users.length <= 0} onClick={() => {
               props.onClose(selectedUsers)
             }}>
-              Speichern
+              {t('common.save')}
             </Button>
           </div>
 
@@ -95,7 +97,7 @@ const SearchAndSelectUserDialog = (props: SearchAndSelectUserDialogProps) => {
           users.length === 0 && <div className='flex-1 flex flex-col items-center justify-center p-4'>
             <div className='rounded-md border border-dashed p-6 text-center'>
               <Users className='text-muted-foreground mx-auto size-12' />
-              <p className='mt-2 text-sm font-medium'>Keine Nutzer gefunden</p>
+              <p className='mt-2 text-sm font-medium'>{t('search.noUsers')}</p>
             </div>
           </div>
         }

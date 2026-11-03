@@ -7,11 +7,13 @@ import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { Lock, MessageSquare, Plus } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { v4 } from 'uuid';
 import ReportScore from '../../../games/ReportScore';
 
 const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMatch[] }) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
   const navigate = useNavigate();
 
@@ -21,7 +23,7 @@ const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMa
         <CardHeader className="border-b !py-2">
           <div className="flex justify-between items-center !p-0">
             <CardTitle className="text-lg flex items-center">
-              Spiele
+              {t('navigation.matches')}
             </CardTitle>
           </div>
         </CardHeader>
@@ -62,10 +64,10 @@ const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMa
                         </div>
                         <div className='flex justify-center flex-col'>
                           {!x.rated && (
-                            <Badge variant={"outline"}>Ungewertet</Badge>
+                            <Badge variant={"outline"}>{t('games.list.unrated')}</Badge>
                           )}
                           {!x.is_public && (
-                            <Badge variant={"outline"}><Lock className="mr-1 size-3" />Privat</Badge>
+                            <Badge variant={"outline"}><Lock className="mr-1 size-3" />{t('games.list.private')}</Badge>
                           )}
                         </div>
                       </div>
@@ -89,12 +91,12 @@ const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMa
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-muted-foreground">
               <MessageSquare className="h-10 w-10 opacity-20" />
-              <p>Noch keine Spiele.<br />Sei der Erste!</p>
+              <p><Trans i18nKey="events.matchesTab.empty" components={{ br: <br /> }} /></p>
               <Button onClick={async () => {
                 dialogs.open(ReportScore, { eventId: event.id });
               }}>
                 <Plus />
-                Spiel hinzufügen
+                {t('events.matchesTab.addMatch')}
               </Button>
             </div>
           )}

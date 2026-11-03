@@ -91,7 +91,7 @@ export const HistoryScreen = ({
                               toast.error(error.message);
                             },
                             onSuccess: () => {
-                              toast.success("Eintrag aktualisiert");
+                              toast.success(t('drinks.entryUpdated'));
                             },
                           });
                         }
@@ -104,7 +104,7 @@ export const HistoryScreen = ({
               </div>
             ))}
           </div>
-          {isFetchingNextPage && <p style={{ padding: '12px' }}>Lade mehr...</p>}
+          {isFetchingNextPage && <p style={{ padding: '12px' }}>{t('drinks.loadMore')}</p>}
           <div ref={loadMoreRef} style={{ height: 40 }} />
         </PullToRefresh>
       </main>

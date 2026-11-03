@@ -89,7 +89,7 @@ const HomePage = () => {
     <div className="flex flex-col min-h-screen">
       <AppBar
         className='!border-b !shadow-sm'
-        title="Homepage"
+        title={t('home.title')}
         user={user}
       />
       <main className='flex-1 size-full pb-safe-bottom'>
@@ -97,7 +97,7 @@ const HomePage = () => {
           <Has feat={"events"}>
             <div className='flex flex-col gap-2'>
               <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">Events</div>
+                <div className="text-base font-semibold ml-2">{t('home.events')}</div>
                 <Button size={"icon-lg"} variant={"ghost"} disabled={(isEventsLoading || isEventsFetching)} onClick={() => refetchEvents()}>
                   {
                     (isEventsLoading || isEventsFetching) ? <Spinner /> : <RefreshCcw />
@@ -110,12 +110,12 @@ const HomePage = () => {
                 ) : eventsError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
                     <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">Fehler beim Laden der Events</p>
+                    <p className="text-sm font-medium">{t('home.eventsLoadError')}</p>
                   </div>
                 ) : events.length === 0 ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
                     <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">Keine anstehenden Events</p>
+                    <p className="text-sm">{t('home.noUpcomingEvents')}</p>
                   </div>
                 ) : (
                   events.map(event => {
@@ -161,13 +161,13 @@ const HomePage = () => {
 
                         <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground pl-1">
                           {
-                            ((event.attending_count ?? 0) > 0) && <div className="flex items-center gap-1" title="Zugesagt">
+                            ((event.attending_count ?? 0) > 0) && <div className="flex items-center gap-1" title={t('home.attending')}>
                               <Check className="size-3.5 text-success" />
                               <span>{event.attending_count}</span>
                             </div>
                           }
                           {
-                            ((event.declined_count ?? 0) > 0) && <div className="flex items-center gap-1" title="Abgesagt">
+                            ((event.declined_count ?? 0) > 0) && <div className="flex items-center gap-1" title={t('home.declined')}>
                               <X className="size-3.5 text-muted-foreground/70" />
                               <span>{event.declined_count}</span>
                             </div>
@@ -221,7 +221,7 @@ const HomePage = () => {
           <Has feat={"drinks"}>
             <div className='flex flex-col gap-2'>
               <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">Getränke</div>
+                <div className="text-base font-semibold ml-2">{t('drinks.drinks')}</div>
                 <Button size={"icon-lg"} variant={"ghost"} disabled={(isDrinksLoading || isDrinksFetching)} onClick={() => refetchDrinks()}>
                   {
                     (isDrinksLoading || isDrinksFetching) ? <Spinner /> : <RefreshCcw />
@@ -234,12 +234,12 @@ const HomePage = () => {
                 ) : drinksError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
                     <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">Fehler beim Laden der Getränke</p>
+                    <p className="text-sm font-medium">{t('home.drinksLoadError')}</p>
                   </div>
                 ) : drinks.filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink').length === 0 ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
                     <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">Keine Getränke verfügbar</p>
+                    <p className="text-sm">{t('home.noDrinksAvailable')}</p>
                   </div>
                 ) : (
                   drinks
@@ -265,10 +265,10 @@ const HomePage = () => {
                                 { drinks: [{ ...drink, count: 1 }] },
                                 {
                                   onSuccess: () => {
-                                    toast.info('Getränk erfolgreich gebucht!');
+                                    toast.info(t('home.drinkBooked'));
                                   },
                                   onError: (error) => {
-                                    toast.error(`Getränk konnte nicht gebucht werden. ${error.message}`);
+                                    toast.error(t('home.drinkBookError', { error: error.message }));
                                   },
                                 }
                               )
@@ -276,7 +276,7 @@ const HomePage = () => {
                             }}
                           >
                             {
-                              updateHistory.isPending ? <Spinner /> : "Bestellen"
+                              updateHistory.isPending ? <Spinner /> : t('home.order')
                             }
                           </Button>
                         </CardFooter>
@@ -290,7 +290,7 @@ const HomePage = () => {
           <Has feat={"items"}>
             <div className='flex flex-col gap-2'>
               <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">Schlüssel</div>
+                <div className="text-base font-semibold ml-2">{t('home.keys')}</div>
                 <Button size={"icon-lg"} variant={"ghost"} disabled={(isItemsLoading || isItemsFetching)} onClick={() => refetchItems()}>
                   {
                     isItemsFetching ? <Spinner /> : <RefreshCcw />
@@ -303,12 +303,12 @@ const HomePage = () => {
                 ) : itemsError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
                     <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">Fehler beim Laden der Schlüssel</p>
+                    <p className="text-sm font-medium">{t('home.keysLoadError')}</p>
                   </div>
                 ) : items.length === 0 ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
                     <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">Keine Schlüssel hinterlegt</p>
+                    <p className="text-sm">{t('home.noKeys')}</p>
                   </div>
                 ) : (
                   items
@@ -333,7 +333,7 @@ const HomePage = () => {
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <div>{item.full_current_holder?.name ?? "Nicht vergeben"}</div>
+                                <div>{item.full_current_holder?.name ?? t('keys.screen.noHolder')}</div>
                               </div>
                             </div>
                           </div>

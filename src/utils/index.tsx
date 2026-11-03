@@ -1,4 +1,5 @@
 import { Duration, format, intervalToDuration, parse } from 'date-fns';
+import { t } from 'i18next';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
@@ -18,7 +19,9 @@ export const TENANT_LOGO = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof t
 const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap) || 'roundnet-karlsruhe'];
 
 export const BRANDING = {
-  logo: <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
+  get logo() {
+    return <img src={TENANT_LOGO} alt={t('common.logo')} style={{ height: 96, objectFit: 'contain' }} />;
+  },
   title: import.meta.env.VITE_WEBSITE_NAME,
   icon: icon,
 };
@@ -103,24 +106,24 @@ export const translationKeyOfItemType = (type: ItemType | null) => {
 export const nameOfProductType = (type: ProductType) => {
   switch (type) {
     case 'Drink':
-      return 'Getränke';
+      return t('drinks.drinks');
     case 'Special':
-      return 'Anderes';
+      return t('drinks.productTypeSpecial');
     case 'None':
-      return 'Ohne Typ';
+      return t('drinks.productTypeNone');
   }
 };
 
 export const nameOfRecurrence = (type: EventRecurrence) => {
   switch (type) {
     case 'Weekly':
-      return 'Wöchentlich';
+      return t('events.creation.recurrenceWeekly');
     case 'Fortnightly':
-      return 'Alle 2 Wochen';
+      return t('events.creation.recurrenceFortnightly');
     case 'Monthly':
-      return 'Monatlich';
+      return t('events.creation.recurrenceMonthly');
     case 'None':
-      return 'Keine';
+      return t('events.creation.reminderNone');
   }
 };
 

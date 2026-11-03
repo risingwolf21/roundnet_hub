@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import '@/translation/i18n'; // components render real (German) texts in tests
 import { cleanup } from '@testing-library/react';
 import { v4 as uuid } from 'uuid';
 import { afterEach } from 'vitest';
