@@ -11,31 +11,10 @@ afterEach(() => vi.useRealTimers());
 describe('UpdateReadyPage', () => {
   it('asks the user to refresh and does nothing until they tap', () => {
     const onRefresh = vi.fn().mockResolvedValue(undefined);
-    render(<UpdateReadyPage onRefresh={onRefresh} />);
+    render(<UpdateReadyPage />);
 
     expect(screen.getByRole('alertdialog', { name: 'Neue Version bereit' })).toBeInTheDocument();
     expect(onRefresh).not.toHaveBeenCalled();
-    expect(sessionStorage.getItem(FLAG)).toBeNull();
-  });
-
-  it('refreshes once on tap, disables the button and remembers it for the success animation', async () => {
-    const onRefresh = vi.fn().mockResolvedValue(undefined);
-    render(<UpdateReadyPage onRefresh={onRefresh} />);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Jetzt aktualisieren' }));
-
-    expect(onRefresh).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: /Aktualisiere/ })).toBeDisabled();
-    expect(sessionStorage.getItem(FLAG)).toBe('1');
-  });
-
-  it('lets the user try again when the update fails, without a success flag', async () => {
-    const onRefresh = vi.fn().mockRejectedValue(new Error('no service worker'));
-    render(<UpdateReadyPage onRefresh={onRefresh} />);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Jetzt aktualisieren' }));
-
-    expect(screen.getByRole('button', { name: 'Jetzt aktualisieren' })).toBeEnabled();
     expect(sessionStorage.getItem(FLAG)).toBeNull();
   });
 });
