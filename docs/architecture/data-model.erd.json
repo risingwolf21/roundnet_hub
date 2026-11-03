@@ -1,0 +1,1075 @@
+{
+ "schema_version": 1,
+ "diagram_type": "erd",
+ "meta": {
+  "title": "Roundnet app: core data model",
+  "locale": "en",
+  "output": "docs/architecture/data-model.erd.html",
+  "quality_profile": "standard",
+  "repository": {
+   "url": "https://github.com/risingwolf21/roundnet_karlsruhe_app",
+   "provider": "github",
+   "link_mode": "web",
+   "revision": "eeb7254ae658af8c774487bc44e7c90ad12511cc"
+  }
+ },
+ "layout": {
+  "mode": "grid",
+  "gapX": 72,
+  "gapY": 38
+ },
+ "entities": [
+  {
+   "id": "event_group",
+   "label": "event_group",
+   "sublabel": "training group",
+   "tag": "groups",
+   "row": 0,
+   "col": 0,
+   "attributes": [
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "description",
+     "type": "text"
+    },
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "color",
+     "type": "text"
+    },
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "uk"
+     ]
+    },
+    {
+     "name": "is_public",
+     "type": "boolean"
+    },
+    {
+     "name": "need_request_to_join",
+     "type": "boolean"
+    },
+    {
+     "name": "parent_group",
+     "type": "uuid null",
+     "key": "fk",
+     "references": "event_group.id"
+    },
+    {
+     "name": "visible",
+     "type": "boolean"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 532,
+     "end_line": 542,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1919,
+     "end_line": 1969,
+     "label": "current columns"
+    }
+   ],
+   "width": 260
+  },
+  {
+   "id": "group_user_mapping",
+   "label": "group_user_mapping",
+   "sublabel": "membership + role",
+   "tag": "groups",
+   "row": 1,
+   "col": 0,
+   "attributes": [
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "fk"
+     ],
+     "references": "user.id"
+    },
+    {
+     "name": "group",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "fk"
+     ],
+     "references": "event_group.id"
+    },
+    {
+     "name": "role",
+     "type": "GroupRole"
+    },
+    {
+     "name": "trial_started_at",
+     "type": "timestamptz null"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1423,
+     "end_line": 1427,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2366,
+     "end_line": 2408,
+     "label": "current columns"
+    }
+   ],
+   "width": 290
+  },
+  {
+   "id": "user",
+   "label": "user",
+   "sublabel": "profile, 1:1 with auth.users",
+   "tag": "groups",
+   "row": 2,
+   "col": 0,
+   "attributes": [
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "displayName",
+     "type": "text"
+    },
+    {
+     "name": "email",
+     "type": "text"
+    },
+    {
+     "name": "verified",
+     "type": "boolean"
+    },
+    {
+     "name": "role",
+     "type": "UserRole"
+    },
+    {
+     "name": "disabled",
+     "type": "boolean"
+    },
+    {
+     "name": "avatarUrl",
+     "type": "text null"
+    },
+    {
+     "name": "name",
+     "type": "text"
+    },
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "uk"
+     ]
+    },
+    {
+     "name": "last_seen_at",
+     "type": "timestamptz null"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1256,
+     "end_line": 1266,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2665,
+     "end_line": 2703,
+     "label": "current columns"
+    }
+   ],
+   "width": 270
+  },
+  {
+   "id": "event_series",
+   "label": "event_series",
+   "sublabel": "recurring template (RRULE)",
+   "tag": "events",
+   "row": 0,
+   "col": 1,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    },
+    {
+     "name": "key",
+     "type": "text",
+     "key": "uk"
+    },
+    {
+     "name": "group",
+     "type": "uuid",
+     "key": "fk",
+     "references": "event_group.id"
+    },
+    {
+     "name": "title",
+     "type": "text"
+    },
+    {
+     "name": "description",
+     "type": "text"
+    },
+    {
+     "name": "place",
+     "type": "text null"
+    },
+    {
+     "name": "timezone",
+     "type": "text"
+    },
+    {
+     "name": "rrule",
+     "type": "text"
+    },
+    {
+     "name": "recurrence",
+     "type": "EventRecurrence"
+    },
+    {
+     "name": "until",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "dtstart",
+     "type": "timestamptz"
+    },
+    {
+     "name": "duration",
+     "type": "interval"
+    },
+    {
+     "name": "meeting_offset",
+     "type": "interval null"
+    },
+    {
+     "name": "answer_offset",
+     "type": "interval null"
+    },
+    {
+     "name": "max_attendees",
+     "type": "numeric null"
+    },
+    {
+     "name": "max_trial_attendees",
+     "type": "numeric null"
+    },
+    {
+     "name": "required_item",
+     "type": "ItemType null"
+    },
+    {
+     "name": "items_enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "constellations_enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "reminder_before",
+     "type": "text null"
+    },
+    {
+     "name": "items_template",
+     "type": "jsonb"
+    },
+    {
+     "name": "active",
+     "type": "boolean"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "created_by",
+     "type": "uuid null"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/20261025140000_event_series.sql",
+     "line": 18,
+     "end_line": 50,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1970,
+     "end_line": 2065,
+     "label": "current columns"
+    }
+   ],
+   "width": 270
+  },
+  {
+   "id": "events",
+   "label": "events",
+   "sublabel": "one training / occurrence",
+   "tag": "events",
+   "row": 1,
+   "col": 1,
+   "attributes": [
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "description",
+     "type": "text"
+    },
+    {
+     "name": "meetingDateTime",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "startingDateTime",
+     "type": "timestamptz"
+    },
+    {
+     "name": "title",
+     "type": "text"
+    },
+    {
+     "name": "endDateTime",
+     "type": "timestamptz"
+    },
+    {
+     "name": "key",
+     "type": "text"
+    },
+    {
+     "name": "isCancelled",
+     "type": "boolean"
+    },
+    {
+     "name": "place",
+     "type": "text null"
+    },
+    {
+     "name": "recurrence",
+     "type": "EventRecurrence"
+    },
+    {
+     "name": "answerDeadline",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "maxAttendees",
+     "type": "numeric null"
+    },
+    {
+     "name": "recurrenceEnd",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "required_item",
+     "type": "ItemType null"
+    },
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "uk"
+     ]
+    },
+    {
+     "name": "group",
+     "type": "uuid",
+     "key": "fk",
+     "references": "event_group.id"
+    },
+    {
+     "name": "constellations_enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "items_enabled",
+     "type": "boolean"
+    },
+    {
+     "name": "max_trial_attendees",
+     "type": "numeric null"
+    },
+    {
+     "name": "reminder_before",
+     "type": "text null"
+    },
+    {
+     "name": "reminder_sent_at",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "series_id",
+     "type": "uuid null",
+     "key": "fk",
+     "references": "event_series.id"
+    },
+    {
+     "name": "occurrence_date",
+     "type": "date null"
+    },
+    {
+     "name": "detached",
+     "type": "boolean"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1286,
+     "end_line": 1303,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2174,
+     "end_line": 2276,
+     "label": "current columns"
+    }
+   ],
+   "width": 290
+  },
+  {
+   "id": "event_attendance_user_mapping",
+   "label": "event_attendance_user_mapping",
+   "sublabel": "RSVP state per user",
+   "tag": "events",
+   "row": 2,
+   "col": 1,
+   "attributes": [
+    {
+     "name": "lastUpdate",
+     "type": "timestamptz"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "fk"
+     ],
+     "references": "user.id"
+    },
+    {
+     "name": "state",
+     "type": "EventAttendance"
+    },
+    {
+     "name": "event",
+     "type": "uuid",
+     "key": [
+      "pk",
+      "fk"
+     ],
+     "references": "events.id"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1006,
+     "end_line": 1011,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1618,
+     "end_line": 1674,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "event_bring_items",
+   "label": "event_bring_items",
+   "sublabel": "what to bring",
+   "tag": "events",
+   "row": 0,
+   "col": 2,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "event",
+     "type": "uuid",
+     "key": [
+      "fk",
+      "uk"
+     ],
+     "references": "events.id"
+    },
+    {
+     "name": "name",
+     "type": "text",
+     "key": "uk"
+    },
+    {
+     "name": "unit",
+     "type": "text"
+    },
+    {
+     "name": "required_qty",
+     "type": "numeric null"
+    },
+    {
+     "name": "notes",
+     "type": "text null"
+    },
+    {
+     "name": "sort_order",
+     "type": "integer"
+    },
+    {
+     "name": "created_by",
+     "type": "uuid null",
+     "key": "fk",
+     "references": "user.id"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/20250826081744_pledge_event_items.sql",
+     "line": 1,
+     "end_line": 11,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1675,
+     "end_line": 1746,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "event_bring_pledges",
+   "label": "event_bring_pledges",
+   "sublabel": "who brings what",
+   "tag": "events",
+   "row": 1,
+   "col": 2,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "updated_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "event",
+     "type": "uuid",
+     "key": "fk",
+     "references": "events.id"
+    },
+    {
+     "name": "item",
+     "type": "uuid",
+     "key": "fk",
+     "references": "event_bring_items.id"
+    },
+    {
+     "name": "qty",
+     "type": "numeric"
+    },
+    {
+     "name": "status",
+     "type": "text"
+    },
+    {
+     "name": "notes",
+     "type": "text null"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": "fk",
+     "references": "user.id"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/20250826081744_pledge_event_items.sql",
+     "line": 16,
+     "end_line": 26,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1747,
+     "end_line": 1839,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "event_comments",
+   "label": "event_comments",
+   "sublabel": "comment thread",
+   "tag": "events",
+   "row": 2,
+   "col": 2,
+   "attributes": [
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": "fk",
+     "references": "user.id"
+    },
+    {
+     "name": "comment",
+     "type": "text"
+    },
+    {
+     "name": "displayName",
+     "type": "text"
+    },
+    {
+     "name": "event",
+     "type": "uuid",
+     "key": "fk",
+     "references": "events.id"
+    },
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    },
+    {
+     "name": "reply_to",
+     "type": "uuid null",
+     "key": "fk",
+     "references": "event_comments.id"
+    },
+    {
+     "name": "edited",
+     "type": "boolean"
+    },
+    {
+     "name": "last_update",
+     "type": "timestamptz"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1407,
+     "end_line": 1417,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1840,
+     "end_line": 1918,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "drink",
+   "label": "drink",
+   "sublabel": "product + price",
+   "tag": "drinks",
+   "row": 0,
+   "col": 3,
+   "attributes": [
+    {
+     "name": "name",
+     "type": "varchar null"
+    },
+    {
+     "name": "price",
+     "type": "real null"
+    },
+    {
+     "name": "stock",
+     "type": "bigint null"
+    },
+    {
+     "name": "imageUrl",
+     "type": "text null"
+    },
+    {
+     "name": "active",
+     "type": "boolean"
+    },
+    {
+     "name": "deleted",
+     "type": "boolean"
+    },
+    {
+     "name": "type",
+     "type": "ProductType"
+    },
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1337,
+     "end_line": 1347,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 1585,
+     "end_line": 1617,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "history",
+   "label": "history",
+   "sublabel": "one booking line",
+   "tag": "drinks",
+   "row": 1,
+   "col": 3,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "bigint",
+     "key": "pk"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": "fk",
+     "references": "user.id"
+    },
+    {
+     "name": "count",
+     "type": "bigint"
+    },
+    {
+     "name": "payment",
+     "type": "bigint",
+     "key": "fk",
+     "references": "payments.id"
+    },
+    {
+     "name": "amount",
+     "type": "numeric"
+    },
+    {
+     "name": "voucher",
+     "type": "uuid null",
+     "key": "fk",
+     "references": "vouchers.id"
+    },
+    {
+     "name": "drink",
+     "type": "uuid",
+     "key": "fk",
+     "references": "drink.id"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1509,
+     "end_line": 1518,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2409,
+     "end_line": 2477,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "payments",
+   "label": "payments",
+   "sublabel": "open / fulfilled bill",
+   "tag": "drinks",
+   "row": 2,
+   "col": 3,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "bigint",
+     "key": "pk"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz null"
+    },
+    {
+     "name": "amountToPay",
+     "type": "numeric"
+    },
+    {
+     "name": "paymentState",
+     "type": "PaymentState"
+    },
+    {
+     "name": "id_uuid",
+     "type": "uuid"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": "fk",
+     "references": "user.id"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1610,
+     "end_line": 1616,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2582,
+     "end_line": 2616,
+     "label": "current columns"
+    }
+   ]
+  },
+  {
+   "id": "vouchers",
+   "label": "vouchers",
+   "sublabel": "prepaid drinks",
+   "tag": "drinks",
+   "row": 3,
+   "col": 3,
+   "attributes": [
+    {
+     "name": "id",
+     "type": "uuid",
+     "key": "pk"
+    },
+    {
+     "name": "created_at",
+     "type": "timestamptz"
+    },
+    {
+     "name": "user",
+     "type": "uuid",
+     "key": "fk",
+     "references": "user.id"
+    },
+    {
+     "name": "total_drinks",
+     "type": "numeric"
+    },
+    {
+     "name": "title",
+     "type": "text null"
+    }
+   ],
+   "sources": [
+    {
+     "path": "supabase/migrations/000_initial.sql",
+     "line": 1733,
+     "end_line": 1739,
+     "label": "CREATE TABLE"
+    },
+    {
+     "path": "src/types/supabase-generated.types.ts",
+     "line": 2739,
+     "end_line": 2771,
+     "label": "current columns"
+    }
+   ]
+  }
+ ],
+ "relationships": [
+  {
+   "id": "gum_user",
+   "from": "group_user_mapping",
+   "to": "user",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "member"
+  },
+  {
+   "id": "gum_group",
+   "from": "group_user_mapping",
+   "to": "event_group",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "of group"
+  },
+  {
+   "id": "series_group",
+   "from": "event_series",
+   "to": "event_group",
+   "fromCardinality": "many",
+   "toCardinality": "one"
+  },
+  {
+   "id": "events_group",
+   "from": "events",
+   "to": "event_group",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "held by"
+  },
+  {
+   "id": "events_series",
+   "from": "events",
+   "to": "event_series",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "occurrence of",
+   "toOptional": true,
+   "identifying": false,
+   "variant": "dashed"
+  },
+  {
+   "id": "att_event",
+   "from": "event_attendance_user_mapping",
+   "to": "events",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "RSVP for"
+  },
+  {
+   "id": "items_event",
+   "from": "event_bring_items",
+   "to": "events",
+   "fromCardinality": "many",
+   "toCardinality": "one"
+  },
+  {
+   "id": "pledge_item",
+   "from": "event_bring_pledges",
+   "to": "event_bring_items",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "pledges"
+  },
+  {
+   "id": "comment_event",
+   "from": "event_comments",
+   "to": "events",
+   "fromCardinality": "many",
+   "toCardinality": "one"
+  },
+  {
+   "id": "history_drink",
+   "from": "history",
+   "to": "drink",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "booked"
+  },
+  {
+   "id": "history_payment",
+   "from": "history",
+   "to": "payments",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "billed on"
+  },
+  {
+   "id": "history_voucher",
+   "from": "history",
+   "to": "vouchers",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "paid by",
+   "toOptional": true,
+   "identifying": false,
+   "variant": "dashed"
+  },
+  {
+   "id": "payment_user",
+   "from": "payments",
+   "to": "user",
+   "fromCardinality": "many",
+   "toCardinality": "one",
+   "label": "owed by"
+  }
+ ],
+ "cards": [
+  {
+   "dot": "cyan",
+   "title": "Scope",
+   "items": [
+    "13 core tables of the public schema: groups and members, trainings, drinks billing.",
+    "Columns, types and keys as they are after all migrations (read from the local database at the pinned commit)."
+   ]
+  },
+  {
+   "dot": "amber",
+   "title": "Not drawn as lines",
+   "items": [
+    "Every FK column still names its target table. Lines to user are left out for attendance, comments, items, pledges, history and vouchers so the map stays readable.",
+    "Self references: event_group.parent_group and event_comments.reply_to.",
+    "user.id is also a foreign key to auth.users (Supabase Auth)."
+   ]
+  },
+  {
+   "dot": "slate",
+   "title": "Other tables (not shown)",
+   "items": [
+    "Permissions: permissions, features, group_permissions, group_features, user_direct_grants.",
+    "Events extra: event_transformations, event_transformation_applications.",
+    "Challenges, items/keys, tournament_costs, app_config, bundesliga_cache.",
+    "Schemas games (players, match, sets, Elo) and notifications (outbox, push subscriptions)."
+   ]
+  }
+ ]
+}
