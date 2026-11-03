@@ -11,6 +11,25 @@ body {
 }
 
 
+/* PWA update page (features/pwa/AppUpdate.tsx) */
+@keyframes update-ring {
+  0% { transform: scale(0.55); opacity: 0.6; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+@keyframes update-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes update-draw {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes update-badge {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.96); }
+  10%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
