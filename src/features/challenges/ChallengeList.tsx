@@ -12,6 +12,7 @@ import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
 import groupBy from 'lodash.groupby';
 import { AlertCircle, Archive, Plus, RefreshCcw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
@@ -30,23 +31,27 @@ const ChallengeListSkeleton = () => (
   </div>
 );
 
-const ChallengeListError = ({ message, onRetry }: { message: string, onRetry: () => void }) => (
+const ChallengeListError = ({ message, onRetry }: { message: string, onRetry: () => void }) => {
+  const { t } = useTranslation();
+  return (
   <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
     <div className="bg-destructive/10 p-3 rounded-full">
       <AlertCircle className="size-8 text-destructive" />
     </div>
     <div>
-      <h3 className="text-lg font-semibold">Fehler beim Laden</h3>
+      <h3 className="text-lg font-semibold">{t('games.list.loadError')}</h3>
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>
     <Button variant="outline" onClick={onRetry} className="gap-2">
       <RefreshCcw className="size-4" />
-      Erneut versuchen
+      {t('challenge.list.retry')}
     </Button>
   </div>
-);
+  );
+};
 
 const ChallengeListPage = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -63,7 +68,7 @@ const ChallengeListPage = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title="Challenges"
+        title={t('navigation.challenges')}
         user={user}
         actions={
           <Has perm={"challenge.create"}>
@@ -73,9 +78,9 @@ const ChallengeListPage = () => {
                 if (result) {
                   await insertChallengeMutation.mutateAsync(result, {
                     onError: (error) =>
-                      toast.error('Challenge konnte nicht erstellt werden. ' + error.message),
+                      toast.error(t('challenge.createError', { error: error.message })),
                     onSuccess: (data) => {
-                      toast.success('Challenge wurde erfolgreich erstellt.');
+                      toast.success(t('challenge.createSuccess'));
                       navigate('/challenges/' + data.id);
                     },
                   });
@@ -92,7 +97,7 @@ const ChallengeListPage = () => {
             <ChallengeListSkeleton />
           ) : error ? (
             <ChallengeListError
-              message={error instanceof Error ? error.message : 'Unbekannter Fehler'}
+              message={error instanceof Error ? error.message : t('challenge.list.unknownError')}
               onRetry={handleRefresh}
             />
           ) : (
@@ -109,7 +114,7 @@ const ChallengeListPage = () => {
 
               <div className='text-lg font-bold pt-4 flex flex-row gap-2 items-center'>
                 <Archive />
-                Archivierte Challenges
+                {t('challenge.list.archived')}
               </div>
 
               {

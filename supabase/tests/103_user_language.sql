@@ -4,6 +4,12 @@
 BEGIN;
 SELECT plan(7);
 
+-- Sign-up: the language chosen on the device arrives as auth metadata; anything else becomes German.
+-- (auth.users is only writable by the test session itself, so this runs before switching roles.)
+INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES
+  ('00000000-0000-0000-0000-0000000000a1', 'lang_en@test.com', '{"name": "Lang En", "language": "en"}'),
+  ('00000000-0000-0000-0000-0000000000a2', 'lang_fr@test.com', '{"name": "Lang Fr", "language": "fr"}');
+
 SELECT tests.authenticate_as_service_role();
 
 SELECT is(
@@ -13,11 +19,6 @@ SELECT is(
 SELECT throws_ok(
   $$ UPDATE public."user" SET language = 'fr' WHERE id = tests.get_supabase_uid('user_1a') $$,
   '23514', NULL, 'only de and en are accepted');
-
--- Sign-up: the language chosen on the device arrives as auth metadata; anything else becomes German.
-INSERT INTO auth.users (id, email, raw_user_meta_data) VALUES
-  ('00000000-0000-0000-0000-0000000000a1', 'lang_en@test.com', '{"name": "Lang En", "language": "en"}'),
-  ('00000000-0000-0000-0000-0000000000a2', 'lang_fr@test.com', '{"name": "Lang Fr", "language": "fr"}');
 
 SELECT is(
   (SELECT language FROM public."user" WHERE id = '00000000-0000-0000-0000-0000000000a1'),

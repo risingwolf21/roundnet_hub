@@ -25,7 +25,7 @@ export const AuthGate = () => {
   // The saved language of the account wins over what the device remembered.
   const { i18n } = useTranslation();
   useEffect(() => {
-    if (currentUser?.language) i18n.changeLanguage(currentUser.language);
+    if (currentUser?.language && currentUser.language !== i18n.resolvedLanguage) i18n.changeLanguage(currentUser.language);
   }, [currentUser?.language, i18n]);
 
   useEffect(() => {

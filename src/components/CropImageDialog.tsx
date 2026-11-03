@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Cropper, { Area } from 'react-easy-crop';
 
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ interface CropPayload {
 }
 
 const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<CropPayload, string>) => {
+  const { t } = useTranslation();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
@@ -43,7 +45,7 @@ const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<C
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
-        <DialogTitle className="flex-1">Bild zuschneiden</DialogTitle>
+        <DialogTitle className="flex-1">{t('cropImage.title')}</DialogTitle>
         <DialogClose />
       </DialogHeader>
       <DialogBody>
@@ -67,9 +69,9 @@ const CropImageDialog = ({ open, payload: { imageUrl }, onClose }: DialogProps<C
 
       <DialogFooter variant={"fullscreen"}>
         <div className='flex w-full justify-even gap-4'>
-          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
+          <DialogClose render={<Button variant="outline">{t('common.cancel')}</Button>} />
           <Button className="flex-1" onClick={handleSave}>
-            Zuschneiden & Speichern
+            {t('cropImage.save')}
           </Button>
         </div>
       </DialogFooter>

@@ -19,6 +19,7 @@ import { Has } from '@/hooks/useGrants';
 import { useProfile } from '@/tanstack/user';
 import { AlertTriangle, ChevronDown, RefreshCw, RotateCcw, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EncounterEditor } from './components/EncounterEditor';
 import {
   emptyLineup,
@@ -34,15 +35,16 @@ import type { ScrapedPlayer, ScrapedTeam } from './repository';
 import { useLeagueData, useRefreshBundesliga, useRosters } from './useBundesliga';
 
 const GENDERS: { value: Gender; label: string }[] = [
-  { value: 'male', label: 'M' },
-  { value: 'female', label: 'W' },
-  { value: 'unknown', label: '?' },
+  { value: 'male', label: 'bundesliga.gender.male' },
+  { value: 'female', label: 'bundesliga.gender.female' },
+  { value: 'unknown', label: 'bundesliga.gender.unknown' },
 ];
 
 const mdLabel = (name: string, date: string | null, city: string | null) =>
   [name, city, date].filter(Boolean).join(' · ');
 
 const BundesligaPlannerPage = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const { data: profile } = useProfile(user.id);
   const [state, patch] = usePlannerState();
@@ -227,7 +229,7 @@ const BundesligaPlannerPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <AppBar
-        title="Bundesliga-Aufstellung"
+        title={t('bundesliga.title')}
         user={user}
         primaryAction="back"
         actions={
@@ -235,7 +237,7 @@ const BundesligaPlannerPage = () => {
             <Button
               variant="ghost"
               size="icon-lg"
-              title="Daten neu laden (Admin)"
+              title={t('bundesliga.reloadData')}
               disabled={refresh.isPending}
               onClick={() =>
                 refresh.mutate({ leagueId: state.leagueId, teams: teamsNeedingRosters })
@@ -251,11 +253,11 @@ const BundesligaPlannerPage = () => {
         {/* Setup */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Spieltag einrichten</CardTitle>
+            <CardTitle className="text-base">{t('bundesliga.setup')}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Liga</label>
+              <label className="text-xs text-muted-foreground">{t('bundesliga.league')}</label>
               <Select
                 items={Object.fromEntries(
                   (leagues.length ? leagues : [{ id: state.leagueId, name: state.leagueId }]).map(
@@ -266,7 +268,7 @@ const BundesligaPlannerPage = () => {
                 onValueChange={(v) => v && selectLeague(v)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Liga wählen" />
+                  <SelectValue placeholder={t('bundesliga.selectLeague')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(leagues.length ? leagues : [{ id: state.leagueId, name: state.leagueId }]).map(
@@ -282,25 +284,25 @@ const BundesligaPlannerPage = () => {
 
             {isLoading && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Spinner /> Teams werden geladen…
+                <Spinner /> {t('bundesliga.loadingTeams')}
               </div>
             )}
             {isError && (
               <p className="text-sm text-destructive">
-                Konnte Ligadaten nicht laden: {String((error as Error)?.message ?? error)}
+                {t('bundesliga.leagueLoadError', { error: String((error as Error)?.message ?? error) })}
               </p>
             )}
 
             {!isLoading && !isError && (
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Mein Team</label>
+                <label className="text-xs text-muted-foreground">{t('bundesliga.myTeam')}</label>
                 <Select
                   items={Object.fromEntries(teams.map((t) => [t.teamId, t.name]))}
                   value={state.ownTeamId ?? ''}
                   onValueChange={(v) => v && selectOwnTeam(v)}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Team wählen" />
+                    <SelectValue placeholder={t('bundesliga.selectTeam')} />
                   </SelectTrigger>
                   <SelectContent>
                     {teams.map((t) => (
@@ -317,7 +319,7 @@ const BundesligaPlannerPage = () => {
             {state.ownTeamId && (
               <div className="flex flex-col gap-2">
                 <label className="text-xs text-muted-foreground">
-                  Gegner {state.matchDayName ? `· ${state.matchDayName}` : ''}
+                  {t('bundesliga.opponents')} {state.matchDayName ? `· ${state.matchDayId === 'manual' ? t('bundesliga.manual') : state.matchDayName}` : ''}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {teams
@@ -343,7 +345,7 @@ const BundesligaPlannerPage = () => {
 
         {rostersLoading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner /> Kader werden geladen…
+            <Spinner /> {t('bundesliga.loadingSquads')}
           </div>
         )}
 
@@ -360,7 +362,7 @@ const BundesligaPlannerPage = () => {
                         <AvatarFallback>{ownTeamCard.name.slice(0, 2)}</AvatarFallback>
                       </Avatar>
                     )}
-                    Mein Kader ({myPlayers.length}/{myRoster.length} dabei)
+                    {t('bundesliga.mySquad', { present: myPlayers.length, total: myRoster.length })}
                   </CardTitle>
                   <ChevronDown className="size-4 text-muted-foreground" />
                 </CardHeader>
@@ -368,8 +370,7 @@ const BundesligaPlannerPage = () => {
               <CollapsibleContent>
                 <CardContent className="flex flex-col gap-2">
                   <p className="text-xs text-muted-foreground">
-                    Wer ist am Spieltag dabei? Nur dabei-Spieler stehen zur Aufstellung. Geschlecht
-                    wird automatisch erkannt – bei Bedarf korrigieren (zählt für Women &amp; Mixed).
+                    {t('bundesliga.squadHint')}
                   </p>
                   {myRoster.map((p) => {
                     const present = isPresent(p.id);
@@ -397,7 +398,7 @@ const BundesligaPlannerPage = () => {
                               variant={p.gender === g.value ? 'default' : 'outline'}
                               onClick={() => setGender(p.id, g.value)}
                             >
-                              {g.label}
+                              {t(g.label)}
                             </Button>
                           ))}
                         </div>
@@ -416,7 +417,7 @@ const BundesligaPlannerPage = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <Trophy className="size-4" /> Spiele pro Spieler
+                  <Trophy className="size-4" /> {t('bundesliga.gamesPerPlayer')}
                 </span>
                 {totalErrors > 0 && (
                   <Badge variant="destructive" className="flex items-center gap-1">
@@ -459,7 +460,7 @@ const BundesligaPlannerPage = () => {
                       setOpponentLineup(o.id, emptyLineup());
                     }}
                   >
-                    <RotateCcw className="size-4 mr-1" /> Zurücksetzen
+                    <RotateCcw className="size-4 mr-1" /> {t('bundesliga.reset')}
                   </Button>
                 </div>
                 <EncounterEditor
@@ -480,7 +481,7 @@ const BundesligaPlannerPage = () => {
 
         {!isLoading && !isError && myPlayers.length === 0 && (
           <p className="text-sm text-muted-foreground text-center py-8">
-            Wähle deine Liga und dein Team, um die Aufstellung zu planen.
+            {t('bundesliga.chooseLeagueAndTeam')}
           </p>
         )}
       </main>

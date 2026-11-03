@@ -8,6 +8,7 @@
 // an admin forces a reload (`force: true`, gated by the `bundesliga.admin` permission).
 import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
+import { localized } from '../_shared/lang.ts';
 import {
   parseMatchDays,
   parseRoster,
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
 
   try {
     if (force && !(await assertCanForce(req.headers.get('Authorization') || ''))) {
-      return json({ error: 'Keine Berechtigung zum harten Neuladen (bundesliga.admin).' }, 403);
+      return json({ error: localized(req, 'Keine Berechtigung zum harten Neuladen (bundesliga.admin).', 'You are not allowed to force a reload (bundesliga.admin).') }, 403);
     }
 
     if (action === 'league') {
@@ -180,6 +181,6 @@ Deno.serve(async (req) => {
     return json({ error: `Unbekannte action: ${action}` }, 400);
   } catch (error) {
     Sentry.captureException(error);
-    return json({ error: 'Interner Serverfehler', details: String(error) }, 500);
+    return json({ error: localized(req, 'Interner Serverfehler', 'Internal server error'), details: String(error) }, 500);
   }
 });

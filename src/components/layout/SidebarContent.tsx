@@ -89,7 +89,7 @@ export function AppSidebar() {
       key: "headerList",
       children: [
         {
-          title: "Home",
+          title: t('navigation.home'),
           icon: <Home />,
           path: 'home',
           permission: {
@@ -98,7 +98,7 @@ export function AppSidebar() {
           }
         },
         {
-          title: "Account",
+          title: t('navigation.account'),
           icon: <User />,
           path: 'user'
         }
@@ -223,7 +223,7 @@ export function AppSidebar() {
     },
     {
       key: "adminList",
-      header: "Admin",
+      header: t('navigation.adminHeader'),
       permission: {
         perm: [
           'drinks.confirm.payments',
@@ -287,12 +287,12 @@ export function AppSidebar() {
       key: "infoList",
       children: [
         {
-          title: "Hilfe und Information",
+          title: t('navigation.help'),
           path: "help",
           icon: <HelpCircle />
         },
         {
-          title: "Aktualisieren",
+          title: t('navigation.refresh'),
           onClick: handleAppUpdate,
           icon: isUpdating ? <Spinner /> : <RefreshCcw />
         },

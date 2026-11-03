@@ -11,6 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Switch } from '@/components/ui/switch';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { EuroIcon, Image, Trash2, UploadCloud } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 
@@ -19,6 +20,7 @@ type EditDrinkDialogProps = {
 };
 
 const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<EditDrinkDialogProps, Drink | null>) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -77,7 +79,7 @@ const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<Edit
       <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full overflow-hidden">
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>
-            Getränk {drink?.id ? 'bearbeiten' : 'erstellen'}
+            {drink?.id ? t('drinks.editDrink') : t('drinks.createDrink')}
           </DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-y-auto min-h-0 p-4 gap-6 flex flex-col no-scrollbar">
@@ -114,7 +116,7 @@ const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<Edit
               }} />
               <Button type='button' disabled={isCropping} variant='outline' onClick={() => inputRef.current?.click()} className='flex items-center gap-2'>
                 <UploadCloud />
-                Bild hochladen
+                {t('drinks.edit.uploadImage')}
               </Button>
               <Button
                 type='button'
@@ -136,21 +138,21 @@ const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<Edit
 
 
           <Field>
-            <FieldLabel htmlFor="name">Name</FieldLabel>
+            <FieldLabel htmlFor="name">{t('drinks.edit.name')}</FieldLabel>
             <Input
               id="name"
               name='name'
-              placeholder="Name"
+              placeholder={t('drinks.edit.name')}
               defaultValue={drink.name ?? ''} />
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="name">Preis</FieldLabel>
+            <FieldLabel htmlFor="name">{t('drinks.edit.price')}</FieldLabel>
             <InputGroup>
               <InputGroupInput id="price"
                 name='price'
                 type='number'
-                placeholder="Preis"
+                placeholder={t('drinks.edit.price')}
                 defaultValue={drink.price ?? ''} />
               <InputGroupAddon align="inline-end">
                 <EuroIcon />
@@ -159,22 +161,22 @@ const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<Edit
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="name">Anzahl</FieldLabel>
+            <FieldLabel htmlFor="name">{t('drinks.edit.quantity')}</FieldLabel>
             <Input
               id="stock"
               name='stock'
               type="number"
-              placeholder="Anzahl"
+              placeholder={t('drinks.edit.quantity')}
               defaultValue={drink.stock ?? ''} />
           </Field>
 
           <Field orientation="horizontal" className="max-w-sm">
             <FieldContent>
               <FieldLabel htmlFor="switch-active">
-                Aktiv
+                {t('drinks.edit.active')}
               </FieldLabel>
               <FieldDescription>
-                Wenn dieses Getränk nicht aktiv ist, wird es den Nutzern nicht angezeigt.
+                {t('drinks.edit.activeDescription')}
               </FieldDescription>
             </FieldContent>
             <Switch id="switch-active" checked={activeDrink} onCheckedChange={(val) => setActiveDrink(val)} />
@@ -183,7 +185,7 @@ const EditDrinkDialog = ({ payload: { drink }, open, onClose }: DialogProps<Edit
         </div>
         <DialogFooter className="p-4 border-t shrink-0 m-0">
           <Button type='submit'>
-            Speichern
+            {t('common.save')}
           </Button>
         </DialogFooter>
       </form>

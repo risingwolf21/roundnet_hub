@@ -1,6 +1,7 @@
 import { useFeatures, usePermissions } from '@/tanstack/grants';
 import { UseQueryResult } from '@tanstack/react-query';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,6 +25,7 @@ type GrantsEditorProps = {
 };
 
 export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => {
+  const { t } = useTranslation();
   const { data: perms } = usePermissions();
   const { data: feats } = useFeatures();
 
@@ -81,7 +83,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
         <DialogClose />
       </DialogHeader>
       <DialogBody>
-        <div className="text-sm font-semibold m-2">Permissions</div>
+        <div className="text-sm font-semibold m-2">{t('browse.permissions')}</div>
         <div>
           {(perms || []).map((p) => (
             <Item key={p} className='odd:bg-muted/50'>
@@ -98,7 +100,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
           ))}
         </div>
 
-        <div className="text-sm font-semibold m-2">Features</div>
+        <div className="text-sm font-semibold m-2">{t('grants.features')}</div>
         <div>
           {(feats || []).map((p) => (
             <Item key={p} className='odd:bg-muted/50'>
@@ -117,14 +119,14 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
       </DialogBody>
       <DialogFooter variant={"fullscreen"}>
         <div className='flex w-full justify-even gap-4'>
-          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
+          <DialogClose render={<Button variant="outline">{t('common.cancel')}</Button>} />
           <Button className="flex-1" onClick={() => onClose({
             grantPerm: [...selectedPerms].filter((k) => !currentPermsSet.has(k)),
             revokePerm: [...currentPermsSet].filter((k) => !selectedPerms.has(k)),
             grantFeat: [...selectedFeats].filter((k) => !currentFeatSet.has(k)),
             revokeFeat: [...currentFeatSet].filter((k) => !selectedFeats.has(k)),
           })}>
-            Speichern
+            {t('common.save')}
           </Button>
         </div>
       </DialogFooter>

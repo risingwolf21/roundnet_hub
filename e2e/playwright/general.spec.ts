@@ -69,7 +69,7 @@ test.describe('Allgemein', () => {
     test.skip(testInfo.project.name !== 'mobile', 'phone layout only');
     await signIn(page, ME.email);
     await page.goto('/home');
-    await page.getByRole('button', { name: 'Toggle Sidebar' }).first().click();
+    await page.getByRole('button', { name: 'Seitenleiste umschalten' }).first().click();
     await page.getByRole('link', { name: 'Gruppen' }).or(page.getByRole('button', { name: 'Gruppen' })).first().click();
     await expect(page).toHaveURL(/\/groups/);
   });

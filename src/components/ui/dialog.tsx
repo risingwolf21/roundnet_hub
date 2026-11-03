@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { cva, VariantProps } from "class-variance-authority"
 import { XIcon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -113,6 +114,7 @@ export interface DialogHeaderProps extends React.ComponentProps<"div">, VariantP
 }
 
 function DialogHeader({ className, variant, children, showCloseButton = true, ...props }: DialogHeaderProps) {
+  const { t } = useTranslation();
   if (variant === "appbar") {
     return (
       <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className)} {...props}>
@@ -125,7 +127,7 @@ function DialogHeader({ className, variant, children, showCloseButton = true, ..
               render={
                 <Button variant="ghost" className="z-50" size="icon-sm">
                   <XIcon />
-                  <span className="sr-only">Close</span>
+                  <span className="sr-only">{t('common.close')}</span>
                 </Button>
               }
             />
@@ -144,7 +146,7 @@ function DialogHeader({ className, variant, children, showCloseButton = true, ..
           render={
             <Button variant="ghost" className="z-50" size="icon-sm">
               <XIcon />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('common.close')}</span>
             </Button>
           }
         />
@@ -182,11 +184,12 @@ export interface DialogFooterProps extends React.ComponentProps<"div">, VariantP
 }
 
 function DialogFooter({ className, variant, showCloseButton = false, children, ...props }: DialogFooterProps) {
+  const { t } = useTranslation();
   return (
     <div data-slot="dialog-footer" className={cn(dialogFooterVariants({ variant }), className)} {...props}>
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline">Schließen</Button>} />
+        <DialogPrimitive.Close render={<Button variant="outline">{t('common.close')}</Button>} />
       )}
     </div>
   )

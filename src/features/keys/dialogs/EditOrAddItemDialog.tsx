@@ -1,5 +1,6 @@
 import { useInsertItemMutation, useUpdateItemMutation } from '@/tanstack/items';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,6 +15,7 @@ type EditOrAddItemDialogProps = {
 };
 
 export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: DialogProps<EditOrAddItemDialogProps>) => {
+  const { t } = useTranslation();
   const [currentItem, setCurrentItem] = useState<ItemUpdate>({
     id: itemToEdit?.id,
     name: itemToEdit?.name,
@@ -37,11 +39,11 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
 
   const handleSubmit = async () => {
     if (!currentItem.name || currentItem.name.length < 6) {
-      toast.warning('Der Schlüsselname ist zu kurz!');
+      toast.warning(t('keys.dialog.nameTooShort'));
       return;
     }
     if (!currentItem.type) {
-      toast.warning('Der Schlüssel braucht einen Typ');
+      toast.warning(t('keys.dialog.typeRequired'));
       return;
     }
     console.log(currentItem)
@@ -77,10 +79,10 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
   };
 
   const KEY_TYPES: { label: string, value: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe" | 'none' }[] = [
-    { label: "MTV Keller", value: "mtvStorage" },
-    { label: "MTV Gym", value: "mtvGym" },
+    { label: t('itemType.mtvStorage'), value: "mtvStorage" },
+    { label: t('itemType.mtvGym'), value: "mtvGym" },
     { label: "MTV Palazzo", value: "mtvGymPalazzo" },
-    { label: "Nichts", value: 'none' }
+    { label: t('keys.dialog.noType'), value: 'none' }
   ]
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
@@ -88,16 +90,16 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
       <DialogHeader variant={"appbar"}>
         <DialogClose />
         <DialogTitle className="flex-1">
-          {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
+          {(currentItem.id ?? 0) > 0 ? t('keys.dialog.edit') : t('keys.dialog.create')}
         </DialogTitle>
         <Button className="ml-1" onClick={handleSubmit}>
-          Speichern
+          {t('common.save')}
         </Button>
       </DialogHeader>
       <DialogBody className='gap-4'>
         <Field>
           <FieldLabel htmlFor="item-name">
-            Schlüsselname
+            {t('keys.dialog.name')}
           </FieldLabel>
           <Input
             id="item-name"
@@ -108,7 +110,7 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
 
         <Field>
           <FieldLabel htmlFor="item-name">
-            Farbe
+            {t('common.color')}
           </FieldLabel>
           <Input
             id="item-name"
@@ -119,7 +121,7 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
         </Field>
 
         <Field className="w-full">
-          <FieldLabel>Schlüsseltyp</FieldLabel>
+          <FieldLabel>{t('keys.dialog.type')}</FieldLabel>
           <Select
             items={KEY_TYPES}
             value={currentItem.type ?? 'none'}
@@ -128,7 +130,7 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
               type: val === 'none' ? undefined : (val as ItemType)
             })}>
             <SelectTrigger className={"w-full"}>
-              <SelectValue placeholder="Typ" />
+              <SelectValue placeholder={t('keys.dialog.typePlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

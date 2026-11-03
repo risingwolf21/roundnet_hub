@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { DeleteEventType } from '../types';
 
@@ -6,23 +7,24 @@ import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { DialogProps } from '@/contexts/DialogsProvider';
 
 export const DeleteEventDialog = ({ open, onClose }: DialogProps<EventsUserView, DeleteEventType | null>) => {
+  const { t } = useTranslation();
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"drawer"}>
       <DialogHeader>
-        <DialogTitle>Event aktualisieren</DialogTitle>
+        <DialogTitle>{t('events.deleteDialog.title')}</DialogTitle>
       </DialogHeader>
       <DialogBody>
         <div className='flex flex-col gap-2 p-4'>
           <Item variant={"outline"} onClick={() => onClose('This Event')}>
             <ItemContent>
-              <ItemTitle>Nur dieses Event</ItemTitle>
+              <ItemTitle>{t('events.deleteDialog.onlyThis')}</ItemTitle>
             </ItemContent>
           </Item>
 
           <Item variant={"outline"} onClick={() => onClose('This and following events')}>
             <ItemContent>
-              <ItemTitle>Dieses und alle folgenden Events löschen</ItemTitle>
+              <ItemTitle>{t('events.deleteDialog.thisAndFollowing')}</ItemTitle>
             </ItemContent>
           </Item>
         </div>

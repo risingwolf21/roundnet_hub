@@ -20,6 +20,7 @@ import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 
 const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
+  const { t } = useTranslation();
   const { refetchUserGrants } = useGrants();
   const joinGroup = useJoinGroup(group.id, user, group.need_request_to_join ? "joinRequested" : "user");
 
@@ -30,7 +31,7 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
         joinGroup.mutate(undefined, {
           onError: (e) => {
             captureException(e);
-            toast.error("Der Gruppe konnte nicht beigetreten werden.");
+            toast.error(t('groups.joinError'));
           },
           onSuccess: () => {
             refetchUserGrants();
@@ -39,7 +40,7 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
         event.stopPropagation();
       }}
     >
-      {joinGroup.isPending ? "Tritt bei..." : group.need_request_to_join ? "Anfragen" : "Beitreten"}
+      {joinGroup.isPending ? t('groups.joining') : group.need_request_to_join ? t('groups.requests') : t('groups.join')}
     </Button>
   );
 }
@@ -66,7 +67,7 @@ const PublicGroupList = () => {
   return <div>
     <AppBar
       className='!border-b !shadow-sm'
-      title={"Gruppen"}
+      title={t('navigation.groups')}
       primaryAction="default"
       user={user}
       actions={
@@ -75,9 +76,9 @@ const PublicGroupList = () => {
             const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
             if (result && result !== 'closed') {
               refetch();
-              toast.success('Gruppe wurde erfolgreich erstellt.');
+              toast.success(t('groups.createSuccess'));
             } else if (!result) {
-              toast.error('Gruppe konnte nicht erstellt werden.');
+              toast.error(t('groups.createError'));
             }
           }}>
             <Plus />
@@ -105,9 +106,9 @@ const PublicGroupList = () => {
           ) : error ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 mt-12 text-center">
               <AlertCircle className="size-10 text-destructive mb-4" />
-              <h2 className="text-xl font-bold tracking-tight">Fehler beim Laden</h2>
+              <h2 className="text-xl font-bold tracking-tight">{t('games.list.loadError')}</h2>
               <p className="text-muted-foreground mt-2 max-w-xs">
-                Die Gruppen konnten nicht geladen werden. Bitte versuche es später erneut.
+                {t('groups.loadErrorDescription')}
               </p>
             </div>
           ) : groups.length === 0 ? (
@@ -115,9 +116,9 @@ const PublicGroupList = () => {
               <div className="rounded-full bg-muted p-6 mb-4">
                 <SearchX className="size-10 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-bold tracking-tight">Keine Gruppen gefunden</h2>
+              <h2 className="text-xl font-bold tracking-tight">{t('groups.empty')}</h2>
               <p className="text-muted-foreground mt-2 max-w-xs">
-                Es gibt aktuell keine öffentlichen Gruppen. Erstelle eine neue Gruppe, um zu beginnen.
+                {t('groups.emptyDescription')}
               </p>
             </div>
           ) : (
@@ -165,7 +166,7 @@ const PublicGroupList = () => {
                         }
                         {x.user_group_role === 'admin' && (
                           <Badge variant="outline" className="text-info">
-                            Admin
+                            {t('groups.admin')}
                           </Badge>
                         )}
                         {x.user_group_role === 'admin' && requested_group_joins.find((y) => y.group === x.id) && (
@@ -175,7 +176,7 @@ const PublicGroupList = () => {
                         )}
                         {x.user_group_role === 'joinRequested' && (
                           <Badge variant="outline" className="text-warning">
-                            Angefragt
+                            {t('groups.requested')}
                           </Badge>
                         )}
                       </div>

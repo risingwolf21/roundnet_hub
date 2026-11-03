@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { TENANT_LOGO } from '@/utils';
 import { captureException } from '@sentry/react';
+import i18n from 'i18next';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 type Phase = 'verifying' | 'ready' | 'invalid' | 'done';
@@ -23,6 +25,7 @@ type Phase = 'verifying' | 'ready' | 'invalid' | 'done';
  */
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('verifying');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ const ResetPassword = () => {
       const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
       const hashParams = new URLSearchParams(hash);
       if (hashParams.get('error')) {
-        setError(hashParams.get('error_description')?.replace(/\+/g, ' ') ?? 'Der Link ist ungültig oder abgelaufen.');
+        setError(hashParams.get('error_description')?.replace(/\+/g, ' ') ?? i18n.t('auth.reset.invalidLink'));
         setPhase('invalid');
         return;
       }
@@ -46,7 +49,7 @@ const ResetPassword = () => {
         const { error } = await supabase.auth.setSession({ access_token, refresh_token });
         if (error) {
           captureException(error);
-          setError('Der Link ist ungültig oder abgelaufen.');
+          setError(i18n.t('auth.reset.invalidLink'));
           setPhase('invalid');
           return;
         }
@@ -62,7 +65,7 @@ const ResetPassword = () => {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
           captureException(error);
-          setError('Der Link ist ungültig oder abgelaufen.');
+          setError(i18n.t('auth.reset.invalidLink'));
           setPhase('invalid');
           return;
         }
@@ -74,7 +77,7 @@ const ResetPassword = () => {
       // 4) No token, but maybe a recovery session already exists (e.g. page reload).
       const { data } = await supabase.auth.getSession();
       setPhase(data.session ? 'ready' : 'invalid');
-      if (!data.session) setError('Kein gültiger Zurücksetzen-Link. Bitte fordere einen neuen an.');
+      if (!data.session) setError(i18n.t('auth.reset.noValidLink'));
     };
     run();
   }, []);
@@ -87,11 +90,11 @@ const ResetPassword = () => {
     const repeat = form.get('repeat')?.toString() ?? '';
 
     if (password.length < 6) {
-      setError('Das Passwort muss mindestens 6 Zeichen beinhalten.');
+      setError(t('auth.reset.passwordTooShort'));
       return;
     }
     if (password !== repeat) {
-      setError('Die Passwörter stimmen nicht überein.');
+      setError(t('profile.password.mismatch'));
       return;
     }
 
@@ -112,12 +115,12 @@ const ResetPassword = () => {
         <div className="flex justify-center gap-2.5">
           <img src={TENANT_LOGO} className="max-w-32 max-h-32 object-cover" alt="" />
         </div>
-        <CardTitle className="text-2xl">Neues Passwort festlegen</CardTitle>
+        <CardTitle className="text-2xl">{t('auth.reset.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         {phase === 'verifying' && (
           <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground">
-            <Spinner /> Link wird geprüft…
+            <Spinner /> {t('auth.reset.verifying')}
           </div>
         )}
 
@@ -125,15 +128,15 @@ const ResetPassword = () => {
           <div className="flex flex-col gap-4">
             <p className="text-sm text-red-500">{error}</p>
             <Button className="w-full" onClick={() => navigate('/auth/forgot-password')}>
-              Neuen Link anfordern
+              {t('auth.reset.requestNewLink')}
             </Button>
           </div>
         )}
 
         {phase === 'done' && (
           <div className="flex flex-col gap-4 text-center">
-            <p className="text-sm">Dein Passwort wurde geändert. 🎉</p>
-            <Button className="w-full" onClick={() => navigate('/')}>Zur App</Button>
+            <p className="text-sm">{t('auth.reset.done')}</p>
+            <Button className="w-full" onClick={() => navigate('/')}>{t('auth.reset.toApp')}</Button>
           </div>
         )}
 
@@ -141,7 +144,7 @@ const ResetPassword = () => {
           <form onSubmit={submit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="password">Neues Passwort</Label>
+                <Label htmlFor="password">{t('profile.password.newPassword')}</Label>
                 <div className="relative">
                   <Input id="password" name="password" type={show ? 'text' : 'password'} required className="pr-9" />
                   <Button
@@ -156,13 +159,13 @@ const ResetPassword = () => {
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="repeat">Passwort wiederholen</Label>
+                <Label htmlFor="repeat">{t('auth.repeatPassword')}</Label>
                 <Input id="repeat" name="repeat" type={show ? 'text' : 'password'} required />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading && <Spinner />}
-                Passwort speichern
+                {t('auth.reset.save')}
               </Button>
             </div>
           </form>

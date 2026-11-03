@@ -58,7 +58,7 @@ test.describe('Profil', () => {
       if (await crop.isVisible()) await page.getByRole('button', { name: 'Zuschneiden & Speichern' }).click();
       await expect(crop).toBeHidden({ timeout: 1000 });
     }).toPass({ timeout: 10_000 });
-    await expect(page.getByAltText('avatar preview')).toBeVisible();
+    await expect(page.getByAltText('Vorschau des Profilbilds')).toBeVisible();
     await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
 
     await expect(page.getByText('Profil erfolgreich aktualisiert')).toBeVisible();

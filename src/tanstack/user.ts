@@ -4,6 +4,7 @@ import { UserWithGroups } from "@/types/supabaseTypes";
 import { dataURLtoFile, readFile } from "@/utils";
 import { captureException } from "@sentry/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { t } from "i18next";
 import { v4 as uuid } from 'uuid';
 import { authKeys } from "./auth";
 
@@ -29,7 +30,7 @@ export const useProfile = (userId: string) =>
         user: user ?? null,
         player: player ?? null,
         avatarUrl: user?.avatarUrl || player?.rg_avatar_url || null,
-        displayName: user?.name || player?.display_name || 'Unbekannter Spieler',
+        displayName: user?.name || player?.display_name || t('profile.unknownPlayer'),
       };
     },
   });
@@ -58,7 +59,7 @@ const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
       throw uploadError;
     }
     if (!uploadData || !uploadData.path) {
-      throw new Error("Error uploading the image")
+      throw new Error(t('profile.avatarErrors.uploadFailed'))
     }
 
     return UserRepository.getAvatarUrl(uploadData.path);
@@ -149,7 +150,7 @@ export const useUpdateAvatarFromPlayerMutation = (user: User) =>
   useMutation({
     mutationFn: async ({ avatarUrl }: { avatarUrl: string | null | undefined }) => {
       const { data: list, error } = await UserRepository.listAvatarFiles(user.id);
-      if (error || !list) throw error ?? new Error('Failed to list avatar files');
+      if (error || !list) throw error ?? new Error(t('profile.avatarErrors.listFailed'));
 
       const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
       if (filesToRemove.length > 0) {

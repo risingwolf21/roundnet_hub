@@ -2,6 +2,7 @@
 import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
 import { format, isAfter, isBefore, isSameDay, isSameWeek } from 'date-fns';
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -63,6 +64,7 @@ const EnterPointDialog = ({
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [date, setDate] = useState<Date>();
   const highlightedDays = dates.map((x) => formatDateFromDatabase(x)).filter(x => x !== null)
@@ -79,7 +81,7 @@ const EnterPointDialog = ({
     const imageDataUrl = await readFile(event.target.files[0]);
 
     if (typeof imageDataUrl !== 'string') {
-      setError('Something went wrong uploading your image. Please try again.');
+      setError(t('challenge.enterPoint.uploadError'));
       return;
     }
 
@@ -92,7 +94,7 @@ const EnterPointDialog = ({
         if (compressedFile && typeof compressedFile === 'string') {
           setImage({ dataUrl: compressedFile, fileName });
         } else {
-          setError('Something went wrong compressing your image. Please try again.');
+          setError(t('challenge.enterPoint.compressError'));
         }
       },
     });
@@ -109,7 +111,7 @@ const EnterPointDialog = ({
     >
       <DialogContent variant={"drawer"} className="flex flex-col gap-0">
         <DialogHeader className="p-4 pb-2 border-b text-left">
-          <DialogTitle>Punkt hinzufügen</DialogTitle>
+          <DialogTitle>{t('challenge.enterPoint.title')}</DialogTitle>
         </DialogHeader>
 
         <div className='flex flex-col overflow-y-auto p-4 gap-6 flex-1'>
@@ -118,8 +120,8 @@ const EnterPointDialog = ({
             {(maxEntriesPerDay ?? 0) > 1 ? (
               <div className='flex flex-row w-full justify-between items-center'>
                 <div>
-                  <div className='text-base font-medium'>Anzahl Punkte</div>
-                  <div className='text-sm text-muted-foreground'>Wie viele Punkte möchtest du eintragen?</div>
+                  <div className='text-base font-medium'>{t('challenge.enterPoint.count')}</div>
+                  <div className='text-sm text-muted-foreground'>{t('challenge.enterPoint.countDescription')}</div>
                 </div>
                 <div className='flex flex-row items-center gap-2'>
                   <Button variant={"outline"} size="icon"
@@ -143,7 +145,7 @@ const EnterPointDialog = ({
                 </div>
               </div>
             ) : (
-              <div className='text-base'>Hiermit trägst du einen Punkt für diese Challenge ein</div>
+              <div className='text-base'>{t('challenge.enterPoint.singlePoint')}</div>
             )}
           </div>
 
@@ -151,7 +153,7 @@ const EnterPointDialog = ({
             <Field>
               <Input
                 className='text-base'
-                placeholder="Kommentar"
+                placeholder={t('challenge.enterPoint.commentPlaceholder')}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
               />
@@ -162,7 +164,7 @@ const EnterPointDialog = ({
             <Field>
               <Select modal={true} onValueChange={(val) => val && setCategory(val as string)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Kategorie" className="text-base">
+                  <SelectValue placeholder={t('costs.category')} className="text-base">
                     {category}
                   </SelectValue>
                 </SelectTrigger>
@@ -184,7 +186,7 @@ const EnterPointDialog = ({
               <PopoverTrigger
                 render={
                   <Button variant="outline" id="date-picker-simple" className="w-full justify-start font-normal text-base">
-                    {date ? format(date, "PPP") : <span>Datum wählen</span>}
+                    {date ? format(date, "PPP") : <span>{t('admin.analytics.datePlaceholder')}</span>}
                   </Button>
                 }
               />
@@ -216,11 +218,11 @@ const EnterPointDialog = ({
               <div className='flex gap-2'>
                 <Button variant="outline" className="relative">
                   <input accept="image/*" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={onImageInputChange} />
-                  Change
+                  {t('challenge.enterPoint.change')}
                 </Button>
                 <Button variant="destructive" onClick={() => setImage(null)}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Remove
+                  {t('challenge.enterPoint.remove')}
                 </Button>
               </div>
             ) : (
@@ -228,7 +230,7 @@ const EnterPointDialog = ({
                 <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onImageInputChange} />
                 <Button type='button' variant='outline' onClick={() => inputRef.current?.click()} className='w-full flex items-center justify-center gap-2'>
                   <UploadCloud className="h-5 w-5" />
-                  Bild hochladen
+                  {t('challenge.enterPoint.uploadImage')}
                 </Button>
               </div>
             )}
@@ -236,13 +238,13 @@ const EnterPointDialog = ({
 
           {image && (
             <div className='flex justify-center mt-2'>
-              <img src={image.dataUrl} alt="Selected" className='rounded-lg max-h-[200px] max-w-full object-contain border shadow-sm' />
+              <img src={image.dataUrl} alt={t('challenge.enterPoint.selectedImage')} className='rounded-lg max-h-[200px] max-w-full object-contain border shadow-sm' />
             </div>
           )}
 
           {error && <Alert variant={"error"}>
             <TriangleAlert />
-            <AlertTitle>Es ist ein Fehler aufgetreten</AlertTitle>
+            <AlertTitle>{t('challenge.enterPoint.errorTitle')}</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>}
 
@@ -258,7 +260,7 @@ const EnterPointDialog = ({
             }
             onClick={() => date && onClose({ date, image, count: points, comment, category })}
           >
-            Bestätigen
+            {t('common.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent >

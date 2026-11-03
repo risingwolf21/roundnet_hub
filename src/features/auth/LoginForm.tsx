@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
@@ -19,6 +20,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const { version } = useApplication();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -32,7 +34,7 @@ const LoginForm = () => {
           password: password,
         });
       if (result.error || !result.data.session) {
-        setError("Login failed. Try again!")
+        setError(t('auth.login.failed'))
         if (result.error && result.error.code !== 'invalid_credentials')
           captureException(new Error('Could not sign in user.'), (scope) => {
             scope.clear();
@@ -55,7 +57,7 @@ const LoginForm = () => {
       </div>
       <div>
         <CardTitle className="text-2xl">
-          Login für {' '} <strong>{BRANDING.title}</strong>
+          {t('auth.login.titleFor')} {' '} <strong>{BRANDING.title}</strong>
         </CardTitle>
       </div>
     </CardHeader>
@@ -63,7 +65,7 @@ const LoginForm = () => {
       <form onSubmit={signIn}>
         <div className="flex flex-col gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -75,13 +77,13 @@ const LoginForm = () => {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="password">Passwort</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <a
                 href="#"
                 className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                 onClick={() => navigate("/auth/forgot-password")}
               >
-                Passwort vergessen?
+                {t('auth.login.forgotPassword')}
               </a>
             </div>
             <Input
@@ -95,18 +97,18 @@ const LoginForm = () => {
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Einloggen...' : 'Login'}
+            {isLoading ? t('auth.login.submitting') : t('auth.login.submit')}
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">
           <a href="#" className="underline underline-offset-4" onClick={() => navigate("/auth/signup")}>
-            Noch keinen Account? {' '}
+            {t('auth.login.noAccount')} {' '}
           </a>
         </div>
       </form>
       <Separator className={"my-4"} />
       <div className='flex justify-center'>
-        {`Version ${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}`}
+        {t('auth.version', { version: `${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}` })}
       </div>
     </CardContent>
   </Card>

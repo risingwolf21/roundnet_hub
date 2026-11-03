@@ -10,6 +10,7 @@ import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { v4 as uuid } from 'uuid';
 
@@ -21,6 +22,7 @@ type ReportSetsDialogProps = {
 };
 
 export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
+  const { t } = useTranslation();
   const [normalSets, setNormalSets] = useState<MatchSet[]>(() => {
     const ns = payload.sets?.filter(x => x.type !== 'spezi') ?? [];
     return ns.length > 0
@@ -43,7 +45,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"drawer"} showCloseButton={false}>
         <DialogHeader className='p-4'>
-          <DialogTitle className={"font-semibold "}>Sätze bearbeiten</DialogTitle>
+          <DialogTitle className={"font-semibold "}>{t('games.editSets')}</DialogTitle>
         </DialogHeader>
         <div>
           <div className='w-full flex flex-row px-2'>
@@ -126,7 +128,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
                 }}
               />
               <label htmlFor='dialog-spezi-enabled' className='text-sm font-medium cursor-pointer'>
-                Spezi-Punkte erfassen
+                {t('matches.spezi.enable')}
               </label>
             </div>
             {speziEnabled && (
@@ -179,7 +181,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
                     }}
                   />
                   <label htmlFor='dialog-spezi-awarded' className='text-sm cursor-pointer'>
-                    Spezi-Satz zugesprochen
+                    {t('matches.spezi.setAwarded')}
                   </label>
                 </div>
               </>
@@ -189,7 +191,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
         <DialogFooter className="p-4 m-0 border-t">
           <div className='flex w-full justify-even gap-4'>
             <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
-              Abbrechen
+              {t('common.cancel')}
             </Button>
             <Button className="flex-1" onClick={async () => {
               const allSets = [
@@ -202,12 +204,12 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
                   onSuccess: (result) => onClose(result),
                   onError: (error) => {
                     captureException(error);
-                    toast.error('Die Sätze konnten nicht gespeichert werden.');
+                    toast.error(t('games.setsSaveError'));
                   },
                 }
               );
             }}>
-              Speichern
+              {t('common.save')}
             </Button>
           </div>
         </DialogFooter>

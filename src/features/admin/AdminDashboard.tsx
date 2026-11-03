@@ -169,7 +169,7 @@ const AdminDashboard = () => {
     { title: t('browse.managePayments'), icon: Euro, path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
     { title: t('browse.manageUsers'), icon: Users, path: '/admin/users', perm: 'users.manage' as const },
     { title: t('browse.analytics'), icon: ChartArea, path: '/admin/analytics', perm: 'admin.analytics.view' as const },
-    { title: 'Grants', icon: KeyRound, path: '/admin/grants', perm: 'grants.manage' as const },
+    { title: t('browse.permissions'), icon: KeyRound, path: '/admin/grants', perm: 'grants.manage' as const },
     { title: t('browse.completeHistory'), icon: History, path: '/admin/drinks/history', perm: 'drinks.history.admin' as const },
     { title: t('browse.merge_accounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' as const },
     { title: t('browse.notifyUsers'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' as const },

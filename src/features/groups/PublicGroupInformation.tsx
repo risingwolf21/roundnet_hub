@@ -85,11 +85,11 @@ const PublicGroupInformation = () => {
       { newUsers: users },
       {
         onSuccess: () => {
-          toast.success(`Successfully added ${users.length} users to the group ${group?.name}`);
+          toast.success(t('groups.usersAdded', { count: users.length, group: group?.name }));
           setSelectedUsers([]);
         },
         onError: (error) => {
-          toast.error(`Failed to add ${users.length} user to the group ${group?.name} ${error.message}`);
+          toast.error(t('groups.usersAddError', { group: group?.name, error: error.message }));
           captureException(error);
           setSelectedUsers([]);
         },
@@ -102,11 +102,11 @@ const PublicGroupInformation = () => {
       { users },
       {
         onSuccess: () => {
-          toast.success(`Successfully removed ${users.length} users from the group ${group?.name}`);
+          toast.success(t('groups.usersRemoved', { count: users.length, group: group?.name }));
           setSelectedUsers([]);
         },
         onError: (error) => {
-          toast.error(`Failed to remove ${users.length} user from the group ${group?.name} ${error.message}`);
+          toast.error(t('groups.usersRemoveError', { group: group?.name, error: error.message }));
           captureException(error);
           setSelectedUsers([]);
         },
@@ -166,7 +166,7 @@ const PublicGroupInformation = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <AppBar
           className='!border-b !shadow-sm'
-          title="Gruppe"
+          title={t('groups.group')}
           primaryAction="back"
           user={user}
         />
@@ -175,12 +175,12 @@ const PublicGroupInformation = () => {
             <EmptyMedia>
               <AlertCircle className="size-10 text-destructive" />
             </EmptyMedia>
-            <EmptyTitle>Gruppe nicht gefunden</EmptyTitle>
+            <EmptyTitle>{t('groups.notFound')}</EmptyTitle>
             <EmptyDescription>
-              Die angeforderte Gruppe existiert nicht, wurde gelöscht oder du hast keine Zugriffsberechtigung.
+              {t('groups.notFoundDescription')}
             </EmptyDescription>
             <Button onClick={() => navigate('/groups/list')} className="mt-4" variant="outline">
-              Zurück zur Übersicht
+              {t('groups.backToOverview')}
             </Button>
           </Empty>
         </div>
@@ -202,9 +202,9 @@ const PublicGroupInformation = () => {
             const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
             if (result && result !== 'closed') {
               refetch();
-              toast.success('Gruppe wurde erfolgreich bearbeitet.');
+              toast.success(t('groups.editSuccess'));
             } else if (!result) {
-              toast.error('Gruppe konnte nicht bearbeitet werden.');
+              toast.error(t('groups.editError'));
             }
           }}>
             <Pencil />
@@ -217,42 +217,42 @@ const PublicGroupInformation = () => {
             <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
               <div className="text-lg font-semibold">{group.name}</div>
               <div className="text-sm font-semibold">
-                Beschreibung
+                {t('costs.description')}
               </div>
               <div className="text-sm text-muted-foreground">
-                {group.description || "Keine Beschreibung vorhanden."}
+                {group.description || t('groups.noDescription')}
               </div>
             </div>
             <Separator className="my-2" />
             {
               group.user_group_role === "admin" && <div className="space-y-2">
                 <div className="text-sm font-semibold">
-                  Filter
+                  {t('common.filter')}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Toggle variant="outline" aria-label="Toggle join requests"
+                  <Toggle variant="outline" aria-label={t('groups.toggleRequests')}
                     pressed={filter?.joinRequested}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
                     <GitPullRequest className="size-4" />
-                    Anfragen
+                    {t('groups.requests')}
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle trials"
+                  <Toggle variant="outline" aria-label={t('groups.toggleTrials')}
                     pressed={filter?.trials}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
                     <Shapes className="size-4" />
-                    Trials
+                    {t('groups.trials')}
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle admins"
+                  <Toggle variant="outline" aria-label={t('groups.toggleAdmins')}
                     pressed={filter?.admin}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
                     <UserStar className="size-4" />
-                    Admins
+                    {t('groups.admins')}
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle users"
+                  <Toggle variant="outline" aria-label={t('groups.toggleUsers')}
                     pressed={filter?.user}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
                     <User className="size-4" />
-                    Benutzer
+                    {t('browse.user')}
                   </Toggle>
                 </div>
               </div>
@@ -260,18 +260,18 @@ const PublicGroupInformation = () => {
             {
               selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
                 <AlertCircle className="size-4" />
-                <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
+                <AlertTitle>{t('groups.removeSelectedTitle')}</AlertTitle>
                 <AlertAction>
                   <Button variant={"outline"} onClick={() => {
-                    dialogs.confirm(`Möchtest du die ${selectedUsers.length} ausgewählten Benutzer wirklich aus der Gruppe entfernen?`, {
-                      okText: "Entfernen",
-                      cancelText: "Abbrechen"
+                    dialogs.confirm(t('groups.removeSelectedConfirm', { count: selectedUsers.length }), {
+                      okText: t('groups.remove'),
+                      cancelText: t('common.cancel')
                     }).then((result) => {
                       if (result) {
                         handleUsersRemove(selectedUsers);
                       }
                     })
-                  }}>Entfernen</Button>
+                  }}>{t('groups.remove')}</Button>
                 </AlertAction>
               </Alert>
             }
@@ -297,8 +297,8 @@ const PublicGroupInformation = () => {
                   <EmptyMedia>
                     <AlertCircle className="size-8 text-destructive" />
                   </EmptyMedia>
-                  <EmptyTitle>Fehler</EmptyTitle>
-                  <EmptyDescription>Benutzer konnten nicht geladen werden.</EmptyDescription>
+                  <EmptyTitle>{t('groups.error')}</EmptyTitle>
+                  <EmptyDescription>{t('groups.usersLoadError')}</EmptyDescription>
                 </Empty>
               </div>
             ) : (
@@ -310,7 +310,7 @@ const PublicGroupInformation = () => {
                     (role === 'trial' && !filter?.trials)
                 })}>
                   <div className="text-sm font-semibold">
-                    {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
+                    {role === 'admin' ? t('groups.admins') : role === 'user' ? t('groups.members') : role === 'joinRequested' ? t('groups.joinRequest') : t('groups.trial')}
                     {` (${users.length})`}
                   </div>
                   {users
@@ -358,7 +358,7 @@ const PublicGroupInformation = () => {
                           {
                             x.role === 'admin' && (
                               <>
-                                <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
+                                <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">{t('groups.admin')}</Badge>
                                 <Button
                                   variant="outline"
                                   className={cn("ml-2", {
@@ -367,10 +367,10 @@ const PublicGroupInformation = () => {
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     const result = await dialogs.confirm(
-                                      `Möchtest du wirklich ${x.user.name} von den Admins dieser Gruppe entfernen?`,
+                                      t('groups.confirmDemote', { name: x.user.name }),
                                       {
-                                        okText: 'Bestätigen',
-                                        cancelText: 'Abbrechen',
+                                        okText: t('common.confirm'),
+                                        cancelText: t('common.cancel'),
                                       }
                                     );
                                     if (result) {
@@ -410,10 +410,10 @@ const PublicGroupInformation = () => {
                                 onClick={async (e) => {
                                   e.stopPropagation();
                                   const result = await dialogs.confirm(
-                                    `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                                    t('groups.confirmPromote', { name: x.user.name }),
                                     {
-                                      okText: 'Bestätigen',
-                                      cancelText: 'Abbrechen',
+                                      okText: t('common.confirm'),
+                                      cancelText: t('common.cancel'),
                                     }
                                   );
                                   if (result) {
@@ -429,10 +429,10 @@ const PublicGroupInformation = () => {
                                   onClick={async (e) => {
                                     e.stopPropagation();
                                     const result = await dialogs.confirm(
-                                      `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
+                                      t('groups.confirmTrial', { name: x.user.name }),
                                       {
-                                        okText: 'Bestätigen',
-                                        cancelText: 'Abbrechen',
+                                        okText: t('common.confirm'),
+                                        cancelText: t('common.cancel'),
                                       }
                                     );
                                     if (result) {
@@ -485,22 +485,23 @@ const PublicGroupInformation = () => {
 }
 
 const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
+  const { t } = useTranslation();
   const changeUserRoleMutation = useChangeUserRoleMutation();
   const dialogs = useDialogs();
   return <Button variant={"ghost"} size={"icon-sm"} onClick={() => {
-    dialogs.confirm("Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?", {
-      okText: "Akzeptieren",
-      cancelText: "Abbrechen"
+    dialogs.confirm(t('groups.confirmAcceptTrial'), {
+      okText: t('groups.accept'),
+      cancelText: t('common.cancel')
     }).then((result) => {
       if (result) {
         changeUserRoleMutation.mutate(
           { user: user, group: group, new_role: 'user' },
           {
             onError: (error) => {
-              toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+              toast.error(t('groups.requestAcceptError', { error: error.message }));
             },
             onSuccess: () => {
-              toast.success('Anfrage erfolgreich akzeptiert.');
+              toast.success(t('groups.requestAccepted'));
             },
           }
         );
@@ -512,50 +513,51 @@ const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
 }
 
 const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User }) => {
+  const { t } = useTranslation();
   const declineJoinMutation = useDeclineRequestMutation(group);
   const changeUserRoleMutation = useChangeUserRoleMutation();
   const dialogs = useDialogs();
 
   return <DropdownMenu >
-    <DropdownMenuTrigger render={<Button variant={"outline"} size="sm">Bearbeiten</Button>} />
+    <DropdownMenuTrigger render={<Button variant={"outline"} size="sm">{t('groups.manageRequest')}</Button>} />
     <DropdownMenuContent className={"w-full"}>
       <DropdownMenuItem variant="destructive" className={"text-sm"}
         onClick={() =>
-          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich ablehnen?", {
-            okText: "Ablehnen",
-            cancelText: "Abbrechen"
+          dialogs.confirm(t('groups.confirmDecline'), {
+            okText: t('groups.decline'),
+            cancelText: t('common.cancel')
           }).then((result) => {
             if (result) {
               declineJoinMutation.mutate(user, {
                 onError: (error) => {
-                  toast.error('Anfrage konnte nicht gelöscht werden. ' + error.message);
+                  toast.error(t('groups.requestDeclineError', { error: error.message }));
                 },
                 onSuccess: () => {
-                  toast.success('Anfrage erfolgreich gelöscht.');
+                  toast.success(t('groups.requestDeclined'));
                 },
               })
             }
           })
         }>
         <XCircle className="size-4 mr-2" />
-        Ablehnen
+        {t('groups.decline')}
       </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem className={"text-sm"}
         onClick={() => {
-          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich akzeptieren?", {
-            okText: "Akzeptieren",
-            cancelText: "Abbrechen"
+          dialogs.confirm(t('groups.confirmAcceptRequest'), {
+            okText: t('groups.accept'),
+            cancelText: t('common.cancel')
           }).then((result) => {
             if (result) {
               changeUserRoleMutation.mutate(
                 { user: user, group: group, new_role: 'user' },
                 {
                   onError: (error) => {
-                    toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                    toast.error(t('groups.requestAcceptError', { error: error.message }));
                   },
                   onSuccess: () => {
-                    toast.success('Anfrage erfolgreich akzeptiert.');
+                    toast.success(t('groups.requestAccepted'));
                   },
                 }
               );
@@ -563,26 +565,26 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
           })
         }}>
         <CheckCircle2 className="size-4 mr-2" />
-        Akzeptieren
+        {t('groups.accept')}
       </DropdownMenuItem>
       <Has feat={"events.trials"}>
         <>
           <DropdownMenuSeparator />
           <DropdownMenuItem className={"text-sm"}
             onClick={() => {
-              dialogs.confirm("Möchtest du den Benutzer wirklich als Probenutzer akzeptieren?", {
-                okText: "Akzeptieren",
-                cancelText: "Abbrechen"
+              dialogs.confirm(t('groups.confirmAcceptTrialUser'), {
+                okText: t('groups.accept'),
+                cancelText: t('common.cancel')
               }).then((result) => {
                 if (result) {
                   changeUserRoleMutation.mutate(
                     { user: user, group: group, new_role: 'trial' },
                     {
                       onError: (error) => {
-                        toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                        toast.error(t('groups.requestAcceptError', { error: error.message }));
                       },
                       onSuccess: () => {
-                        toast.success('Anfrage erfolgreich akzeptiert.');
+                        toast.success(t('groups.requestAccepted'));
                       },
                     }
                   );
@@ -590,7 +592,7 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
               })
             }}>
             <CheckCircle2 className="size-4 mr-2" />
-            Probenutzer
+            {t('groups.trialUser')}
           </DropdownMenuItem>
         </>
       </Has>

@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 // Passe den Import der AppBar an, falls sie hier als Dummy gebraucht wird, 
 // oder nutze das div-Mockup unten.
 
 export function ChallengeInformationSkeleton() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full w-full flex-col">
       {/* Mocked AppBar (um Prop-Typ-Fehler bei null-Daten zu vermeiden) */}
@@ -19,7 +21,7 @@ export function ChallengeInformationSkeleton() {
 
       <main className="flex-1 size-full pb-safe-bottom p-2">
         <div className="gap-2 flex w-full max-w-lg flex-col">
-          <div className="text-sm font-semibold">Beschreibung</div>
+          <div className="text-sm font-semibold">{t('costs.description')}</div>
           {/* Description Lines Skeleton */}
           <div className="flex flex-col gap-2 mt-1">
             <Skeleton className="h-4 w-full" />

@@ -30,6 +30,7 @@ import {
 } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Plus, X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "./button"
 import { Input } from "./input"
 import { Item, ItemActions, ItemContent, ItemTitle } from "./item"
@@ -70,6 +71,7 @@ export function DataTable<TData, TValue>({
   onColumnFiltersChange,
   isLoading
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation()
 
   const table = useReactTable({
     data,
@@ -145,30 +147,30 @@ export function DataTable<TData, TValue>({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>COMPARISON</SelectLabel>
+                  <SelectLabel>{t('ui.dataTable.comparison')}</SelectLabel>
 
                   <SelectItem indicatorSide="left" value="eq">
                     <Item className="p-0">
                       <ItemContent className="p-0">
-                        <ItemTitle>Equals</ItemTitle>
+                        <ItemTitle>{t('ui.dataTable.equals')}</ItemTitle>
                       </ItemContent>
                       <ItemActions>
                         =
                       </ItemActions>
                     </Item>
                   </SelectItem>
-                  <SelectItem indicatorSide="left" value="neq">Not equal !=</SelectItem>
-                  <SelectItem indicatorSide="left" value="gt">Greater than {'>'}</SelectItem>
-                  <SelectItem indicatorSide="left" value="lt">Less than {'<'}</SelectItem>
-                  <SelectItem indicatorSide="left" value="gte">Greater or equal {'=<'}</SelectItem>
-                  <SelectItem indicatorSide="left" value="lte">Less or equal {'<='}</SelectItem>
+                  <SelectItem indicatorSide="left" value="neq">{t('ui.dataTable.notEqual')}</SelectItem>
+                  <SelectItem indicatorSide="left" value="gt">{t('ui.dataTable.greaterThan')}</SelectItem>
+                  <SelectItem indicatorSide="left" value="lt">{t('ui.dataTable.lessThan')}</SelectItem>
+                  <SelectItem indicatorSide="left" value="gte">{t('ui.dataTable.greaterOrEqual')}</SelectItem>
+                  <SelectItem indicatorSide="left" value="lte">{t('ui.dataTable.lessOrEqual')}</SelectItem>
                 </SelectGroup>
                 <SelectSeparator />
 
                 {
                   condition.data_type !== "timestamptz" && <>
                     <SelectGroup>
-                      <SelectLabel>PATTERN MATCHING</SelectLabel>
+                      <SelectLabel>{t('ui.dataTable.patternMatching')}</SelectLabel>
 
                       <SelectItem indicatorSide="left" value="like">Like ~~</SelectItem>
                       <SelectItem indicatorSide="left" value="ilike">iLike !~~</SelectItem>
@@ -178,10 +180,10 @@ export function DataTable<TData, TValue>({
                 }
 
                 <SelectGroup>
-                  <SelectLabel>SET & NULL CHECKS</SelectLabel>
+                  <SelectLabel>{t('ui.dataTable.setAndNullChecks')}</SelectLabel>
 
-                  <SelectItem indicatorSide="left" value="in">In list in</SelectItem>
-                  <SelectItem indicatorSide="left" value="is">is is</SelectItem>
+                  <SelectItem indicatorSide="left" value="in">{t('ui.dataTable.inList')}</SelectItem>
+                  <SelectItem indicatorSide="left" value="is">{t('ui.dataTable.isIs')}</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -193,7 +195,7 @@ export function DataTable<TData, TValue>({
                 onValueChange={(val) => val && updateCondition(index, { value: val })}
               >
                 <SelectTrigger className="h-7 border-0 w-32 text-xs">
-                  <SelectValue placeholder="Select..." />
+                  <SelectValue placeholder={t('ui.dataTable.selectPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="null">null</SelectItem>
@@ -204,7 +206,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <Input
                 className="h-7 border-0 focus-visible:ring-0 text-xs w-32"
-                placeholder={condition.operator === "in" ? "A, B, C..." : "Wert..."}
+                placeholder={condition.operator === "in" ? "A, B, C..." : t('ui.dataTable.valuePlaceholder')}
                 value={condition.value}
                 onChange={(e) => updateCondition(index, { value: e.target.value })}
               />
@@ -231,7 +233,7 @@ export function DataTable<TData, TValue>({
             onClick={addCondition}
           >
             <Plus className="h-4 w-4" />
-            Filter
+            {t('common.filter')}
           </Button>
 
           {conditions.length > 0 && (
@@ -241,7 +243,7 @@ export function DataTable<TData, TValue>({
               className="h-8 text-muted-foreground"
               onClick={() => setConditions([])}
             >
-              Reset
+              {t('ui.dataTable.reset')}
             </Button>
           )}
         </div>
@@ -316,7 +318,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                {t('ui.dataTable.noResults')}
               </TableCell>
             </TableRow>
           )}
@@ -325,8 +327,7 @@ export function DataTable<TData, TValue>({
     </div>
     <div className="flex-none flex items-center justify-between">
       <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-        Page {table.getState().pagination.pageIndex + 1} of{" "}
-        {table.getPageCount()}
+        {t('ui.dataTable.pageOf', { page: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
       </div>
       <div className="flex items-center space-x-2">
         <Button
@@ -336,7 +337,7 @@ export function DataTable<TData, TValue>({
           onClick={() => table.setPageIndex(0)}
           disabled={!table.getCanPreviousPage()}
         >
-          <span className="sr-only">Go to first page</span>
+          <span className="sr-only">{t('ui.dataTable.firstPage')}</span>
           <ChevronsLeft />
         </Button>
         <Button
@@ -346,7 +347,7 @@ export function DataTable<TData, TValue>({
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          <span className="sr-only">Go to previous page</span>
+          <span className="sr-only">{t('ui.dataTable.previousPage')}</span>
           <ChevronLeft />
         </Button>
         <Button
@@ -356,7 +357,7 @@ export function DataTable<TData, TValue>({
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          <span className="sr-only">Go to next page</span>
+          <span className="sr-only">{t('ui.dataTable.nextPage')}</span>
           <ChevronRight />
         </Button>
         <Button
@@ -366,7 +367,7 @@ export function DataTable<TData, TValue>({
           onClick={() => table.setPageIndex(table.getPageCount() - 1)}
           disabled={!table.getCanNextPage()}
         >
-          <span className="sr-only">Go to last page</span>
+          <span className="sr-only">{t('ui.dataTable.lastPage')}</span>
           <ChevronsRight />
         </Button>
       </div>

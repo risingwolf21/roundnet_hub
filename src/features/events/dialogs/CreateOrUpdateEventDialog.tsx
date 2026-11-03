@@ -26,6 +26,7 @@ import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
 import { CalendarSync, CalendarX2, Map, Pencil, Trash2, TriangleAlert } from 'lucide-react';
 import { FormEvent, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
 import { GroupWithUserRole } from '@/types/supabaseTypes';
@@ -60,7 +61,7 @@ const buildSeriesFromEvent = (
 ): TablesInsert<'event_series'> => {
   const start = ev.startingDateTime;
   const rrule = buildRRule(ev.recurrence as EventRecurrence, new Date(start));
-  if (!rrule) throw new Error('Keine Wiederholung ausgewählt.');
+  if (!rrule) throw new Error(t('events.creation.noRecurrenceSelected'));
   const items = bring_items
     .filter((x) => x.name && (x.required_qty ?? 0) > 0)
     .map((x, i) => ({ name: x.name, unit: 'Stk.', required_qty: x.required_qty ?? 0, notes: null, sort_order: i }));
@@ -87,7 +88,7 @@ const buildSeriesFromEvent = (
   };
 };
 
-const errorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown error.');
+const errorMessage = (error: unknown) => (error instanceof Error ? error.message : t('events.creation.unknownError'));
 
 type CreateEventProps = {
   event?: EventTable | null;
@@ -96,10 +97,10 @@ type CreateEventProps = {
   items?: BringItems[];
 };
 
-const ITEMS: {
+const getItems = (): {
   value: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe" | null
   label: string
-}[] = [
+}[] => [
     {
       value: "mtvStorage",
       label: "MTV Keller"
@@ -110,7 +111,7 @@ const ITEMS: {
     },
     {
       value: "mtvGymPalazzo",
-      label: "MTV Gym und Palazzo"
+      label: t('events.creation.itemMtvGymPalazzo')
     },
     {
       value: "goethe",
@@ -118,7 +119,7 @@ const ITEMS: {
     },
     {
       value: null,
-      label: "Nichts gewählt"
+      label: t('events.creation.itemNone')
     }
   ]
 
@@ -127,6 +128,8 @@ export const CreateOrUpdateEventDialog = ({
   open,
   onClose,
 }: DialogProps<CreateEventProps>) => {
+  const { t } = useTranslation();
+  const ITEMS = getItems();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const [editedEvent, setEditedEvent] = useState<EventTable>(() => event ?? createEmptyEvent());
@@ -212,10 +215,10 @@ export const CreateOrUpdateEventDialog = ({
             });
           }
         } catch (error) {
-          toast.error('Event konnte nicht erstellt werden: ' + errorMessage(error));
+          toast.error(t('events.creation.createFailed', { message: errorMessage(error) }));
           return;
         }
-        toast.success(isRecurring ? 'Serie wurde erstellt' : 'Event wurde erstellt');
+        toast.success(isRecurring ? t('events.creation.seriesCreated') : t('events.creation.eventCreated'));
         onClose();
       } else if (option === 'UpdateSingle') {
         try {
@@ -227,13 +230,13 @@ export const CreateOrUpdateEventDialog = ({
             items: bring_items,
           });
         } catch (error) {
-          toast.error('Event konnte nicht aktualisiert werden: ' + errorMessage(error));
+          toast.error(t('events.creation.updateFailed', { message: errorMessage(error) }));
           return;
         }
-        toast.success('Event wurde gespeichert');
+        toast.success(t('events.creation.eventSaved'));
         onClose();
       } else if (option === 'UpdateRecurrence') {
-        if (!event) throw new Error('Event not found.');
+        if (!event) throw new Error(t('events.creation.eventNotFound'));
         const isRecurring = !!finalEvent.recurrence && finalEvent.recurrence !== 'None';
 
         try {
@@ -261,10 +264,10 @@ export const CreateOrUpdateEventDialog = ({
             });
           }
         } catch (error) {
-          toast.error('Events konnten nicht aktualisiert werden: ' + errorMessage(error));
+          toast.error(t('events.creation.updateRecurrenceFailed', { message: errorMessage(error) }));
           return;
         }
-        toast.success('Events wurden gespeichert');
+        toast.success(t('events.creation.eventsSaved'));
         onClose();
       }
     } catch (error: unknown) {
@@ -275,18 +278,18 @@ export const CreateOrUpdateEventDialog = ({
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
-        <DialogTitle className={"flex-1"}>{`Event ${event ? 'bearbeiten' : 'erstellen'}`}</DialogTitle>
+        <DialogTitle className={"flex-1"}>{event ? t('events.editEvent') : t('events.creation.titleCreate')}</DialogTitle>
         <DialogClose />
       </DialogHeader>
       <DialogBody className='p-0'>
         <form ref={ref} onSubmit={handleSubmit} noValidate className='flex flex-col gap-2'>
           <FieldSet className='p-2'>
             <Field className='gap-1'>
-              <FieldLabel htmlFor='event-title'>Event-Titel</FieldLabel>
+              <FieldLabel htmlFor='event-title'>{t('events.creation.titleLabel')}</FieldLabel>
               <Input
                 id="event-title"
                 name="event-title"
-                placeholder="Titel"
+                placeholder={t('admin.notify.titleField')}
                 className='w-full'
                 value={editedEvent.title}
                 onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
@@ -295,11 +298,11 @@ export const CreateOrUpdateEventDialog = ({
             </Field>
 
             <Field className='gap-1'>
-              <FieldLabel htmlFor='event-description'>Event-Beschreibung</FieldLabel>
+              <FieldLabel htmlFor='event-description'>{t('events.creation.descriptionLabel')}</FieldLabel>
               <Textarea
                 id="event-description"
                 name="event-description"
-                placeholder="Beschreibung"
+                placeholder={t('costs.description')}
                 className='w-full'
                 value={editedEvent.description}
                 onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
@@ -308,7 +311,7 @@ export const CreateOrUpdateEventDialog = ({
             </Field>
 
             <Field className='gap-1'>
-              <FieldLabel htmlFor='event-group'>Event-Gruppe</FieldLabel>
+              <FieldLabel htmlFor='event-group'>{t('events.creation.groupLabel')}</FieldLabel>
               <Item variant={"outline"} onClick={async () => {
                 const result = await dialogs.selectGroup();
                 if (result) {
@@ -321,7 +324,7 @@ export const CreateOrUpdateEventDialog = ({
               }}>
                 <ItemTitle>
                   {
-                    selectedGroup?.name ?? "Keine Gruppe gewählt"
+                    selectedGroup?.name ?? t('events.creation.noGroupChosen')
                   }
                 </ItemTitle>
               </Item>
@@ -339,13 +342,13 @@ export const CreateOrUpdateEventDialog = ({
           <FieldSeparator />
 
           <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>Datum-und Uhrzeiten</FieldLegend>
+            <FieldLegend className='font-semibold'>{t('events.creation.dateTimes')}</FieldLegend>
             <FieldGroup className='flex-row'>
               <Field>
-                <FieldLabel htmlFor="event-startdate">Startdatum</FieldLabel>
+                <FieldLabel htmlFor="event-startdate">{t('events.creation.startDate')}</FieldLabel>
                 <DatePicker
                   id='event-startdate'
-                  placeholder='Datum'
+                  placeholder={t('costs.date')}
                   onValueChange={(val) => {
                     if (!val) return;
                     setEditedEvent({
@@ -365,7 +368,7 @@ export const CreateOrUpdateEventDialog = ({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="event-starttime">Uhrzeit</FieldLabel>
+                <FieldLabel htmlFor="event-starttime">{t('events.creation.time')}</FieldLabel>
                 <TimePicker
                   id="event-starttime"
                   placeholder="12:30"
@@ -386,10 +389,10 @@ export const CreateOrUpdateEventDialog = ({
 
             <FieldGroup className='flex-row'>
               <Field>
-                <FieldLabel htmlFor="event-enddate">Enddatum</FieldLabel>
+                <FieldLabel htmlFor="event-enddate">{t('events.creation.endDate')}</FieldLabel>
                 <DatePicker
                   id='event-enddate'
-                  placeholder='Datum'
+                  placeholder={t('costs.date')}
                   onValueChange={(val) => {
                     if (!val) return;
                     setEditedEvent({
@@ -409,7 +412,7 @@ export const CreateOrUpdateEventDialog = ({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="event-endtime">Uhrzeit</FieldLabel>
+                <FieldLabel htmlFor="event-endtime">{t('events.creation.time')}</FieldLabel>
                 <TimePicker
                   id="event-endtime"
                   placeholder="12:30"
@@ -458,7 +461,7 @@ export const CreateOrUpdateEventDialog = ({
                   htmlFor="event-meetingdatetime-enabled"
                   className="font-normal"
                 >
-                  Treffpunkt vor dem Training
+                  {t('events.creation.meetingBeforeTraining')}
                 </FieldLabel>
               </Field>
               <Field className={cn("", {
@@ -487,7 +490,7 @@ export const CreateOrUpdateEventDialog = ({
           <FieldSeparator />
 
           <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>Standort</FieldLegend>
+            <FieldLegend className='font-semibold'>{t('events.creation.location')}</FieldLegend>
             <Item variant={"outline"}>
               <ItemContent>
                 {
@@ -495,7 +498,7 @@ export const CreateOrUpdateEventDialog = ({
                     <ItemTitle className='truncate'>{place.name}</ItemTitle>
                     <ItemDescription className='truncate'>{place?.description}</ItemDescription>
                   </>
-                    : <ItemTitle>Kein Standort gewählt</ItemTitle>
+                    : <ItemTitle>{t('events.creation.noLocation')}</ItemTitle>
                 }
               </ItemContent>
               <ItemActions>
@@ -546,27 +549,27 @@ export const CreateOrUpdateEventDialog = ({
           <FieldSeparator />
 
           <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>Wiederholung</FieldLegend>
+            <FieldLegend className='font-semibold'>{t('events.creation.recurrence')}</FieldLegend>
 
             <FieldLabel htmlFor="switch-notifications">
               <Field orientation="horizontal">
                 <FieldContent>
-                  <FieldTitle>Wiederholung</FieldTitle>
+                  <FieldTitle>{t('events.creation.recurrence')}</FieldTitle>
                   <FieldDescription>
                     {nameOfRecurrence(editedEvent.recurrence)}
                   </FieldDescription>
                   {
                     editedEvent.recurrenceEnd && <FieldDescription>
-                      Endet: {format(editedEvent.recurrenceEnd, "dd.MM.yyyy HH:mm")}
+                      {t('events.creation.endsAt', { date: format(editedEvent.recurrenceEnd, "dd.MM.yyyy HH:mm") })}
                     </FieldDescription>
                   }
                 </FieldContent>
                 <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
                   const result = await dialogs.selectSingleOption<EventRecurrence>([
-                    { value: 'None', label: 'Keine Wiederholung' },
-                    { value: 'Weekly', label: 'Wöchentlich' },
-                    { value: 'Fortnightly', label: 'Alle 2 Wochen' },
-                    { value: 'Monthly', label: 'Monatlich' },
+                    { value: 'None', label: t('events.creation.recurrenceNone') },
+                    { value: 'Weekly', label: t('events.creation.recurrenceWeekly') },
+                    { value: 'Fortnightly', label: t('events.creation.recurrenceFortnightly') },
+                    { value: 'Monthly', label: t('events.creation.recurrenceMonthly') },
                   ], editedEvent.recurrence);
                   if (result) {
                     setEditedEvent({ ...editedEvent, recurrence: result, ...(result === "None" && { recurrenceEnd: null }) })
@@ -592,15 +595,15 @@ export const CreateOrUpdateEventDialog = ({
           <FieldSeparator />
 
           <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>Optionale Felder</FieldLegend>
+            <FieldLegend className='font-semibold'>{t('events.creation.optionalFields')}</FieldLegend>
             <FieldLabel>
               <Field>
-                <FieldLabel htmlFor="event-maxattendees">Anmeldedeadline</FieldLabel>
+                <FieldLabel htmlFor="event-maxattendees">{t('events.creation.signupDeadline')}</FieldLabel>
                 <FieldGroup className='flex-row gap-2'>
                   <Field className='w-full'>
                     <DatePicker
                       id='event-signupstartdate'
-                      placeholder='Datum'
+                      placeholder={t('costs.date')}
                       className='w-full'
                       onValueChange={(val) => {
                         if (!val) return;
@@ -621,7 +624,7 @@ export const CreateOrUpdateEventDialog = ({
                   </Field>
 
                   <Field className='w-24'>
-                    <FieldLabel htmlFor="event-signupstarttime" className='hidden'>Uhrzeit</FieldLabel>
+                    <FieldLabel htmlFor="event-signupstarttime" className='hidden'>{t('events.creation.time')}</FieldLabel>
                     <TimePicker
                       id="event-signupstarttime"
                       className='!w-24'
@@ -687,7 +690,7 @@ export const CreateOrUpdateEventDialog = ({
 
             <FieldLabel>
               <Field>
-                <FieldLabel htmlFor="event-maxattendees">Maximale Teilnehmeranzahl</FieldLabel>
+                <FieldLabel htmlFor="event-maxattendees">{t('events.creation.maxAttendees')}</FieldLabel>
                 <Field orientation={"horizontal"}>
                   <Input
                     type='number'
@@ -723,7 +726,7 @@ export const CreateOrUpdateEventDialog = ({
             <Has feat={"events.trials"}>
               <FieldLabel>
                 <Field>
-                  <FieldLabel htmlFor="event-max_trial_attendees">Maximale Probeteilnehmer</FieldLabel>
+                  <FieldLabel htmlFor="event-max_trial_attendees">{t('events.creation.maxTrialAttendees')}</FieldLabel>
                   <Field orientation={"horizontal"}>
                     <Input
                       type='number'
@@ -760,14 +763,14 @@ export const CreateOrUpdateEventDialog = ({
             <Has feat={"items"}>
               <FieldLabel>
                 <Field>
-                  <FieldLabel htmlFor="event-required-item">Benötigter Gegenstand</FieldLabel>
+                  <FieldLabel htmlFor="event-required-item">{t('events.creation.requiredItem')}</FieldLabel>
                   <Field orientation={"horizontal"}>
                     <Select items={ITEMS} value={editedEvent.required_item} onValueChange={(val) => setEditedEvent({
                       ...editedEvent,
                       required_item: val
                     })}>
                       <SelectTrigger className="w-full" disabled={editedEvent.required_item === null}>
-                        <SelectValue placeholder={"Gegenstand auswählen"} />
+                        <SelectValue placeholder={t('events.creation.selectItem')} />
                       </SelectTrigger>
                       <SelectContent>
                         {
@@ -796,10 +799,10 @@ export const CreateOrUpdateEventDialog = ({
                 <Field orientation={"horizontal"}>
                   <FieldContent className='w-full'>
                     <FieldLabel>
-                      Konstellationen aktiviert
+                      {t('events.creation.constellationsEnabled')}
                     </FieldLabel>
                     <FieldDescription>
-                      Soll es möglich sein für Trainer, Konstellationen zu erstellen?
+                      {t('events.creation.constellationsEnabledHint')}
                     </FieldDescription>
                   </FieldContent>
                   <Switch
@@ -820,7 +823,7 @@ export const CreateOrUpdateEventDialog = ({
               <Field orientation={"horizontal"}>
                 <FieldContent className='w-full'>
                   <FieldLabel>
-                    Gegenstände mitbringen
+                    {t('events.creation.bringItems')}
                   </FieldLabel>
                   <FieldDescription>
                     {
@@ -853,7 +856,7 @@ export const CreateOrUpdateEventDialog = ({
           }}
         >
           {isSaving && <Spinner />}
-          Speichern
+          {t('common.save')}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -861,6 +864,7 @@ export const CreateOrUpdateEventDialog = ({
 }
 
 const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date | null, Date | 'unset' | null>) => {
+  const { t } = useTranslation();
 
   const [date, setDate] = useState(payload);
 
@@ -868,14 +872,14 @@ const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date 
     <DialogContent>
       <div className={"pt-8 flex flex-col gap-4"}>
         <FieldSet>
-          <FieldLegend>Wiederholungsende</FieldLegend>
-          <FieldDescription>Bis wann soll die Wiederholung fortgesetzt werden?</FieldDescription>
+          <FieldLegend>{t('events.creation.recurrenceEnd')}</FieldLegend>
+          <FieldDescription>{t('events.creation.recurrenceEndQuestion')}</FieldDescription>
           <FieldGroup className='flex-row'>
             <Field>
-              <FieldLabel htmlFor="date">Datum</FieldLabel>
+              <FieldLabel htmlFor="date">{t('costs.date')}</FieldLabel>
               <DatePicker
                 id='date'
-                placeholder='Datum'
+                placeholder={t('costs.date')}
                 onValueChange={(val) => {
                   if (!val) return;
                   setDate(set(date ?? new Date(), {
@@ -890,7 +894,7 @@ const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date 
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="time">Uhrzeit</FieldLabel>
+              <FieldLabel htmlFor="time">{t('events.creation.time')}</FieldLabel>
               <TimePicker
                 id="time"
                 placeholder="12:30"
@@ -910,12 +914,12 @@ const SelectRecurrenceEndDialog = ({ open, onClose, payload }: DialogProps<Date 
         </FieldSet>
 
         <Button onClick={() => onClose(date)}>
-          Speichern
+          {t('common.save')}
         </Button>
 
         <Button disabled={!date} variant={"outline"} onClick={() => onClose('unset')}>
           <Trash2 />
-          Wiederholungsende löschen
+          {t('events.creation.deleteRecurrenceEnd')}
         </Button>
       </div>
     </DialogContent>
@@ -941,13 +945,14 @@ type Props = {
 }
 
 export const PledgesDialog = ({ open, onClose, payload: { bringItems, user, eventId } }: DialogProps<Props, BringItem[]>) => {
+  const { t } = useTranslation();
 
   const [items, setItems] = useState(bringItems);
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(items)}>
     <DialogContent variant={"drawer"}>
       <DialogHeader className='px-4'>
-        <DialogTitle>Gegenstände mitbringen</DialogTitle>
+        <DialogTitle>{t('events.creation.bringItems')}</DialogTitle>
       </DialogHeader>
       <DialogBody>
         <div className='flex flex-col gap-2'>
@@ -957,7 +962,7 @@ export const PledgesDialog = ({ open, onClose, payload: { bringItems, user, even
                 <ItemContent className='flex flex-1 flex-row'>
                   <Input
                     className='flex-grow'
-                    placeholder="Gegenstand"
+                    placeholder={t('events.creation.item')}
                     value={item.name}
                     onChange={(e) => {
                       const newItems = [...items];
@@ -967,7 +972,7 @@ export const PledgesDialog = ({ open, onClose, payload: { bringItems, user, even
                   <Input
                     className='flex-none w-24'
                     type="number"
-                    placeholder="Anzahl"
+                    placeholder={t('events.creation.quantity')}
                     value={item.required_qty ?? 0}
                     onChange={(e) => {
                       const parsed = Number.parseInt(e.target.value);
@@ -1013,7 +1018,7 @@ export const PledgesDialog = ({ open, onClose, payload: { bringItems, user, even
             },
           ]);
         }}>
-          Hinzufügen
+          {t('events.creation.add')}
         </Button>
       </DialogFooter>
     </DialogContent>

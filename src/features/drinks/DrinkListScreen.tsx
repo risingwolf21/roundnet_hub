@@ -72,11 +72,11 @@ const DrinkListScreen = () => {
       {
         onSuccess: () => {
           setAddedDrinks({});
-          toast.success('Getränke erfolgreich gebucht!');
+          toast.success(t('drinks.bookSuccess'));
         },
         onError: (error) => {
           captureException(error);
-          const message = error?.message ?? 'Drink could not be added';
+          const message = error?.message ?? t('drinks.bookError');
           resetDrinks(message);
         },
       }

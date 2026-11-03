@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertTriangle, XCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   BOARDS,
   type BoardId,
@@ -35,8 +36,9 @@ function SeatSelect({
   onChange: (id: string | null) => void;
   placeholder: string;
 }) {
+  const { t } = useTranslation();
   const items = {
-    [NONE]: '— frei —',
+    [NONE]: t('bundesliga.freeSeat'),
     ...Object.fromEntries(players.map((p) => [p.id, `${p.name} (${p.rgIndex ?? '—'})`])),
   };
   return (
@@ -49,7 +51,7 @@ function SeatSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE}>— frei —</SelectItem>
+        <SelectItem value={NONE}>{t('bundesliga.freeSeat')}</SelectItem>
         {players.map((p) => (
           <SelectItem key={p.id} value={p.id}>
             <span className="flex items-center gap-2">
@@ -82,6 +84,7 @@ function BoardSide({
   onSeat: (seat: 0 | 1, id: string | null) => void;
   accent: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
@@ -90,8 +93,8 @@ function BoardSide({
           RGX {rgx}
         </Badge>
       </div>
-      <SeatSelect value={seats[0]} players={players} placeholder="Spieler 1" onChange={(id) => onSeat(0, id)} />
-      <SeatSelect value={seats[1]} players={players} placeholder="Spieler 2" onChange={(id) => onSeat(1, id)} />
+      <SeatSelect value={seats[0]} players={players} placeholder={t('bundesliga.player1')} onChange={(id) => onSeat(0, id)} />
+      <SeatSelect value={seats[1]} players={players} placeholder={t('bundesliga.player2')} onChange={(id) => onSeat(1, id)} />
       {issues.map((i, k) => (
         <p
           key={k}
@@ -132,6 +135,7 @@ export function EncounterEditor({
   onChange,
   onOpponentChange,
 }: EncounterEditorProps) {
+  const { t } = useTranslation();
   const myMap = toPlayerMap(myPlayers);
   const oppMap = toPlayerMap(opponentPlayers);
 
@@ -158,7 +162,7 @@ export function EncounterEditor({
           {opponent.logoUrl ? <AvatarImage src={opponent.logoUrl} alt={opponent.name} /> : null}
           <AvatarFallback>{opponent.name.slice(0, 2)}</AvatarFallback>
         </Avatar>
-        <span className="text-sm text-muted-foreground">gegen</span>
+        <span className="text-sm text-muted-foreground">{t('bundesliga.versus')}</span>
         <span className="font-semibold">{opponent.name}</span>
       </div>
 
@@ -169,7 +173,7 @@ export function EncounterEditor({
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3">
             <BoardSide
-              label="Wir"
+              label={t('bundesliga.we')}
               accent="text-primary"
               seats={lineup[board.id]}
               players={myPlayers}
@@ -195,13 +199,13 @@ export function EncounterEditor({
           {crossMine.map((i, k) => (
             <p key={`m${k}`} className="flex items-start gap-1 text-xs text-destructive">
               <XCircle className="size-3.5 mt-0.5 shrink-0" />
-              Wir: {i.message}
+              {t('bundesliga.issuePrefixed', { team: t('bundesliga.we'), message: i.message })}
             </p>
           ))}
           {crossOpp.map((i, k) => (
             <p key={`o${k}`} className="flex items-start gap-1 text-xs text-destructive">
               <XCircle className="size-3.5 mt-0.5 shrink-0" />
-              {opponent.name}: {i.message}
+              {t('bundesliga.issuePrefixed', { team: opponent.name, message: i.message })}
             </p>
           ))}
         </div>

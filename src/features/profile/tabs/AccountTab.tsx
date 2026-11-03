@@ -109,9 +109,9 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
                 className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'
               >
                 {croppedImage ? (
-                  <img src={croppedImage} alt='avatar preview' className='h-full w-full object-cover' />
+                  <img src={croppedImage} alt={t('profile.account.avatarPreview')} className='h-full w-full object-cover' />
                 ) : currentUser.avatarUrl ? (
-                  <img src={currentUser.avatarUrl} alt="avatar logo" className='h-full w-full object-cover' />
+                  <img src={currentUser.avatarUrl} alt={t('profile.account.avatar')} className='h-full w-full object-cover' />
                 ) : (
                   <Image />
                 )}

@@ -11,6 +11,7 @@ import { getInitials } from '@/utils';
 import { isBefore } from 'date-fns';
 import { Check } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const AttendanceTab = ({
   event,
@@ -21,6 +22,7 @@ const AttendanceTab = ({
   attendance: FullAttendance[];
   changeAttendance: ({ user, event, newState }: { user: User; event: EventsUserView; newState: EventAttendance }) => void;
 }) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
 
   const attending = useMemo(
@@ -37,7 +39,7 @@ const AttendanceTab = ({
         <CardHeader className="border-b !py-2">
           <div className="flex justify-between items-center !p-0">
             <CardTitle className="text-lg flex items-center">
-              Teilnehmerliste
+              {t('events.attendanceTab.title')}
             </CardTitle>
           </div>
         </CardHeader>
@@ -45,7 +47,7 @@ const AttendanceTab = ({
           {/* Attending Group */}
           <div className="px-4 pb-4 border-b last:border-0">
             <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
-              <span>Zusagen ({attending.length})</span>
+              <span>{t('events.attendanceTab.attending', { n: attending.length })}</span>
             </h4>
             {attending.length > 0 ? (
               <div className="space-y-3">
@@ -58,15 +60,15 @@ const AttendanceTab = ({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{attendance.user?.name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {attendance.state === "AttendingAsTrainer" && "Trainer"}
-                        {attendance.state === "AttendingAsTrial" && "Probetraining"}
+                        {attendance.state === "AttendingAsTrainer" && t('events.attendanceTab.trainer')}
+                        {attendance.state === "AttendingAsTrial" && t('events.attendanceTab.trial')}
                       </p>
                     </div>
                   </Item>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-2">Noch keine Zusagen.</p>
+              <p className="text-sm text-muted-foreground py-2">{t('events.attendanceTab.noAttendances')}</p>
             )}
           </div>
 
@@ -74,7 +76,7 @@ const AttendanceTab = ({
           {requested.length > 0 && (
             <div className="p-4 border-b last:border-0 bg-secondary/5">
               <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
-                <span>Anfragen ({requested.length})</span>
+                <span>{t('events.attendanceTab.requested', { n: requested.length })}</span>
               </h4>
               <div className="space-y-3">
                 {requested.map((attendance) => (
@@ -86,7 +88,7 @@ const AttendanceTab = ({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{attendance.user?.name}</p>
                     </div>
-                    <Badge variant="secondary" className="text-[12px] h-6">Wartend</Badge>
+                    <Badge variant="secondary" className="text-[12px] h-6">{t('events.attendanceTab.pending')}</Badge>
                     <Has perm={"event.manage.attendees"}>
                       <Button variant="outline" size="icon" className="ml-1" onClick={() => changeAttendance({ user: attendance.user, event, newState: 'Attending' })}>
                         <Check className="size-4" />
@@ -102,7 +104,7 @@ const AttendanceTab = ({
           {waiting.length > 0 && (
             <div className="p-4 border-b last:border-0 bg-secondary/5">
               <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
-                <span>Warteliste ({waiting.length})</span>
+                <span>{t('events.attendanceTab.waiting', { n: waiting.length })}</span>
               </h4>
               <div className="space-y-3">
                 {waiting.map((attendance) => (
@@ -114,10 +116,10 @@ const AttendanceTab = ({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{attendance.user?.name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {attendance.state === "WaitingAsTrial" && "Probetraining"}
+                        {attendance.state === "WaitingAsTrial" && t('events.attendanceTab.trial')}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="text-[12px] h-6">Wartend</Badge>
+                    <Badge variant="secondary" className="text-[12px] h-6">{t('events.attendanceTab.pending')}</Badge>
                     <Has perm={"event.manage.attendees"}>
                       <Button variant="outline" size="icon" className="ml-1" onClick={() => changeAttendance({ user: attendance.user, event, newState: 'Attending' })}>
                         <Check className="size-4" />
@@ -133,7 +135,7 @@ const AttendanceTab = ({
           {declined.length > 0 && (
             <div className="p-4 pb-0 border-b last:border-0">
               <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
-                <span>Absagen ({declined.length})</span>
+                <span>{t('events.attendanceTab.declined', { n: declined.length })}</span>
               </h4>
               <div className="space-y-3">
                 {declined.map((attendance) => (

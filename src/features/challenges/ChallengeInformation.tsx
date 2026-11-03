@@ -10,6 +10,7 @@ import {
 } from '@/tanstack/challenge';
 import { captureException, withProfiler } from '@sentry/react';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGrants } from '../auth/GrantsContext';
 
 import { PullToRefresh } from '@/components/PullToRefresh';
@@ -29,6 +30,7 @@ import EnterPointDialog from './dialogs/EnterPointDialog';
 import { ChallengeInformationSkeleton } from './skeleton/ChallengeInformationSkeleton';
 
 const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
 
@@ -52,7 +54,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
       category?: string
     ) => {
       if (!user || !challenge) {
-        toast.error('Something went wrong! Try again later');
+        toast.error(t('challenge.somethingWentWrong'));
         return;
       }
 
@@ -68,11 +70,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
         },
         {
           onSuccess: (data) => {
-            let message = 'Punkt erfolgreich hinzugefügt';
-            if (data.imageFailedToUpload) {
-              message += '. Das Bild konnte leider nicht gespeichert werden.';
-            }
-            toast.success(message);
+            toast.success(data.imageFailedToUpload ? t('challenge.pointAddedImageFailed') : t('challenge.pointAdded'));
           },
           onError: (error) => {
             captureException(error);
@@ -81,7 +79,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
         }
       );
     },
-    [challenge, user, increasePointMutation]
+    [challenge, user, increasePointMutation, t]
   );
 
   if (isLoading || !challenge) {
@@ -102,9 +100,9 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
                 { challenge: result },
                 {
                   onError: (error) =>
-                    toast.error('Challenge konnte nicht aktualisiert werden. ' + error.message),
+                    toast.error(t('challenge.updateError', { error: error.message })),
                   onSuccess: () =>
-                    toast.success('Challenge wurde erfolgreich aktualisiert.'),
+                    toast.success(t('challenge.updateSuccess')),
                 }
               );
             }
@@ -121,16 +119,16 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
             {/* Beschreibungs-Block (scrollt normal weg) */}
             <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col mb-6">
               <div className="text-sm font-semibold">
-                Beschreibung
+                {t('costs.description')}
               </div>
               <div className="text-sm text-muted-foreground">
-                {challenge.description || "Keine Beschreibung vorhanden."}
+                {challenge.description || t('challenge.noDescription')}
               </div>
               {
                 challenge.end_date && isAfter(new Date(), challenge.end_date) && <Alert key={'alert'} className='p-2' variant="info">
                   <Info />
                   <AlertDescription>
-                    Diese Challenge ist seit dem {format(challenge.end_date, "dd.MM.yyyy")} beendet
+                    {t('challenge.ended', { endDate: format(challenge.end_date, "dd.MM.yyyy") })}
                   </AlertDescription>
                 </Alert>
               }
@@ -140,8 +138,8 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
 
             <div className="sticky top-14 p-2 z-40 w-full px-2 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <TabsList className="grid w-full grid-cols-2 border !h-12 shadow-sm">
-                <TabsTrigger value="activity" className="h-10 data-[state=active]:bg-primary/5">Aktivität</TabsTrigger>
-                <TabsTrigger value="leaderboard" className="h-10 data-[state=active]:bg-primary/5">Leaderboard</TabsTrigger>
+                <TabsTrigger value="activity" className="h-10 data-[state=active]:bg-primary/5">{t('challenge.tabs.activity')}</TabsTrigger>
+                <TabsTrigger value="leaderboard" className="h-10 data-[state=active]:bg-primary/5">{t('challenge.tabs.leaderboard')}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -184,7 +182,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
           }}
         >
           <Plus className="h-6 w-6" />
-          <span className="sr-only">Neuen Challengepunkt erstellen</span>
+          <span className="sr-only">{t('challenge.createPoint')}</span>
         </Button>
       </div>
     </Has>

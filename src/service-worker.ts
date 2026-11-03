@@ -110,7 +110,9 @@ function safeParseJSON(data: PushMessageData | null) {
 
 function extractPayload(raw: any) {
   const p = raw || {};
-  const title = p.title || 'Benachrichtigung';
+  // shortcut: the service worker cannot read the app's language, so this rarely used fallback (the push
+  // payload normally carries a title) follows the browser language; upgrade by keeping the language in IndexedDB.
+  const title = p.title || (self.navigator.language.startsWith('de') ? 'Benachrichtigung' : 'Notification');
   const body = p.body || '';
   const data = p.data || {};
   const url = p.url ?? data.url ?? '/';

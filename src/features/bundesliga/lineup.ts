@@ -1,4 +1,5 @@
 // Pure lineup rules for the Bundesliga planner — no React, no IO, fully unit-testable.
+import { t } from 'i18next';
 import { BOARDS, type BoardId, type BoardSeats, type Encounter, type Lineup, type MatchDayPlan, type Player, boardDef } from './types';
 
 export type PlayerMap = Record<string, Player>;
@@ -42,18 +43,18 @@ export function validateEncounter(lineup: Lineup, players: PlayerMap): LineupIss
   for (const def of BOARDS) {
     const ids = seatIds(lineup[def.id]);
     if (ids.length < 2) {
-      issues.push({ level: 'warning', board: def.id, message: `${def.label}: noch nicht vollständig besetzt.` });
+      issues.push({ level: 'warning', board: def.id, message: t('bundesliga.issues.incomplete', { label: def.label }) });
       // still run composition checks on what is there, but only flag hard errors when full
     }
     if (new Set(ids).size !== ids.length) {
-      issues.push({ level: 'error', board: def.id, message: `${def.label}: ein Spieler ist doppelt eingetragen.` });
+      issues.push({ level: 'error', board: def.id, message: t('bundesliga.issues.duplicate', { label: def.label }) });
     }
     if (ids.length === 2) {
       if (def.kind === 'women' && femaleCount(ids, players) !== 2) {
-        issues.push({ level: 'error', board: def.id, message: 'Women: beide Spielerinnen müssen weiblich sein.' });
+        issues.push({ level: 'error', board: def.id, message: t('bundesliga.issues.womenFemale') });
       }
       if (def.kind === 'mixed' && !(maleCount(ids, players) === 1 && femaleCount(ids, players) === 1)) {
-        issues.push({ level: 'error', board: def.id, message: `${def.label}: muss 1 männlich + 1 weiblich sein.` });
+        issues.push({ level: 'error', board: def.id, message: t('bundesliga.issues.mixedGender', { label: def.label }) });
       }
     }
   }
@@ -70,7 +71,7 @@ export function validateEncounter(lineup: Lineup, players: PlayerMap): LineupIss
         issues.push({
           level: 'error',
           board: null,
-          message: `${name} ist in ${labels.join(' & ')} eingeteilt — pro ${block === 'A' ? 'Open/Women-Block' : 'Mixed-Block'} ist nur ein Spiel erlaubt.`,
+          message: t(block === 'A' ? 'bundesliga.issues.oneGameOpenWomen' : 'bundesliga.issues.oneGameMixed', { name, labels: labels.join(' & ') }),
         });
       }
     }
@@ -87,7 +88,7 @@ export function validateEncounter(lineup: Lineup, players: PlayerMap): LineupIss
       issues.push({
         level: 'error',
         board: b2,
-        message: `${label} 1 muss einen höheren (oder gleichen) kombinierten RGX als ${label} 2 haben.`,
+        message: t('bundesliga.issues.rgxOrder', { label }),
       });
     }
   }

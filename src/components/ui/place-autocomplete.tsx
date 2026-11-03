@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import type { BBox, Feature, FeatureCollection, Point } from "geojson"
 import { MapPinIcon, SearchIcon } from "lucide-react"
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 
 interface PlaceFeatureProperties {
     osm_id: number
@@ -259,6 +260,7 @@ function PlaceAutocomplete({
     onResultsChange,
     ...props
 }: PlaceAutocompleteProps) {
+    const { t } = useTranslation()
     const [internalValue, setInternalValue] = React.useState(defaultValue)
     const [searchQuery, setSearchQuery] = React.useState("")
 
@@ -301,7 +303,7 @@ function PlaceAutocomplete({
                     </InputGroupAddon>
                     <InputGroupInput
                         type="search"
-                        placeholder="Search"
+                        placeholder={t("common.searchPlaceholder")}
                         value={displayValue}
                         onChange={(event) => {
                             const newValue = event.target.value
@@ -330,11 +332,11 @@ function PlaceAutocomplete({
                             "data-[state=open]:slide-in-from-top-2 data-[state=closed]:slide-out-to-top-2"
                         )}>
                         {error && (
-                            <CommandEmpty>Error: {error.message}</CommandEmpty>
+                            <CommandEmpty>{t("ui.placeAutocomplete.error", { message: error.message })}</CommandEmpty>
                         )}
                         {hasNoResults && (
                             <CommandEmpty>
-                                Can't find {displayValue}.
+                                {t("ui.placeAutocomplete.notFound", { value: displayValue })}
                             </CommandEmpty>
                         )}
                         {results.length > 0 && (
@@ -373,7 +375,7 @@ function PlaceAutocomplete({
                                                     {feature.properties.name ||
                                                         feature.properties
                                                             .street ||
-                                                        "Unknown"}
+                                                        t("ui.placeAutocomplete.unknown")}
                                                 </span>
                                                 <span className="text-muted-foreground text-xs">
                                                     {formattedAddress}

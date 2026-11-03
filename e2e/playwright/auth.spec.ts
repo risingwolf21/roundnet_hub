@@ -35,7 +35,7 @@ test.describe('Auth', () => {
     await page.fill('#password', 'definitely-the-wrong-password');
     await page.click('button:has-text("Login")');
 
-    await expect(page.getByText('Login failed. Try again!')).toBeVisible();
+    await expect(page.getByText('Login fehlgeschlagen. Versuche es erneut!')).toBeVisible();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 

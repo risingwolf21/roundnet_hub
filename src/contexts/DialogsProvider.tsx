@@ -4,7 +4,9 @@ import { SelectSingleOptionDialog } from '@/components/dialogs/SelectSingleOptio
 import { ProfileDialog } from '@/components/ProfileDialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { t } from 'i18next';
 import React, { Suspense, createContext, use, useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // 1. Das Toolpad-ähnliche Interface für ALLE Dialoge
 export interface DialogProps<Payload = void, Result = void> {
@@ -85,9 +87,9 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
   // Bequemlichkeits-Methoden
   const confirm = useCallback((title: string, options?: ConfirmOptions) => {
     const DEFAULT_CONFIRM_OPTIONS: ConfirmOptions = {
-      title: "Sind Sie sich sicher?",
-      cancelText: "Abbrechen",
-      okText: "Bestätigen",
+      title: t('dialogs.confirmTitle'),
+      cancelText: t('common.cancel'),
+      okText: t('common.confirm'),
       message: null,
     }
     return open(ConfirmDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, title }).then((res) => res ?? false);
@@ -95,8 +97,8 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const alert = useCallback((content: React.ReactNode, options?: AlertOptions) => {
     const DEFAULT_CONFIRM_OPTIONS: AlertOptions = {
-      title: "Sind Sie sich sicher?",
-      okText: "Schließen",
+      title: t('dialogs.confirmTitle'),
+      okText: t('common.close'),
       message: null,
     }
     return open(AlertDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, message: content }).then(() => undefined);
@@ -156,39 +158,45 @@ export const useDialogs = () => {
 // INTERNE STANDARD-DIALOGE (Confirm & Alert)
 // ============================================================================
 
-const ConfirmDialogBase = ({ open, onClose, payload }: DialogProps<ConfirmOptions, boolean>) => (
-  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>{payload.title}</DialogTitle>
-        <DialogDescription>{payload.message}</DialogDescription>
-      </DialogHeader>
-      <DialogFooter className="mt-4">
-        <Button variant="outline" onClick={() => onClose(false)}>
-          {payload.cancelText ?? 'Abbrechen'}
-        </Button>
-        <Button onClick={() => onClose(true)}>
-          {payload.okText ?? 'Bestätigen'}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
+const ConfirmDialogBase = ({ open, onClose, payload }: DialogProps<ConfirmOptions, boolean>) => {
+  const { t } = useTranslation();
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{payload.title}</DialogTitle>
+          <DialogDescription>{payload.message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="mt-4">
+          <Button variant="outline" onClick={() => onClose(false)}>
+            {payload.cancelText ?? t('common.cancel')}
+          </Button>
+          <Button onClick={() => onClose(true)}>
+            {payload.okText ?? t('common.confirm')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
-const AlertDialogBase = ({ open, onClose, payload }: DialogProps<AlertOptions, void>) => (
-  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>{payload.title}</DialogTitle>
-        <DialogDescription>{payload.message}</DialogDescription>
-      </DialogHeader>
-      <DialogFooter className="mt-4">
-        <Button onClick={() => onClose(null)}>
-          {payload.okText ?? 'OK'}
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-);
+const AlertDialogBase = ({ open, onClose, payload }: DialogProps<AlertOptions, void>) => {
+  const { t } = useTranslation();
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{payload.title}</DialogTitle>
+          <DialogDescription>{payload.message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="mt-4">
+          <Button onClick={() => onClose(null)}>
+            {payload.okText ?? t('common.ok')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default DialogsProvider;

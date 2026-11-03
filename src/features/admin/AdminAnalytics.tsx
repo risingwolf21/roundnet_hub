@@ -83,21 +83,22 @@ export interface AnalyticsReportDef {
   inputs: AnalyticsInputConfig[];
 }
 
+// title, description and input labels are translation keys, translated at render time
 const REPORTS: AnalyticsReportDef[] = [
   {
-    title: "Inaktive Challenge Teilnehmer (Top Trainingsbesucher)",
+    title: "admin.analytics.inactiveParticipants",
     rpc: "admin_challenge_zero_points_candidates",
-    description: "Zeigt User mit 0 Punkten in der Challenge, sortiert nach Trainingshäufigkeit.",
+    description: "admin.analytics.inactiveParticipantsDescription",
     inputs: [
       {
         id: "challenge",
-        label: "Challenge auswählen",
+        label: "admin.analytics.selectChallenge",
         type: "challenge-select",
         rpcParamMapping: { value: "p_challenge_id" },
       },
       {
         id: "range",
-        label: "Trainings-Zeitraum",
+        label: "admin.analytics.trainingPeriod",
         type: "date-range",
         rpcParamMapping: { from: "p_start", to: "p_end" },
         defaultValue: {
@@ -108,13 +109,13 @@ const REPORTS: AnalyticsReportDef[] = [
     ]
   },
   {
-    title: "Trainingsanmeldungen pro Nutzer (Zeitraum)",
+    title: "admin.analytics.trainingRegistrations",
     rpc: "admin_analytics_attendance_ranking",
-    description: "Wer war im gewählten Zeitraum am häufigsten beim Training?",
+    description: "admin.analytics.trainingRegistrationsDescription",
     inputs: [
       {
         id: "range",
-        label: "Zeitraum",
+        label: "admin.analytics.period",
         type: "date-range",
         rpcParamMapping: { from: "p_start", to: "p_end" },
         defaultValue: { from: add(new Date(), { months: -3 }), to: new Date() }
@@ -122,13 +123,13 @@ const REPORTS: AnalyticsReportDef[] = [
     ]
   },
   {
-    title: "Getränke Buchungen pro Nutzer (Zeitraum)",
+    title: "admin.analytics.drinkBookings",
     rpc: "admin_analytics_drinks_ranking",
-    description: "Wer hat die meisten Getränke konsumiert?",
+    description: "admin.analytics.drinkBookingsDescription",
     inputs: [
       {
         id: "range",
-        label: "Zeitraum",
+        label: "admin.analytics.period",
         type: "date-range",
         rpcParamMapping: { from: "p_start", to: "p_end" },
         defaultValue: { from: add(new Date(), { months: -1 }), to: new Date() }
@@ -301,8 +302,8 @@ const AdminAnalytics = () => {
       <div className="flex flex-row justify-center">
         <Item variant={"outline"} onClick={handleSelectReport}>
           <ItemContent>
-            <ItemTitle>{selectedReport.title}</ItemTitle>
-            <ItemDescription>{selectedReport.description}</ItemDescription>
+            <ItemTitle>{t(selectedReport.title)}</ItemTitle>
+            <ItemDescription>{selectedReport.description && t(selectedReport.description)}</ItemDescription>
           </ItemContent>
           <ItemActions>
             <ChevronDown />
@@ -363,11 +364,11 @@ const AdminAnalytics = () => {
             if (input.type === 'challenge-select') {
               return (
                 <Field key={input.id} className="w-full">
-                  <FieldLabel htmlFor="challenge-select">{input.label}</FieldLabel>
+                  <FieldLabel htmlFor="challenge-select">{t(input.label)}</FieldLabel>
                   <AsyncSelect
                     id="challenge-select"
                     table="challenge"
-                    label={input.label}
+                    label={t(input.label)}
                     value={val}
                     onChange={(newVal) => updateFormValue(input.id, newVal)}
                   />
@@ -378,11 +379,11 @@ const AdminAnalytics = () => {
             if (input.type === 'user-select') {
               return (
                 <Field key={input.id} className="w-full">
-                  <FieldLabel htmlFor="user-select">{input.label}</FieldLabel>
+                  <FieldLabel htmlFor="user-select">{t(input.label)}</FieldLabel>
                   <AsyncSelect
                     id="user-select"
                     table="user"
-                    label={input.label}
+                    label={t(input.label)}
                     value={val}
                     labelField="displayName"
                     onChange={(newVal) => updateFormValue(input.id, newVal)}
@@ -394,10 +395,10 @@ const AdminAnalytics = () => {
             if (input.type === 'number') {
               return (
                 <Field key={input.id} className="w-full">
-                  <FieldLabel htmlFor={`number-${input.id}`}>{input.label}</FieldLabel>
+                  <FieldLabel htmlFor={`number-${input.id}`}>{t(input.label)}</FieldLabel>
                   <Input
                     id={`number-${input.id}`}
-                    placeholder={input.label}
+                    placeholder={t(input.label)}
                     type="number"
                     value={val || ''}
                     onChange={(e) => updateFormValue(input.id, Number(e.target.value))}
@@ -446,8 +447,8 @@ const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: Anal
             {
               payload.reports.map(x => (<Item key={x.rpc} variant={"outline"} onClick={() => onClose(x)}>
                 <ItemContent>
-                  <ItemTitle>{x.title}</ItemTitle>
-                  <ItemDescription>{x.description}</ItemDescription>
+                  <ItemTitle>{t(x.title)}</ItemTitle>
+                  <ItemDescription>{x.description && t(x.description)}</ItemDescription>
                 </ItemContent>
               </Item>))
             }

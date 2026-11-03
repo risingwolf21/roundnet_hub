@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Rocket } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Set by "Jetzt aktualisieren", read once after the reload to show the success animation.
 const UPDATED_FLAG = 'pwa-update-applied';
@@ -10,6 +11,7 @@ const SUCCESS_VISIBLE_MS = 3200; // keep in sync with the update-badge keyframes
 // Full-screen page shown while a new version waits in the service worker. It stays until the
 // user taps the button: the old app must not keep running against an already migrated database.
 export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> }) => {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
@@ -45,16 +47,16 @@ export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> 
 
       <div className='max-w-sm space-y-2'>
         <h1 id='update-title' className='text-2xl font-semibold'>
-          Neue Version bereit
+          {t('pwa.updateReady.title')}
         </h1>
         <p className='text-muted-foreground'>
-          Eine neue Version der App wurde heruntergeladen. Aktualisiere jetzt, um sie zu nutzen.
+          {t('pwa.updateReady.description')}
         </p>
       </div>
 
       <Button className='h-11 px-6 text-base' disabled={busy} onClick={refresh}>
         {busy ? <Spinner /> : null}
-        {busy ? 'Aktualisiere…' : 'Jetzt aktualisieren'}
+        {busy ? t('pwa.updateReady.updating') : t('pwa.updateReady.updateNow')}
       </Button>
     </div>
   );
@@ -63,6 +65,7 @@ export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> 
 // Small badge after the reload that the update is running. Disappears on its own after the
 // animation, or immediately when tapped.
 export const UpdateSuccess = () => {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(() => {
     try {
       return sessionStorage.getItem(UPDATED_FLAG) === '1';
@@ -97,8 +100,8 @@ export const UpdateSuccess = () => {
           </svg>
         </span>
         <span className='text-left leading-tight'>
-          <span className='block text-sm font-semibold'>App aktualisiert</span>
-          <span className='text-muted-foreground block text-xs'>Du nutzt die neueste Version.</span>
+          <span className='block text-sm font-semibold'>{t('pwa.updateSuccess.title')}</span>
+          <span className='text-muted-foreground block text-xs'>{t('pwa.updateSuccess.description')}</span>
         </span>
       </button>
     </div>

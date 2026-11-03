@@ -1,5 +1,6 @@
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { History } from 'types/supabase';
 
 import { AppBar } from '@/components/ui/appbar';
@@ -11,6 +12,7 @@ import { useGrants } from '../auth/GrantsContext';
 import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
 const PaymentsPendingAdmin = () => {
+  const { t } = useTranslation();
   const { user } = useGrants();
   const [searchString, setSearchString] = useState('');
   const dialogs = useDialogs();
@@ -24,7 +26,7 @@ const PaymentsPendingAdmin = () => {
       className='!border-b !shadow-sm'
       user={user}
       showSearch
-      searchPlaceholder='Suche nach einem Nutzer'
+      searchPlaceholder={t('admin.payments.searchPlaceholder')}
       searchValue={searchString}
       onSearchChange={setSearchString}
     />
@@ -51,7 +53,7 @@ const PaymentsPendingAdmin = () => {
                   <ItemContent className='ml-2'>
                     <div>
                       <div>{x.user?.name ?? x.user.email}</div>
-                      <div className="text-xs text-muted-foreground">{x.user.name ? 'Name' : 'Email'}</div>
+                      <div className="text-xs text-muted-foreground">{x.user.name ? t('admin.payments.name') : t('admin.payments.email')}</div>
                     </div>
                   </ItemContent>
                   <ItemActions>
@@ -62,7 +64,7 @@ const PaymentsPendingAdmin = () => {
                         confirmPayment.mutate({ payment: x });
                       }
                     }}>
-                      Bestätigen
+                      {t('common.confirm')}
                     </Button>
                   </ItemActions>
                 </Item>

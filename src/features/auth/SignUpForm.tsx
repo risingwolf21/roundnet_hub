@@ -9,6 +9,7 @@ import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
 import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
@@ -23,6 +24,7 @@ const SignUpForm = () => {
   const [isLoading, setIsLoading] = useState(false)
 
   const { version } = useApplication();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const signUp = async (e: React.FormEvent) => {
@@ -30,26 +32,26 @@ const SignUpForm = () => {
     setError(null);
 
     if (password !== repeatPassword) {
-      setError('Die Passwörter stimmen nicht überein.');
+      setError(t('profile.password.mismatch'));
       return;
     }
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setError('Bitte gib eine gültige Emailadresse an.');
+      setError(t('auth.signup.invalidEmail'));
       return;
     }
 
     if (!password || password.length < 6) {
-      setError('Das Passwort muss mindestens 6 Zeichen beinhalten');
+      setError(t('auth.signup.passwordTooShort'));
       return;
     }
 
     if (!name || name.length < 1) {
-      setError('Name is required.');
+      setError(t('auth.signup.nameRequired'));
       return;
     }
 
     if (!surname || surname.length < 1) {
-      setError('Surname is required.');
+      setError(t('auth.signup.surnameRequired'));
       return;
     }
 
@@ -76,7 +78,7 @@ const SignUpForm = () => {
         scope.setExtra('error', JSON.stringify(error));
         return scope;
       });
-      setError('Could not sign up user. [' + error?.message + ']');
+      setError(t('auth.signup.failed', { message: error?.message }));
     }
     setIsLoading(false);
     if (data.session) {
@@ -95,7 +97,7 @@ const SignUpForm = () => {
       </div>
       <div>
         <CardTitle className="text-2xl">
-          Registrierung bei {' '} <strong>{BRANDING.title}</strong>
+          {t('auth.signup.titleAt')} {' '} <strong>{BRANDING.title}</strong>
         </CardTitle>
       </div>
     </CardHeader>
@@ -103,7 +105,7 @@ const SignUpForm = () => {
       <form onSubmit={signUp}>
         <div className="flex flex-col gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -115,7 +117,7 @@ const SignUpForm = () => {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="repeat-password">Vorname</Label>
+              <Label htmlFor="repeat-password">{t('profile.account.firstName')}</Label>
             </div>
             <Input
               id="name"
@@ -126,7 +128,7 @@ const SignUpForm = () => {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="repeat-password">Nachname</Label>
+              <Label htmlFor="repeat-password">{t('profile.account.lastName')}</Label>
             </div>
             <Input
               id="surname"
@@ -137,7 +139,7 @@ const SignUpForm = () => {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="password">Passwort</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
             </div>
             <Input
               id="password"
@@ -149,7 +151,7 @@ const SignUpForm = () => {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="repeat-password">Passwort wiederholen</Label>
+              <Label htmlFor="repeat-password">{t('auth.repeatPassword')}</Label>
             </div>
             <Input
               id="repeat-password"
@@ -162,18 +164,18 @@ const SignUpForm = () => {
 
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Account wird erstellt...' : 'Registrieren'}
+            {isLoading ? t('auth.signup.submitting') : t('auth.signup.submit')}
           </Button>
         </div>
         <div className="mt-4 text-center text-sm">
           <a href="#" className="underline underline-offset-4" onClick={() => navigate('/auth/login')}>
-            Account vorhanden? Hier einloggen.
+            {t('auth.haveAccount')}
           </a>
         </div>
       </form>
       <Separator className={"my-4"} />
       <div className='flex justify-center'>
-        {`Version ${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}`}
+        {t('auth.version', { version: `${APP_VERSION}${version ? `-${version.slice(0, 8)}` : ''}` })}
       </div>
     </CardContent>
   </Card>

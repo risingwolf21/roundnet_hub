@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useDeleteMatch, useMatch } from '@/tanstack/games';
 import { Loader2, Pencil, SearchX, Trash2 } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
@@ -64,6 +65,7 @@ const IndexRow = ({ player, fallback, history }: { player: User | null, fallback
 };
 
 const MatchInformation = () => {
+  const { t } = useTranslation();
   const { matchId } = useParams();
   const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
@@ -75,7 +77,7 @@ const MatchInformation = () => {
   if (isLoading) {
     return (
       <div className="flex flex-col h-screen">
-        <AppBar className='!border-b !shadow-sm' title="Match Information" user={user} primaryAction="back" />
+        <AppBar className='!border-b !shadow-sm' title={t('games.information.title')} user={user} primaryAction="back" />
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="size-10 animate-spin text-muted-foreground" />
         </div>
@@ -86,14 +88,14 @@ const MatchInformation = () => {
   if (!match) {
     return (
       <div className="flex flex-col h-screen">
-        <AppBar className='!border-b !shadow-sm' title="Match Information" user={user} primaryAction="back" />
+        <AppBar className='!border-b !shadow-sm' title={t('games.information.title')} user={user} primaryAction="back" />
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="rounded-full bg-muted p-6 mb-4">
             <SearchX className="size-10 text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight">Spiel nicht gefunden</h2>
+          <h2 className="text-xl font-bold tracking-tight">{t('games.information.notFound')}</h2>
           <p className="text-muted-foreground mt-2 max-w-xs">
-            Das gesuchte Spiel existiert nicht, wurde gelöscht oder du hast keine Berechtigung es zu sehen.
+            {t('games.information.notFoundDescription')}
           </p>
         </div>
       </div>
@@ -128,18 +130,18 @@ const MatchInformation = () => {
     <div className="flex flex-col min-h-screen">
       <AppBar
         className='!border-b !shadow-sm'
-        title="Match Information"
+        title={t('games.information.title')}
         user={user}
         primaryAction="back"
         actions={
           <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-            const result = await dialogs.confirm("Möchtest du dieses Spiel wirklich löschen?");
+            const result = await dialogs.confirm(t('games.information.deleteConfirm'));
 
             if (result) {
               useDeleteMatchMutation.mutate(undefined, {
                 onSuccess: () => navigate('/matches'),
                 onError: (error) =>
-                  toast.error('Spiel konnte nicht gelöscht werden. ' + error.message),
+                  toast.error(t('games.information.deleteError', { error: error.message })),
               });
             }
           }}>
@@ -176,7 +178,7 @@ const MatchInformation = () => {
             <Item variant={"outline"}>
               <ItemContent className='p-0'>
                 <ItemHeader>
-                  <ItemTitle className='font-semibold'>Sätze</ItemTitle>
+                  <ItemTitle className='font-semibold'>{t('games.sets')}</ItemTitle>
                   {
                     matchMember && hasPerm("games.update.score") &&
                     <Button variant={"ghost"} size={"icon"} onClick={() => {
@@ -214,7 +216,7 @@ const MatchInformation = () => {
                         <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                           <span>Spezi</span>
                           {speziSet.set_awarded && (
-                            <Badge variant="success" className="text-xs">Zugesprochen</Badge>
+                            <Badge variant="success" className="text-xs">{t('games.information.awarded')}</Badge>
                           )}
                         </div>
                         <div className='flex flex-row gap-4'>
@@ -238,7 +240,7 @@ const MatchInformation = () => {
             <Item variant={"outline"}>
               <ItemContent className='p-0'>
                 <ItemHeader>
-                  <ItemTitle className='font-semibold'>Index</ItemTitle>
+                  <ItemTitle className='font-semibold'>{t('games.index')}</ItemTitle>
                 </ItemHeader>
                 <div className='flex flex-col gap-2'>
                   {playersData.map((data, index) => (
@@ -254,20 +256,20 @@ const MatchInformation = () => {
             <Has perm={["games.admin.view", "supabase.admin"]}>
               <Separator />
               <div className="text-sm font-semibold ml-2">
-                Admin - Aktionen
+                {t('games.information.adminActions')}
               </div>
               <Item variant="outline">
                 <ItemContent>
-                  <ItemTitle>Elo anwenden</ItemTitle>
+                  <ItemTitle>{t('games.information.applyElo')}</ItemTitle>
                   <ItemDescription>
-                    Startet die ELO Berechnung für dieses Spiel neu
+                    {t('games.information.applyEloDescription')}
                   </ItemDescription>
                 </ItemContent>
                 <ItemActions>
                   <Button variant="outline" size="sm" onClick={() => {
                     supabase.schema("games").rpc("apply_elo_for_match", { p_match: match.id });
                   }}>
-                    Start
+                    {t('games.information.start')}
                   </Button>
                 </ItemActions>
               </Item>
@@ -277,7 +279,7 @@ const MatchInformation = () => {
               <Item variant={"outline"}>
                 <ItemContent className='p-0'>
                   <ItemHeader>
-                    <ItemTitle className='font-semibold'>Admin - Informationen</ItemTitle>
+                    <ItemTitle className='font-semibold'>{t('games.information.adminInformation')}</ItemTitle>
                   </ItemHeader>
                   <div>
 
@@ -290,21 +292,21 @@ const MatchInformation = () => {
                           <div className='flex flex-row gap-2 w-full'>
                             <div className='flex-1'>
                               <div className='font-semibold'>{player?.player?.display_name ?? player?.user?.name ?? player?.user?.displayName}</div>
-                              <div>Spieler</div>
+                              <div>{t('games.information.player')}</div>
                             </div>
                             <div className='flex-1'>
                               <div className='font-semibold'>{elo.delta.toFixed()}</div>
-                              <div>Delta</div>
+                              <div>{t('games.information.delta')}</div>
                             </div>
                           </div>
                           <div className='flex flex-row gap-2 w-full'>
                             <div className='flex-1'>
                               <div className='font-semibold'>{elo.eff_old_rating?.toFixed(2)}</div>
-                              <div>Altes Rating</div>
+                              <div>{t('games.information.oldRating')}</div>
                             </div>
                             <div className='flex-1'>
                               <div className='font-semibold'>{elo.eff_new_rating?.toFixed(2)}</div>
-                              <div>Neues Rating</div>
+                              <div>{t('games.information.newRating')}</div>
                             </div>
                           </div>
                           <Separator />

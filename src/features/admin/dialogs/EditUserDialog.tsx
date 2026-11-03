@@ -9,7 +9,9 @@ import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item'
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
+import i18n from 'i18next';
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 type EditUserDialogProps = {
@@ -26,7 +28,7 @@ export type UserEdited = {
 async function resetUserPassword(userId: string, newPassword: string) {
   const { data: session } = await supabase.auth.getSession();
   const accessToken = session?.session?.access_token;
-  if (!accessToken) throw new Error('Not authenticated');
+  if (!accessToken) throw new Error(i18n.t('admin.users.notAuthenticated'));
 
   const resp = await fetch(
     `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/reset-user-password`,
@@ -35,6 +37,7 @@ async function resetUserPassword(userId: string, newPassword: string) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
+        'Accept-Language': i18n.resolvedLanguage ?? 'de', // the function answers errors in this language
       },
       body: JSON.stringify({ userId, newPassword }),
     }
@@ -44,6 +47,7 @@ async function resetUserPassword(userId: string, newPassword: string) {
 }
 
 const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
+  const { t } = useTranslation();
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(user.role);
@@ -64,7 +68,7 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"fullscreen"}>
         <DialogHeader variant={"appbar"}>
-          <DialogTitle className="flex-1">Benutzer bearbeiten</DialogTitle>
+          <DialogTitle className="flex-1">{t('admin.users.edit')}</DialogTitle>
           <DialogClose />
         </DialogHeader>
         <DialogBody>
@@ -73,7 +77,7 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
 
               <Field key={"displayName"}>
                 <FieldLabel htmlFor="displayName">
-                  Anzeigename
+                  {t('profile.account.displayName')}
                 </FieldLabel>
                 <Input
                   id="displayName"
@@ -85,7 +89,7 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
 
               <Field key={"email"}>
                 <FieldLabel htmlFor="email">
-                  Email
+                  {t('admin.users.email')}
                 </FieldLabel>
                 <Input
                   id="email"
@@ -97,34 +101,34 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
 
               <Field key={"password"}>
                 <FieldLabel htmlFor="password">
-                  Passwort
+                  {t('admin.users.password')}
                 </FieldLabel>
                 <div className='flex flex-row gap-2'>
                   <Input
                     className='flex-1'
                     id="password"
                     name="password"
-                    placeholder='Passwort ändern'
+                    placeholder={t('profile.password.title')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <Button className={"flex-shrink"} variant={"outline"} onClick={async () => {
                     try {
                       await resetUserPassword(user.id, password);
-                      toast.success('Passwort erfolgreich zurückgesetzt');
+                      toast.success(t('admin.users.passwordResetSuccess'));
                       setPassword('');
                     } catch (error: any) {
                       captureException(error);
-                      toast.error(`Fehler beim Zurücksetzen des Passworts: ${error.message}`);
+                      toast.error(t('admin.users.passwordResetError', { error: error.message }));
                     }
                   }}>
-                    Speichern
+                    {t('common.save')}
                   </Button>
                 </div>
               </Field>
 
               <div className='flex flex-col gap-4'>
-                <div className='text-base font-semibold'>Gruppen</div>
+                <div className='text-base font-semibold'>{t('navigation.groups')}</div>
                 {
                   user.groups.map(x => (
                     <Item key={x.id} variant={"outline"} className='pl-2'>
@@ -148,7 +152,7 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
                 type="button" and with several inputs Enter does not submit), so name changes could
                 never be saved. */}
             <Button type="submit" className="w-full mt-4">
-              Änderungen speichern
+              {t('admin.users.saveChanges')}
             </Button>
           </form>
         </DialogBody>

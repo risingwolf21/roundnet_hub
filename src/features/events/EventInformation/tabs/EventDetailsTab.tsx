@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
 import { EventsUserView } from '@/types/supabaseTypes';
+import { nameOfRecurrence } from '@/utils';
 import { Separator } from '@base-ui/react/separator';
 import { add, closestTo, differenceInCalendarDays, format, isAfter } from 'date-fns';
 import { toNumber } from 'lodash';
@@ -20,6 +21,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../../types';
 
 const EventLocationMap = lazy(() => import('./EventLocationMap'));
@@ -53,6 +55,7 @@ type WeatherData = {
 };
 
 export const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null }) => {
+  const { i18n } = useTranslation();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
   useEffect(() => {
@@ -60,7 +63,7 @@ export const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date
     if (isAfter(date, add(new Date(), { days: 5 }))) return;
 
     fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric&lang=de`
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric&lang=${i18n.resolvedLanguage === 'en' ? 'en' : 'de'}`
     )
       .then((res) => res.json())
       .then(async (json) => {
@@ -82,7 +85,7 @@ export const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date
           });
         }
       });
-  }, [place, date]);
+  }, [place, date, i18n.resolvedLanguage]);
 
   if (!weatherData) return null;
 
@@ -101,21 +104,22 @@ export const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date
 };
 
 const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView; selectedEventPlace: PlaceType | null }) => {
+  const { t } = useTranslation();
   return (
     <TabsContent value="information" className="space-y-4 m-0">
       <Card className="pt-0">
         <CardHeader className="border-b !py-2">
           <div className="flex justify-between items-center !p-0">
             <CardTitle className="text-lg flex items-center">
-              Information
+              {t('events.detailsTab.title')}
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="text-sm space-y-4 text-foreground/90">
           <div>
-            <h4 className="font-semibold mb-1 text-foreground">Beschreibung</h4>
+            <h4 className="font-semibold mb-1 text-foreground">{t('events.detailsTab.description')}</h4>
             <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-              {event.description || "Keine Beschreibung angegeben."}
+              {event.description || t('events.detailsTab.noDescription')}
             </p>
           </div>
 
@@ -126,7 +130,7 @@ const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView;
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
                 <div>
-                  <span className="text-muted-foreground text-xs block">Treffpunkt</span>
+                  <span className="text-muted-foreground text-xs block">{t('events.detailsTab.meetingPoint')}</span>
                   <span className="font-medium">{format(event.meetingDateTime, "dd.MM.yyyy HH:mm")}</span>
                 </div>
               </div>
@@ -136,8 +140,8 @@ const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView;
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-primary" />
                 <div>
-                  <span className="text-muted-foreground text-xs block">Wiederholung</span>
-                  <span className="font-medium">{event.recurrence}</span>
+                  <span className="text-muted-foreground text-xs block">{t('events.detailsTab.recurrence')}</span>
+                  <span className="font-medium">{nameOfRecurrence(event.recurrence)}</span>
                 </div>
               </div>
             )}
@@ -148,7 +152,7 @@ const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView;
               <Separator />
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground">Standort</h4>
+                  <h4 className="font-semibold text-foreground">{t('events.detailsTab.location')}</h4>
                 </div>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(JSON.stringify(selectedEventPlace))}`}
@@ -159,7 +163,7 @@ const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView;
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-10 flex items-center justify-center">
                     <div className="bg-background/90 backdrop-blur-sm text-foreground px-4 py-2 rounded-full text-sm font-medium shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2 transform translate-y-2 group-hover:translate-y-0 duration-200">
                       <MapPin className="h-4 w-4 text-primary" />
-                      Route hierher planen
+                      {t('events.detailsTab.planRouteHere')}
                     </div>
                   </div>
                   <Suspense fallback={<div className="h-full w-full bg-muted animate-pulse rounded-2xl" />}>

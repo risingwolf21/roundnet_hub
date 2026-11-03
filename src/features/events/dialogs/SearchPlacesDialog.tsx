@@ -1,5 +1,6 @@
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Marker, useMap, useMapEvents } from 'react-leaflet';
 import { PlaceType } from '../types';
 
@@ -13,6 +14,7 @@ import { Map, MapLocateControl, MapSearchControl, MapTileLayer } from '@/compone
 import '@/styles/user-location.css';
 import L from 'leaflet';
 import { toast } from 'sonner';
+import i18n from 'i18next';
 
 type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
   name: string;
@@ -33,7 +35,7 @@ const parseAddress = (raw: any) => {
   const cityInfo = addr.postcode && addr.city ? `${addr.postcode} ${addr.city}` : addr.city || '';
 
   const address = street && cityInfo ? `${street}, ${cityInfo}` : street || cityInfo || '';
-  const name = raw.name || street || address || 'Unbenannter Ort';
+  const name = raw.name || street || address || i18n.t('events.searchPlaces.unnamedPlace');
 
   return { name, description: address || null };
 };
@@ -51,6 +53,7 @@ function MapFlyTo({ target }: { target: { lat: number; lng: number } | null }) {
 }
 
 const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType | null>) => {
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<MySearchResult | null>(null);
@@ -105,7 +108,7 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
               const cityInfo = addr.postcode && addr.city ? `${addr.postcode} ${addr.city}` : addr.city || '';
 
               const address = street && cityInfo ? `${street}, ${cityInfo}` : street || cityInfo || '';
-              const name = addr.name || street || address || 'Unbenannter Ort';
+              const name = addr.name || street || address || t('events.searchPlaces.unnamedPlace');
 
               setSelectedPlace({ x: place.geometry.coordinates[0], y: place.geometry.coordinates[1], name, description: address });
             }} />
@@ -143,27 +146,27 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
               selectedPlace ? (
                 <div className='flex flex-col gap-2'>
                   <Input
-                    placeholder='Name'
+                    placeholder={t('events.searchPlaces.name')}
                     value={selectedPlace.name}
                     onChange={(e) => setSelectedPlace({ ...selectedPlace, name: e.target.value })}
                     className='text-base font-semibold'
                   />
 
                   <Input
-                    placeholder='Beschreibung'
+                    placeholder={t('costs.description')}
                     value={selectedPlace.description ?? ''}
                     onChange={(e) => setSelectedPlace({ ...selectedPlace, description: e.target.value })}
                     className='text-base text-muted-foreground'
                   />
                 </div>
               ) : (
-                <p className='text-center text-muted-foreground'>Klicke auf die Karte, um einen Ort auszuwählen.</p>
+                <p className='text-center text-muted-foreground'>{t('events.searchPlaces.hint')}</p>
               )
             }
           </div>
           <div className='flex flex-row gap-2 w-full mt-4'>
             <Button variant={"outline"} className={"flex-1"} onClick={() => onClose(null)}>
-              Abbrechen
+              {t('common.cancel')}
             </Button>
             {
               selectedPlace && <Button className={"flex-1"} onClick={() =>
@@ -174,7 +177,7 @@ const SearchPlacesDialog = ({ open, onClose }: DialogProps<PlaceType, PlaceType 
                   lon: selectedPlace.x,
                 })
               }>
-                Speichern
+                {t('common.save')}
               </Button>
             }
           </div>

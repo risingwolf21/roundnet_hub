@@ -11,9 +11,11 @@ import { getInitials } from '@/utils';
 import { format } from 'date-fns';
 import { MessageSquare, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
+  const { t } = useTranslation();
   const dialogs = useDialogs();
   const addCommentMutation = useAddCommentMutation(user);
   const { hasPerm } = useGrants();
@@ -33,7 +35,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
           setReplyingTo(null);
         },
         onError: () => {
-          toast.error('Kommentar konnte nicht hinzugefügt werden.');
+          toast.error(t('events.commentsTab.addError'));
         },
       }
     );
@@ -46,7 +48,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
         <CardHeader className="border-b !py-2">
           <div className="flex justify-between items-center !p-0">
             <CardTitle className="text-lg flex items-center">
-              Kommentare
+              {t('events.commentsTab.title')}
             </CardTitle>
           </div>
         </CardHeader>
@@ -80,7 +82,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                           onClick={() => setReplyingTo(comment)}
                         >
-                          Antworten
+                          {t('events.reply')}
                         </Button>
                       )}
                     </div>
@@ -121,7 +123,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-muted-foreground">
               <MessageSquare className="h-10 w-10 opacity-20" />
-              <p>Noch keine Kommentare.<br />Sei der Erste!</p>
+              <p><Trans i18nKey="events.commentsTab.empty" components={{ br: <br /> }} /></p>
             </div>
           )}
         </CardContent>
@@ -130,7 +132,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
         <form onSubmit={submit}>
           {replyingTo && (
             <div className="px-3 py-2 border-t  justify-between w-full flex items-center gap-1 text-xs text-muted-foreground">
-              <span>Antworte auf @{replyingTo.user?.displayName || replyingTo.user?.name}</span>
+              <span>{t('events.replyTo', { name: replyingTo.user?.displayName || replyingTo.user?.name })}</span>
               <Button
                 variant={"outline"}
                 className="ml-1 hover:text-foreground transition-colors"
@@ -148,14 +150,14 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
             <textarea
               id="comment"
               name="comment"
-              placeholder="Kommentar schreiben..."
+              placeholder={t('events.commentsTab.placeholder')}
               className="flex-1 min-h-[40px] max-h-[120px] resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               rows={1}
             />
             <Button
               type="submit"
               className="shrink-0"
-              disabled={eventInThePast(event) || !hasPerm('event.comment')}>Senden</Button>
+              disabled={eventInThePast(event) || !hasPerm('event.comment')}>{t('admin.notify.send')}</Button>
           </div>
         </form>
       </Card>

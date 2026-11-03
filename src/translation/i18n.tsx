@@ -84,7 +84,7 @@ i18n
 const applyLanguage = (lng: string) => {
   const lang: Lang = lng === 'en' ? 'en' : 'de';
   setDefaultOptions({ locale: locales[lang] });
-  document.documentElement.lang = lang;
+  if (typeof document !== 'undefined') document.documentElement.lang = lang;
 };
 i18n.on('languageChanged', applyLanguage);
 applyLanguage(i18n.language);

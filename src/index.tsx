@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { Suspense } from 'react';
+import { t } from 'i18next';
 import ReactDOM from 'react-dom/client';
 import './apocalypseHandler';
 import { App } from './App';
@@ -34,13 +35,13 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
 const Fallback = (e: { error: unknown; componentStack: string; eventId: string; resetError(): void }) => (
   <div className='grid min-h-screen grid-cols-1 lg:grid-cols-2'>
     <div className='flex flex-col items-center justify-center px-4 py-8 text-center'>
-      <h2 className='mb-6 text-5xl font-semibold'>Whoops!</h2>
-      <h3 className='mb-1.5 text-3xl font-semibold'>Something went wrong</h3>
+      <h2 className='mb-6 text-5xl font-semibold'>{t('errors.route.whoops')}</h2>
+      <h3 className='mb-1.5 text-3xl font-semibold'>{t('errors.route.title')}</h3>
       <p className='text-muted-foreground mb-6 max-w-sm'>
-        The page you&apos;re looking for isn&apos;t found, we suggest you back to home.
+        {t('errors.route.description')}
       </p>
       <Button size='lg' className='rounded-lg text-base'>
-        <a href='/'>Back to home page</a>
+        <a href='/'>{t('errors.route.backHome')}</a>
       </Button>
     </div>
 
@@ -49,7 +50,7 @@ const Fallback = (e: { error: unknown; componentStack: string; eventId: string; 
       <div className='h-full w-full rounded-2xl bg-black'></div>
       <img
         src='https://cdnstudio.com/ss-assets/blocks/marketing/error/image-1.png'
-        alt='404 illustration'
+        alt={t('errors.route.illustrationAlt')}
         className='absolute top-1/2 left-1/2 h-[clamp(260px,25vw,406px)] -translate-x-1/2 -translate-y-1/2'
       />
     </div>
