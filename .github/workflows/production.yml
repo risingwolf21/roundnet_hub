@@ -32,6 +32,7 @@ jobs:
   db-test:
     name: "Test database"
     runs-on: ubuntu-latest
+    needs: [prepare]
     steps:
       - uses: actions/checkout@v6
       # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
@@ -42,90 +43,12 @@ jobs:
       - run: supabase test db
       - run: supabase db lint --schema public,util,notifications,games --fail-on error
 
-  # E2E gate: the same Playwright run as on PRs. Without branch protection (paid feature for
-  # private repos) a PR can be merged while its e2e check is red or still running — this keeps
-  # such a merge from reaching the databases, edge functions and hosting.
   e2e:
-    name: "E2E"
     uses: ./.github/workflows/playwright.yml
+    needs: [prepare]
     permissions:
       contents: write
 
-  migrate-karlsruhe:
-    name: "Migrate Database Karlsruhe"
-    runs-on: ubuntu-latest
-    needs: [db-test, e2e]
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    environment:
-      name: "Roundnet Karlsruhe"
-    steps:
-      - uses: actions/checkout@v6
-      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 3.0.0
-      - name: Push unpublished migrations
-        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
-
-  migrate-munich:
-    name: "Migrate Database Munich"
-    runs-on: ubuntu-latest
-    needs: [db-test, e2e]
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Munich Roundnet' }}
-    environment:
-      name: "Munich Roundnet"
-    steps:
-      - uses: actions/checkout@v6
-      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 3.0.0
-      - name: Push unpublished migrations
-        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
-
-  deploy-functions-karlsruhe:
-    name: "Deploy Edge Functions Karlsruhe"
-    runs-on: ubuntu-latest
-    needs: [db-test, e2e]
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    environment:
-      name: "Roundnet Karlsruhe"
-    steps:
-      - uses: actions/checkout@v6
-      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 3.0.0
-      - name: Deploy Edge Functions
-        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-  deploy-functions-munich:
-    name: "Deploy Edge Functions Munich"
-    runs-on: ubuntu-latest
-    needs: [db-test, e2e]
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Munich Roundnet' }}
-    environment:
-      name: "Munich Roundnet"
-    steps:
-      - uses: actions/checkout@v6
-      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 3.0.0
-      - name: Deploy Edge Functions
-        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
   build-karlsruhe:
     name: "Build Karlsruhe"
@@ -133,7 +56,7 @@ jobs:
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
     runs-on: ubuntu-latest
-    needs: [db-test, prepare]
+    needs: [db-test, e2e]
     environment:
       name: "Roundnet Karlsruhe"
       url: ${{ vars.PUBLIC_URL }}
@@ -178,46 +101,13 @@ jobs:
           path: ${{github.workspace}}/build
           retention-days: 1
 
-  deploy-karlsruhe:
-    runs-on: ubuntu-latest
-    needs: [build-karlsruhe, migrate-karlsruhe, prepare]
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    name: "Deploy Karlsruhe"
-    environment:
-      name: "Roundnet Karlsruhe"
-      url: ${{ vars.PUBLIC_URL }}
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Set up Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: yarn
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: "${{ vars.WEBSITE_PATH }}-build"
-          path: ${{github.workspace}}/build
-
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
-          channelId: live
-          projectId: ${{ vars.FIREBASE_PROJECT }}
-          target: ${{ vars.FIREBASE_TARGET }}
-
   build-munich:
     name: "Build Munich Roundnet"
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
-    needs: [db-test,prepare]
+    needs: [db-test,e2e]
     environment:
       name: "Munich Roundnet"
       url: ${{ vars.PUBLIC_URL }}
@@ -262,9 +152,119 @@ jobs:
           path: ${{github.workspace}}/build
           retention-days: 1
 
+
+  migrate-karlsruhe:
+    name: "Migrate Database Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [build-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Push unpublished migrations
+        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+
+  migrate-munich:
+    name: "Migrate Database Munich"
+    runs-on: ubuntu-latest
+    needs: [build-munich]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Push unpublished migrations
+        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+
+  deploy-functions-karlsruhe:
+    name: "Deploy Edge Functions Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [build-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  deploy-functions-munich:
+    name: "Deploy Edge Functions Munich"
+    runs-on: ubuntu-latest
+    needs: [build-munich]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  deploy-karlsruhe:
+    runs-on: ubuntu-latest
+    needs: [migrate-karlsruhe, deploy-functions-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    name: "Deploy Karlsruhe"
+    environment:
+      name: "Roundnet Karlsruhe"
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: "${{ vars.WEBSITE_PATH }}-build"
+          path: ${{github.workspace}}/build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
+          channelId: live
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}
+
   deploy-munich:
     runs-on: ubuntu-latest
-    needs: [build-munich, migrate-munich, prepare]
+    needs: [migrate-munich, deploy-functions-munich]
     if: ${{ github.event_name != 'workflow_dispatch'
       || github.event.inputs.publish == 'All'
       || github.event.inputs.publish == 'Munich Roundnet' }}
