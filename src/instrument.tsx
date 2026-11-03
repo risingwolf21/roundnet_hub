@@ -1,3 +1,4 @@
+import { describePlainError } from '@/lib/sentryEvent';
 import { supabase } from '@/lib/supabase';
 import * as Sentry from '@sentry/react';
 import { EventHint } from '@sentry/react';
@@ -21,6 +22,8 @@ Sentry.init({
   enabled: import.meta.env.VITE_ENV !== 'development',
   environment: import.meta.env.VITE_WEBSITE_NAME + '-' + import.meta.env.VITE_ENV,
   release: import.meta.env.VITE_APP_VERSION,
+  // The release is only the npm version, shared by every deploy: the commit tells which build produced an event.
+  initialScope: { tags: { commit: import.meta.env.VITE_GIT_COMMIT } },
   enableLogs: true,
   integrations: [
     Sentry.reactRouterV7BrowserTracingIntegration({
@@ -36,6 +39,8 @@ Sentry.init({
       errors: true,
     }),
     Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
+    // Keeps extra properties of Error objects (e.g. code, details and hint of a PostgrestError), which are dropped by default.
+    Sentry.extraErrorDataIntegration(),
     Sentry.eventFiltersIntegration({
       ignoreErrors: [
         /Load failed/,
@@ -55,6 +60,7 @@ Sentry.init({
     'https://munich-roundnet.web.app',
   ],
   beforeSend: (event: Sentry.ErrorEvent, hint: EventHint) => {
+    describePlainError(event, hint);
     // check if the originalException is your object and add the data as extras to the Sentry Event
     if (
       typeof hint.originalException === 'object' &&
