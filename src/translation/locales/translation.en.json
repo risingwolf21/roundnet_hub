@@ -104,15 +104,7 @@
       "startDateCannotBeNull": "The startDate of this event can not be empty",
       "titleTooShort": "The title of this event needs at least 6 characters",
       "notMemberOfGroupTitle": "You are not a member of this group",
-      "notMemberOfGroup": "The event will be saved, but it will not appear in your event list afterwards because only members of the group can see its events.",
-      "reminderBefore": "Send reminder",
-      "reminderNone": "None",
-      "reminderPT30M": "30 minutes before",
-      "reminderPT1H": "1 hour before",
-      "reminderPT6H": "6 hours before",
-      "reminderPT12H": "12 hours before",
-      "reminderPT24H": "24 hours before",
-      "reminderP2D": "2 days before"
+      "notMemberOfGroup": "The event will be saved, but it will not appear in your event list afterwards because only members of the group can see its events."
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -340,7 +332,8 @@
       "nameTooShort": "Name or display name must be at least 6 or 4 characters",
       "nameIncomplete": "You must provide your full name, including first and last name",
       "updateSuccess": "Profile updated successfully",
-      "updateError": "Error updating profile: {{error}}"
+      "updateError": "Error updating profile: {{error}}",
+      "language": "Language"
     },
     "password": {
       "title": "Change password",

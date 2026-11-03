@@ -5,10 +5,11 @@ const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useDialogs } from "@/contexts/DialogsProvider";
-import { useUpdateUserProfile } from "@/tanstack/user";
+import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
 import { Image, Trash, UploadCloud } from "lucide-react";
@@ -16,8 +17,13 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+const LANGUAGES = [
+  { value: 'de', label: 'Deutsch' },
+  { value: 'en', label: 'English' },
+];
+
 export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; handleSignOut: () => void }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [displayName, setDisplayName] = useState(user.displayName);
   const [name, setName] = useState(user.name.split(' ')[0] ?? '');
@@ -28,6 +34,13 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
   const dialogs = useDialogs();
 
   const updateUserMutation = useUpdateUserProfile(user);
+  const updateLanguage = useUpdateLanguage(user);
+
+  const changeLanguage = (language: 'de' | 'en') => {
+    const previous = i18n.resolvedLanguage;
+    i18n.changeLanguage(language);
+    updateLanguage.mutate(language, { onError: () => i18n.changeLanguage(previous) });
+  };
 
   const onSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -148,6 +161,28 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
             </Button>
           </div>
           <Separator />
+          <div className='flex flex-col items-start gap-2'>
+            <Label>{t('profile.account.language')}</Label>
+            {/* Languages are shown by their own name so everyone can find theirs. */}
+            <Select
+              items={LANGUAGES}
+              value={i18n.resolvedLanguage}
+              onValueChange={(value) => value && changeLanguage(value as 'de' | 'en')}
+            >
+              <SelectTrigger className="w-full sm:w-60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {LANGUAGES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           <Button variant={"destructive"} className='max-sm:w-full' onClick={handleSignOut}>
             {t('profile.account.logout')}
           </Button>

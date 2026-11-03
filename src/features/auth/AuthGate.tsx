@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/tanstack/auth';
 import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import WebPushKeeper from '../push/WebPushKeeper';
 import { ApplicationContext } from './ApplicationContext';
 import { signOut } from './signOut';
@@ -20,6 +21,12 @@ export const AuthGate = () => {
   const { data: currentUser = null, isFetching } = useCurrentUser(session);
 
   useUserGrantsQuery(currentUser?.id);
+
+  // The saved language of the account wins over what the device remembered.
+  const { i18n } = useTranslation();
+  useEffect(() => {
+    if (currentUser?.language) i18n.changeLanguage(currentUser.language);
+  }, [currentUser?.language, i18n]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

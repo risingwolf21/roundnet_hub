@@ -2670,6 +2670,7 @@ export type Database = {
           displayName: string
           email: string
           id: string
+          language: string
           last_seen_at: string | null
           name: string
           role: Database["public"]["Enums"]["UserRole"]
@@ -2682,6 +2683,7 @@ export type Database = {
           displayName?: string
           email?: string
           id: string
+          language?: string
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
@@ -2694,6 +2696,7 @@ export type Database = {
           displayName?: string
           email?: string
           id?: string
+          language?: string
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]

@@ -136,6 +136,15 @@ export const useUpdateUserProfile = (user: User) =>
     },
   });
 
+export const useUpdateLanguage = (user: User) =>
+  useMutation({
+    mutationFn: (language: 'de' | 'en') => UserRepository.updateProfile(user.id, { language }),
+    onSuccess: (_data, language) =>
+      queryClient.setQueryData<UserWithGroups | null>(authKeys.currentUser(user.id), (prev) =>
+        prev ? { ...prev, language } : prev
+      ),
+  });
+
 export const useUpdateAvatarFromPlayerMutation = (user: User) =>
   useMutation({
     mutationFn: async ({ avatarUrl }: { avatarUrl: string | null | undefined }) => {

@@ -104,15 +104,7 @@
       "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
       "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
       "notMemberOfGroupTitle": "Du bist nicht Mitglied dieser Gruppe",
-      "notMemberOfGroup": "Das Event wird gespeichert, erscheint danach aber nicht in deiner Eventliste, da nur Mitglieder der Gruppe die Events sehen können.",
-      "reminderBefore": "Erinnerung senden",
-      "reminderNone": "Keine",
-      "reminderPT30M": "30 Minuten vorher",
-      "reminderPT1H": "1 Stunde vorher",
-      "reminderPT6H": "6 Stunden vorher",
-      "reminderPT12H": "12 Stunden vorher",
-      "reminderPT24H": "24 Stunden vorher",
-      "reminderP2D": "2 Tage vorher"
+      "notMemberOfGroup": "Das Event wird gespeichert, erscheint danach aber nicht in deiner Eventliste, da nur Mitglieder der Gruppe die Events sehen können."
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -340,7 +332,8 @@
       "nameTooShort": "Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein",
       "nameIncomplete": "Du musst deinen vollen Name, mit Vor- und Nachname angeben",
       "updateSuccess": "Profil erfolgreich aktualisiert",
-      "updateError": "Fehler beim Aktualisieren des Profils: {{error}}"
+      "updateError": "Fehler beim Aktualisieren des Profils: {{error}}",
+      "language": "Sprache"
     },
     "password": {
       "title": "Passwort ändern",

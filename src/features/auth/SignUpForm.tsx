@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
+import i18n from 'i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
@@ -63,6 +64,7 @@ const SignUpForm = () => {
           displayName: name,
           email,
           role: 'user',
+          language: i18n.resolvedLanguage,
         },
       },
     });
