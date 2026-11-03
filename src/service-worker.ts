@@ -1,6 +1,6 @@
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { addPlugins, cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 
@@ -34,7 +34,34 @@ self.addEventListener('activate', (event) => {
 
 cleanupOutdatedCaches();
 
-precacheAndRoute(self.__WB_MANIFEST);
+const manifest = self.__WB_MANIFEST;
+
+// Tell the open pages how far the download of a new version is, so they can show a progress bar.
+// Only files that are not cached yet are downloaded (unchanged ones keep their content hash).
+let toDownload = 0;
+let downloaded = 0;
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    Promise.all(manifest.map((entry) => matchPrecache(typeof entry === 'string' ? entry : entry.url))).then(
+      (cached) => {
+        toDownload = cached.filter((response) => !response).length;
+      }
+    )
+  );
+});
+addPlugins([
+  {
+    cacheDidUpdate: async () => {
+      downloaded++;
+      const windowClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      windowClients.forEach((c) =>
+        c.postMessage({ type: 'PRECACHE_PROGRESS', done: Math.min(downloaded, toDownload), total: toDownload })
+      );
+    },
+  },
+]);
+
+precacheAndRoute(manifest);
 
 // SPA navigation: NetworkFirst so the app loads even when the precache is
 // incomplete (falls back to the cached response when offline).

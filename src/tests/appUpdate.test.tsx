@@ -1,4 +1,4 @@
-import { UpdateReadyPage, UpdateSuccess } from '@/features/pwa/AppUpdate';
+import { UpdateDownloading, UpdateReadyPage, UpdateSuccess } from '@/features/pwa/AppUpdate';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -65,5 +65,21 @@ describe('UpdateSuccess', () => {
     await userEvent.click(screen.getByRole('button', { name: /App aktualisiert/ }));
 
     expect(screen.queryByText('App aktualisiert')).not.toBeInTheDocument();
+  });
+});
+
+describe('UpdateDownloading', () => {
+  it('shows the percentage and a progress bar while the new version downloads', () => {
+    render(<UpdateDownloading progress={0.42} />);
+
+    expect(screen.getByText('42 %')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '42');
+  });
+
+  it('shows an indeterminate bar while the number of files is not known yet', () => {
+    render(<UpdateDownloading progress={null} />);
+
+    expect(screen.getByRole('progressbar')).not.toHaveAttribute('aria-valuenow');
+    expect(screen.queryByText(/%/)).not.toBeInTheDocument();
   });
 });
