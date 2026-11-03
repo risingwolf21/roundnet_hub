@@ -1,7 +1,4 @@
-import { lazy } from "react";
 import { Button } from "@/components/ui/button";
-
-const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +10,11 @@ import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
 import { Image, Trash, UploadCloud } from "lucide-react";
-import { useRef, useState } from "react";
+import { lazy, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+
+const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
 
 const LANGUAGES = [
   { value: 'de', label: 'Deutsch' },
@@ -28,6 +27,7 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
   const [displayName, setDisplayName] = useState(user.displayName);
   const [name, setName] = useState(user.name.split(' ')[0] ?? '');
   const [surname, setSurname] = useState(user.name.split(' ')[1] ?? '');
+  const [language, setLanguage] = useState<'de' | 'en'>((i18n.resolvedLanguage ?? 'de') as 'de' | 'en');
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState(user);
   const [loadingSave, setLoadingSave] = useState(false);
@@ -35,12 +35,6 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
 
   const updateUserMutation = useUpdateUserProfile(user);
   const updateLanguage = useUpdateLanguage(user);
-
-  const changeLanguage = (language: 'de' | 'en') => {
-    const previous = i18n.resolvedLanguage;
-    i18n.changeLanguage(language);
-    updateLanguage.mutate(language, { onError: () => i18n.changeLanguage(previous) });
-  };
 
   const onSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -70,6 +64,10 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
         toast.warning(t('profile.account.nameIncomplete'));
         return;
       }
+      const previous = i18n.resolvedLanguage;
+      i18n.changeLanguage(language);
+      await updateLanguage.mutateAsync(language, { onError: () => i18n.changeLanguage(previous) });
+
       await updateUserMutation.mutateAsync(
         { displayName, fullName, croppedImage, avatarUrl: currentUser.avatarUrl },
         {
@@ -153,6 +151,29 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
               <Label htmlFor='multi-step-personal-info-last-name'>{t('profile.account.lastName')}</Label>
               <Input id='multi-step-personal-info-last-name' placeholder={t('profile.account.lastNamePlaceholder')} value={surname} onChange={(e) => setSurname(e.target.value)} />
             </div>
+            <div className='flex flex-col items-start gap-2'>
+              <Label htmlFor='multi-step-personal-info-language'>{t('profile.account.language')}</Label>
+              {/* Languages are shown by their own name so everyone can find theirs. */}
+              <Select
+                id='multi-step-personal-info-language'
+                items={LANGUAGES}
+                value={language}
+                onValueChange={(value) => value && setLanguage(value as 'de' | 'en')}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {LANGUAGES.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className='flex justify-end'>
             <Button type='submit' className='max-sm:w-full' disabled={loadingSave} onClick={submit}>
@@ -161,28 +182,6 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
             </Button>
           </div>
           <Separator />
-          <div className='flex flex-col items-start gap-2'>
-            <Label>{t('profile.account.language')}</Label>
-            {/* Languages are shown by their own name so everyone can find theirs. */}
-            <Select
-              items={LANGUAGES}
-              value={i18n.resolvedLanguage}
-              onValueChange={(value) => value && changeLanguage(value as 'de' | 'en')}
-            >
-              <SelectTrigger className="w-full sm:w-60">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {LANGUAGES.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
           <Button variant={"destructive"} className='max-sm:w-full' onClick={handleSignOut}>
             {t('profile.account.logout')}
           </Button>
