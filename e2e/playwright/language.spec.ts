@@ -44,7 +44,7 @@ test.describe('Sprache', () => {
 
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: 'Deutsch' }).click();
-    await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
+    await page.getByRole('button', { name: 'Save changes' }).click();
     await expect(page.getByText('Anzeigename', { exact: true })).toBeVisible();
     await expect.poll(savedLanguage).toBe('de');
   });
