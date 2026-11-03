@@ -63,15 +63,15 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
+  if (needRefresh) {
+    return <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />;
+  }
+
   // After the user taps "refresh", the SW activates and the page reloads (see index.tsx).
   return (
     <>
       {children}
-      {needRefresh ? (
-        <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />
-      ) : (
-        downloadProgress !== undefined && <UpdateDownloading progress={downloadProgress} />
-      )}
+      {downloadProgress !== undefined && <UpdateDownloading progress={downloadProgress} />}
       <UpdateSuccess />
     </>
   );
