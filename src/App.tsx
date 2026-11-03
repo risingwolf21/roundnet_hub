@@ -1,6 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren, useEffect, useState } from 'react';
+import { PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
 import { UpdateDownloading, UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
@@ -9,6 +9,7 @@ import { supabase } from './lib/supabase';
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   // undefined = no download running, null = running but progress not known yet, else 0..1
   const [downloadProgress, setDownloadProgress] = useState<number | null | undefined>(undefined);
+  const activationStarted = useRef(false);
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
@@ -63,8 +64,32 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
+  useEffect(() => {
+    if (!needRefresh || activationStarted.current) return;
+
+    activationStarted.current = true;
+
+    try {
+      sessionStorage.setItem('pwa-update-applied', '1');
+    } catch {
+      // Storage may be unavailable.
+    }
+
+    // Do not await this. Let the PWA plugin handle controllerchange and reload.
+    updateServiceWorker(true).catch((error) => {
+      console.error('Failed to activate service worker:', error);
+      activationStarted.current = false;
+
+      try {
+        sessionStorage.removeItem('pwa-update-applied');
+      } catch {
+        // Ignore storage errors.
+      }
+    });
+  }, [needRefresh, updateServiceWorker]);
+
   if (needRefresh) {
-    return <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />;
+    return <UpdateReadyPage />;
   }
 
   // After the user taps "refresh", the SW activates and the page reloads (see index.tsx).

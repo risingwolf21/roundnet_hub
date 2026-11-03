@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Rocket } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -10,19 +9,8 @@ const SUCCESS_VISIBLE_MS = 3200; // keep in sync with the update-badge keyframes
 
 // Full-screen page shown while a new version waits in the service worker. It stays until the
 // user taps the button: the old app must not keep running against an already migrated database.
-export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> }) => {
+export const UpdateReadyPage = () => {
   const { t } = useTranslation();
-  const [busy, setBusy] = useState(false);
-
-  const refresh = async () => {
-    setBusy(true);
-    try {
-      await onRefresh(); // posts SKIP_WAITING; the reload only follows in a later task
-      sessionStorage.setItem(UPDATED_FLAG, '1');
-    } catch {
-      setBusy(false);
-    }
-  };
 
   return (
     <div
@@ -53,11 +41,6 @@ export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> 
           {t('pwa.updateReady.description')}
         </p>
       </div>
-
-      <Button className='h-11 px-6 text-base' disabled={busy} onClick={refresh}>
-        {busy ? <Spinner /> : null}
-        {busy ? t('pwa.updateReady.updating') : t('pwa.updateReady.updateNow')}
-      </Button>
     </div>
   );
 };
