@@ -46,7 +46,7 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-03 08:42 UTC · Commit `e0f8f40`
+Stand: 2026-11-03 09:54 UTC · Commit `74d694c`
 
 **Funktionsabdeckung: 95.7 %** (96 voll + 9 teilweise von 105 Funktionen) · **E2E-Tests:** 102/103 Desktop, 11/11 Mobil bestanden
 
@@ -252,9 +252,9 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 68.89 % | 4590 / 6662 |
-| Anweisungen | 67.99 % | 5210 / 7662 |
-| Funktionen | 64.34 % | 1763 / 2740 |
+| Zeilen | 68.59 % | 4570 / 6662 |
+| Anweisungen | 67.71 % | 5188 / 7662 |
+| Funktionen | 64.16 % | 1758 / 2740 |
 | Verzweigungen | 53.66 % | 2184 / 4070 |
 
 Gemessen über die im Browser geladenen Dateien (184 von 228 Quelldateien unter `src/`; 44 wurden in keinem Test geladen und zählen oben nicht mit).
