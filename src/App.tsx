@@ -3,8 +3,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
-import { supabase } from './lib/supabase';
 import { UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
+import { supabase } from './lib/supabase';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
@@ -15,7 +15,7 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
       // Cheap SW update check: browser byte-compares the SW script, no DB needed.
       // A new SW installs and then waits (no skipWaiting): needRefresh turns true and the
       // update page is shown until the user taps "refresh".
-      const triggerSwUpdate = () => registration.update().catch(() => {});
+      const triggerSwUpdate = () => registration.update().catch(() => { });
 
       // Full check: confirm a new deployment exists before triggering an update.
       const checkDeploymentHash = async () => {

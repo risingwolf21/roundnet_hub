@@ -38,7 +38,7 @@ export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> 
             style={{ animationDelay: `${i * 0.8}s` }}
           />
         ))}
-        <div className='bg-primary text-primary-foreground relative grid size-20 place-items-center rounded-full shadow-lg animate-[update-float_3s_ease-in-out_infinite] motion-reduce:animate-none'>
+        <div className='bg-primary text-primary-foreground relative grid size-20 place-items-center rounded-full shadow-lg motion-reduce:animate-none'>
           <Rocket className='size-9' />
         </div>
       </div>
