@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "/home/user/roundnet_karlsruhe_app/docs/architecture/drinks-booking.sequence.json",
+    "sha256": "45bdeb11eb11668a20d72e50de923239c07ffc2db11eda3d5ed3de9f7aa9a55f",
+    "bytes": 5447
+  },
+  "artifact": {
+    "path": "/home/user/roundnet_karlsruhe_app/docs/architecture/drinks-booking.sequence.html",
+    "sha256": "7d8ac3f0459855c8840bfab81c3167177dcebf3a8d4f3dbcb71917ae6f14fe27",
+    "bytes": 842422
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/drinks-booking.sequence.finalize.json",
+    "summaryReceipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/drinks-booking.sequence.finalize-summary.json",
+    "browserCheckReceipt": "/home/user/roundnet_karlsruhe_app/docs/architecture/drinks-booking.sequence.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3938,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
