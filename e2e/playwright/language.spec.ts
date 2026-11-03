@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-import { test, expect, flow } from './fixtures';
+import { expect, flow, test } from './fixtures';
 import { adminClient, ensureUser, logPageOnFailure, PASSWORD, signIn } from './helpers';
 
 // Language switcher (profile → Account): German is the default, the choice is saved on the
@@ -33,6 +33,7 @@ test.describe('Sprache', () => {
 
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: 'English' }).click();
+    await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
     await expect(page.getByText('Display name', { exact: true })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect.poll(savedLanguage).toBe('en');
@@ -43,6 +44,7 @@ test.describe('Sprache', () => {
 
     await page.getByRole('combobox').click();
     await page.getByRole('option', { name: 'Deutsch' }).click();
+    await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
     await expect(page.getByText('Anzeigename', { exact: true })).toBeVisible();
     await expect.poll(savedLanguage).toBe('de');
   });
