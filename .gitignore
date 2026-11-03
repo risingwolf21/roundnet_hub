@@ -48,7 +48,11 @@ package-lock.json
 **/test-results/
 
 # Claude Code local state
-.claude/
+.claude/*
+
+# Erlaube den skills-Ordner und dessen gesamten Inhalt
+!.claude/skills/
+!.claude/skills/**
 
 # Database dumps / backups (contain production user data — never commit)
 supabase/backup/
