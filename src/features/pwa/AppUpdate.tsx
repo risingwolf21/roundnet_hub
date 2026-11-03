@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Rocket } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,10 @@ const SUCCESS_VISIBLE_MS = 3200; // keep in sync with the update-badge keyframes
 // user taps the button: the old app must not keep running against an already migrated database.
 export const UpdateReadyPage = () => {
   const { t } = useTranslation();
+
+  const refresh = async () => {
+    await window.location.reload();
+  };
 
   return (
     <div
@@ -41,6 +46,10 @@ export const UpdateReadyPage = () => {
           {t('pwa.updateReady.description')}
         </p>
       </div>
+
+      <Button className='h-11 px-6 text-base' onClick={refresh}>
+        {t('pwa.updateReady.updateNow')}
+      </Button>
     </div>
   );
 };
