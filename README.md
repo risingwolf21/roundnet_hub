@@ -46,31 +46,31 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-02 18:26 UTC · Commit `f1d57e2`
+Stand: 2026-11-03 09:54 UTC · Commit `74d694c`
 
-**Funktionsabdeckung: 95.5 %** (91 voll + 7 teilweise von 99 Funktionen) · **E2E-Tests:** 90/91 Desktop, 9/9 Mobil bestanden
+**Funktionsabdeckung: 95.7 %** (96 voll + 9 teilweise von 105 Funktionen) · **E2E-Tests:** 102/103 Desktop, 11/11 Mobil bestanden
 
 | Bereich | Funktionen | ✅ voll | 🟡 teilweise | ❌ fehlgeschlagen | 🐞 bekannter Fehler | ⬜ offen | Abdeckung |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Anmeldung & Konto | 7 | 4 | 3 | 0 | 0 | 0 | 78.6 % |
-| Events / Training | 12 | 12 | 0 | 0 | 0 | 0 | 100 % |
+| Events / Training | 15 | 14 | 1 | 0 | 0 | 0 | 96.7 % |
 | Teilnahme & Warteliste | 9 | 9 | 0 | 0 | 0 | 0 | 100 % |
 | Probetraining | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
 | Mitbringliste & Zusagen (Pledges) | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
 | Kommentare | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
 | Gruppen | 10 | 10 | 0 | 0 | 0 | 0 | 100 % |
 | Rechte & Features | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
-| Getränke | 6 | 6 | 0 | 0 | 0 | 0 | 100 % |
+| Getränke | 7 | 7 | 0 | 0 | 0 | 0 | 100 % |
 | Turnierkosten | 3 | 3 | 0 | 0 | 0 | 0 | 100 % |
 | Schlüssel & Material | 3 | 3 | 0 | 0 | 0 | 0 | 100 % |
-| Spiele & Rangliste | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
+| Spiele & Rangliste | 6 | 6 | 0 | 0 | 0 | 0 | 100 % |
 | Challenges | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
-| Bundesliga-Planer | 4 | 3 | 0 | 0 | 0 | 1 | 75 % |
-| Profil & Einstellungen | 5 | 3 | 2 | 0 | 0 | 0 | 80 % |
+| Bundesliga-Planer | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
+| Profil & Einstellungen | 6 | 4 | 2 | 0 | 0 | 0 | 83.3 % |
 | Benachrichtigungen | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Administration | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Allgemein | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
-| **Gesamt** | **99** | **91** | **7** | **0** | **0** | **1** | **95.5 %** |
+| **Gesamt** | **105** | **96** | **9** | **0** | **0** | **0** | **95.7 %** |
 
 Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird bis zur Grenze nach außen getestet (z. B. Push-Abo gespeichert, Mail-Anfrage gesendet), der externe Dienst selbst ist blockiert.
 
@@ -95,9 +95,12 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 - ✅ Serie bearbeiten (dieses & zukünftige) <sub>`events.edit.series`</sub>
 - ✅ Event absagen <sub>`events.cancel`</sub>
 - ✅ Event löschen <sub>`events.delete`</sub>
+- ✅ Serie ab einem Termin beenden (dieses & folgende löschen) <sub>`events.delete.series`</sub>
+- ✅ Pflichtfelder im Event-Formular werden geprüft <sub>`events.validation`</sub>
 - ✅ Übersicht wiederkehrende Events <sub>`events.recurring.list`</sub>
 - ✅ Nächste Termine generieren <sub>`events.recurring.generate`</sub>
 - ✅ Eventdetails (Zeit, Ort, Beschreibung) <sub>`events.details`</sub>
+- 🟡 Ort auf der Karte wählen <sub>`events.place`</sub>
 - ✅ Konstellationen / Teams erstellen <sub>`events.constellations`</sub>
 - ✅ Spiele-Tab eines Events <sub>`events.matches`</sub>
 
@@ -161,6 +164,7 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 - ✅ Getränke buchen <sub>`drinks.book`</sub>
 - ✅ Offener Betrag auf Bezahlseite <sub>`drinks.payments`</sub>
 - ✅ Eigene Historie <sub>`drinks.history`</sub>
+- ✅ Eigene Buchung korrigieren <sub>`drinks.history.edit`</sub>
 - ✅ Admin: Historie aller <sub>`drinks.admin.history`</sub>
 - ✅ Admin: offene Zahlung bestätigen <sub>`drinks.admin.confirm`</sub>
 - ✅ Admin: Getränke anlegen/bearbeiten <sub>`drinks.admin.manage`</sub>
@@ -182,6 +186,7 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 - ✅ Spieleliste <sub>`games.list`</sub>
 - ✅ Spieldetails <sub>`games.detail`</sub>
 - ✅ Ergebnis melden <sub>`games.report`</sub>
+- ✅ Sätze eines Spiels nachträglich korrigieren <sub>`games.sets`</sub>
 - ✅ Rangliste / ELO <sub>`games.leaderboard`</sub>
 - ✅ Spielverlauf eines Spielers <sub>`games.history`</sub>
 
@@ -197,11 +202,12 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 - ✅ Team wählen, Kader aus Cache, Gegner erkannt <sub>`bundesliga.team`</sub>
 - ✅ Admin-Neuladen nur mit bundesliga.admin <sub>`bundesliga.admin`</sub>
 - ✅ Aufstellung planen <sub>`bundesliga.lineup`</sub>
-- ⬜ Live-Daten laden <sub>`bundesliga.scrape`</sub>
+- 🟡 Live-Daten laden <sub>`bundesliga.scrape`</sub>
 
 **Profil & Einstellungen**
 
 - ✅ Profil bearbeiten <sub>`profile.account`</sub>
+- ✅ Profilbild hochladen und zuschneiden <sub>`profile.avatar`</sub>
 - ✅ Passwort ändern <sub>`profile.password`</sub>
 - ✅ Benachrichtigungsthemen ein-/ausschalten <sub>`profile.notifications`</sub>
 - 🟡 Kalender-Abo <sub>`profile.calendar`</sub>
@@ -246,12 +252,12 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 68.69 % | 4104 / 5974 |
-| Anweisungen | 67.76 % | 4670 / 6891 |
-| Funktionen | 64.38 % | 1627 / 2527 |
-| Verzweigungen | 54.11 % | 2014 / 3722 |
+| Zeilen | 68.59 % | 4570 / 6662 |
+| Anweisungen | 67.71 % | 5188 / 7662 |
+| Funktionen | 64.16 % | 1758 / 2740 |
+| Verzweigungen | 53.66 % | 2184 / 4070 |
 
-Gemessen über die im Browser geladenen Dateien (177 von 227 Quelldateien unter `src/`; 50 wurden in keinem Test geladen und zählen oben nicht mit).
+Gemessen über die im Browser geladenen Dateien (184 von 228 Quelldateien unter `src/`; 44 wurden in keinem Test geladen und zählen oben nicht mit).
 <!-- E2E-STATUS:END -->
 
 Lokal ausführen: `yarn test:e2e:ci` (lokaler Supabase-Stack muss laufen), danach `yarn test:e2e:report`.

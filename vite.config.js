@@ -58,7 +58,7 @@ export default defineConfig(async ({ mode }) => {
         strategies: 'injectManifest',
         srcDir: 'src',
         filename: 'service-worker.ts',
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
           maximumFileSizeToCacheInBytes: 3000000

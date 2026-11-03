@@ -6,7 +6,8 @@ import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategi
 
 declare let self: ServiceWorkerGlobalScope;
 
-self.skipWaiting();
+// No skipWaiting() here: a new SW waits until the user taps "refresh" on the update page,
+// which posts SKIP_WAITING (see the message handler below).
 
 // On activation, claim all clients then force-reload every open window so that
 // pages stuck with a white screen (stale SW served broken chunk hashes, JS

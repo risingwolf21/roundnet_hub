@@ -3,19 +3,19 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { PropsWithChildren } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
+import { UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { supabase } from './lib/supabase';
-import { toast } from 'sonner';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
-  useRegisterSW({
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegistered: (registration) => {
       if (!registration) return;
 
       // Cheap SW update check: browser byte-compares the SW script, no DB needed.
-      // With self.skipWaiting() in the SW, a new SW activates immediately after
-      // installing, firing controllerchange → index.tsx reloads the page.
-      const triggerSwUpdate = () => registration.update().catch(() => {});
+      // A new SW installs and then waits (no skipWaiting): needRefresh turns true and the
+      // update page is shown until the user taps "refresh".
+      const triggerSwUpdate = () => registration.update().catch(() => { });
 
       // Full check: confirm a new deployment exists before triggering an update.
       const checkDeploymentHash = async () => {
@@ -34,14 +34,6 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
         }
       };
 
-      // Alert the user before the imminent reload caused by SW activation.
-      registration.addEventListener('updatefound', () => {
-        toast.info('Neue Version verfügbar', {
-          description: 'Die App wird jetzt auf die neueste Version aktualisiert.',
-          duration: 3000,
-        });
-      });
-
       // Fast path: SW byte-check on every tab focus (no DB round-trip).
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') triggerSwUpdate();
@@ -54,8 +46,14 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
-  // controllerchange → window.location.reload() is handled in index.tsx.
-  return children;
+  // After the user taps "refresh", the SW activates and the page reloads (see index.tsx).
+  return (
+    <>
+      {children}
+      {needRefresh && <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />}
+      <UpdateSuccess />
+    </>
+  );
 };
 
 export const App = () => {
