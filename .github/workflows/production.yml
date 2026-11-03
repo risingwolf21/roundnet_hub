@@ -297,7 +297,7 @@ jobs:
 
   update-hash-karlsruhe:
     runs-on: ubuntu-latest
-    needs: [deploy-karlsruhe, load-hash]
+    needs: [load-hash]
     environment: "Roundnet Karlsruhe"
     name: "Update latest hash Karlsruhe"
     steps:
@@ -317,7 +317,7 @@ jobs:
   
   update-hash-munich:
     runs-on: ubuntu-latest
-    needs: [deploy-munich, load-hash]
+    needs: [load-hash]
     environment: "Munich Roundnet"
     name: "Update latest hash Munich"
     steps:
