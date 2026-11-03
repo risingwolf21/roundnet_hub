@@ -62,6 +62,40 @@ export const UpdateReadyPage = ({ onRefresh }: { onRefresh: () => Promise<void> 
   );
 };
 
+// Non-blocking hint while a new version downloads in the background. `progress` is 0..1, or null
+// while the number of files is not known yet (indeterminate bar). Replaced by UpdateReadyPage.
+export const UpdateDownloading = ({ progress }: { progress: number | null }) => {
+  const { t } = useTranslation();
+  const percent = progress === null ? null : Math.round(progress * 100);
+
+  return (
+    <div role='status' className='fixed right-0 bottom-safe-bottom left-0 z-[140] mx-auto mb-20 w-[min(22rem,calc(100%-2rem))]'>
+      <div className='bg-card text-card-foreground border-border space-y-2 rounded-2xl border px-4 py-3 shadow-lg'>
+        <div className='flex items-center justify-between gap-3 text-sm font-medium'>
+          <span className='flex items-center gap-2'>
+            <Spinner />
+            {t('pwa.downloading')}
+          </span>
+          {percent !== null && <span className='text-muted-foreground tabular-nums'>{percent} %</span>}
+        </div>
+        <div
+          role='progressbar'
+          aria-label={t('pwa.downloading')}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percent ?? undefined}
+          className='bg-muted h-1.5 overflow-hidden rounded-full'
+        >
+          <div
+            className={`bg-primary h-full rounded-full ${percent === null ? 'w-1/3 animate-pulse' : 'transition-[width] duration-300'}`}
+            style={percent === null ? undefined : { width: `${percent}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Small badge after the reload that the update is running. Disappears on its own after the
 // animation, or immediately when tapped.
 export const UpdateSuccess = () => {

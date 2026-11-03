@@ -1060,7 +1060,8 @@
     "updateSuccess": {
       "title": "App aktualisiert",
       "description": "Du nutzt die neueste Version."
-    }
+    },
+    "downloading": "Neue Version wird geladen…"
   },
   "cropImage": {
     "title": "Bild zuschneiden",

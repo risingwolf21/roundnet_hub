@@ -1,17 +1,34 @@
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
-import { UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
+import { UpdateDownloading, UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { supabase } from './lib/supabase';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
+  // undefined = no download running, null = running but progress not known yet, else 0..1
+  const [downloadProgress, setDownloadProgress] = useState<number | null | undefined>(undefined);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      // Not on the very first install (no controller yet): there is no "new version" then.
+      if (event.data?.type !== 'PRECACHE_PROGRESS' || !event.data.total || !navigator.serviceWorker.controller) return;
+      setDownloadProgress(event.data.done / event.data.total);
+    };
+    navigator.serviceWorker?.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
+  }, []);
+
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegistered: (registration) => {
       if (!registration) return;
 
+      // A new version starts downloading. Not on the very first install (no controller yet).
+      registration.addEventListener('updatefound', () => {
+        if (navigator.serviceWorker.controller) setDownloadProgress(null);
+      });
       // Cheap SW update check: browser byte-compares the SW script, no DB needed.
       // A new SW installs and then waits (no skipWaiting): needRefresh turns true and the
       // update page is shown until the user taps "refresh".
@@ -40,8 +57,8 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
       });
       window.addEventListener('focus', triggerSwUpdate);
 
-      // Slow path: confirm deployment via DB hash every 60s.
-      setInterval(checkDeploymentHash, 60_000);
+      // Slow path: confirm deployment via DB hash every 20s (a new version is found sooner).
+      setInterval(checkDeploymentHash, 20_000);
       checkDeploymentHash();
     },
   });
@@ -50,7 +67,11 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   return (
     <>
       {children}
-      {needRefresh && <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />}
+      {needRefresh ? (
+        <UpdateReadyPage onRefresh={() => updateServiceWorker(true)} />
+      ) : (
+        downloadProgress !== undefined && <UpdateDownloading progress={downloadProgress} />
+      )}
       <UpdateSuccess />
     </>
   );
