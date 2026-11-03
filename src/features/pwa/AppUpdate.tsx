@@ -61,7 +61,7 @@ export const UpdateDownloading = ({ progress }: { progress: number | null }) => 
   const percent = progress === null ? null : Math.round(progress * 100);
 
   return (
-    <div role='status' className='fixed right-0 bottom-safe-bottom left-0 z-[140] mx-auto mb-20 w-[min(22rem,calc(100%-2rem))]'>
+    <div role='status' className='fixed right-0 bottom-safe-bottom left-0 z-[140] mx-auto mb-4 w-[min(22rem,calc(100%-2rem))]'>
       <div className='bg-card text-card-foreground border-border space-y-2 rounded-2xl border px-4 py-3 shadow-lg'>
         <div className='flex items-center justify-between gap-3 text-sm font-medium'>
           <span className='flex items-center gap-2'>
