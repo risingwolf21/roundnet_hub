@@ -5,6 +5,7 @@ import {
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuLabel,
+    DropdownMenuPortal,
     DropdownMenuRadioGroup,
     DropdownMenuRadioItem,
     DropdownMenuSeparator,
@@ -64,12 +65,12 @@ import {
     Undo2Icon,
     WaypointsIcon,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import React, {
     Suspense,
     createContext,
     lazy,
     use,
+    useCallback,
     useEffect,
     useRef,
     useState,
@@ -241,49 +242,29 @@ function useMapLayersContext() {
     return use(MapLayersContext)
 }
 
+const OPENSTREETMAP_URL =
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+const OPENSTREETMAP_ATTRIBUTION =
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
 function MapTileLayer({
-    name = "Default",
-    url,
-    attribution,
-    darkUrl,
-    darkAttribution,
+    name = "OpenStreetMap",
+    url = OPENSTREETMAP_URL,
+    attribution = OPENSTREETMAP_ATTRIBUTION,
     ...props
 }: Partial<TileLayerProps> & {
     name?: string
-    darkUrl?: string
-    darkAttribution?: string
     ref?: Ref<TileLayer>
 }) {
-    const map = useMap()
-    if (map.attributionControl) {
-        map.attributionControl.setPrefix("")
-    }
-
     const context = use(MapLayersContext)
-    const DEFAULT_URL =
-        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-    const DEFAULT_DARK_URL =
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-
-    const { resolvedTheme } = useTheme()
-    const resolvedUrl =
-        resolvedTheme === "dark"
-            ? (darkUrl ?? url ?? DEFAULT_DARK_URL)
-            : (url ?? DEFAULT_URL)
-    const resolvedAttribution =
-        resolvedTheme === "dark" && darkAttribution
-            ? darkAttribution
-            : (attribution ??
-                '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attributions">CARTO</a>')
 
     useEffect(() => {
-        if (context) {
-            context.registerTileLayer({
-                name,
-                url: resolvedUrl,
-                attribution: resolvedAttribution,
-            })
-        }
+        context?.registerTileLayer({
+            name,
+            url,
+            attribution,
+        })
     }, [context, name, url, attribution])
 
     if (context && context.selectedTileLayer !== name) {
@@ -292,8 +273,8 @@ function MapTileLayer({
 
     return (
         <LeafletTileLayer
-            url={resolvedUrl}
-            attribution={resolvedAttribution}
+            url={url}
+            attribution={attribution}
             {...props}
         />
     )
@@ -354,9 +335,16 @@ function MapLayers({
     defaultLayerGroups?: string[]
 }) {
     const [tileLayers, setTileLayers] = useState<MapTileLayerOption[]>([])
-    const [selectedTileLayer, setSelectedTileLayer] = useState<string>(
-        defaultTileLayer || ""
-    )
+    const [selectedTileLayerOverride, setSelectedTileLayerOverride] =
+        useState<string | null>(null);
+
+    const selectedTileLayer =
+        selectedTileLayerOverride ??
+        (tileLayers.some((layer) => layer.name === defaultTileLayer)
+            ? defaultTileLayer!
+            : tileLayers[0]?.name ?? "");
+
+    const setSelectedTileLayer = setSelectedTileLayerOverride;
     const [layerGroups, setLayerGroups] = useState<MapLayerGroupOption[]>([])
     const [activeLayerGroups, setActiveLayerGroups] =
         useState<string[]>(defaultLayerGroups)
@@ -382,28 +370,16 @@ function MapLayers({
     }
 
     useEffect(() => {
-        // Error: Invalid defaultValue
         if (
             defaultTileLayer &&
             tileLayers.length > 0 &&
-            !tileLayers.some((tileLayer) => tileLayer.name === defaultTileLayer)
+            !tileLayers.some((layer) => layer.name === defaultTileLayer)
         ) {
             throw new Error(
                 `Invalid defaultTileLayer "${defaultTileLayer}" provided to MapLayers. It must match a MapTileLayer's name prop.`
-            )
+            );
         }
 
-        // Set initial selected tile layer
-        if (tileLayers.length > 0 && !selectedTileLayer) {
-            const validDefaultValue =
-                defaultTileLayer &&
-                    tileLayers.some((layer) => layer.name === defaultTileLayer)
-                    ? defaultTileLayer
-                    : tileLayers[0].name
-            setSelectedTileLayer(validDefaultValue)
-        }
-
-        // Error: Invalid defaultActiveLayerGroups
         if (
             defaultLayerGroups.length > 0 &&
             layerGroups.length > 0 &&
@@ -413,15 +389,9 @@ function MapLayers({
         ) {
             throw new Error(
                 `Invalid defaultLayerGroups value provided to MapLayers. All names must match a MapLayerGroup's name prop.`
-            )
+            );
         }
-    }, [
-        tileLayers,
-        defaultTileLayer,
-        selectedTileLayer,
-        layerGroups,
-        defaultLayerGroups,
-    ])
+    }, [defaultTileLayer, tileLayers, defaultLayerGroups, layerGroups]);
 
     return (
         <MapLayersContext
@@ -441,8 +411,8 @@ function MapLayers({
 }
 
 function MapLayersControl({
-    tileLayersLabel,
-    layerGroupsLabel,
+    tileLayersLabel = "Map Type",
+    layerGroupsLabel = "Layers",
     position = "top-1 right-1",
     className,
     ...props
@@ -451,7 +421,6 @@ function MapLayersControl({
     layerGroupsLabel?: string
     position?: string
 }) {
-    const { t } = useTranslation()
     const map = useMap()
     const layersContext = useMapLayersContext()
     if (!layersContext) {
@@ -488,58 +457,60 @@ function MapLayersControl({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger render={<Button type="button" variant="secondary" size="icon-sm" aria-label={t("ui.map.selectLayers")} title={t("ui.map.selectLayers")} className={cn(
+            <DropdownMenuTrigger render={<Button type="button" variant="secondary" size="icon-sm" aria-label="Select layers" title="Select layers" className={cn(
                 "absolute z-1000 border",
                 position,
                 className
             )} {...props} />}><LayersIcon /></DropdownMenuTrigger>
-            <DropdownMenuContent
-                align="end"
-                className="z-1000"
+            <DropdownMenuPortal
                 container={map.getContainer()}>
-                {showTileLayersDropdown && (
-                    <>
-                        <DropdownMenuLabel>{tileLayersLabel ?? t("ui.map.mapType")}</DropdownMenuLabel>
-                        <DropdownMenuRadioGroup
-                            value={selectedTileLayer}
-                            onValueChange={setSelectedTileLayer}>
-                            {tileLayers.map((tileLayer) => (
-                                <DropdownMenuRadioItem
-                                    key={tileLayer.name}
-                                    value={tileLayer.name}>
-                                    {tileLayer.name}
-                                </DropdownMenuRadioItem>
+                <DropdownMenuContent
+                    align="end"
+                    className="z-1000">
+                    {showTileLayersDropdown && (
+                        <>
+                            <DropdownMenuLabel>{tileLayersLabel}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup
+                                value={selectedTileLayer}
+                                onValueChange={setSelectedTileLayer}>
+                                {tileLayers.map((tileLayer) => (
+                                    <DropdownMenuRadioItem
+                                        key={tileLayer.name}
+                                        value={tileLayer.name}>
+                                        {tileLayer.name}
+                                    </DropdownMenuRadioItem>
+                                ))}
+                            </DropdownMenuRadioGroup>
+                        </>
+                    )}
+                    {showTileLayersDropdown && showLayerGroupsDropdown && (
+                        <DropdownMenuSeparator />
+                    )}
+                    {showLayerGroupsDropdown && (
+                        <>
+                            <DropdownMenuLabel>
+                                {layerGroupsLabel}
+                            </DropdownMenuLabel>
+                            {layerGroups.map((layerGroup) => (
+                                <DropdownMenuCheckboxItem
+                                    key={layerGroup.name}
+                                    checked={activeLayerGroups.includes(
+                                        layerGroup.name
+                                    )}
+                                    disabled={layerGroup.disabled}
+                                    onCheckedChange={(checked) =>
+                                        handleLayerGroupToggle(
+                                            layerGroup.name,
+                                            checked
+                                        )
+                                    }>
+                                    {layerGroup.name}
+                                </DropdownMenuCheckboxItem>
                             ))}
-                        </DropdownMenuRadioGroup>
-                    </>
-                )}
-                {showTileLayersDropdown && showLayerGroupsDropdown && (
-                    <DropdownMenuSeparator />
-                )}
-                {showLayerGroupsDropdown && (
-                    <>
-                        <DropdownMenuLabel>
-                            {layerGroupsLabel ?? t("ui.map.layers")}
-                        </DropdownMenuLabel>
-                        {layerGroups.map((layerGroup) => (
-                            <DropdownMenuCheckboxItem
-                                key={layerGroup.name}
-                                checked={activeLayerGroups.includes(
-                                    layerGroup.name
-                                )}
-                                disabled={layerGroup.disabled}
-                                onCheckedChange={(checked) =>
-                                    handleLayerGroupToggle(
-                                        layerGroup.name,
-                                        checked
-                                    )
-                                }>
-                                {layerGroup.name}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </>
-                )}
-            </DropdownMenuContent>
+                        </>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenuPortal>
         </DropdownMenu>
     )
 }
@@ -955,7 +926,7 @@ type MapDrawShape = "marker" | "polyline" | "circle" | "rectangle" | "polygon"
 type MapDrawAction = "edit" | "delete"
 type MapDrawMode = MapDrawShape | MapDrawAction | null
 interface MapDrawContextType {
-    readonly featureGroup: L.FeatureGroup | null
+    readonly featureGroupRef: React.RefObject<L.FeatureGroup | null>
     activeMode: MapDrawMode
     setActiveMode: (mode: MapDrawMode) => void
     readonly editControlRef: React.RefObject<EditToolbar.Edit | null>
@@ -1031,7 +1002,7 @@ function MapDrawControl({
     return (
         <MapDrawContext
             value={{
-                featureGroup: featureGroupRef.current,
+                featureGroupRef,
                 activeMode,
                 setActiveMode,
                 editControlRef,
@@ -1259,24 +1230,33 @@ function MapDrawActionButton<T extends EditToolbar.Edit | EditToolbar.Delete>({
 
     const { L } = useLeaflet()
     const map = useMap()
-    const { featureGroup, activeMode, setActiveMode, layersCount } = drawContext
+    const {
+        featureGroupRef,
+        activeMode,
+        setActiveMode,
+        layersCount,
+    } = drawContext
     const isActive = activeMode === drawAction
     const hasFeatures = layersCount > 0
 
     useEffect(() => {
+        const featureGroup = featureGroupRef.current
+
         if (!L || !featureGroup || !isActive) {
             controlRef.current?.disable?.()
             controlRef.current = null
             return
         }
+
         const control = createDrawTool(L, map as DrawMap, featureGroup)
         control.enable?.()
         controlRef.current = control
+
         return () => {
             control.disable?.()
             controlRef.current = null
         }
-    }, [L, map, isActive, featureGroup, createDrawTool])
+    }, [L, map, isActive, featureGroupRef, createDrawTool, controlRef])
 
     function handleClick() {
         controlRef.current?.save()
@@ -1323,20 +1303,14 @@ function MapDrawEdit({
                 color: "var(--color-destructive)",
             },
         })
+
         L.Edit.SimpleShape.mergeOptions({
             moveIcon: mapDrawHandleIcon,
             resizeIcon: mapDrawHandleIcon,
             touchMoveIcon: mapDrawHandleIcon,
             touchResizeIcon: mapDrawHandleIcon,
         })
-        L.drawLocal.edit.handlers.edit.tooltip = {
-            text: "Drag handles or markers to edit.",
-            subtext: "",
-        }
-        L.drawLocal.edit.handlers.remove.tooltip = {
-            text: "Click on a shape to remove.",
-        }
-    }, [mapDrawHandleIcon])
+    }, [L, mapDrawHandleIcon])
 
     return (
         <MapDrawActionButton
@@ -1462,9 +1436,20 @@ function useLeaflet() {
             const leafletDraw = await import("leaflet-draw")
 
             const L_object = leaflet.default
+
             if (L_object.Control && !L_object.Control.FullScreen) {
                 L_object.Control.FullScreen =
                     leafletFullscreen.default || leafletFullscreen
+            }
+
+            // Configure Leaflet Draw localization once during initialization.
+            L_object.drawLocal.edit.handlers.edit.tooltip = {
+                text: "Drag handles or markers to edit.",
+                subtext: "",
+            }
+
+            L_object.drawLocal.edit.handlers.remove.tooltip = {
+                text: "Click on a shape to remove.",
             }
 
             setLeafletDraw(leafletDraw)
@@ -1481,29 +1466,35 @@ function useLeaflet() {
 }
 
 function useDebounceLoadingState(delay = 200) {
-    const [isLoading, setIsLoading] = useState(false)
     const [showLoading, setShowLoading] = useState(false)
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    useEffect(() => {
-        if (isLoading) {
-            timeoutRef.current = setTimeout(() => {
-                setShowLoading(true)
-            }, delay)
-        } else {
+    const setIsLoading = useCallback(
+        (isLoading: boolean) => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
                 timeoutRef.current = null
             }
-            setShowLoading(false)
-        }
 
+            if (isLoading) {
+                timeoutRef.current = setTimeout(() => {
+                    setShowLoading(true)
+                    timeoutRef.current = null
+                }, delay)
+            } else {
+                setShowLoading(false)
+            }
+        },
+        [delay]
+    )
+
+    useEffect(() => {
         return () => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current)
             }
         }
-    }, [isLoading, delay])
+    }, [])
 
     return [showLoading, setIsLoading] as const
 }
