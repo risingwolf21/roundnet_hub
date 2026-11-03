@@ -53,6 +53,10 @@ export default defineConfig(async ({ mode }) => {
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: "roundnet-karlsruhe",
         project: "roundnet-karlsruhe",
+        // Upload the source maps (readable stack traces in Sentry), then delete them so they are not deployed.
+        sourcemaps: { filesToDeleteAfterUpload: ['build/**/*.map'] },
+        // By default a failed upload (e.g. a revoked token) stops the build and with it the deploy.
+        errorHandler: (err) => console.warn('[sentry] source map upload failed:', err.message),
       }),
       VitePWA({
         strategies: 'injectManifest',
@@ -100,7 +104,8 @@ export default defineConfig(async ({ mode }) => {
     ].filter(Boolean),
     build: {
       target: 'es2020',
-      sourcemap: false,
+      // Source maps are only built when they can be uploaded to Sentry (SENTRY_AUTH_TOKEN is set), 'hidden' = no link in the bundle.
+      sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
       outDir: 'build', // CRA's default build output
       rollupOptions: {},
     },

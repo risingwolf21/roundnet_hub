@@ -154,8 +154,13 @@ jobs:
         run: yarn test --run
 
       - name: Build
-        run: yarn run build:karlsruhe
+        run: |
+          yarn run build:karlsruhe
+          # The build uploads the source maps to Sentry; make sure none is left over to be deployed.
+          find build -name '*.map' -delete
         env:
+          # Optional: without this secret no source maps are built or uploaded (stack traces stay minified).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           NODE_OPTIONS: "--max-old-space-size=4096"
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -233,8 +238,13 @@ jobs:
         run: yarn test --run
 
       - name: Build
-        run: yarn run build:munich
+        run: |
+          yarn run build:munich
+          # The build uploads the source maps to Sentry; make sure none is left over to be deployed.
+          find build -name '*.map' -delete
         env:
+          # Optional: without this secret no source maps are built or uploaded (stack traces stay minified).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           NODE_OPTIONS: "--max-old-space-size=4096"
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
