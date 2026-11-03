@@ -46,7 +46,7 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-02 19:33 UTC · Commit `2584b63`
+Stand: 2026-11-03 08:42 UTC · Commit `e0f8f40`
 
 **Funktionsabdeckung: 95.7 %** (96 voll + 9 teilweise von 105 Funktionen) · **E2E-Tests:** 102/103 Desktop, 11/11 Mobil bestanden
 
@@ -252,12 +252,12 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 69.04 % | 4581 / 6635 |
-| Anweisungen | 68.12 % | 5195 / 7626 |
-| Funktionen | 64.44 % | 1760 / 2731 |
-| Verzweigungen | 53.74 % | 2183 / 4062 |
+| Zeilen | 68.89 % | 4590 / 6662 |
+| Anweisungen | 67.99 % | 5210 / 7662 |
+| Funktionen | 64.34 % | 1763 / 2740 |
+| Verzweigungen | 53.66 % | 2184 / 4070 |
 
-Gemessen über die im Browser geladenen Dateien (183 von 227 Quelldateien unter `src/`; 44 wurden in keinem Test geladen und zählen oben nicht mit).
+Gemessen über die im Browser geladenen Dateien (184 von 228 Quelldateien unter `src/`; 44 wurden in keinem Test geladen und zählen oben nicht mit).
 <!-- E2E-STATUS:END -->
 
 Lokal ausführen: `yarn test:e2e:ci` (lokaler Supabase-Stack muss laufen), danach `yarn test:e2e:report`.
