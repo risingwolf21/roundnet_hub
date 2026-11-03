@@ -46,9 +46,9 @@ Ende-zu-Ende-Tests (Playwright, Chromium Desktop + iPhone-Viewport) gegen einen 
 <!-- E2E-STATUS:START -->
 <!-- Automatisch erzeugt von scripts/e2e-report.mjs (CI: playwright.yml) — nicht von Hand bearbeiten. -->
 
-Stand: 2026-11-03 11:17 UTC · Commit `853feb7`
+Stand: 2026-11-03 11:30 UTC · Commit `306eb70`
 
-**Funktionsabdeckung: 94.8 %** (96 voll + 9 teilweise von 106 Funktionen) · **E2E-Tests:** 102/105 Desktop, 11/11 Mobil bestanden
+**Funktionsabdeckung: 95.8 %** (97 voll + 9 teilweise von 106 Funktionen) · **E2E-Tests:** 104/105 Desktop, 11/11 Mobil bestanden
 
 | Bereich | Funktionen | ✅ voll | 🟡 teilweise | ❌ fehlgeschlagen | 🐞 bekannter Fehler | ⬜ offen | Abdeckung |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -66,11 +66,11 @@ Stand: 2026-11-03 11:17 UTC · Commit `853feb7`
 | Spiele & Rangliste | 6 | 6 | 0 | 0 | 0 | 0 | 100 % |
 | Challenges | 4 | 4 | 0 | 0 | 0 | 0 | 100 % |
 | Bundesliga-Planer | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
-| Profil & Einstellungen | 7 | 4 | 2 | 1 | 0 | 0 | 71.4 % |
+| Profil & Einstellungen | 7 | 5 | 2 | 0 | 0 | 0 | 85.7 % |
 | Benachrichtigungen | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Administration | 4 | 3 | 1 | 0 | 0 | 0 | 87.5 % |
 | Allgemein | 5 | 5 | 0 | 0 | 0 | 0 | 100 % |
-| **Gesamt** | **106** | **96** | **9** | **1** | **0** | **0** | **94.8 %** |
+| **Gesamt** | **106** | **97** | **9** | **0** | **0** | **0** | **95.8 %** |
 
 Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird bis zur Grenze nach außen getestet (z. B. Push-Abo gespeichert, Mail-Anfrage gesendet), der externe Dienst selbst ist blockiert.
 
@@ -208,7 +208,7 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 - ✅ Profil bearbeiten <sub>`profile.account`</sub>
 - ✅ Profilbild hochladen und zuschneiden <sub>`profile.avatar`</sub>
-- ❌ Sprache wechseln (Deutsch/Englisch) <sub>`profile.language`</sub>
+- ✅ Sprache wechseln (Deutsch/Englisch) <sub>`profile.language`</sub>
 - ✅ Passwort ändern <sub>`profile.password`</sub>
 - ✅ Benachrichtigungsthemen ein-/ausschalten <sub>`profile.notifications`</sub>
 - 🟡 Kalender-Abo <sub>`profile.calendar`</sub>
@@ -253,10 +253,10 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 | Metrik | Abdeckung | Abgedeckt / Gesamt |
 |---|---:|---:|
-| Zeilen | 69.34 % | 4700 / 6778 |
-| Anweisungen | 68.41 % | 5366 / 7843 |
+| Zeilen | 69.28 % | 4696 / 6778 |
+| Anweisungen | 68.37 % | 5363 / 7843 |
 | Funktionen | 64.58 % | 1798 / 2784 |
-| Verzweigungen | 53.61 % | 2196 / 4096 |
+| Verzweigungen | 53.63 % | 2197 / 4096 |
 
 Gemessen über die im Browser geladenen Dateien (184 von 228 Quelldateien unter `src/`; 44 wurden in keinem Test geladen und zählen oben nicht mit).
 <!-- E2E-STATUS:END -->
