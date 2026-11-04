@@ -8,14 +8,13 @@ import { useTranslation } from 'react-i18next';
 const UPDATED_FLAG = 'pwa-update-applied';
 const SUCCESS_VISIBLE_MS = 3200; // keep in sync with the update-badge keyframes
 
-// Full-screen page shown while a new version waits in the service worker. It stays until the
-// user taps the button: the old app must not keep running against an already migrated database.
-export const UpdateReadyPage = () => {
+// Full-screen, blocking page while a new version downloads and activates. The old app must not
+// keep running against an already migrated database. `progress` is 0..1, or null while the number
+// of files is not known yet. `onUpdate` is set once the new version is installed: activation runs
+// automatically, the button is a manual fallback.
+export const UpdatePage = ({ progress, onUpdate }: { progress: number | null; onUpdate?: () => void }) => {
   const { t } = useTranslation();
-
-  const refresh = async () => {
-    await window.location.reload();
-  };
+  const percent = progress === null ? null : Math.round(progress * 100);
 
   return (
     <div
@@ -47,22 +46,7 @@ export const UpdateReadyPage = () => {
         </p>
       </div>
 
-      <Button className='h-11 px-6 text-base' onClick={refresh}>
-        {t('pwa.updateReady.updateNow')}
-      </Button>
-    </div>
-  );
-};
-
-// Non-blocking hint while a new version downloads in the background. `progress` is 0..1, or null
-// while the number of files is not known yet (indeterminate bar). Replaced by UpdateReadyPage.
-export const UpdateDownloading = ({ progress }: { progress: number | null }) => {
-  const { t } = useTranslation();
-  const percent = progress === null ? null : Math.round(progress * 100);
-
-  return (
-    <div role='status' className='fixed right-0 bottom-safe-bottom left-0 z-[140] mx-auto mb-4 w-[min(22rem,calc(100%-2rem))]'>
-      <div className='bg-card text-card-foreground border-border space-y-2 rounded-2xl border px-4 py-3 shadow-lg'>
+      <div className='w-full max-w-xs space-y-2'>
         <div className='flex items-center justify-between gap-3 text-sm font-medium'>
           <span className='flex items-center gap-2'>
             <Spinner />
@@ -84,6 +68,12 @@ export const UpdateDownloading = ({ progress }: { progress: number | null }) => 
           />
         </div>
       </div>
+
+      {onUpdate && (
+        <Button className='h-11 px-6 text-base' onClick={onUpdate}>
+          {t('pwa.updateReady.updateNow')}
+        </Button>
+      )}
     </div>
   );
 };

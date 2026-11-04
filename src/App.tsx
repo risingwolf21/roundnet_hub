@@ -1,9 +1,9 @@
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
-import { UpdateDownloading, UpdateReadyPage, UpdateSuccess } from './features/pwa/AppUpdate';
+import { UpdatePage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { supabase } from './lib/supabase';
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
@@ -28,11 +28,15 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
 
       // A new version starts downloading. Not on the very first install (no controller yet).
       registration.addEventListener('updatefound', () => {
-        if (navigator.serviceWorker.controller) setDownloadProgress(null);
+        const installing = registration.installing;
+        if (!navigator.serviceWorker.controller || !installing) return;
+        setDownloadProgress(null);
+        // Install failed (e.g. a precache request failed): unblock the app instead of hanging forever.
+        installing.addEventListener('statechange', () => {
+          if (installing.state === 'redundant') setDownloadProgress(undefined);
+        });
       });
       // Cheap SW update check: browser byte-compares the SW script, no DB needed.
-      // A new SW installs and then waits (no skipWaiting): needRefresh turns true and the
-      // update page is shown until the user taps "refresh".
       const triggerSwUpdate = () => registration.update().catch(() => { });
 
       // Full check: confirm a new deployment exists before triggering an update.
@@ -64,39 +68,43 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
-  useEffect(() => {
-    if (!needRefresh || activationStarted.current) return;
-
-    activationStarted.current = true;
-
+  // Sends SKIP_WAITING to the waiting SW. The plugin reloads the page once the new SW controls it.
+  const activate = useCallback(() => {
     try {
       sessionStorage.setItem('pwa-update-applied', '1');
     } catch {
       // Storage may be unavailable.
     }
-
-    // Do not await this. Let the PWA plugin handle controllerchange and reload.
-    updateServiceWorker(true).catch((error) => {
+    updateServiceWorker().catch((error) => {
       console.error('Failed to activate service worker:', error);
-      activationStarted.current = false;
-
       try {
         sessionStorage.removeItem('pwa-update-applied');
       } catch {
         // Ignore storage errors.
       }
     });
-  }, [needRefresh, updateServiceWorker]);
+  }, [updateServiceWorker]);
 
-  if (needRefresh) {
-    return <UpdateReadyPage />;
+  // Activate automatically as soon as the new version is installed.
+  useEffect(() => {
+    if (!needRefresh || activationStarted.current) return;
+    activationStarted.current = true;
+    activate();
+  }, [needRefresh, activate]);
+
+  // Block the whole app while a new version downloads or activates.
+  if (needRefresh || downloadProgress !== undefined) {
+    return (
+      <UpdatePage
+        progress={needRefresh ? 1 : (downloadProgress ?? null)}
+        onUpdate={needRefresh ? activate : undefined}
+      />
+    );
   }
 
-  // After the user taps "refresh", the SW activates and the page reloads (see index.tsx).
   return (
     <>
       {children}
-      {downloadProgress !== undefined && <UpdateDownloading progress={downloadProgress} />}
       <UpdateSuccess />
     </>
   );
