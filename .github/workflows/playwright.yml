@@ -1,12 +1,6 @@
 name: Playwright tests
 
 on:
-  push:
-    # production is not listed: there the Production workflow calls this one (workflow_call)
-    # and only migrates/deploys once it passes.
-    branches: [ master ]
-  # All PRs (not only those into production), so stacked test-wave PRs get a run too.
-  pull_request:
   workflow_call:
 
 jobs:
