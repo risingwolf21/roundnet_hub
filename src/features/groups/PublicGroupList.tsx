@@ -3,8 +3,10 @@ import { AppBar } from "@/components/ui/appbar";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDialogs } from "@/contexts/DialogsProvider";
+import { Has } from "@/hooks/useGrants";
 import { queryClient } from "@/lib/queryClient";
 import { authKeys } from "@/tanstack/auth";
 import { useGroups, useJoinGroup, useRequestedUsersPerGroup } from "@/tanstack/groups";
@@ -15,7 +17,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Has } from "@/hooks/useGrants";
 import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 
@@ -26,6 +27,7 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
 
   return (
     <Button
+      variant="outline"
       disabled={joinGroup.isPending}
       onClick={(event) => {
         joinGroup.mutate(undefined, {
@@ -96,7 +98,7 @@ const PublicGroupList = () => {
         }}
       >
         <div
-          className="flex flex-col p-4 space-y-2"
+          className="flex flex-col p-2 space-y-2"
           style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}
         >
           {isLoading ? (
@@ -137,48 +139,45 @@ const PublicGroupList = () => {
                     .filter((x) => x.visible || x.user_group_role !== null)
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((x) => (
-                      <div key={x.id} className="flex flex-row items-center gap-3 border-b last:border-0 pb-2"
-                        onClick={() => {
-                          if (x.user_group_role === 'joinRequested') {
-                            setJoinRequestedGroup(x);
-                          } else if (x.user_group_role) {
-                            navigate("/groups/" + x.id);
-                          }
-                        }}>
-                        <Avatar className="flex h-10 w-10 flex-col items-center bg-[color:var(--group-color)]"
-                          style={{ "--group-color": x.color } as React.CSSProperties}>
-                          <div className="h-full flex flex-row items-center">
-                            <Users
-                              className="h-5 w-5"
-                              style={{ color: "color-mix(in srgb, var(--group-color), white 70%)" }} />
-                          </div>
-                        </Avatar>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex flex-col items-start justify-between">
-                            <p className="text-sm font-semibold">{x.name}</p>
-                            <p className="text-sm text-foreground/90 ">{x.description}</p>
-                          </div>
-                        </div>
-                        {
-                          !x.user_group_role && <div className="flex-shrink flex-end">
-                            <JoinGroupButton group={x} user={user} />
-                          </div>
-                        }
-                        {x.user_group_role === 'admin' && (
-                          <Badge variant="outline" className="text-info">
-                            {t('groups.admin')}
-                          </Badge>
-                        )}
-                        {x.user_group_role === 'admin' && requested_group_joins.find((y) => y.group === x.id) && (
-                          <Badge variant="outline" className="text-warning">
-                            {requested_group_joins.filter((y) => y.group === x.id).length}
-                          </Badge>
-                        )}
-                        {x.user_group_role === 'joinRequested' && (
-                          <Badge variant="outline" className="text-warning">
-                            {t('groups.requested')}
-                          </Badge>
-                        )}
+                      <div key={x.id}>
+                        <Item onClick={() => navigate(`/groups/${x.id}`)} variant="outline" >
+                          <ItemMedia variant="icon" style={{ "--group-color": x.color } as React.CSSProperties}>
+                            <Avatar className="flex h-10 w-10 flex-col items-center bg-[color:var(--group-color)]"
+                              style={{ "--group-color": x.color } as React.CSSProperties}>
+                              <div className="h-full flex flex-row items-center">
+                                <Users
+                                  className="h-5 w-5"
+                                  style={{ color: "color-mix(in srgb, var(--group-color), white 70%)" }} />
+                              </div>
+                            </Avatar>
+                          </ItemMedia>
+                          <ItemContent>
+                            <ItemTitle>{x.name}</ItemTitle>
+                            <ItemDescription>{x.description}</ItemDescription>
+                          </ItemContent>
+                          <ItemActions>
+                            {
+                              !x.user_group_role && <div className="flex-shrink flex-end">
+                                <JoinGroupButton group={x} user={user} />
+                              </div>
+                            }
+                            {x.user_group_role === 'admin' && (
+                              <Badge variant="outline" className="text-info">
+                                {t('groups.admin')}
+                              </Badge>
+                            )}
+                            {x.user_group_role === 'admin' && requested_group_joins.find((y) => y.group === x.id) && (
+                              <Badge variant="outline" className="text-warning">
+                                {requested_group_joins.filter((y) => y.group === x.id).length}
+                              </Badge>
+                            )}
+                            {x.user_group_role === 'joinRequested' && (
+                              <Badge variant="outline" className="text-warning">
+                                {t('groups.requested')}
+                              </Badge>
+                            )}
+                          </ItemActions>
+                        </Item>
                       </div>
                     ))}
                 </div>
