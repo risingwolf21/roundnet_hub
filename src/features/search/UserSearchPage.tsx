@@ -1,115 +1,149 @@
+import { ListError, ListSectionHeader, ListSkeleton } from '@/components/list/ListParts';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useSharedGroupMembers } from '@/tanstack/user';
-import { Search } from 'lucide-react';
+import { getInitials } from '@/utils';
+import { ChevronRight, Search, SearchX, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+
+const memberName = (m: { displayName?: string | null; name?: string | null }) => m.displayName || m.name || '?';
 
 const UserSearchPage = () => {
-  const { t } = useTranslation();
-  const { user } = useGrants();
+  const { t, i18n } = useTranslation();
+  const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
-  const { data: members = [], isLoading } = useSharedGroupMembers(user?.id);
+  const { data: members = [], isLoading, isError, refetch } = useSharedGroupMembers(user?.id);
+  // Last activity is private data; only user managers see it.
+  const canSeeActivity = hasPerm('users.manage');
 
-  const filtered = useMemo(() => {
+  const sections = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return members;
-    return members.filter((m) => {
-      const name = (m.displayName ?? m.name ?? '').toLowerCase();
-      return name.includes(q);
-    });
-  }, [members, search]);
+    const sorted = members
+      .filter((m) => !q || memberName(m).toLowerCase().includes(q))
+      .sort((a, b) => memberName(a).localeCompare(memberName(b), i18n.resolvedLanguage));
 
-  const searchBox = (
-    <div className="flex flex-col items-center gap-3 px-4 mb-3">
-      <div className="relative w-full flex-1">
-        <InputGroup>
-          <InputGroupInput
-            type="search"
-            placeholder={t('search.placeholder')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-full"
-          />
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-    </div>
-  );
+    const byLetter = new Map<string, typeof sorted>();
+    for (const m of sorted) {
+      const first = memberName(m).charAt(0).toLocaleUpperCase(i18n.resolvedLanguage);
+      const letter = /\p{L}/u.test(first) ? first : '#';
+      byLetter.set(letter, [...(byLetter.get(letter) ?? []), m]);
+    }
+    return { letters: [...byLetter.entries()], total: sorted.length };
+  }, [members, search, i18n.resolvedLanguage]);
 
   return (
     <div>
-      <AppBar
-        title={t('search.title')}
-        user={user}
-        searchPlaceholder={t('search.placeholder')}
-        searchValue={search}
-        onSearchChange={setSearch}
-        primaryAction="back"
-      />
+      <AppBar className="!border-b !shadow-sm" title={t('search.title')} user={user} primaryAction="back" />
 
-      {isLoading ? (
-        <div className="py-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex flex-col gap-1 flex-1">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-20" />
-              </div>
+      <main className="flex flex-col gap-2 p-2 pb-safe-bottom">
+        {isLoading && <ListSkeleton rows={6} />}
+
+        {!isLoading && isError && (
+          <ListError
+            title={t('search.loadError')}
+            description={t('search.loadErrorDescription')}
+            retryLabel={t('challenge.list.retry')}
+            onRetry={() => refetch()}
+          />
+        )}
+
+        {!isLoading && !isError && members.length === 0 && (
+          <Empty className="mt-12">
+            <EmptyHeader>
+              <EmptyMedia variant="icon"><Users /></EmptyMedia>
+              <EmptyTitle>{t('search.noMembers')}</EmptyTitle>
+              <EmptyDescription>{t('search.noMembersDescription')}</EmptyDescription>
+            </EmptyHeader>
+            <Button variant="outline" onClick={() => navigate('/groups')}>
+              <Users className="size-4" />
+              {t('navigation.groups')}
+            </Button>
+          </Empty>
+        )}
+
+        {!isLoading && !isError && members.length > 0 && (
+          <>
+            <div className="sticky top-14 z-10 -mx-2 bg-background/95 px-2 pb-2 supports-[backdrop-filter]:bg-background/80 supports-[backdrop-filter]:backdrop-blur">
+              <InputGroup>
+                <InputGroupInput
+                  type="search"
+                  placeholder={t('search.placeholder')}
+                  aria-label={t('search.placeholder')}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="rounded-full"
+                />
+                <InputGroupAddon>
+                  <Search />
+                </InputGroupAddon>
+              </InputGroup>
             </div>
-          ))}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-2">
-          {/* Keep the search box when nothing matches, so the query can be corrected. */}
-          {members.length > 0 && searchBox}
-          <p className="text-center text-muted-foreground py-12 text-sm">
-            {t('search.noResults')}
-          </p>
-        </div>
-      ) : (
-        <div className="py-2">
-          {searchBox}
-          <Separator />
-          {filtered.map((member) => {
-            const displayName = member.displayName ?? member.name ?? '?';
-            const initials = displayName.slice(0, 2).toUpperCase();
-            return (
-              <Item
-                key={member.id}
-                className="px-4 cursor-pointer"
-                onClick={() => dialogs.userProfile(member.id)}
-              >
-                <ItemMedia>
-                  <Avatar>
-                    {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={displayName} />}
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                </ItemMedia>
-                <ItemContent>
-                  <ItemTitle>{displayName}</ItemTitle>
-                  {member.last_seen_at && (
-                    <ItemDescription>
-                      {t('user.lastActive', { date: new Date(member.last_seen_at) })}
-                    </ItemDescription>
-                  )}
-                </ItemContent>
-              </Item>
-            );
-          })}
-        </div>
-      )}
+
+            {sections.total === 0 && (
+              <Empty className="mt-8">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
+                  <EmptyTitle>{t('search.noResults')}</EmptyTitle>
+                  <EmptyDescription>{t('search.noResultsDescription')}</EmptyDescription>
+                </EmptyHeader>
+                <Button variant="outline" onClick={() => setSearch('')}>{t('search.clear')}</Button>
+              </Empty>
+            )}
+
+            {sections.letters.map(([letter, list]) => (
+              <section key={letter} className="flex flex-col gap-2">
+                <ListSectionHeader title={letter} count={list.length} />
+                {list.map((member) => {
+                  const name = memberName(member);
+                  return (
+                    <Item
+                      key={member.id}
+                      variant="outline"
+                      role="button"
+                      tabIndex={0}
+                      className="cursor-pointer"
+                      onClick={() => dialogs.userProfile(member.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          dialogs.userProfile(member.id);
+                        }
+                      }}
+                    >
+                      <ItemMedia>
+                        <Avatar className="size-11">
+                          {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt="" />}
+                          <AvatarFallback>{getInitials(name).slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                      </ItemMedia>
+                      <ItemContent className="min-w-0">
+                        <ItemTitle className="min-w-0"><span className="truncate">{name}</span></ItemTitle>
+                        {canSeeActivity && member.last_seen_at && (
+                          <ItemDescription>{t('user.lastActive', { date: new Date(member.last_seen_at) })}</ItemDescription>
+                        )}
+                      </ItemContent>
+                      <ItemActions>
+                        <ChevronRight className="size-4 text-muted-foreground" />
+                      </ItemActions>
+                    </Item>
+                  );
+                })}
+              </section>
+            ))}
+          </>
+        )}
+      </main>
     </div>
   );
 };

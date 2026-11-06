@@ -3089,6 +3089,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      admin_user_effective_grants: {
+        Args: { p_user: string }
+        Returns: {
+          group_id: string
+          group_name: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          source: string
+        }[]
+      }
       apply_series_occurrences: {
         Args: { p_mode?: string; p_series_id: string; p_slots: Json }
         Returns: Json

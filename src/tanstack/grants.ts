@@ -9,6 +9,11 @@ export const grantKeys = {
   permissions: () => [...grantKeys.all, 'permissions'] as const,
   features: () => [...grantKeys.all, 'features'] as const,
   user: () => [...grantKeys.all, 'user'] as const,
+  catalog: () => [...grantKeys.all, 'catalog'] as const,
+  summary: () => [...grantKeys.all, 'summary'] as const,
+  groupCounts: () => [...grantKeys.summary(), 'groups'] as const,
+  directSummary: () => [...grantKeys.summary(), 'direct'] as const,
+  effective: (userId: string) => [...grantKeys.all, 'effective', userId] as const,
   userPermissions: (userId: string) => [...grantKeys.all, 'user-permissions', userId] as const,
   userFeatures: (userId: string) => [...grantKeys.all, 'user-features', userId] as const,
   groupPermissions: (groupId?: string) => [...grantKeys.all, 'group-permissions', groupId] as const,
@@ -36,23 +41,52 @@ export const useFeatures = () => {
   });
 };
 
+export const useGrantCatalog = () =>
+  useQuery({
+    queryKey: grantKeys.catalog(),
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const [permissions, features] = await Promise.all([
+        GrantsRepository.fetchPermissionCatalog(),
+        GrantsRepository.fetchFeatureCatalog(),
+      ]);
+      return { permissions, features };
+    },
+  });
+
+export const useGroupGrantCounts = () =>
+  useQuery({ queryKey: grantKeys.groupCounts(), queryFn: () => GrantsRepository.fetchGroupGrantCounts() });
+
+export const useDirectGrantSummary = () =>
+  useQuery({ queryKey: grantKeys.directSummary(), queryFn: () => GrantsRepository.fetchDirectGrantSummary() });
+
+/** Everything a user can do in total: direct grants plus what their groups give them. */
+export const useUserEffectiveGrants = (userId?: string) =>
+  useQuery({
+    queryKey: grantKeys.effective(userId ?? ''),
+    enabled: !!userId,
+    queryFn: () => GrantsRepository.fetchUserEffectiveGrants(userId!),
+  });
+
 export const useDirectUserGrants = () =>
   useQuery({
     queryKey: grantKeys.user(),
     queryFn: () => GrantsRepository.fetchUsersWithDirectGrants(),
   });
 
-export const useUserPermissions = (userId: string) => {
+export const useUserPermissions = (userId?: string) => {
   return useQuery({
-    queryKey: grantKeys.userPermissions(userId),
-    queryFn: () => GrantsRepository.fetchUserPermissionGrants(userId),
+    queryKey: grantKeys.userPermissions(userId ?? ''),
+    enabled: !!userId,
+    queryFn: () => GrantsRepository.fetchUserPermissionGrants(userId!),
   });
 };
 
-export const useUserFeatures = (userId: string) => {
+export const useUserFeatures = (userId?: string) => {
   return useQuery({
-    queryKey: grantKeys.userFeatures(userId),
-    queryFn: () => GrantsRepository.fetchUserFeatureGrants(userId),
+    queryKey: grantKeys.userFeatures(userId ?? ''),
+    enabled: !!userId,
+    queryFn: () => GrantsRepository.fetchUserFeatureGrants(userId!),
   });
 };
 
@@ -113,6 +147,8 @@ export const useGrantUserPermissions = () =>
     },
     onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: grantKeys.user() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.directSummary() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.effective(_v.user) });
       queryClient.invalidateQueries({ queryKey: grantKeys.userPermissions(_v.user) });
       queryClient.invalidateQueries({ queryKey: grantKeys.userFeatures(_v.user) });
     },
@@ -159,6 +195,8 @@ export const useRevokeUserPermissions = () =>
     },
     onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: grantKeys.user() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.directSummary() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.effective(_v.user) });
       queryClient.invalidateQueries({ queryKey: grantKeys.userPermissions(_v.user) });
       queryClient.invalidateQueries({ queryKey: grantKeys.userFeatures(_v.user) });
     },
@@ -204,6 +242,7 @@ export const useGrantGroupPermissions = () =>
       }
     },
     onSettled: (_d, _e, _v) => {
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupCounts() });
       queryClient.invalidateQueries({ queryKey: grantKeys.groupPermissions(_v.group) });
       queryClient.invalidateQueries({ queryKey: grantKeys.groupFeatures(_v.group) });
     },
@@ -249,6 +288,7 @@ export const useRevokeGroupPermissions = () =>
       }
     },
     onSettled: (_d, _e, _v) => {
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupCounts() });
       queryClient.invalidateQueries({ queryKey: grantKeys.groupPermissions(_v.group) });
       queryClient.invalidateQueries({ queryKey: grantKeys.groupFeatures(_v.group) });
     },

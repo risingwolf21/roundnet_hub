@@ -3,18 +3,22 @@ import pzLogo from '../images/pz_logo.svg';
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useIsOffline } from '@/hooks/useIsOffline';
+import { cn } from '@/lib/utils';
 import { useUserTrophies } from '@/tanstack/challenge';
 import { usePlayerLeaderboardEntry, usePlayerMatches } from '@/tanstack/games';
 import { useEloHistoryForPlayer } from '@/tanstack/player_data';
 import { useProfile } from '@/tanstack/user';
-import { AlertCircle, Copy, Medal, TrendingDown, TrendingUp, WifiOff } from 'lucide-react';
-import { useMemo } from 'react';
+import { getInitials } from '@/utils';
+import { AlertCircle, Copy, EyeOff, Medal, TrendingDown, TrendingUp, WifiOff } from 'lucide-react';
+import { useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { ListSectionHeader } from './list/ListParts';
+import { Alert, AlertDescription } from './ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader } from './ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from './ui/item';
 import { Skeleton } from './ui/skeleton';
 
@@ -24,41 +28,28 @@ type ProfilePayload = {
 
 type EloPoint = { new_rating: number; created_at: string };
 
-const StatTileSkeleton = () => (
-  <Item variant="outline">
-    <ItemContent>
-      <Skeleton className="h-5 w-12 mb-1" />
-      <Skeleton className="h-3 w-20" />
-    </ItemContent>
-  </Item>
+const StatTile = ({ label, value, extra }: { label: string; value: React.ReactNode; extra?: React.ReactNode }) => (
+  <div className="flex flex-col items-center rounded-lg bg-muted px-2 py-3 text-center">
+    <span className="flex items-center gap-1.5 text-xl font-bold tabular-nums">
+      {value}
+      {extra}
+    </span>
+    <span className="text-xs text-muted-foreground">{label}</span>
+  </div>
 );
-
-const StatTileError = ({ label }: { label: string }) => {
-  const { t } = useTranslation();
-  return (
-    <Item variant="outline" className="border-destructive/30">
-      <ItemContent>
-        <ItemTitle className="text-destructive/70 gap-1">
-          <AlertCircle className="size-3.5" />
-          {t('profile.dialog.error')}
-        </ItemTitle>
-        <ItemDescription>{label}</ItemDescription>
-      </ItemContent>
-    </Item>
-  );
-};
 
 const SectionError = ({ label }: { label: string }) => {
   const { t } = useTranslation();
   return (
-    <div className="mt-4 rounded-lg border border-destructive/20 p-3 flex items-center gap-2 text-sm text-muted-foreground">
+    <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-card p-3 text-sm text-muted-foreground">
       <AlertCircle className="size-4 shrink-0 text-destructive/70" />
       {t('profile.dialog.loadFailed', { label })}
     </div>
   );
 };
 
-const EloSparkline = ({ history }: { history: EloPoint[] }) => {
+const EloSparkline = ({ history, positive }: { history: EloPoint[]; positive: boolean }) => {
+  const gradientId = useId();
   if (history.length < 2) return null;
 
   const ratings = history.map((d) => d.new_rating);
@@ -73,25 +64,28 @@ const EloSparkline = ({ history }: { history: EloPoint[] }) => {
   const linePoints = ratings.map((r, i) => `${toX(i)},${toY(r)}`).join(' ');
   const areaPoints = `0,${H} ${linePoints} ${W},${H}`;
 
-  const isUp = ratings[ratings.length - 1] >= ratings[0];
-  const color = isUp ? '#22c55e' : '#ef4444';
-
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className={cn('h-12 w-full', positive ? 'text-success' : 'text-destructive')}
+      preserveAspectRatio="none"
+      aria-hidden
+    >
       <defs>
-        <linearGradient id="elo-spark-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polygon points={areaPoints} fill="url(#elo-spark-fill)" />
+      <polygon points={areaPoints} fill={`url(#${gradientId})`} />
       <polyline
         points={linePoints}
         fill="none"
-        stroke={color}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
@@ -100,52 +94,49 @@ const EloSparkline = ({ history }: { history: EloPoint[] }) => {
 export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<ProfilePayload, null>) => {
   const { t } = useTranslation();
   const isOffline = useIsOffline();
-  const { user: currentUser } = useGrants();
+  const { user: currentUser, hasPerm } = useGrants();
   const { data: currentUserProfile } = useProfile(currentUser.id);
   const currentPlayerId = currentUserProfile?.player?.player ?? '';
+  const isSelf = currentUser.id === userId;
 
   const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile(userId);
   const { data: trophies = [], isLoading: trophiesLoading, isError: trophiesError } = useUserTrophies(userId);
-  const { data: leaderboardEntry, isLoading: leaderboardLoading, isError: leaderboardError } = usePlayerLeaderboardEntry(userId);
+  const { data: leaderboardEntry, isLoading: leaderboardLoading } = usePlayerLeaderboardEntry(userId);
 
   const playerId = profile?.player?.player ?? '';
-  const { data: playerMatches = [], isLoading: matchesLoading, isError: matchesError } = usePlayerMatches(playerId);
+  const { data: playerMatches = [], isLoading: matchesLoading } = usePlayerMatches(playerId);
   const { data: eloHistory = [], isLoading: eloLoading, isError: eloError } = useEloHistoryForPlayer(playerId);
 
-  const shared = useMemo(() => {
-    return playerMatches.filter(
+  const player = profile?.player;
+  const displayName = profile?.displayName ?? '';
+  // The index is private when the player hides it; they still see their own.
+  const indexHidden = !isSelf && !!player?.hide_rating;
+  const canSeeActivity = hasPerm('users.manage');
+
+  const record = useMemo(() => {
+    if (!currentPlayerId || matchesLoading) return null;
+    const shared = playerMatches.filter(
       (m) => m.rated && m.winner_side &&
         (m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId ||
           m.team_b_p1 === currentPlayerId || m.team_b_p2 === currentPlayerId)
-    )
-  }, [playerMatches, currentPlayerId]);
-
-  const winRate = useMemo(() => {
+    );
     if (shared.length === 0) return null;
+
     const wins = shared.filter((m) => {
       const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
       return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
     }).length;
-    return { wins, total: shared.length, rate: Math.round((wins / shared.length) * 100) };
-  }, [shared, currentPlayerId]);
-
-  const h2h = useMemo(() => {
-    if (!currentPlayerId || currentUser.id === userId || matchesLoading) return null;
-    if (shared.length === 0) return null;
-    const wins = shared.filter((m) => {
-      const onTeamA = m.team_a_p1 === currentPlayerId || m.team_a_p2 === currentPlayerId;
-      return (onTeamA && m.winner_side === 'team_a') || (!onTeamA && m.winner_side === 'team_b');
-    }).length;
-    const draws = shared.filter((m) => {
-      return m.winner_side == "draw";
-    }).length;
-    return { wins, losses: shared.length - wins - draws, draws };
-  }, [currentPlayerId, currentUser.id, userId, matchesLoading, shared]);
+    const draws = shared.filter((m) => m.winner_side === 'draw').length;
+    return { wins, draws, losses: shared.length - wins - draws, total: shared.length, rate: Math.round((wins / shared.length) * 100) };
+  }, [currentPlayerId, matchesLoading, playerMatches]);
 
   const sortedEloHistory = useMemo(
     () => [...eloHistory].sort((a, b) => a.created_at.localeCompare(b.created_at)),
     [eloHistory]
   );
+  const eloDelta = sortedEloHistory.length >= 2
+    ? sortedEloHistory[sortedEloHistory.length - 1].new_rating - sortedEloHistory[0].new_rating
+    : 0;
 
   const trend = leaderboardEntry?.trend_30_days;
 
@@ -155,215 +146,187 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
     3: { color: 'text-amber-700', label: t('profile.dialog.place3') },
   };
 
+  const hasStats = !!leaderboardEntry?.position || (!indexHidden && !!player?.effective_rating_cached) ||
+    !!player?.matches_played || (isSelf && !!record);
+
   return (
     <Dialog open onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={"fullscreen"}>
-        <DialogHeader variant={"appbar"}>
-          <DialogClose />
+      <DialogContent variant="fullscreen">
+        <DialogHeader variant="appbar">
+          <DialogTitle className="flex-1">{t('profile.title')}</DialogTitle>
         </DialogHeader>
-        <DialogBody>
-
-          {/* Offline banner */}
+        <DialogBody className="gap-3 bg-muted/30 p-3 pb-safe-bottom">
           {isOffline && (
-            <div className="bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground text-sm rounded-lg mb-2">
-              <WifiOff className="size-4 shrink-0" />
-              {t('profile.offline')}
-            </div>
+            <Alert variant="warning">
+              <WifiOff />
+              <AlertDescription>{t('profile.offline')}</AlertDescription>
+            </Alert>
           )}
 
-          {/* Profile header */}
-          {profileLoading ? (
-            <div className="flex flex-col items-center gap-2">
-              <Skeleton className="size-30 rounded-full" />
-              <Skeleton className="h-7 w-36 mt-2" />
-            </div>
-          ) : (
-            <div className='flex flex-col items-center'>
-              <Avatar className={"size-30"}>
-                <AvatarImage src={profile?.avatarUrl ?? undefined} />
-                <AvatarFallback>{profile?.displayName ? profile.displayName[0] : 'U'}</AvatarFallback>
-              </Avatar>
-              <div className='text-2xl mt-4'>{profile?.displayName}</div>
-              {profile?.user?.last_seen_at && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t('profile.lastSeenAt', { date: new Date(profile.user.last_seen_at) })}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Stat grid */}
-          <div className='grid grid-cols-2 gap-4 mt-4'>
-            {/* Profile-sourced tiles */}
+          {/* Hero */}
+          <div className="flex flex-col items-center gap-1 rounded-xl border bg-card px-4 py-6 text-center">
             {profileLoading ? (
               <>
-                <StatTileSkeleton />
-                <StatTileSkeleton />
+                <Skeleton className="size-24 rounded-full" />
+                <Skeleton className="mt-3 h-7 w-36" />
               </>
-            ) : profileError ? (
-              <StatTileError label={t('profile.dialog.playerData')} />
             ) : (
               <>
-                {profile?.player?.effective_rating_cached && (
-                  <Item variant={"outline"}>
-                    <ItemContent>
-                      <ItemTitle>{profile.player.effective_rating_cached.toFixed()}</ItemTitle>
-                      <ItemDescription>{t('profile.dialog.effectiveIndex')}</ItemDescription>
-                    </ItemContent>
-                  </Item>
-                )}
-                {!!profile?.player?.matches_played && (
-                  <Item variant={"outline"}>
-                    <ItemContent>
-                      <ItemTitle>{profile.player.matches_played.toFixed()}</ItemTitle>
-                      <ItemDescription>{t('profile.dialog.matchesPlayed')}</ItemDescription>
-                    </ItemContent>
-                  </Item>
-                )}
-              </>
-            )}
-
-            {/* Ranking tile */}
-            {leaderboardLoading ? (
-              <StatTileSkeleton />
-            ) : leaderboardError ? (
-              <StatTileError label={t('profile.dialog.ranking')} />
-            ) : leaderboardEntry?.position ? (
-              <Item variant={"outline"}>
-                <ItemContent>
-                  <ItemTitle className="flex items-center gap-1.5">
-                    #{leaderboardEntry.position}
-                    {trend != null && trend !== 0 && (
-                      <span className={`flex items-center gap-0.5 text-xs font-normal ${trend > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {trend > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
-                        {Math.abs(trend).toFixed(0)}
-                      </span>
-                    )}
-                  </ItemTitle>
-                  <ItemDescription>{t('profile.dialog.ranking')}</ItemDescription>
-                </ItemContent>
-              </Item>
-            ) : null}
-
-            {/* Win rate tile */}
-            {matchesLoading ? (
-              <StatTileSkeleton />
-            ) : matchesError ? (
-              <StatTileError label={t('profile.dialog.winRate')} />
-            ) : winRate !== null ? (
-              <Item variant={"outline"}>
-                <ItemContent>
-                  <ItemTitle>{winRate.rate}%</ItemTitle>
-                  <ItemDescription>{t('profile.dialog.winRate')}</ItemDescription>
-                </ItemContent>
-              </Item>
-            ) : null}
-
-            {/* H2H tiles */}
-            {h2h !== null && (
-              <>
-                <Item variant={"outline"}>
-                  <ItemContent>
-                    <ItemTitle>{`${h2h.wins}W ${h2h.draws}D ${h2h.losses}L`}</ItemTitle>
-                    <ItemDescription>{t('profile.h2h.ratio')}</ItemDescription>
-                  </ItemContent>
-                </Item>
-              </>
-            )}
-
-            {/* RG tiles (profile-sourced, shown after loading) */}
-            {!profileLoading && !profileError && (
-              <>
-                {profile?.player?.rg_id && (
-                  <Item variant={"outline"}>
-                    <ItemMedia className='flex flex-row h-full align-center justify-center'>
-                      <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>{profile.player.rg_id}</ItemTitle>
-                      <ItemDescription>{t('profile.dialog.rgId')}</ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      <Button variant={"outline"} size={"icon-lg"} onClick={() => {
-                        navigator.clipboard.writeText(profile?.player?.rg_id ?? '');
-                        toast.success(t('profile.dialog.rgIdCopied'));
-                      }}>
-                        <Copy />
-                      </Button>
-                    </ItemActions>
-                  </Item>
-                )}
-                {profile?.player?.rg_index && (
-                  <Item variant={"outline"}>
-                    <ItemMedia className='flex flex-row h-full align-center justify-center'>
-                      <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
-                    </ItemMedia>
-                    <ItemContent>
-                      <ItemTitle>{profile.player.rg_index}</ItemTitle>
-                      <ItemDescription>{t('profile.dialog.rgIndex')}</ItemDescription>
-                    </ItemContent>
-                    <ItemActions>
-                      {profile.player.pro_status && (
-                        <Badge variant="outline" className='border-2 border-black bg-black text-white'>
-                          {t('profile.dialog.pro')}
-                        </Badge>
-                      )}
-                    </ItemActions>
-                  </Item>
+                <Avatar className="size-24">
+                  <AvatarImage src={profile?.avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback className="text-2xl">{getInitials(displayName).slice(0, 2) || 'U'}</AvatarFallback>
+                </Avatar>
+                <h2 className="mt-3 max-w-full truncate text-2xl font-semibold">{displayName}</h2>
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  {isSelf && <Badge variant="secondary">{t('groups.you')}</Badge>}
+                  {player?.pro_status && !indexHidden && (
+                    <Badge variant="outline" className="border-black bg-black text-white">{t('profile.dialog.pro')}</Badge>
+                  )}
+                </div>
+                {canSeeActivity && profile?.user?.last_seen_at && (
+                  <p className="text-sm text-muted-foreground">
+                    {t('profile.lastSeenAt', { date: new Date(profile.user.last_seen_at) })}
+                  </p>
                 )}
               </>
             )}
           </div>
 
-          {/* ELO sparkline */}
-          {eloLoading ? (
-            <div className="mt-4 rounded-lg border p-3">
-              <div className="flex justify-between items-center mb-2">
-                <Skeleton className="h-3.5 w-20" />
-                <Skeleton className="h-3.5 w-10" />
-              </div>
-              <Skeleton className="h-12 w-full" />
+          {profileError && <SectionError label={t('profile.dialog.playerData')} />}
+
+          {/* Stats */}
+          {(profileLoading || leaderboardLoading) ? (
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-[74px] rounded-lg" />
+              <Skeleton className="h-[74px] rounded-lg" />
+              <Skeleton className="h-[74px] rounded-lg" />
             </div>
-          ) : eloError ? (
-            <SectionError label={t('profile.dialog.eloHistory')} />
-          ) : sortedEloHistory.length >= 2 ? (
-            <div className="mt-4 rounded-lg border p-3">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">{t('profile.dialog.eloHistory')}</span>
-                <span className={`text-sm font-medium ${sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating
-                  ? 'text-green-500'
-                  : 'text-red-500'
-                  }`}>
-                  {sortedEloHistory[sortedEloHistory.length - 1].new_rating >= sortedEloHistory[0].new_rating ? '+' : ''}
-                  {(sortedEloHistory[sortedEloHistory.length - 1].new_rating - sortedEloHistory[0].new_rating).toFixed(0)}
-                </span>
-              </div>
-              <EloSparkline history={sortedEloHistory} />
+          ) : hasStats ? (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {!!leaderboardEntry?.position && (
+                <StatTile
+                  label={t('profile.dialog.ranking')}
+                  value={`#${leaderboardEntry.position}`}
+                  extra={trend != null && trend !== 0 ? (
+                    <span className={cn('flex items-center gap-0.5 text-xs font-normal', trend > 0 ? 'text-success' : 'text-destructive')}>
+                      {trend > 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
+                      {Math.abs(trend).toFixed(0)}
+                    </span>
+                  ) : undefined}
+                />
+              )}
+              {!indexHidden && !!player?.effective_rating_cached && (
+                <StatTile label={t('profile.dialog.effectiveIndex')} value={player.effective_rating_cached.toFixed()} />
+              )}
+              {!!player?.matches_played && (
+                <StatTile label={t('profile.dialog.matchesPlayed')} value={player.matches_played.toFixed()} />
+              )}
+              {isSelf && record && <StatTile label={t('profile.dialog.winRate')} value={`${record.rate}%`} />}
             </div>
           ) : null}
 
+          {indexHidden && (
+            <Alert variant="info">
+              <EyeOff />
+              <AlertDescription>{t('profile.dialog.indexHidden', { name: displayName })}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Your record against / with this player */}
+          {!isSelf && record && (
+            <div className="rounded-xl border bg-card p-4">
+              <div className="text-sm font-semibold">{t('profile.dialog.recordTitle', { name: displayName })}</div>
+              <div className="text-xs text-muted-foreground">{t('profile.dialog.recordDescription', { count: record.total })}</div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <StatTile label={t('profile.dialog.wins')} value={record.wins} />
+                <StatTile label={t('profile.dialog.draws')} value={record.draws} />
+                <StatTile label={t('profile.dialog.losses')} value={record.losses} />
+              </div>
+            </div>
+          )}
+
+          {/* ELO history */}
+          {!indexHidden && (eloLoading ? (
+            <Skeleton className="h-[104px] w-full rounded-xl" />
+          ) : eloError ? (
+            <SectionError label={t('profile.dialog.eloHistory')} />
+          ) : sortedEloHistory.length >= 2 ? (
+            <div className="rounded-xl border bg-card p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-sm font-semibold">{t('profile.dialog.eloHistory')}</span>
+                <span className={cn('text-sm font-medium tabular-nums', eloDelta >= 0 ? 'text-success' : 'text-destructive')}>
+                  {eloDelta >= 0 ? '+' : ''}{eloDelta.toFixed(0)}
+                </span>
+              </div>
+              <EloSparkline history={sortedEloHistory} positive={eloDelta >= 0} />
+            </div>
+          ) : null)}
+
+          {/* Playerzone */}
+          {!profileLoading && !profileError && (player?.rg_id || (!indexHidden && player?.rg_index)) && (
+            <section className="flex flex-col gap-2">
+              <ListSectionHeader title={t('profile.dialog.playerzone')} />
+              {player?.rg_id && (
+                <Item variant="outline">
+                  <ItemMedia>
+                    <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
+                  </ItemMedia>
+                  <ItemContent>
+                    <ItemTitle>{player.rg_id}</ItemTitle>
+                    <ItemDescription>{t('profile.dialog.rgId')}</ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    <Button
+                      variant="outline"
+                      size="icon-lg"
+                      aria-label={t('profile.dialog.copyRgId')}
+                      onClick={() => {
+                        navigator.clipboard.writeText(player.rg_id ?? '');
+                        toast.success(t('profile.dialog.rgIdCopied'));
+                      }}
+                    >
+                      <Copy />
+                    </Button>
+                  </ItemActions>
+                </Item>
+              )}
+              {!indexHidden && player?.rg_index && (
+                <Item variant="outline">
+                  <ItemMedia>
+                    <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />
+                  </ItemMedia>
+                  <ItemContent>
+                    <ItemTitle>{player.rg_index}</ItemTitle>
+                    <ItemDescription>{t('profile.dialog.rgIndex')}</ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    {player.pro_status && (
+                      <Badge variant="outline" className="border-black bg-black text-white">{t('profile.dialog.pro')}</Badge>
+                    )}
+                  </ItemActions>
+                </Item>
+              )}
+            </section>
+          )}
+
           {/* Trophies */}
           {trophiesLoading ? (
-            <div className="flex flex-col gap-2 mt-4">
-              <Skeleton className="h-4 w-20 ml-2" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-            </div>
+            <Skeleton className="h-16 w-full rounded-xl" />
           ) : trophiesError ? (
             <SectionError label={t('navigation.challenges')} />
           ) : trophies.length > 0 ? (
-            <div className='flex flex-col gap-2 mt-4'>
-              <div className="text-sm font-semibold ml-2">{t('navigation.challenges')}</div>
+            <section className="flex flex-col gap-2">
+              <ListSectionHeader title={t('navigation.challenges')} count={trophies.length} />
               {trophies.map((trophy) => {
                 const style = rankStyle[trophy.rank];
                 return (
-                  <Item key={trophy.challenge_id} variant={"outline"}>
+                  <Item key={trophy.challenge_id} variant="outline">
                     <ItemMedia>
-                      <Medal className={`size-6 ${style.color}`} />
+                      <Medal className={cn('size-6', style?.color ?? 'text-muted-foreground')} />
                     </ItemMedia>
                     <ItemContent>
                       <ItemTitle>{trophy.challenge_name}</ItemTitle>
-                      <ItemDescription>{style.label}</ItemDescription>
+                      {style && <ItemDescription>{style.label}</ItemDescription>}
                     </ItemContent>
                     <ItemActions>
                       <span className="text-sm font-medium">{t('profile.dialog.points', { score: trophy.score })}</span>
@@ -371,9 +334,12 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                   </Item>
                 );
               })}
-            </div>
+            </section>
           ) : null}
 
+          {!profileLoading && !profileError && !hasStats && !record && trophies.length === 0 && !trophiesLoading && (
+            <p className="py-4 text-center text-sm text-muted-foreground">{t('profile.dialog.noData', { name: displayName })}</p>
+          )}
         </DialogBody>
       </DialogContent>
     </Dialog>

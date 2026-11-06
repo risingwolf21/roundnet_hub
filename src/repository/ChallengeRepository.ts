@@ -9,6 +9,8 @@ export const fetchChallengeWithGroup = () =>
     .from('challenge')
     .select('*, fullGroup: group(*, users: group_user_mapping ( user ( id, email, displayName, avatarUrl ) ))');
 
+export type ChallengeWithGroup = Challenge & { fullGroup: { id: string; name: string; color: string } | null };
+
 export const ChallengeRepository = {
   async fetchInfiniteChallengeStats(challengeId: string, count: number, pageParam: number) {
     const { data } = await supabase
@@ -38,14 +40,14 @@ export const ChallengeRepository = {
     return result.data;
   },
 
-  async fetchActiveChallenges(): Promise<Challenge[]> {
+  async fetchActiveChallenges(): Promise<ChallengeWithGroup[]> {
     const { data } = await supabase
       .from('challenge')
-      .select('*')
+      .select('*, fullGroup: group(id, name, color)')
       .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
       .order('name')
       .throwOnError();
-    return data ?? [];
+    return (data ?? []) as unknown as ChallengeWithGroup[];
   },
 
   async fetchPodiums() {

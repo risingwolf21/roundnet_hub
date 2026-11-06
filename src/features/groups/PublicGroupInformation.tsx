@@ -1,161 +1,230 @@
+import { DangerZone } from "@/components/DangerZone";
+import { groupSideBar, ListError, ListSkeleton, SegmentedControl } from "@/components/list/ListParts";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { Alert, AlertAction, AlertTitle } from "@/components/ui/alert";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Toggle } from "@/components/ui/toggle";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
-import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMutation } from "@/tanstack/groups";
+import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useGroups, useJoinGroup, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
-import groupBy from "lodash.groupby";
-import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, MoveDownIcon, Pencil, Plus, Shapes, ShieldCheck, User, UserStar, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, CircleFadingArrowUp, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { v4 } from "uuid";
 import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 
-type Filter = { user: boolean; admin: boolean; joinRequested: boolean; trials: boolean };
-const DEFAULT_FILTER = { user: true, admin: true, joinRequested: true, trials: true };
-
-const roleWeights: Record<string, number> = {
-  'joinRequested': 1,
-  'trial': 2,
-  'admin': 3,
-  'user': 4
-};
+type MemberView = "all" | "admin" | "user" | "trial" | "joinRequested";
 
 // Mirrors the server-side `trial_duration_days` (app_config, default 28). Used only
 // for the informational countdown; the authoritative expiry runs in the DB cron job.
 const TRIAL_DURATION_DAYS = 28;
+const SEARCH_THRESHOLD = 8;
 
-const trialDaysLeft = (startedAt: string | null | undefined): number | null => {
+const trialDaysLeft = (startedAt: string | null | undefined, now: number): number | null => {
   if (!startedAt) return null;
-  const elapsedDays = Math.floor((Date.now() - new Date(startedAt).getTime()) / 86_400_000);
+  const elapsedDays = Math.floor((now - new Date(startedAt).getTime()) / 86_400_000);
   return TRIAL_DURATION_DAYS - elapsedDays;
+};
+
+const JoinButton = ({ group, user }: { group: Group; user: User }) => {
+  const { t } = useTranslation();
+  const { refetchUserGrants } = useGrants();
+  const joinGroup = useJoinGroup(group.id, user, group.need_request_to_join ? "joinRequested" : "user");
+
+  return (
+    <Button
+      className="w-full"
+      disabled={joinGroup.isPending}
+      onClick={() =>
+        joinGroup.mutate(undefined, {
+          onError: (e) => {
+            captureException(e);
+            toast.error(t("groups.joinError"));
+          },
+          onSuccess: () => refetchUserGrants(),
+        })
+      }
+    >
+      <UserPlus className="size-4" />
+      {joinGroup.isPending ? t("groups.joining") : group.need_request_to_join ? t("groups.requestToJoin") : t("groups.join")}
+    </Button>
+  );
 };
 
 const PublicGroupInformation = () => {
   const { t } = useTranslation();
   const { groupId } = useParams();
-  const { user } = useGrants();
+  const { user, hasPerm, refetchUserGrants } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
 
+  const [view, setView] = useState<MemberView>("all");
+  const [selecting, setSelecting] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  // const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
-  //   codec: {
-  //     parse: (value): Filter => {
-  //       return JSON.parse(value) as Filter;
-  //     },
-  //     stringify: (value) => JSON.stringify(value),
-  //   },
-  // });
-  const [filter, setFilter] = useState<Filter>(DEFAULT_FILTER);
+  // eslint-disable-next-line @eslint-react/naming-convention/use-state
+  const [now] = useState(() => Date.now());
+
   const { data: group = null, error: groupError, isLoading: groupLoading, refetch: refetchGroup } = useGroup(groupId);
   const { data: group_users = [], isLoading: usersLoading, error: usersError, refetch } = useGroupAllUsers(groupId);
-
-  const groupedUsers = useMemo(
-    () => Object.entries(groupBy(group_users, (x) => x.role))
-      .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB]),
-    [group_users]
-  );
+  const { data: allGroups = [] } = useGroups();
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
   const leaveGroupMutation = useLeaveGroupMutation();
   const changeUserRoleMutation = useChangeUserRoleMutation();
 
-  const handleUsersAdded = async (users: User[]) => {
+  const myRole = group?.user_group_role ?? null;
+  const isGroupAdmin = myRole === "admin";
+  // Mirrors the row-level policies: group admins and platform admins manage members and the group itself.
+  const canManage = isGroupAdmin || hasPerm("supabase.admin");
+  const isMember = myRole === "admin" || myRole === "user" || myRole === "trial";
+  const canSeeMembers = isMember || hasPerm("supabase.admin");
+
+  const byRole = useMemo(() => {
+    const roles: Record<MemberView, typeof group_users> = { all: [], admin: [], user: [], trial: [], joinRequested: [] };
+    for (const x of group_users) {
+      if (x.role in roles) roles[x.role as MemberView].push(x);
+    }
+    roles.all = [...roles.admin, ...roles.user, ...roles.trial];
+    return roles;
+  }, [group_users]);
+
+  const query = searchQuery.trim().toLowerCase();
+  const matches = (x: (typeof group_users)[number]) =>
+    !query || x.user.name.toLowerCase().includes(query) || (canManage && x.user.email.toLowerCase().includes(query));
+
+  const visibleSections: { role: Exclude<MemberView, "all">; title: string }[] = (
+    [
+      { role: "joinRequested", title: t("groups.joinRequest") },
+      { role: "admin", title: t("groups.admins") },
+      { role: "user", title: t("groups.members") },
+      { role: "trial", title: t("groups.trial") },
+    ] as const
+  ).filter((s) => (view === "all" ? s.role !== "joinRequested" : view === s.role));
+
+  const viewOptions = [
+    { value: "all" as const, label: t("groups.viewAll"), count: byRole.all.length },
+    { value: "admin" as const, label: t("groups.admins"), count: byRole.admin.length },
+    { value: "user" as const, label: t("groups.members"), count: byRole.user.length },
+    ...(byRole.trial.length > 0 ? [{ value: "trial" as const, label: t("groups.trials"), count: byRole.trial.length }] : []),
+    ...(canManage && byRole.joinRequested.length > 0
+      ? [{ value: "joinRequested" as const, label: t("groups.requestsTab"), count: byRole.joinRequested.length }]
+      : []),
+  ];
+
+  const showSearch = group_users.length > SEARCH_THRESHOLD;
+
+  const parentName = group?.parent_group ? allGroups.find((x) => x.id === group.parent_group)?.name : undefined;
+
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelectedUsers([]);
+  };
+
+  const handleUsersAdded = (users: User[]) => {
     addUsersMutation.mutate(
       { newUsers: users },
       {
-        onSuccess: () => {
-          toast.success(t('groups.usersAdded', { count: users.length, group: group?.name }));
-          setSelectedUsers([]);
-        },
+        onSuccess: () => toast.success(t("groups.usersAdded", { count: users.length, group: group?.name })),
         onError: (error) => {
-          toast.error(t('groups.usersAddError', { group: group?.name, error: error.message }));
+          toast.error(t("groups.usersAddError", { group: group?.name, error: error.message }));
           captureException(error);
-          setSelectedUsers([]);
         },
       }
     );
   };
 
-  const handleUsersRemove = async (users: User[]) => {
+  const handleUsersRemove = (users: User[]) => {
     removeUsersMutation.mutate(
       { users },
       {
         onSuccess: () => {
-          toast.success(t('groups.usersRemoved', { count: users.length, group: group?.name }));
-          setSelectedUsers([]);
+          toast.success(t("groups.usersRemoved", { count: users.length, group: group?.name }));
+          stopSelecting();
         },
         onError: (error) => {
-          toast.error(t('groups.usersRemoveError', { group: group?.name, error: error.message }));
+          toast.error(t("groups.usersRemoveError", { group: group?.name, error: error.message }));
           captureException(error);
-          setSelectedUsers([]);
         },
       }
     );
   };
 
+  const changeRole = async (target: User, newRole: GroupRole, confirmMessage: string) => {
+    if (!group) return;
+    if (!(await dialogs.confirm(confirmMessage, { okText: t("common.confirm"), cancelText: t("common.cancel") }))) return;
+    changeUserRoleMutation.mutate(
+      { group, user: target, new_role: newRole },
+      {
+        onSuccess: () => toast.success(t("groups.roleChanged")),
+        onError: (error) => {
+          captureException(error);
+          toast.error(t("groups.roleChangeError", { error: error.message }));
+        },
+      }
+    );
+  };
+
+  const removeOne = async (target: User) => {
+    if (await dialogs.confirm(t("groups.confirmRemove", { name: target.name }), { okText: t("groups.remove"), cancelText: t("common.cancel") })) {
+      handleUsersRemove([target]);
+    }
+  };
+
+  const leaveGroup = async () => {
+    if (!group) return;
+    if (!(await dialogs.confirm(t("groups.leaveConfirm", { group: group.name }), { okText: t("groups.leave"), cancelText: t("common.cancel") }))) return;
+    leaveGroupMutation.mutate(
+      { group, user },
+      {
+        onSuccess: () => {
+          toast.success(t("groups.left", { group: group.name }));
+          refetchUserGrants();
+          navigate("/groups/list", { replace: true });
+        },
+        onError: (error) => {
+          captureException(error);
+          toast.error(t("groups.leaveError", { error: error.message }));
+        },
+      }
+    );
+  };
+
+  const editGroup = async () => {
+    if (!group) return;
+    const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group });
+    if (result && result !== "closed") {
+      refetch();
+      refetchGroup();
+      toast.success(t("groups.editSuccess"));
+    } else if (!result) {
+      toast.error(t("groups.editError"));
+    }
+  };
+
   if (groupLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <AppBar
-          className='!border-b !shadow-sm'
-          title={""}
-          primaryAction="back"
-          user={user}
-        />
-        <div className='flex-1 p-4 space-y-4'>
-          {/* Beschreibung Skeleton */}
-          <div className="space-y-2 max-w-lg">
-            <Skeleton className="h-5 w-24" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-4/5" />
-          </div>
-          <Separator />
-          {/* Filter Skeleton */}
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-12" />
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-10 w-28 rounded-md" />
-              <Skeleton className="h-10 w-24 rounded-md" />
-              <Skeleton className="h-10 w-24 rounded-md" />
-              <Skeleton className="h-10 w-28 rounded-md" />
-            </div>
-          </div>
-          {/* Users List Skeleton */}
-          <div className="space-y-4 mt-6">
-            <Skeleton className="h-5 w-32" />
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={v4()} className="flex items-center justify-between rounded-md border p-2">
-                <div className="flex items-center gap-2">
-                  <Skeleton className="size-10 rounded-full" />
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-40" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <AppBar className="!border-b !shadow-sm" title="" primaryAction="back" user={user} />
+        <div className="flex flex-col gap-3 p-4">
+          <Skeleton className="h-36 w-full rounded-xl" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <ListSkeleton rows={4} />
         </div>
       </div>
     );
@@ -163,354 +232,355 @@ const PublicGroupInformation = () => {
 
   if (groupError || !group) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <AppBar
-          className='!border-b !shadow-sm'
-          title={t('groups.group')}
-          primaryAction="back"
-          user={user}
-        />
-        <div className='flex-1 flex items-center justify-center p-4'>
-          <Empty>
-            <EmptyMedia>
-              <AlertCircle className="size-10 text-destructive" />
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <AppBar className="!border-b !shadow-sm" title={t("groups.group")} primaryAction="back" user={user} />
+        <Empty className="mt-12">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <AlertCircle className="text-destructive" />
             </EmptyMedia>
-            <EmptyTitle>{t('groups.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {t('groups.notFoundDescription')}
-            </EmptyDescription>
-            <Button onClick={() => navigate('/groups/list')} className="mt-4" variant="outline">
-              {t('groups.backToOverview')}
-            </Button>
-          </Empty>
-        </div>
+            <EmptyTitle>{t("groups.notFound")}</EmptyTitle>
+            <EmptyDescription>{t("groups.notFoundDescription")}</EmptyDescription>
+          </EmptyHeader>
+          <Button onClick={() => navigate("/groups/list")} variant="outline">
+            {t("groups.backToOverview")}
+          </Button>
+        </Empty>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <AppBar
-        className='!border-b !shadow-sm'
-        showSearch
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        primaryAction="back"
-        user={user}
-        actions={
-          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
-            if (result && result !== 'closed') {
-              refetch();
-              toast.success(t('groups.editSuccess'));
-            } else if (!result) {
-              toast.error(t('groups.editError'));
-            }
-          }}>
-            <Pencil />
-          </Button>
-        }
-      />
-      <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>
-        <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
-          <div className="flex-1 p-4 space-y-2">
-            <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
-              <div className="text-lg font-semibold">{group.name}</div>
-              <div className="text-sm font-semibold">
-                {t('costs.description')}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {group.description || t('groups.noDescription')}
-              </div>
-            </div>
-            <Separator className="my-2" />
-            {
-              group.user_group_role === "admin" && <div className="space-y-2">
-                <div className="text-sm font-semibold">
-                  {t('common.filter')}
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Toggle variant="outline" aria-label={t('groups.toggleRequests')}
-                    pressed={filter?.joinRequested}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
-                    <GitPullRequest className="size-4" />
-                    {t('groups.requests')}
-                  </Toggle>
-                  <Toggle variant="outline" aria-label={t('groups.toggleTrials')}
-                    pressed={filter?.trials}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
-                    <Shapes className="size-4" />
-                    {t('groups.trials')}
-                  </Toggle>
-                  <Toggle variant="outline" aria-label={t('groups.toggleAdmins')}
-                    pressed={filter?.admin}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
-                    <UserStar className="size-4" />
-                    {t('groups.admins')}
-                  </Toggle>
-                  <Toggle variant="outline" aria-label={t('groups.toggleUsers')}
-                    pressed={filter?.user}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
-                    <User className="size-4" />
-                    {t('browse.user')}
-                  </Toggle>
-                </div>
-              </div>
-            }
-            {
-              selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
-                <AlertCircle className="size-4" />
-                <AlertTitle>{t('groups.removeSelectedTitle')}</AlertTitle>
-                <AlertAction>
-                  <Button variant={"outline"} onClick={() => {
-                    dialogs.confirm(t('groups.removeSelectedConfirm', { count: selectedUsers.length }), {
-                      okText: t('groups.remove'),
-                      cancelText: t('common.cancel')
-                    }).then((result) => {
-                      if (result) {
-                        handleUsersRemove(selectedUsers);
-                      }
-                    })
-                  }}>{t('groups.remove')}</Button>
-                </AlertAction>
-              </Alert>
-            }
+  const onlyAdmin = isGroupAdmin && byRole.admin.length <= 1;
 
-            {usersLoading ? (
-              <div className="space-y-4 mt-6">
-                <Skeleton className="h-5 w-32" />
-                {Array.from({ length: 3 }).map((_, i) => i).map((k) => (
-                  <div key={k} className="flex items-center justify-between rounded-md border p-2">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="size-10 rounded-full" />
-                      <div className="space-y-1.5">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-40" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : usersError ? (
-              <div className="mt-8">
-                <Empty>
-                  <EmptyMedia>
-                    <AlertCircle className="size-8 text-destructive" />
-                  </EmptyMedia>
-                  <EmptyTitle>{t('groups.error')}</EmptyTitle>
-                  <EmptyDescription>{t('groups.usersLoadError')}</EmptyDescription>
-                </Empty>
+  const renderMember = (x: (typeof group_users)[number], role: Exclude<MemberView, "all">) => {
+    const self = x.user.id === user.id;
+    const selected = selectedUsers.some((y) => y.id === x.user.id);
+    const selectable = selecting && canManage && !self && role !== "joinRequested";
+    const daysLeft = role === "trial" ? trialDaysLeft(x.trial_started_at, now) : null;
+
+    return (
+      <Item
+        key={x.user.id}
+        variant="outline"
+        className={cn(selected && "border-primary/50 bg-primary/5")}
+        onClick={() => {
+          if (selectable) {
+            setSelectedUsers(selected ? selectedUsers.filter((y) => y.id !== x.user.id) : [...selectedUsers, x.user]);
+          } else if (!selecting) {
+            dialogs.userProfile(x.user.id);
+          }
+        }}
+      >
+        <ItemMedia>
+          <Avatar>
+            {selected ? (
+              <div className="flex size-full items-center justify-center rounded-full bg-primary/10 text-primary">
+                <CheckCircle2 className="size-6" />
               </div>
             ) : (
-              groupedUsers.map(([role, users]) => (
-                <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
-                  hidden: (role === 'admin' && !filter?.admin) ||
-                    (role === 'user' && !filter?.user) ||
-                    (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
-                    (role === 'trial' && !filter?.trials)
-                })}>
-                  <div className="text-sm font-semibold">
-                    {role === 'admin' ? t('groups.admins') : role === 'user' ? t('groups.members') : role === 'joinRequested' ? t('groups.joinRequest') : t('groups.trial')}
-                    {` (${users.length})`}
-                  </div>
-                  {users
-                    .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .sort((a, b) => a.user.name.localeCompare(b.user.name))
-                    .map((x) => (
-                      <Item variant={"outline"} key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
-                        <ItemMedia>
-                          <Avatar className="cursor-pointer" {...(
-                            (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
-                              onClick: () => {
-                                if (selectedUsers.includes(x.user)) {
-                                  setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                                } else {
-                                  setSelectedUsers([...selectedUsers, x.user]);
-                                }
-                              }
-                            }
-                          )}>
-                            {
-                              selectedUsers.includes(x.user)
-                                ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
-                                  <CheckCircle2 className="size-6" />
-                                </div>
-                                : <>
-                                  <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
-                                  <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
-                                </>
-                            }
-                          </Avatar>
-                        </ItemMedia>
-                        <ItemContent onClick={() => dialogs.userProfile(x.user.id)}>
-                          <ItemTitle>{x.user.name}</ItemTitle>
-                          <ItemDescription>
-                            {x.user.email}
-                            {x.user.last_seen_at && (
-                              <span className="ml-2 text-xs">
-                                · {t('user.lastActive', { date: new Date(x.user.last_seen_at) })}
-                              </span>
-                            )}
-                          </ItemDescription>
-                        </ItemContent>
-                        <ItemActions>
-                          {
-                            x.role === 'admin' && (
-                              <>
-                                <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">{t('groups.admin')}</Badge>
-                                <Button
-                                  variant="outline"
-                                  className={cn("ml-2", {
-                                    "hidden": group.user_group_role !== "admin"
-                                  })}
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    const result = await dialogs.confirm(
-                                      t('groups.confirmDemote', { name: x.user.name }),
-                                      {
-                                        okText: t('common.confirm'),
-                                        cancelText: t('common.cancel'),
-                                      }
-                                    );
-                                    if (result) {
-                                      changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
-                                    }
-                                  }}
-                                >
-                                  <MoveDownIcon />
-                                </Button>
-                              </>
-                            )
-                          }
-                          {
-                            role === "trial" && (() => {
-                              const daysLeft = trialDaysLeft(x.trial_started_at);
-                              if (daysLeft === null) return null;
-                              return (
-                                <Badge
-                                  variant="outline"
-                                  className={cn("text-xs", daysLeft <= 3
-                                    ? "text-destructive border-destructive/20 bg-destructive/10"
-                                    : "text-muted-foreground")}
-                                >
-                                  {daysLeft > 0
-                                    ? t('groups.trialDaysLeft', { count: daysLeft })
-                                    : t('groups.trialExpiring')}
-                                </Badge>
-                              );
-                            })()
-                          }
-                          {
-                            role === "user" && <div className={cn("flex items-center gap-2", {
-                              "hidden": group.user_group_role !== "admin"
-                            })}>
-                              <Button
-                                variant="outline"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  const result = await dialogs.confirm(
-                                    t('groups.confirmPromote', { name: x.user.name }),
-                                    {
-                                      okText: t('common.confirm'),
-                                      cancelText: t('common.cancel'),
-                                    }
-                                  );
-                                  if (result) {
-                                    changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'admin' });
-                                  }
-                                }}
-                              >
-                                <ShieldCheck />
-                              </Button>
-                              <Has feat={'events.trials'}>
-                                <Button
-                                  variant="outline"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    const result = await dialogs.confirm(
-                                      t('groups.confirmTrial', { name: x.user.name }),
-                                      {
-                                        okText: t('common.confirm'),
-                                        cancelText: t('common.cancel'),
-                                      }
-                                    );
-                                    if (result) {
-                                      changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'trial' });
-                                    }
-                                  }}
-                                >
-                                  <MoveDownIcon />
-                                </Button>
-                              </Has>
-                            </div>
-                          }
-                          {
-                            role === "trial" && group.user_group_role === "admin" && <AcceptTrialButton group={group} user={x.user} />
-                          }
-                          {
-                            role === "joinRequested" && group.user_group_role === "admin" && <RequestedGroupJoinButton group={group} user={x.user} />
-                          }
-                        </ItemActions>
-                      </Item>
-                    ))}
+              <>
+                <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                <AvatarFallback>{x.user.name ? x.user.name[0] : "U"}</AvatarFallback>
+              </>
+            )}
+          </Avatar>
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle className="min-w-0">
+            <span className="truncate">{x.user.name}</span>
+            {self && <Badge variant="secondary">{t("groups.you")}</Badge>}
+          </ItemTitle>
+          {canManage && (
+            <ItemDescription className="truncate">
+              {x.user.email}
+              {x.user.last_seen_at && <span className="text-xs"> · {t("user.lastActive", { date: new Date(x.user.last_seen_at) })}</span>}
+            </ItemDescription>
+          )}
+          {(role === "admin" || role === "trial") && (
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {role === "admin" && (
+                <Badge variant="info">
+                  <ShieldCheck />
+                  {t("groups.admin")}
+                </Badge>
+              )}
+              {role === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
+              {daysLeft !== null && (
+                <Badge variant={daysLeft <= 3 ? "warning" : "outline"}>
+                  {daysLeft > 0 ? t("groups.trialDaysLeft", { count: daysLeft }) : t("groups.trialExpiring")}
+                </Badge>
+              )}
+            </div>
+          )}
+        </ItemContent>
+        {canManage && !selecting && !self && (
+          <ItemActions onClick={(e) => e.stopPropagation()}>
+            {role === "joinRequested" ? (
+              <RequestedGroupJoinButton group={group} user={x.user} />
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon-lg" aria-label={t("groups.memberActions", { name: x.user.name })}>
+                      <MoreVertical />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end">
+                  {role === "admin" && (
+                    <DropdownMenuItem onClick={() => changeRole(x.user, "user", t("groups.confirmDemote", { name: x.user.name }))}>
+                      <ShieldOff className="size-4" />
+                      {t("groups.removeAdmin")}
+                    </DropdownMenuItem>
+                  )}
+                  {role === "user" && (
+                    <>
+                      <DropdownMenuItem onClick={() => changeRole(x.user, "admin", t("groups.confirmPromote", { name: x.user.name }))}>
+                        <ShieldCheck className="size-4" />
+                        {t("groups.makeAdmin")}
+                      </DropdownMenuItem>
+                      <Has feat="events.trials">
+                        <DropdownMenuItem onClick={() => changeRole(x.user, "trial", t("groups.confirmTrial", { name: x.user.name }))}>
+                          <Users className="size-4" />
+                          {t("groups.makeTrial")}
+                        </DropdownMenuItem>
+                      </Has>
+                    </>
+                  )}
+                  {role === "trial" && (
+                    <DropdownMenuItem onClick={() => changeRole(x.user, "user", t("groups.confirmAcceptTrial"))}>
+                      <CircleFadingArrowUp className="size-4" />
+                      {t("groups.acceptTrialMember")}
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onClick={() => removeOne(x.user)}>
+                    <UserMinus className="size-4" />
+                    {t("groups.remove")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </ItemActions>
+        )}
+      </Item>
+    );
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <AppBar
+        className="!border-b !shadow-sm"
+        primaryAction="back"
+        user={user}
+        title={group.name}
+        actions={
+          canManage && (
+            <Button variant="ghost" size="icon-lg" aria-label={t("groups.edit")} onClick={editGroup}>
+              <Pencil />
+            </Button>
+          )
+        }
+      />
+      <main className="size-full flex-1 overflow-y-auto pb-safe-bottom">
+        <PullToRefresh
+          onRefresh={() => {
+            refetch();
+            refetchGroup();
+          }}
+        >
+          <div className="flex flex-col gap-3 p-4" style={{ paddingBottom: selecting ? "calc(6rem + env(safe-area-inset-bottom))" : undefined }}>
+            <section className={cn("flex flex-col gap-3 rounded-xl border bg-card p-4", groupSideBar(group.color).className)} style={groupSideBar(group.color).style}>
+              <div className="flex items-start gap-3">
+                <Avatar className="size-12 shrink-0 items-center justify-center bg-[color:var(--group-color)]" style={{ "--group-color": group.color } as React.CSSProperties}>
+                  <Users className="size-6" style={{ color: "color-mix(in srgb, var(--group-color), white 70%)" }} />
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <h1 className="truncate text-lg font-semibold">{group.name}</h1>
+                  <p className="text-sm text-muted-foreground">{group.description || t("groups.noDescription")}</p>
                 </div>
-              ))
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {isGroupAdmin && (
+                  <Badge variant="info">
+                    <ShieldCheck />
+                    {t("groups.admin")}
+                  </Badge>
+                )}
+                {myRole === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
+                {myRole === "joinRequested" && <Badge variant="warning">{t("groups.requested")}</Badge>}
+                {parentName && <Badge variant="outline">{t("groups.subgroupOf", { group: parentName })}</Badge>}
+                {group.need_request_to_join && (
+                  <Badge variant="secondary">
+                    <Lock />
+                    {t("groups.approvalRequired")}
+                  </Badge>
+                )}
+                {canManage && !group.visible && (
+                  <Badge variant="outline">
+                    <EyeOff />
+                    {t("groups.hidden")}
+                  </Badge>
+                )}
+                {canManage && !group.is_public && (
+                  <Badge variant="outline">
+                    <Lock />
+                    {t("groups.private")}
+                  </Badge>
+                )}
+                {canSeeMembers && (
+                  <span className="text-xs text-muted-foreground">{t("groups.memberCount", { count: byRole.all.length })}</span>
+                )}
+              </div>
+              {!myRole && <JoinButton group={group} user={user} />}
+              {myRole === "joinRequested" && <p className="text-sm text-muted-foreground">{t("groups.requestedHint")}</p>}
+            </section>
+
+            {canManage && byRole.joinRequested.length > 0 && view !== "joinRequested" && (
+              <Alert variant="warning">
+                <AlertCircle />
+                <AlertDescription>{t("groups.openRequestsAlert", { count: byRole.joinRequested.length })}</AlertDescription>
+                <AlertAction>
+                  <Button variant="outline" size="sm" onClick={() => setView("joinRequested")}>
+                    {t("groups.reviewRequests")}
+                  </Button>
+                </AlertAction>
+              </Alert>
+            )}
+
+            {canSeeMembers && !usersLoading && !usersError && (
+              <div className="flex flex-col gap-2">
+                <SegmentedControl
+                  ariaLabel={t("groups.members")}
+                  value={viewOptions.some((o) => o.value === view) ? view : "all"}
+                  onChange={setView}
+                  options={viewOptions}
+                />
+                {(showSearch || canManage) && (
+                  <div className="flex items-center gap-2">
+                    {showSearch && (
+                      <InputGroup className="min-w-0 flex-1">
+                        <InputGroupInput
+                          type="search"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={t("common.searchPlaceholder")}
+                          aria-label={t("common.searchPlaceholder")}
+                          className="rounded-full"
+                        />
+                        <InputGroupAddon>
+                          <Search />
+                        </InputGroupAddon>
+                      </InputGroup>
+                    )}
+                    {canManage && (
+                      <Button
+                        className="ml-auto shrink-0"
+                        variant={selecting ? "secondary" : "outline"}
+                        onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
+                      >
+                        {selecting ? t("common.cancel") : t("groups.select")}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!canSeeMembers && (
+              <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">{t("groups.membersHidden")}</p>
+            )}
+
+            {canSeeMembers && usersLoading && <ListSkeleton rows={3} />}
+
+            {canSeeMembers && !usersLoading && usersError && (
+              <ListError
+                title={t("groups.error")}
+                description={t("groups.usersLoadError")}
+                retryLabel={t("challenge.list.retry")}
+                onRetry={() => refetch()}
+              />
+            )}
+
+            {canSeeMembers &&
+              !usersLoading &&
+              !usersError &&
+              visibleSections.map(({ role, title }) => {
+                const users = byRole[role].filter(matches).sort((a, b) => a.user.name.localeCompare(b.user.name));
+                if (users.length === 0) return null;
+                return (
+                  <section key={role} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 px-1 pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <span>{title}</span>
+                      <span className="font-normal">· {users.length}</span>
+                    </div>
+                    {users.map((x) => renderMember(x, role))}
+                  </section>
+                );
+              })}
+
+            {canSeeMembers && !usersLoading && !usersError && query && visibleSections.every(({ role }) => byRole[role].filter(matches).length === 0) && (
+              <p className="py-6 text-center text-sm text-muted-foreground">{t("groups.noMembersFound")}</p>
+            )}
+
+            {isMember && onlyAdmin && (
+              <Alert variant="info">
+                <ShieldCheck />
+                <AlertDescription>{t("groups.lastAdminHint")}</AlertDescription>
+              </Alert>
+            )}
+
+            {isMember && !onlyAdmin && (
+              <DangerZone
+                description={t("groups.leaveDescription")}
+                actionLabel={t("groups.leave")}
+                icon={<LogOut />}
+                loading={leaveGroupMutation.isPending}
+                onAction={leaveGroup}
+              />
             )}
           </div>
         </PullToRefresh>
-        {group.user_group_role === "admin" && (
-          <div
-            className="fixed right-6 z-50"
-            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-          >
+
+        {selecting ? (
+          <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-3 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <span className="text-sm font-medium">{t("groups.selectedCount", { count: selectedUsers.length })}</span>
             <Button
-              size="icon"
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-              onClick={() => {
-                dialogs
-                  .selectMultipleUser(group_users.map((x) => x.user.id))
-                  .then((result) => {
-                    if (result) handleUsersAdded(result);
-                  });
+              variant="destructive"
+              disabled={selectedUsers.length === 0 || removeUsersMutation.isPending}
+              onClick={async () => {
+                if (
+                  await dialogs.confirm(t("groups.removeSelectedConfirm", { count: selectedUsers.length }), {
+                    okText: t("groups.remove"),
+                    cancelText: t("common.cancel"),
+                  })
+                ) {
+                  handleUsersRemove(selectedUsers);
+                }
               }}
             >
-              <Plus className="h-6 w-6" />
+              <UserMinus />
+              {t("groups.remove")}
             </Button>
           </div>
+        ) : (
+          isGroupAdmin && (
+            <div className="fixed right-6 z-50" style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}>
+              <Button
+                size="icon"
+                aria-label={t("groups.addMembers")}
+                className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl active:translate-y-0 active:shadow-md"
+                onClick={() => dialogs.selectMultipleUser(group_users.map((x) => x.user.id)).then((result) => result && handleUsersAdded(result))}
+              >
+                <Plus className="h-6 w-6" />
+              </Button>
+            </div>
+          )
         )}
       </main>
     </div>
   );
-}
-
-const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
-  const { t } = useTranslation();
-  const changeUserRoleMutation = useChangeUserRoleMutation();
-  const dialogs = useDialogs();
-  return <Button variant={"ghost"} size={"icon-sm"} onClick={() => {
-    dialogs.confirm(t('groups.confirmAcceptTrial'), {
-      okText: t('groups.accept'),
-      cancelText: t('common.cancel')
-    }).then((result) => {
-      if (result) {
-        changeUserRoleMutation.mutate(
-          { user: user, group: group, new_role: 'user' },
-          {
-            onError: (error) => {
-              toast.error(t('groups.requestAcceptError', { error: error.message }));
-            },
-            onSuccess: () => {
-              toast.success(t('groups.requestAccepted'));
-            },
-          }
-        );
-      }
-    })
-  }}>
-    <CircleFadingArrowUp className="size-4" />
-  </Button>
-}
+};
 
 const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User }) => {
   const { t } = useTranslation();

@@ -3,24 +3,23 @@ import { useDeleteDrinkMutation, useDrinks, useInsertDrinkMutation, useInsertHis
 import { DrinkCounter } from '@/types/supabaseTypes';
 import { groupBy, nameOfProductType } from '@/utils';
 import { captureException } from '@sentry/react';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGrants } from '../auth/GrantsContext';
 
+import { ListError, ListSectionHeader, ListSkeleton } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { Alert } from '@/components/ui/alert';
 import { AppBar } from '@/components/ui/appbar';
-import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Field, FieldContent, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
-import { t } from 'i18next';
-import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
+import { Check, CupSoda, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import EditDrinkDialog from './dialog/EditDrinkDialog';
 
@@ -36,7 +35,8 @@ export const EMPTY_DRINK: Drink = {
 };
 
 const DrinkListScreen = () => {
-  const { user } = useGrants();
+  const { t, i18n } = useTranslation();
+  const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
   const { data: drinks = [], error, refetch, isLoading } = useDrinks();
 
@@ -51,11 +51,11 @@ const DrinkListScreen = () => {
   const insertDrink = useInsertDrinkMutation();
   const deleteDrink = useDeleteDrinkMutation();
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error.message);
-    }
-  }, [error]);
+  const canPurchase = hasPerm('drinks.purchase');
+  const money = useMemo(
+    () => new Intl.NumberFormat(i18n.resolvedLanguage, { style: 'currency', currency: 'EUR' }),
+    [i18n.resolvedLanguage]
+  );
 
   const resetDrinks = (message: string) => {
     toast.error(message);
@@ -82,6 +82,7 @@ const DrinkListScreen = () => {
       }
     );
   };
+
   const onAddDrinkClick = (drink: Drink) => {
     setAddedDrinks((prev) => {
       const existingDrink = prev[drink.id];
@@ -100,7 +101,8 @@ const DrinkListScreen = () => {
       if (!existingDrink) return prev;
 
       if (existingDrink.count <= 1) {
-        const { [drink.id]: _removedItem, ...rest } = prev;
+        const rest = { ...prev };
+        delete rest[drink.id];
         return rest;
       }
 
@@ -111,22 +113,40 @@ const DrinkListScreen = () => {
     });
   };
 
-  const changeVisibleTypes = (checked: boolean, x: 'Drink' | 'Special' | 'None') => {
-    const newValue = checked ? [...visibleTypes, x] : visibleTypes.filter((y) => y !== x);
+  const toggleType = (type: ProductType) => {
+    const newValue = visibleTypes.includes(type) ? visibleTypes.filter((y) => y !== type) : [...visibleTypes, type];
     setVisibleTypes(newValue);
     localStorage.setItem('visibleTypes', newValue.join(';'));
   };
 
-  const activeDrinks = [...drinks].sort((a, b) =>
+  const sortedDrinks = [...drinks].sort((a, b) =>
     Number(b.active) - Number(a.active) ||
     (a.name ?? "").localeCompare(b.name ?? "", "de")
   );
-  const filteredDrinks = activeDrinks.filter((x: Drink) => visibleTypes.includes(x.type));
+  const filteredDrinks = sortedDrinks.filter((x: Drink) => visibleTypes.includes(x.type));
   // A real array: `.map` on a Map iterator needs iterator helpers (missing before Safari 18.4).
   const groupedDrinks = Array.from(groupBy(filteredDrinks, (x) => x.type).entries());
+  const allTypes = [...new Set(drinks.map((x) => x.type))].sort();
 
-  const addedDrinksCount = Object.keys(addedDrinks).length;
-  const hasMultipleTypes = new Set(activeDrinks.map((x) => x.type)).size > 1;
+  const addedItems = Object.values(addedDrinks);
+  const totalCount = addedItems.reduce((sum, x) => sum + x.count, 0);
+  const totalPrice = addedItems.reduce((sum, x) => sum + x.count * (x.price ?? 0), 0);
+
+  const openEditDialog = async (drink: Drink) => {
+    const result = await dialogs.open(EditDrinkDialog, { drink });
+    if (!result) return;
+    if (!drink.id) {
+      insertDrink.mutate(result, {
+        onSuccess: () => toast.success(t("drinks.addSuccess")),
+        onError: (error) => toast.error(t("drinks.addError", { error: error.message })),
+      });
+    } else {
+      updateDrink.mutate(result, {
+        onSuccess: () => toast.success(t("drinks.updateSuccess")),
+        onError: (error) => toast.error(t("drinks.updateError", { error: error.message })),
+      });
+    }
+  };
 
   return (
     <div>
@@ -135,221 +155,189 @@ const DrinkListScreen = () => {
         title={t("drinks.drinks")}
         user={user}
         actions={
-          <>
-            <Has perm={"drinks.edit"}>
-              <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
-                const result = await dialogs.open(EditDrinkDialog, {
-                  drink: EMPTY_DRINK
-                });
-                if (result) {
-                  insertDrink.mutate(result, {
-                    onSuccess: () => toast.success(t("drinks.addSuccess")),
-                    onError: (error) => toast.error(t("drinks.addError", { error: error.message }))
-                  })
-                }
-              }}>
-                <Plus />
-              </Button>
-            </Has>
-            <Has perm={"drinks.edit"}>
-              <Button size={"icon-lg"} variant={"ghost"} onClick={() => setToggleEdit(!toggleEdit)}>
-                {
-                  toggleEdit ? <PencilOff /> : <Pencil />
-                }
-              </Button>
-            </Has>
-          </>
+          <Has perm={"drinks.edit"}>
+            <Button size={"icon-lg"} variant={"ghost"} aria-label={t('drinks.createDrink')} onClick={() => openEditDialog(EMPTY_DRINK)}>
+              <Plus />
+            </Button>
+            <Button
+              size={"icon-lg"}
+              variant={toggleEdit ? "secondary" : "ghost"}
+              aria-label={t('drinks.editMode')}
+              aria-pressed={toggleEdit}
+              onClick={() => setToggleEdit(!toggleEdit)}
+            >
+              {toggleEdit ? <PencilOff /> : <Pencil />}
+            </Button>
+          </Has>
         }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
-        <PullToRefresh
-          onRefresh={() => {
-            refetch();
-          }}>
+        <PullToRefresh onRefresh={() => refetch()}>
+          <div className='flex flex-col gap-2 p-2' style={{ paddingBottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}>
 
-          <div className='p-2'>
-
-            {isLoading && (
-              Array.from({ length: 2 }).map((_, groupIndex) => (
-                <div key={`skeleton-group-${groupIndex}`}>
-                  <Skeleton className="h-5 w-32 ml-2 mb-2" />
-                  {Array.from({ length: 3 }).map((_, itemIndex) => (
-                    <div key={`skeleton-item-${itemIndex}`}>
-                      <Item>
-                        <ItemMedia>
-                          <Skeleton className="size-10 rounded-full" />
-                        </ItemMedia>
-                        <ItemContent className="flex flex-col gap-2 w-full">
-                          <Skeleton className="h-4 w-1/2" />
-                          <Skeleton className="h-3 w-1/4" />
-                        </ItemContent>
-                        <ItemActions>
-                          <div className="flex gap-2">
-                            {toggleEdit ? (
-                              <>
-                                <Skeleton className="size-9 rounded-md" />
-                                <Skeleton className="size-9 rounded-md" />
-                              </>
-                            ) : (
-                              <Skeleton className="size-9 rounded-md" />
-                            )}
-                          </div>
-                        </ItemActions>
-                      </Item>
-                      <Separator />
-                    </div>
-                  ))}
+            {toggleEdit && (
+              <Alert variant="info" className="mx-0">
+                <Pencil />
+                <div className="flex items-center justify-between gap-2">
+                  <span>{t('drinks.editModeHint')}</span>
+                  <Button size="sm" variant="outline" onClick={() => setToggleEdit(false)}>{t('drinks.editDone')}</Button>
                 </div>
-              ))
+              </Alert>
             )}
 
-            {!isLoading && filteredDrinks.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-8 mt-8 text-center text-muted-foreground">
-                <CupSoda className="size-16 mb-4 opacity-20" />
-                <h3 className="font-semibold text-lg mb-1 text-foreground/70">{t("drinks.noDrinks")}</h3>
-                <p className="text-sm">{t("drinks.noDrinksDescription")}</p>
+            {!canPurchase && !isLoading && (
+              <Alert variant="info">
+                <CupSoda />
+                <span>{t('drinks.noPurchasePermission')}</span>
+              </Alert>
+            )}
+
+            {allTypes.length > 1 && (
+              <div className="flex flex-wrap gap-2 px-1" role="group" aria-label={t('common.filter')}>
+                {allTypes.map((type) => {
+                  const active = visibleTypes.includes(type);
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => toggleType(type)}
+                      className={cn(
+                        'h-9 rounded-full border px-4 text-sm font-medium transition-colors',
+                        active ? 'border-primary bg-primary text-primary-foreground' : 'bg-card text-muted-foreground'
+                      )}
+                    >
+                      {nameOfProductType(type)}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            {
-              !isLoading && groupedDrinks
-                .map(([key, mappedDrinks]) => (
-                  <div key={key}>
-                    <div className="text-sm font-semibold ml-2">
-                      {nameOfProductType(key as ProductType)}
-                    </div>
-                    {mappedDrinks.map((drink: Drink) => (
-                      <div key={drink.id}>
-                        <Item>
-                          <ItemMedia>
-                            <Avatar className="size-10">
-                              <AvatarImage src={drink.imageUrl ?? undefined} />
-                              <Has perm={"drinks.edit"}>
-                                <AvatarBadge className={cn("text-primary-foreground text-xs top-0 right-0", {
-                                  'bg-red-500': !drink.active,
-                                  'bg-green-500': drink.active,
-                                })} />
-                              </Has>
-                              <AvatarFallback>
-                                <Image className="text-muted-foreground/50" />
-                              </AvatarFallback>
-                            </Avatar>
-                          </ItemMedia>
-                          <ItemContent>
-                            <ItemTitle>{drink.name}</ItemTitle>
-                            <ItemDescription>{(drink.price ?? 0).toFixed()} €</ItemDescription>
-                          </ItemContent>
-                          <ItemActions>
-                            {
-                              !toggleEdit ? (
-                                drink.active && <div className='flex flex-row items-center gap-2'>
-                                  {
-                                    (addedDrinks[drink.id]?.count ?? 0) > 0 &&
-                                    <>
-                                      <Button variant={"outline"} size="icon"
-                                        onClick={() => onRemoveDrinkClick(drink)}>
-                                        <Minus className="size-4" />
-                                      </Button>
-                                      <span className="text-xl font-semibold w-8 text-center">{addedDrinks[drink.id].count}</span>
-                                    </>
+            {isLoading && <ListSkeleton rows={6} />}
+
+            {!isLoading && error && (
+              <ListError
+                title={t('drinks.loadError')}
+                description={error.message}
+                retryLabel={t('challenge.list.retry')}
+                onRetry={() => refetch()}
+              />
+            )}
+
+            {!isLoading && !error && filteredDrinks.length === 0 && (
+              <Empty className="mt-8">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon"><CupSoda /></EmptyMedia>
+                  <EmptyTitle>{t("drinks.noDrinks")}</EmptyTitle>
+                  <EmptyDescription>{t("drinks.noDrinksDescription")}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+
+            {!isLoading && !error && groupedDrinks.map(([key, mappedDrinks]) => (
+              <section key={key} className="flex flex-col gap-2">
+                {(groupedDrinks.length > 1 || allTypes.length > 1) && (
+                  <ListSectionHeader title={nameOfProductType(key as ProductType)} count={mappedDrinks.length} />
+                )}
+                {mappedDrinks.map((drink: Drink) => {
+                  const count = addedDrinks[drink.id]?.count ?? 0;
+                  return (
+                    <Item key={drink.id} variant="outline" className={cn(count > 0 && 'border-primary/40 bg-primary/5', !drink.active && 'opacity-70')}>
+                      <ItemMedia>
+                        <Avatar className="size-12">
+                          <AvatarImage src={drink.imageUrl ?? undefined} />
+                          <AvatarFallback>
+                            <Image className="text-muted-foreground/50" />
+                          </AvatarFallback>
+                        </Avatar>
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle>{drink.name}</ItemTitle>
+                        <ItemDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="font-medium text-foreground">{money.format(drink.price ?? 0)}</span>
+                          <Has perm="drinks.edit">
+                            {!drink.active && <Badge variant="warning">{t('drinks.inactive')}</Badge>}
+                            {drink.stock !== null && <Badge variant="outline">{t('drinks.stock', { count: drink.stock })}</Badge>}
+                          </Has>
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemActions>
+                        {toggleEdit ? (
+                          <div className='flex flex-row items-center gap-2'>
+                            <Button variant="outline" size="icon-lg" className="size-10" aria-label={t('drinks.editDrink')}
+                              onClick={(e) => {
+                                e.currentTarget.blur();
+                                openEditDialog(drink);
+                              }}>
+                              <Pencil className="size-4" />
+                            </Button>
+                            <Button variant="destructive" size="icon-lg" className="size-10" aria-label={t('common.delete')}
+                              onClick={() => {
+                                dialogs.confirm(t("drinks.confirmDrinkDeletion")).then(result => {
+                                  if (result) {
+                                    deleteDrink.mutate(drink, {
+                                      onSuccess: () => toast.success(t("drinks.deletionSuccess")),
+                                      onError: (error) => toast.error(t("drinks.deletionError", { error: error.message }))
+                                    })
                                   }
-                                  <Button
-                                    variant={"outline"} size="icon"
-                                    onClick={() => onAddDrinkClick(drink)}>
-                                    <Plus className="size-4" />
+                                })
+                              }}>
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          canPurchase && drink.active && (
+                            <div className='flex flex-row items-center gap-2'>
+                              {count > 0 && (
+                                <>
+                                  <Button variant="outline" size="icon-lg" className="size-10" aria-label={t('drinks.remove')}
+                                    onClick={() => onRemoveDrinkClick(drink)}>
+                                    <Minus className="size-4" />
                                   </Button>
-                                </div>
-                              )
-                                : (
-                                  <div className='flex flex-row items-center gap-2'>
-                                    <Button variant={"outline"} size="icon"
-                                      onClick={async (e) => {
-                                        e.currentTarget.blur();
-                                        const result = await dialogs.open(EditDrinkDialog, {
-                                          drink: drink
-                                        });
-                                        if (result) {
-                                          updateDrink.mutate(result, {
-                                            onSuccess: () => toast.success(t("drinks.updateSuccess")),
-                                            onError: (error) => toast.error(t("drinks.updateError", { error: error.message }))
-                                          })
-                                        }
-                                      }}>
-                                      <Pencil className="size-4" />
-                                    </Button>
-                                    <Button
-                                      variant={"destructive"} size="icon"
-                                      onClick={() => {
-                                        dialogs.confirm(t("drinks.confirmDrinkDeletion")).then(result => {
-                                          if (result) {
-                                            deleteDrink.mutate(drink, {
-                                              onSuccess: () => toast.success(t("drinks.deletionSuccess")),
-                                              onError: (error) => toast.error(t("drinks.deletionError", { error: error.message }))
-                                            })
-                                          }
-                                        })
-                                      }}>
-                                      <Trash2 className="size-4" />
-                                    </Button>
-                                  </div>
-                                )
-                            }
-                          </ItemActions>
-                        </Item>
-                        <Separator />
-                      </div>
-                    ))}
-                  </div>
-                ))
-            }
+                                  <span className="w-6 text-center text-xl font-semibold tabular-nums">{count}</span>
+                                </>
+                              )}
+                              <Button variant={count > 0 ? 'default' : 'outline'} size="icon-lg" className="size-10" aria-label={t('drinks.add')}
+                                onClick={() => onAddDrinkClick(drink)}>
+                                <Plus className="size-4" />
+                              </Button>
+                            </div>
+                          )
+                        )}
+                      </ItemActions>
+                    </Item>
+                  );
+                })}
+              </section>
+            ))}
           </div>
         </PullToRefresh>
       </main>
+
       <Has perm={'drinks.purchase'}>
-        <div
-          className="fixed right-6 z-50"
-          style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-        >
-          {
-            addedDrinksCount > 0 && <Button
-              size="icon"
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-              onClick={confirmDrinks}
-            >
-              {updateHistory.isPending ? <Spinner className='size-6' /> : <Check className="size-6" />}
-            </Button>
-          }
-          {
-            addedDrinksCount === 0 && hasMultipleTypes && <Dialog>
-              <DialogTrigger render={<Button
-                size="icon"
-                className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md">
-                <Funnel className="size-6" />
-              </Button>} />
-              <DialogContent variant={"drawer"}>
-                <DialogHeader className='px-4'>
-                  <DialogTitle>{t("common.filter")}</DialogTitle>
-                </DialogHeader>
-                <div className="no-scrollbar overflow-y-auto flex flex-col p-4 gap-4">
-                  {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
-                    <FieldLabel key={x} htmlFor={`switch-${x}`}>
-                      <Field orientation="horizontal">
-                        <FieldContent>
-                          <FieldTitle>{nameOfProductType(x)}</FieldTitle>
-                        </FieldContent>
-                        <Switch id={`switch-${x}`} checked={visibleTypes.some((y) => y === x)}
-                          onCheckedChange={(val) => changeVisibleTypes(val, x)} />
-                      </Field>
-                    </FieldLabel>
-                  ))}
-                </div>
-              </DialogContent>
-            </Dialog>
-          }
-        </div>
+        {totalCount > 0 && (
+          <div
+            className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-4 pt-3 shadow-lg backdrop-blur"
+            style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+          >
+            <div className="mx-auto flex max-w-2xl items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-muted-foreground">{t('drinks.cartCount', { count: totalCount })}</div>
+                <div className="text-lg font-semibold leading-tight">{money.format(totalPrice)}</div>
+              </div>
+              <Button variant="ghost" disabled={updateHistory.isPending} onClick={() => setAddedDrinks({})}>
+                {t('drinks.clearCart')}
+              </Button>
+              <Button size="lg" disabled={updateHistory.isPending} onClick={confirmDrinks}>
+                {updateHistory.isPending ? <Spinner /> : <Check />}
+                {t('drinks.book')}
+              </Button>
+            </div>
+          </div>
+        )}
       </Has>
     </div>
-
   );
 };
 

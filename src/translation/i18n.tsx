@@ -46,8 +46,29 @@ export const LOCALE_EN: Locale = {
 const locales = { en: LOCALE_EN, de: LOCALE_DE };
 type Lang = keyof typeof locales;
 
+// i18next 21+ ignores `interpolation.format` and uses its own formatter, which does not know date-fns patterns
+// such as `{{date, dd.MM.yyyy HH:mm}}` or `{{date, ago}}` and would print the raw Date. Register our own.
+const dateFormatter = {
+  type: 'formatter' as const,
+  init: () => undefined,
+  format: (value: unknown, format: string | undefined, lng: string | undefined) => {
+    if (!isDate(value) || !format) {
+      return value as string;
+    }
+    const locale = lng && lng in locales ? locales[lng as Lang] : de;
+
+    if (format === 'short') return formatDate(value, 'P', { locale });
+    if (format === 'long') return formatDate(value, 'PPPP', { locale });
+    if (format === 'relative') return formatRelative(value, new Date(), { locale });
+    if (format === 'ago') return formatDistance(value, new Date(), { locale, addSuffix: true });
+
+    return formatDate(value, format, { locale });
+  },
+};
+
 i18n
   .use(LanguageDetector)
+  .use(dateFormatter)
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     resources,
@@ -57,26 +78,6 @@ i18n
     detection: { order: ['localStorage'], caches: ['localStorage'] },
     interpolation: {
       escapeValue: false, // react already safes from xss
-      format: (value, format, lng) => {
-        if (!isDate(value) || !format) {
-          return value;
-        }
-        let locale = de;
-        if (Object.keys(locales).includes(lng ?? '')) {
-          locale = locales[lng as Lang];
-        }
-
-        if (format === 'short') return formatDate(value, 'P', { locale });
-        if (format === 'long') return formatDate(value, 'PPPP', { locale });
-        if (format === 'relative') return formatRelative(value, new Date(), { locale });
-        if (format === 'ago')
-          return formatDistance(value, new Date(), {
-            locale,
-            addSuffix: true,
-          });
-
-        return formatDate(value, format, { locale });
-      },
     },
   });
 

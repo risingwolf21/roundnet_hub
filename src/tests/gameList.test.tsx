@@ -8,7 +8,7 @@ import GameList from '@/features/games/GameList';
 // new Date(...): with German month names ("März", "Mai", "Oktober", "Dezember") that is an Invalid Date and the page crashed.
 vi.mock('react-router', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('@/contexts/DialogsProvider', () => ({ useDialogs: () => ({ open: vi.fn() }) }));
-vi.mock('@/features/auth/GrantsContext', () => ({ useGrants: () => ({ user: { id: 'user-1' } }) }));
+vi.mock('@/features/auth/GrantsContext', () => ({ useGrants: () => ({ user: { id: 'user-1' }, loading: false, hasPerm: () => true, hasFeat: () => true }) }));
 vi.mock('@/features/games/ReportScore', () => ({ default: () => null }));
 vi.mock('@/components/PullToRefresh', () => ({ PullToRefresh: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/components/ui/appbar', () => ({ AppBar: ({ title }: { title?: string }) => <h1>{title}</h1> }));

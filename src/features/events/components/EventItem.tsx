@@ -1,106 +1,25 @@
-import { EventsUserView } from '@/types/supabaseTypes';
-import { format, isBefore } from 'date-fns';
-import { TFunction } from 'i18next';
-
-import { Button as Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
+import { sideBar } from '@/components/list/ListParts';
 import { cn } from '@/lib/utils';
-import { Calendar, Check, Hourglass, MapPin, Megaphone, X } from 'lucide-react';
+import { Has } from '@/hooks/useGrants';
+import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
+import { format, isBefore, isSameDay } from 'date-fns';
+import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, UserX, Users, X } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../types';
 
 type EventItemProps = {
+  /** Show the date in front of the time; use it where rows are not grouped by day. */
+  showDate?: boolean;
   attendanceUpdating: boolean;
   event: EventsUserView;
-  t: TFunction;
   onClick: () => void;
   attendEvent: () => void;
   declineEvent: () => void;
-};
-
-function answerDeadlineExpired(x: EventsUserView) {
-  if (!x.answerDeadline) return false;
-  return isBefore(x.answerDeadline, Date.now());
-}
-
-function eventInThePast(x: EventsUserView) {
-  return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
-}
-
-function eventHasStarted(x: EventsUserView) {
-  return isBefore(x.startingDateTime!, Date.now());
-}
-
-const EventItemSecondaryActions = ({
-  event,
-  attendEvent,
-  declineEvent,
-  attendanceUpdating,
-}: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
-
-  if (event.user_state === 'Waiting') {
-    return (
-      <Button
-        variant={"ghost"}
-        size="icon-lg"
-        className={`size-8 bg-info text-info-foreground`}
-        disabled={event.isCancelled || eventInThePast(event)}
-      >
-        {
-          attendanceUpdating ? <Spinner /> : <Hourglass className="size-5" />
-        }
-      </Button>
-    );
-  }
-
-  return (
-    <div className="flex gap-1">
-      {/* --- DECLINE BUTTON --- */}
-      <Button
-        variant={event.user_state === "Declined" ? "ghost" : "outline"}
-        size="icon-lg"
-        className={`size-8 ${event.user_state === "Declined" && "bg-error text-error-foreground"}`}
-        onClick={(e) => {
-          declineEvent();
-          e.stopPropagation();
-        }}
-        disabled={event.isCancelled || eventHasStarted(event)}
-      >
-        {
-          attendanceUpdating ? <Spinner /> : <X className='size-5' />
-        }
-      </Button>
-
-      {/* --- ATTEND / TRAINER BUTTON --- */}
-      {event.user_state === 'AttendingAsTrainer' ? (
-        <Button
-          variant={"ghost"}
-          size="icon-lg"
-          className={`size-8 bg-success text-success-foreground`}
-          disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event)}
-        >
-          {
-            attendanceUpdating ? <Spinner /> : <Megaphone className="size-5" />
-          }
-        </Button>
-      ) : (
-        <Button
-          variant={event.user_state === "Attending" ? "ghost" : "outline"}
-          size="icon-lg"
-          className={`size-8 ${event.user_state === "Attending" && "bg-success text-success-foreground"}`}
-          onClick={(e) => {
-            attendEvent();
-            e.stopPropagation();
-          }}
-          disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event)}
-        >
-          {
-            attendanceUpdating ? <Spinner /> : <Check className='size-5' />
-          }
-        </Button>
-      )}
-    </div>
-  );
 };
 
 export const formatDateRange = (start: Date, end: Date) => {
@@ -118,47 +37,271 @@ export const formatDateRange = (start: Date, end: Date) => {
   return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "ccc dd.MM, HH:mm")}`;
 }
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
+const parsePlace = (place: string | null): PlaceType => {
+  try {
+    return JSON.parse(place ?? '{}') as PlaceType;
+  } catch {
+    return {} as PlaceType;
+  }
+};
 
-  const place = JSON.parse(event?.place ?? '{}') as PlaceType;
+/** The time as shown on the row: "18:00 – 20:00" for a single day, with dates when the event spans days. */
+const formatTimeRange = (start: Date, end: Date, dateFormat: Intl.DateTimeFormat) =>
+  isSameDay(start, end)
+    ? start.getTime() === end.getTime()
+      ? format(start, 'HH:mm')
+      : `${format(start, 'HH:mm')} – ${format(end, 'HH:mm')}`
+    : `${dateFormat.format(start)} ${format(start, 'HH:mm')} – ${dateFormat.format(end)} ${format(end, 'HH:mm')}`;
 
-  return <Item key={event.id} onClick={onClick} variant={"outline"}>
-    <div
-      className={cn('w-full flex flex-row justify-between gap-4 relative rounded-md p-2 pl-4 text-sm after:absolute after:inset-y-2 after:left-0 after:w-1 after:rounded-full', {
-        'after:bg-warning/70': event.user_state === null,
-        'after:bg-success/70': event.user_state === 'Attending' || event.user_state === 'AttendingAsTrainer',
-        'after:bg-error/70': event.user_state === 'Declined',
-        'cursor-not-allowed opacity-50': event.isCancelled || eventInThePast(event),
-      })}
-    >
-      <div className='flex-1 min-w-0'>
-        <div className='font-semibold text-medium truncate'>
-          {event.title}
-        </div>
+const AttendanceButtons = ({
+  event,
+  attendEvent,
+  declineEvent,
+  attendanceUpdating,
+}: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
+  const { t } = useTranslation();
 
-        <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
-          <MapPin className='size-4 shrink-0' />
-          <span className='truncate'>
-            {place.name ?? t('events.item.noLocation')}
-          </span>
-        </div>
+  if (event.user_state === 'Waiting') {
+    return (
+      <Badge variant="info">
+        <Hourglass />
+        {t('events.item.waiting')}
+      </Badge>
+    );
+  }
 
-        <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
-          <Calendar className='size-4 shrink-0' />
-          <span className='truncate'>
-            {formatDateRange(new Date(event.startingDateTime), new Date(event.endDateTime))}
-          </span>
-        </div>
-      </div>
+  if (event.user_state === 'AttendingAsTrainer') {
+    return (
+      <Badge variant="success">
+        <Megaphone />
+        {t('events.item.trainer')}
+      </Badge>
+    );
+  }
 
-      <div className='flex items-center gap-2 shrink-0'>
-        <EventItemSecondaryActions
-          event={event}
-          attendEvent={attendEvent}
-          declineEvent={declineEvent}
-          attendanceUpdating={attendanceUpdating}
-        />
-      </div>
+  const cannotDecline = eventHasStarted(event);
+  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event);
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant={event.user_state === 'Declined' ? 'ghost' : 'outline'}
+        size="icon-lg"
+        className={cn('size-10', event.user_state === 'Declined' && 'bg-error text-error-foreground')}
+        aria-label={t('events.item.declineAria')}
+        aria-pressed={event.user_state === 'Declined'}
+        disabled={cannotDecline}
+        onClick={(e) => {
+          declineEvent();
+          e.stopPropagation();
+        }}
+      >
+        {attendanceUpdating ? <Spinner /> : <X className="size-5" />}
+      </Button>
+      <Button
+        variant={event.user_state === 'Attending' ? 'ghost' : 'outline'}
+        size="icon-lg"
+        className={cn('size-10', event.user_state === 'Attending' && 'bg-success text-success-foreground')}
+        aria-label={t('events.item.attendAria')}
+        aria-pressed={event.user_state === 'Attending'}
+        disabled={cannotAttend}
+        onClick={(e) => {
+          attendEvent();
+          e.stopPropagation();
+        }}
+      >
+        {attendanceUpdating ? <Spinner /> : <Check className="size-5" />}
+      </Button>
     </div>
-  </Item>
-}
+  );
+};
+
+/** After an event it is only a record: show the answer as text instead of buttons. */
+const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
+  const { t } = useTranslation();
+  if (state === 'Attending' || state === 'AttendingAsTrainer') {
+    return (
+      <Badge variant="success">
+        <UserCheck />
+        {t('events.item.attended')}
+      </Badge>
+    );
+  }
+  if (state === 'Declined') {
+    return (
+      <Badge variant="destructive">
+        <UserX />
+        {t('events.item.declined')}
+      </Badge>
+    );
+  }
+  return null;
+};
+
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, showDate = false }: EventItemProps) => {
+  const { t, i18n } = useTranslation();
+
+  const place = parsePlace(event.place);
+  const start = new Date(event.startingDateTime);
+  const end = new Date(event.endDateTime);
+  const past = eventInThePast(event);
+  const closed = event.isCancelled || past;
+  const unanswered = event.user_state === null;
+  const needsAnswer = unanswered && !closed && !answerDeadlineExpired(event) && !eventHasStarted(event);
+  const deadlinePassed = unanswered && !closed && answerDeadlineExpired(event) && !eventHasStarted(event);
+
+  // eslint-disable-next-line @eslint-react/naming-convention/use-state
+  const [now] = useState(() => Date.now());
+  const attending = event.attending_count ?? 0;
+  const declined = event.declined_count ?? 0;
+  const full = !!event.maxAttendees && attending >= event.maxAttendees;
+  const deadlineSoon =
+    needsAnswer && !!event.answerDeadline && isBefore(event.answerDeadline, now + 24 * 60 * 60 * 1000);
+
+  const dateFormat = new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', day: 'numeric', month: 'numeric' });
+  const locationName = place.name?.trim();
+  const hasMeta = !!event.group || (needsAnswer && !!event.answerDeadline) || deadlinePassed || (full && !closed);
+
+  // Phone: title and time next to the buttons, location and group use the full width below.
+  // Wide container: one table-like row. Layout classes are placed so every cell can be missing without breaking it.
+  return (
+    <Item
+      onClick={onClick}
+      variant="outline"
+      className={cn(
+        '@container cursor-pointer',
+        sideBar(
+          event.isCancelled
+            ? 'neutral'
+            : needsAnswer
+              ? 'warning'
+              : event.user_state === 'Attending' || event.user_state === 'AttendingAsTrainer'
+                ? 'success'
+                : event.user_state === 'Declined'
+                  ? 'error'
+                  : event.user_state === 'Waiting'
+                    ? 'info'
+                    : 'neutral'
+        )
+      )}
+    >
+      <div
+        className={cn(
+          'grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm',
+          '@3xl:grid-cols-[8rem_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.6fr)_auto] @3xl:gap-x-4'
+        )}
+      >
+        {/* Title */}
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 @3xl:col-start-2">
+          <span
+            className={cn(
+              'line-clamp-2 min-w-0 break-words font-semibold leading-snug @3xl:line-clamp-1',
+              closed && 'text-muted-foreground'
+            )}
+          >
+            {event.title}
+          </span>
+          {event.isCancelled && (
+            <Badge variant="destructive" className="shrink-0">
+              <Ban />
+              {t('events.item.cancelled')}
+            </Badge>
+          )}
+        </div>
+
+        {/* Time and attendee count */}
+        <div className="col-start-1 row-start-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 @3xl:contents">
+          <div
+            className={cn(
+              'flex min-w-0 items-center gap-1.5 font-medium tabular-nums @3xl:col-start-1 @3xl:row-start-1 @3xl:flex-col @3xl:items-start @3xl:gap-0',
+              closed && 'text-muted-foreground'
+            )}
+          >
+            {showDate && <span className="text-muted-foreground @3xl:text-xs">{dateFormat.format(start)}</span>}
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Clock className="size-3.5 shrink-0 text-muted-foreground @3xl:hidden" />
+              <span>{formatTimeRange(start, end, dateFormat)}</span>
+            </span>
+          </div>
+          {!event.isCancelled && (
+            <span
+              className={cn(
+                'flex shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:hidden',
+                full && 'font-medium text-warning-foreground'
+              )}
+            >
+              <Users className="size-3.5" />
+              {event.maxAttendees ? t('events.item.attendingOfMax', { count: attending, max: event.maxAttendees }) : attending}
+            </span>
+          )}
+        </div>
+
+        {/* Buttons */}
+        <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center @3xl:col-start-5 @3xl:row-span-1">
+          {event.isCancelled ? null : past ? (
+            <PastAnswer state={event.user_state} />
+          ) : (
+            <AttendanceButtons
+              event={event}
+              attendEvent={attendEvent}
+              declineEvent={declineEvent}
+              attendanceUpdating={attendanceUpdating}
+            />
+          )}
+        </div>
+
+        {/* Location: its own line on a phone so the name can be read in full */}
+        <div
+          className={cn(
+            'col-span-2 col-start-1 row-start-3 flex min-w-0 items-start gap-1.5 text-muted-foreground',
+            '@3xl:col-span-1 @3xl:col-start-3 @3xl:row-start-1 @3xl:items-center'
+          )}
+        >
+          <MapPin className="mt-0.5 size-3.5 shrink-0 @3xl:mt-0" />
+          <span className={cn('line-clamp-2 min-w-0 break-words @3xl:line-clamp-1', !locationName && 'italic')}>
+            {locationName || t('events.item.noLocation')}
+          </span>
+        </div>
+
+        {/* Group, count (desktop) and answer hints */}
+        {(hasMeta || !event.isCancelled) && (
+          <div
+            className={cn(
+              'col-span-2 col-start-1 row-start-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1',
+              '@3xl:col-span-1 @3xl:col-start-4 @3xl:row-start-1',
+              !hasMeta && '@3xl:flex hidden'
+            )}
+          >
+            {event.group && (
+              <span className="flex min-w-0 max-w-full items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: event.group.color }} />
+                <span className="truncate">{event.group.name}</span>
+              </span>
+            )}
+            {!event.isCancelled && (
+              <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:flex">
+                <Users className="size-3.5" />
+                {event.maxAttendees ? t('events.item.attendingOfMax', { count: attending, max: event.maxAttendees }) : attending}
+              </span>
+            )}
+            {!event.isCancelled && declined > 0 && (
+              <Has perm="event.edit">
+                <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                  <UserX className="size-3.5" />
+                  {declined}
+                </span>
+              </Has>
+            )}
+            {full && !closed && <Badge variant="warning" className="shrink-0">{t('events.item.full')}</Badge>}
+            {needsAnswer && event.answerDeadline && (
+              <Badge variant={deadlineSoon ? 'warning' : 'outline'} className="max-w-full shrink-0">
+                {t('events.item.answerUntil', { date: format(event.answerDeadline, 'dd.MM. HH:mm') })}
+              </Badge>
+            )}
+            {deadlinePassed && <Badge variant="outline" className="shrink-0">{t('events.item.deadlinePassed')}</Badge>}
+          </div>
+        )}
+      </div>
+    </Item>
+  );
+};

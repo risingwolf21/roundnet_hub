@@ -8,6 +8,7 @@ import { Item } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
 import { DialogProps } from "@/contexts/DialogsProvider";
 import { cn } from "@/lib/utils";
+import { sideBar } from "@/components/list/ListParts";
 import { SearchX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -56,15 +57,11 @@ export const GameHistoryDialog = ({ payload: { player_id, name, rating }, open, 
             const elo_change = player_id === match.team_a_p1 || player_id === match.team_a_p2
               ? Number(match.elo_change_a) : Number(match.elo_change_b);
 
-            return <Item key={match.match_id} variant={"outline"} className='p-1 pl-2' onClick={() => {
+            return <Item key={match.match_id} variant={"outline"} className={cn('p-1', sideBar(teamASetWins > 0 ? 'success' : teamASetWins < 0 ? 'error' : 'neutral'))} onClick={() => {
               onClose();
               navigate(`/matches/${match.match_id}`);
             }}>
-              <div className={cn("w-full flex flex-row justify-between relative gap-4 pl-4 p-2 rounded-md after:absolute after:inset-y-2 after:left-0 after:w-1 after:rounded-full", {
-                'after:bg-success/70': teamASetWins > 0,
-                'after:bg-error/70': teamASetWins < 0,
-              })
-              }>
+              <div className="w-full flex flex-row justify-between gap-4 p-2">
                 <div className='flex-1 min-w-0 ml-2 flex flex-row justify-between gap-2'>
                   <div className='flex flex-row gap-4 flex-1'>
                     <div>
