@@ -3243,6 +3243,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      admin_user_effective_grants: {
+        Args: { p_user: string }
+        Returns: {
+          group_id: string
+          group_name: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          source: string
+        }[]
+      }
       anonymize_user: {
         Args: { p_user_id: string }
         Returns: undefined

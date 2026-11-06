@@ -60,6 +60,7 @@ export const AuthGate = () => {
       <React.Suspense fallback={<LoadingScreen />}>
         <WebPushKeeper session={session} vapidPublicKey={import.meta.env.VITE_VAPID_PUBLIC_KEY!}>
           <AppRoutes />
+          {/* <TermsGate user={currentUser} /> */}
         </WebPushKeeper>
       </React.Suspense>
     </ApplicationContext>

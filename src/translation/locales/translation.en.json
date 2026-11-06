@@ -60,10 +60,53 @@
       "bicCopied": "BIC copied",
       "sendViaPayPal": "Send via PayPal",
       "vouchers": "Vouchers",
-      "totalCost": "Total cost"
+      "totalCost": "Total cost",
+      "title": "Pay drinks",
+      "loadError": "Open drinks could not be loaded",
+      "amountDue": "Amount due",
+      "itemCount_one": "{{count}} drink",
+      "itemCount_other": "{{count}} drinks",
+      "nothingToPay": "All paid",
+      "nothingToPayDescription": "You have no open drinks. Nothing to pay.",
+      "noPaymentInfo": "No payment information is configured. Please contact an admin.",
+      "showQr": "Show QR code",
+      "payWithPayPal": "Pay {{amount}} with PayPal",
+      "confirmationHint": "An admin confirms your payment after you paid.",
+      "items": "Items",
+      "reference": "Drinks payment {{title}}"
     },
     "productTypeSpecial": "Other",
-    "productTypeNone": "No type"
+    "productTypeNone": "No type",
+    "editMode": "Edit mode",
+    "editModeHint": "Edit or delete drinks.",
+    "editDone": "Done",
+    "noPurchasePermission": "You can see the drinks, but you are not allowed to book them.",
+    "loadError": "Drinks could not be loaded",
+    "inactive": "Inactive",
+    "stock_one": "{{count}} in stock",
+    "stock_other": "{{count}} in stock",
+    "remove": "Remove one",
+    "add": "Add one",
+    "cartCount_one": "{{count}} item",
+    "cartCount_other": "{{count}} items",
+    "clearCart": "Clear",
+    "book": "Book",
+    "history": {
+      "title": "Drink history",
+      "loadError": "History could not be loaded",
+      "loadErrorDescription": "Please check your connection and try again.",
+      "empty": "No drinks yet",
+      "emptyDescription": "Drinks you book will show up here.",
+      "goToDrinks": "Go to drinks",
+      "openTitle": "Unpaid drinks",
+      "openDescription": "You still have drinks that are not paid.",
+      "payNow": "Pay now",
+      "voucher": "Voucher",
+      "open": "Open",
+      "paid": "Paid",
+      "free": "free",
+      "dayTotal": "Total: {{total}}"
+    }
   },
   "attendees": "Attendees",
   "browse": {
@@ -94,7 +137,8 @@
     "helpAndInformation": "Help and information",
     "appRefresh": "Refresh Application",
     "merge_accounts": "Account-Merge",
-    "adminOverview": "Overview"
+    "adminOverview": "Overview",
+    "moderation": "Reported content"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -183,7 +227,37 @@
       "deleteRecurrenceEnd": "Delete recurrence end",
       "item": "Item",
       "quantity": "Quantity",
-      "add": "Add"
+      "add": "Add",
+      "sectionBasics": "Basics",
+      "titlePlaceholder": "e.g. Thursday training",
+      "titleHint": "At least 6 characters",
+      "descriptionPlaceholder": "What should participants know?",
+      "date": "Date",
+      "from": "From",
+      "until": "Until",
+      "endBeforeStart": "The end must be after the start",
+      "duration": "Duration: {{value}}",
+      "endsOnOtherDay": "Ends on another day",
+      "meetingHint": "Default: 15 minutes before the start",
+      "changeLocation": "Change location",
+      "removeLocation": "Remove location",
+      "chooseLocation": "Choose location",
+      "recurrenceShort": {
+        "None": "One-time",
+        "Weekly": "Weekly",
+        "Fortnightly": "Every 2 weeks",
+        "Monthly": "Monthly"
+      },
+      "recurrenceNever": "Repeats until you stop it",
+      "change": "Change",
+      "sectionRegistration": "Registration",
+      "signupDeadlineHint": "Participants can sign up or cancel until then",
+      "maxAttendeesHint": "Further sign-ups go on the waiting list",
+      "sectionExtras": "Extras",
+      "noBringItems": "Nothing to bring",
+      "createEvent": "Create event",
+      "editingSingle": "Only this event is changed.",
+      "editingFollowing": "This and all following events are changed."
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -232,7 +306,19 @@
       "errorTitle": "Error",
       "notLoaded": "Event not loaded",
       "notLoadedDescription": "Unfortunately, the event could not be loaded. It may have been deleted, you may be offline, or you may not have permission to view it.",
-      "backToOverview": "Back to overview"
+      "backToOverview": "Back to overview",
+      "statusAttending": "Attending",
+      "statusTrainer": "Attending as trainer",
+      "statusTrial": "Attending as trial",
+      "statusDeclined": "Declined",
+      "statusWaiting": "On waiting list",
+      "statusRequested": "Requested",
+      "statusNone": "No answer yet",
+      "cancelledBadge": "Cancelled",
+      "full": "Full",
+      "capacity": "{{count}} / {{max}}",
+      "answerBy": "Answer by {{date}}",
+      "leaveWaitingList": "Leave waiting list"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -260,10 +346,31 @@
       "joinGroupHint": "Try joining a group to see events",
       "thisWeek": "This week",
       "nextWeek": "Next week",
-      "reload": "Reload"
+      "reload": "Reload",
+      "tabUpcoming": "Upcoming",
+      "tabOpen": "To answer",
+      "tabPast": "Past",
+      "create": "Create event",
+      "recurring": "Recurring events",
+      "loadError": "Events could not be loaded",
+      "allAnswered": "All caught up",
+      "allAnsweredDescription": "You have answered all upcoming events.",
+      "emptyPast": "No events in the last 8 weeks."
     },
     "item": {
-      "noLocation": "No location specified"
+      "noLocation": "No location specified",
+      "cancelled": "Cancelled",
+      "waiting": "Waiting",
+      "trainer": "Trainer",
+      "attended": "Attended",
+      "declined": "Declined",
+      "declineAria": "Decline",
+      "attendAria": "Attend",
+      "attendingOfMax": "{{count}} / {{max}}",
+      "answerUntil": "Answer by {{date}}",
+      "answerNeeded": "Answer needed",
+      "deadlinePassed": "Deadline passed",
+      "full": "Full"
     },
     "replyTo": "Replying to @{{name}}",
     "reply": "Reply",
@@ -324,7 +431,8 @@
       "trainer": "Trainer",
       "trial": "Trial session",
       "noAttendances": "No attendances yet.",
-      "pending": "Pending"
+      "pending": "Pending",
+      "accept": "Accept {{name}}"
     },
     "commentsTab": {
       "addError": "Comment could not be added.",
@@ -343,7 +451,9 @@
     },
     "matchesTab": {
       "empty": "No matches yet.<br />Be the first!",
-      "addMatch": "Add match"
+      "addMatch": "Add match",
+      "emptyTitle": "No matches yet",
+      "emptyDescription": "Be the first to add a match for this event."
     },
     "recurring": {
       "title": "Recurring events",
@@ -390,7 +500,21 @@
     "placeholder": "Search by name...",
     "noResults": "No players found",
     "noGroups": "No groups found",
-    "noUsers": "No users found"
+    "noUsers": "No users found",
+    "loadError": "Players could not be loaded",
+    "loadErrorDescription": "Check your connection and try again.",
+    "noMembers": "No players yet",
+    "noMembersDescription": "You see the members of the groups you belong to. Join a group to find players here.",
+    "noResultsDescription": "Check the spelling or try a shorter name.",
+    "clear": "Clear search",
+    "picker": {
+      "title": "Choose player",
+      "titleMultiple": "Choose players",
+      "noUsersDescription": "There is nobody left to choose from.",
+      "selectSome": "Select players",
+      "addCount_one": "Add {{count}} player",
+      "addCount_other": "Add {{count}} players"
+    }
   },
   "groups": {
     "trialDaysLeft_one": "{{count}} day left",
@@ -473,7 +597,54 @@
     "confirmLabel": "Approval",
     "confirmHint": "Do users need to be approved?",
     "nameTooShort": "The group name must be at least 6 characters long.",
-    "descriptionTooShort": "The group description must be at least 6 characters long."
+    "descriptionTooShort": "The group description must be at least 6 characters long.",
+    "loadError": "Groups could not be loaded",
+    "subgroupOf": "Subgroup of {{group}}",
+    "approvalRequired": "Approval required",
+    "hidden": "Hidden",
+    "private": "Private",
+    "openRequests_one": "{{count}} request",
+    "openRequests_other": "{{count}} requests",
+    "openRequestsAlert_one": "{{count}} join request is waiting for your decision.",
+    "openRequestsAlert_other": "{{count}} join requests are waiting for your decision.",
+    "myGroups": "My groups",
+    "pendingGroups": "Pending requests",
+    "discover": "Discover groups",
+    "requestToJoin": "Request to join",
+    "requestsTab": "Requests",
+    "viewAll": "All",
+    "roleChanged": "Role updated.",
+    "roleChangeError": "Role could not be changed: {{error}}",
+    "confirmRemove": "Do you really want to remove {{name}} from the group?",
+    "leave": "Leave group",
+    "leaveConfirm": "Do you really want to leave {{group}}?",
+    "leaveDescription": "You will no longer see the group's events and members.",
+    "left": "You left {{group}}.",
+    "leaveError": "Could not leave the group: {{error}}",
+    "you": "You",
+    "memberActions": "Actions for {{name}}",
+    "removeAdmin": "Remove admin role",
+    "makeAdmin": "Make admin",
+    "makeTrial": "Make trial member",
+    "acceptTrialMember": "Accept as full member",
+    "memberCount_one": "{{count}} member",
+    "memberCount_other": "{{count}} members",
+    "requestedHint": "Your request is waiting for approval by a group admin.",
+    "reviewRequests": "Review",
+    "select": "Select",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "membersHidden": "Join this group to see its members.",
+    "noMembersFound": "No members found",
+    "lastAdminHint": "You are the only admin. Make someone else admin before you leave.",
+    "addMembers": "Add members",
+    "picker": {
+      "title": "Choose group",
+      "selected": "Selected",
+      "others": "Other groups",
+      "othersHint": "You are not a member of these groups.",
+      "emptyDescription": "Try a different search term."
+    }
   },
   "costs": {
     "title": "Tournament Costs",
@@ -537,7 +708,21 @@
     "list": {
       "retry": "Try again",
       "unknownError": "Unknown error",
-      "archived": "Archived challenges"
+      "archived": "Archived challenges",
+      "create": "Create challenge",
+      "empty": "No active challenges",
+      "emptyDescription": "Challenges of your groups show up here as soon as they start.",
+      "emptyAdminHint": "Create one with the + button.",
+      "active": "Active challenges",
+      "startsOn": "Starts {{date}}",
+      "ongoing": "Ongoing",
+      "endsToday": "Ends today",
+      "endsInDays_one": "Ends in {{count}} day",
+      "endsInDays_other": "Ends in {{count}} days",
+      "maxPerDay_one": "max. {{count}} / day",
+      "maxPerDay_other": "max. {{count}} / day",
+      "automated": "Automatic",
+      "endedOn": "Ended on {{date}}"
     },
     "dialog": {
       "titleUpdate": "Update challenge",
@@ -576,6 +761,23 @@
       "errorTitle": "An error occurred",
       "uploadError": "Something went wrong uploading your image. Please try again.",
       "compressError": "Something went wrong compressing your image. Please try again."
+    },
+    "info": {
+      "leaderboardEmpty": "No points yet",
+      "leaderboardEmptyDescription": "The leaderboard fills as soon as the first points are entered.",
+      "you": "You",
+      "activityEmpty": "No activity yet",
+      "activityEmptyDescription": "Entered points show up here.",
+      "notFoundTitle": "Challenge not found",
+      "notFoundDescription": "This challenge does not exist or you have no access to it.",
+      "maxPerWeek_one": "max. {{count}} / week",
+      "maxPerWeek_other": "max. {{count}} / week",
+      "yourProgress": "Your progress",
+      "yourPoints": "Your points",
+      "yourRank": "Your rank",
+      "today": "Today",
+      "thisWeek": "This week: {{count}} of {{max}} points",
+      "view": "Challenge view"
     }
   },
   "filter": "Filter",
@@ -657,14 +859,32 @@
       "emptyDescription": "There are no recorded matches yet. Enter a new match to get started.",
       "unrated": "Unrated",
       "private": "Private",
-      "enterScores": "Enter scores"
+      "enterScores": "Enter scores",
+      "tabAll": "All",
+      "tabMine": "Mine",
+      "tabMissing": "Missing scores",
+      "noneMissing": "Nothing missing",
+      "noneMissingDescription": "All your matches have scores.",
+      "emptyMine": "You have not played any matches yet.",
+      "you": "You",
+      "add": "Enter match"
     },
     "history": {
       "noGames": "No matches",
       "noGamesDescription": "No matches have been recorded for this player yet."
     },
     "leaderboard": {
-      "empty": "No entries yet"
+      "empty": "No entries yet",
+      "provisional": "Provisional",
+      "loadError": "Ranking could not be loaded",
+      "loadErrorDescription": "Please check your connection and try again.",
+      "emptyDescription": "Play rated matches to appear in the ranking.",
+      "rank": "Rank",
+      "yourRank": "Your rank",
+      "matches_one": "{{count}} match",
+      "matches_other": "{{count}} matches",
+      "notRankedHint": "You are not ranked yet. Play a rated match to enter the ranking.",
+      "noResults": "No players found"
     },
     "index": "Index",
     "sets": "Sets",
@@ -686,7 +906,16 @@
       "player": "Player",
       "delta": "Delta",
       "oldRating": "Old rating",
-      "newRating": "New rating"
+      "newRating": "New rating",
+      "backToList": "Back to matches",
+      "editScores": "Edit scores",
+      "noScores": "No scores reported yet.",
+      "setNumber": "Set {{number}}",
+      "eloPending": "Rating changes have not been calculated yet.",
+      "deleteDescription": "Deleting this match removes its scores and rating changes permanently.",
+      "delete": "Delete match",
+      "applyEloError": "Rating could not be applied: {{error}}",
+      "applyEloSuccess": "Rating applied."
     },
     "report": {
       "title": "Create match",
@@ -750,10 +979,16 @@
       "updateError": "Error updating profile: {{error}}",
       "language": "Language",
       "avatarPreview": "Avatar preview",
+      "deleteAccount": "Delete account",
+      "dangerZone": "Danger zone",
+      "dangerZoneDescription": "Your account is anonymized and cannot be restored.",
       "deleteAccountTitle": "Delete account permanently?",
       "deleteAccountDescription": "Your account is anonymized and you are removed from all groups and upcoming events. Your profile picture, name and email are erased. Game results and comments you wrote stay visible without your name. This cannot be undone.",
       "deleteAccountPassword": "Enter your password to confirm",
-      "deleteAccountConfirm": "Delete permanently"
+      "deleteAccountConfirm": "Delete permanently",
+      "deleteAccountSuccess": "Your account has been deleted.",
+      "sectionProfile": "Profile",
+      "removeAvatar": "Remove profile picture"
     },
     "password": {
       "title": "Change password",
@@ -843,7 +1078,17 @@
       "rgIndex": "RG Index",
       "pro": "Pro",
       "eloHistory": "ELO history",
-      "points": "{{score}} pts"
+      "points": "{{score}} pts",
+      "indexHidden": "{{name}} keeps their index private.",
+      "recordTitle": "Your matches with {{name}}",
+      "recordDescription_one": "{{count}} rated match, as teammates or opponents",
+      "recordDescription_other": "{{count}} rated matches, as teammates or opponents",
+      "wins": "Wins",
+      "draws": "Draws",
+      "losses": "Losses",
+      "playerzone": "Playerzone",
+      "copyRgId": "Copy RG ID",
+      "noData": "{{name}} has no stats yet."
     },
     "avatarErrors": {
       "uploadFailed": "Error uploading the image",
@@ -862,7 +1107,27 @@
       "lastTrainingDesc": "Sign-ups",
       "monthlyActivity": "Activity (Month)",
       "monthlyActivityDesc": "Users with at least 1 training this month",
-      "quickLinks": "Quick Links",
+      "needsAttention": "Needs attention",
+      "allCaughtUp": "All caught up",
+      "allCaughtUpDesc": "Nothing is waiting for you right now.",
+      "openReports": "Reported content",
+      "openReportsDesc": "Comments waiting for review",
+      "insights": "Insights",
+      "groups": {
+        "community": "Community & safety",
+        "drinks": "Drinks & payments",
+        "access": "Access & insights"
+      },
+      "tools": {
+        "users": "Edit accounts, emails and passwords",
+        "mergeAccounts": "Link players to user accounts",
+        "notify": "Send a push message to members",
+        "moderation": "Review reported comments",
+        "payments": "Confirm outstanding payments",
+        "history": "All drink bookings",
+        "permissions": "Roles and permissions",
+        "analytics": "Attendance and drink statistics"
+      },
       "noEvent": "No training found",
       "total": "Total: {{amount}} €",
       "attendanceTrend": "Training Trend (30 days)",
@@ -952,7 +1217,13 @@
   "notifications": {
     "screen": {
       "title": "Notifications",
-      "empty": "You have no new notifications."
+      "empty": "You have no new notifications.",
+      "clear": "Delete all notifications",
+      "clearTitle": "Delete all notifications?",
+      "clearDescription": "All your notifications are removed. This cannot be undone.",
+      "clearConfirm": "Delete all",
+      "loadError": "Notifications could not be loaded",
+      "emptyDescription": "New notifications about events, matches and groups show up here."
     }
   },
   "auth": {
@@ -1006,7 +1277,36 @@
     "features": "Features",
     "updateError": "Permissions could not be updated",
     "updateSuccess": "Permissions were updated",
-    "editUser": "Edit user \"{{name}}\""
+    "editUser": "Edit user \"{{name}}\"",
+    "intro": "A user's total access is the sum of what their groups grant plus anything granted to them directly.",
+    "groupHint": "Changes apply to every member of the group.",
+    "userHint": "Only direct grants are listed here. Group access is shown when you open a user.",
+    "noDirectUsers": "No user has direct grants yet. Tap + to add one.",
+    "permissionCount_one": "{{count}} permission",
+    "permissionCount_other": "{{count}} permissions",
+    "featureCount_one": "{{count}} feature",
+    "featureCount_other": "{{count}} features",
+    "totalUser": "Total access of this user",
+    "totalGroup": "Granted to every member of this group",
+    "inheritsFrom": "Inherits from:",
+    "noGroupGrants": "Not inheriting anything from groups",
+    "directHint": "Switches set direct grants. Grants marked with a group come from that group and can only be changed there.",
+    "viaGroup": "via {{groups}}",
+    "search": "Search permissions",
+    "onlyActive": "Active",
+    "noResults": "Nothing found",
+    "all": "All",
+    "none": "None",
+    "saveChanges": "Save (+{{added}} / −{{removed}})",
+    "categories": {
+      "events": "Events",
+      "drinks": "Drinks",
+      "games": "Games",
+      "challenges": "Challenges",
+      "groups": "Groups",
+      "items": "Items",
+      "admin": "Administration & other"
+    }
   },
   "bundesliga": {
     "title": "Bundesliga lineup",
@@ -1062,7 +1362,22 @@
     "order": "Order",
     "keys": "Keys",
     "keysLoadError": "Error loading keys",
-    "noKeys": "No keys registered"
+    "noKeys": "No keys registered",
+    "nextEvent": "Next event",
+    "decline": "Can't make it",
+    "attend": "I'm in",
+    "drinks": "Quick order",
+    "seeAll": "See all",
+    "youHoldKey": "You have this key",
+    "greetingMorning": "Good morning",
+    "greetingDay": "Hello",
+    "greetingEvening": "Good evening",
+    "unanswered_one": "{{count}} event is waiting for your answer",
+    "unanswered_other": "{{count}} events are waiting for your answer",
+    "unreadNotifications_one": "{{count}} unread notification",
+    "unreadNotifications_other": "{{count}} unread notifications",
+    "upcoming": "Coming up",
+    "explore": "Explore"
   },
   "pwa": {
     "updateReady": {
@@ -1135,39 +1450,14 @@
   },
   "legal": {
     "back": "Back",
+    "links": {
+      "imprint": "Imprint",
+      "privacy": "Privacy",
+      "deleteAccount": "Delete account",
+      "terms": "Terms of use"
+    },
     "contact": {
       "email": "Email"
-    },
-    "deleteAccount": {
-      "title": "Delete your account and data",
-      "sections": [
-        {
-          "title": "In the app",
-          "body": [
-            "1. Sign in to “{{app}}”.",
-            "2. Open your profile and choose the “Account” tab.",
-            "3. Tap “Delete account” and confirm with your password."
-          ]
-        },
-        {
-          "title": "What is deleted",
-          "body": [
-            "Name, email address, profile picture, push addresses, group memberships and RSVPs to upcoming events. You can no longer sign in afterwards."
-          ]
-        },
-        {
-          "title": "What is kept",
-          "body": [
-            "Game results and comments remain without your name (“Deleted user”) so rankings and discussions stay complete for other members."
-          ]
-        },
-        {
-          "title": "No access to the app any more?",
-          "body": [
-            "Write to the contact address in the imprint. We will delete your account after verifying your identity."
-          ]
-        }
-      ]
     },
     "imprint": {
       "title": "Imprint",
@@ -1186,12 +1476,6 @@
           ]
         }
       ]
-    },
-    "links": {
-      "imprint": "Imprint",
-      "privacy": "Privacy",
-      "deleteAccount": "Delete account",
-      "terms": "Terms of use"
     },
     "privacy": {
       "title": "Privacy policy",
@@ -1265,6 +1549,37 @@
         }
       ]
     },
+    "deleteAccount": {
+      "title": "Delete your account and data",
+      "sections": [
+        {
+          "title": "In the app",
+          "body": [
+            "1. Sign in to “{{app}}”.",
+            "2. Open your profile and choose the “Account” tab.",
+            "3. Tap “Delete account” and confirm with your password."
+          ]
+        },
+        {
+          "title": "What is deleted",
+          "body": [
+            "Name, email address, profile picture, push addresses, group memberships and RSVPs to upcoming events. You can no longer sign in afterwards."
+          ]
+        },
+        {
+          "title": "What is kept",
+          "body": [
+            "Game results and comments remain without your name (“Deleted user”) so rankings and discussions stay complete for other members."
+          ]
+        },
+        {
+          "title": "No access to the app any more?",
+          "body": [
+            "Write to the contact address in the imprint. We will delete your account after verifying your identity."
+          ]
+        }
+      ]
+    },
     "terms": {
       "title": "Terms of use",
       "updated": "Last updated: November 2026",
@@ -1329,19 +1644,6 @@
     }
   },
   "moderation": {
-    "block": {
-      "action": "Block",
-      "title": "Block {{name}}?",
-      "description": "You will no longer see comments of this user. You can unblock them in your profile.",
-      "confirm": "Block",
-      "success": "{{name}} is blocked.",
-      "error": "This did not work. Please try again."
-    },
-    "blockedList": {
-      "title": "Blocked users",
-      "description": "You do not see comments of these users.",
-      "unblock": "Unblock"
-    },
     "reasons": {
       "harassment": "Harassment or hate",
       "inappropriate": "Inappropriate or offensive",
@@ -1357,6 +1659,19 @@
       "submit": "Send report",
       "success": "Thank you. The comment will be reviewed.",
       "error": "Could not send the report."
+    },
+    "block": {
+      "action": "Block",
+      "title": "Block {{name}}?",
+      "description": "You will no longer see comments of this user. You can unblock them in your profile.",
+      "confirm": "Block",
+      "success": "{{name}} is blocked.",
+      "error": "This did not work. Please try again."
+    },
+    "blockedList": {
+      "title": "Blocked users",
+      "description": "You do not see comments of these users.",
+      "unblock": "Unblock"
     }
   }
 }
