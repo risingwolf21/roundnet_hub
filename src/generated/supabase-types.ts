@@ -40,6 +40,7 @@ export type Permission =
   | 'reset_user_password'
   | 'admin.notify_users'
   | 'users.manage'
+  | 'moderation.manage'
   | 'admin.analytics.view'
   | 'games.create.guest-player'
   | 'games.create.guest-player.with_index'

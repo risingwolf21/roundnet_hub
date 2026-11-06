@@ -203,6 +203,8 @@ SELECT set_eq(
     'public.key_handover',
     'public.edit_item',
     'public.admin_expire_trials',
+    'public.moderate_report',
+    'public.admin_user_effective_grants',
     'public._sum_challenge_points_for_self',
     'public.increase_challenge_stats_count',
     'public.admin_analytics_attendance_ranking',
@@ -214,6 +216,7 @@ SELECT set_eq(
     'games.add_match_with_sets',
     'games.merge_guest_player',
     'notifications.upsert_webpush_subscription',
+    'notifications.upsert_native_push_token',
     'notifications.admin_notify_emit',
     'util.get_table_metadata'
   ],

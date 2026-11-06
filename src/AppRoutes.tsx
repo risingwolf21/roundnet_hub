@@ -61,6 +61,16 @@ const createRouter = (user: UserWithGroups | null) =>
       ],
     },
     {
+      path: '/legal',
+      errorElement: <Pages.ErrorRouteElement />,
+      children: [
+        { path: 'imprint', element: <Pages.LegalPage doc="imprint" /> },
+        { path: 'privacy', element: <Pages.LegalPage doc="privacy" /> },
+        { path: 'terms', element: <Pages.LegalPage doc="terms" /> },
+        { path: 'delete-account', element: <Pages.LegalPage doc="deleteAccount" /> },
+      ],
+    },
+    {
       path: '/',
       element: <PrivateRoute />,
       errorElement: <Pages.ErrorRouteElement />,
@@ -252,28 +262,6 @@ const createRouter = (user: UserWithGroups | null) =>
               ],
             },
             {
-              path: '/supabase',
-              errorElement: <Pages.ErrorRouteElement />,
-              children: [
-                {
-                  path: 'logs',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.LogsManager />
-                    </Has >
-                  ),
-                },
-                {
-                  path: 'database',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.DatabaseManager />
-                    </Has>
-                  ),
-                }
-              ]
-            },
-            {
               path: '/admin',
               element: <Outlet />,
               errorElement: <Pages.ErrorRouteElement />,
@@ -319,6 +307,14 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Has perm={'games.admin.merge_accounts'} fallback={<Pages.UnauthorizedRouteElement />}>
                     <Pages.UserPlayerMapping />
                   </Has>
+                },
+                {
+                  path: 'moderation',
+                  element: (
+                    <Has perm={'moderation.manage'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.ModerationScreen />
+                    </Has>
+                  ),
                 },
                 {
                   path: 'notify_users',

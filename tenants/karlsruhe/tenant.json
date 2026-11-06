@@ -1,0 +1,8 @@
+{
+  "tenant": "roundnet-karlsruhe",
+  "viteMode": "karlsruhe",
+  "appId": "de.roundnet.hub.karlsruhe",
+  "appName": "Roundnet Karlsruhe",
+  "themeColor": "#0e876c",
+  "webHost": "roundnet-karlsruhe.web.app"
+}

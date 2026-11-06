@@ -2,15 +2,17 @@ import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CURRENT_TERMS_VERSION } from '@/repository/ModerationRepository';
 import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
 import i18n from 'i18next';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { Trans, useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
 
@@ -20,6 +22,7 @@ const SignUpForm = () => {
   const [repeatPassword, setRepeatPassword] = useState('')
   const [name, setName] = useState('')
   const [surname, setSurname] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -55,6 +58,11 @@ const SignUpForm = () => {
       return;
     }
 
+    if (!acceptedTerms) {
+      setError(t('auth.signup.termsRequired'));
+      return;
+    }
+
     setIsLoading(true);
 
     const { error, data } = await supabase.auth.signUp({
@@ -67,14 +75,13 @@ const SignUpForm = () => {
           email,
           role: 'user',
           language: i18n.resolvedLanguage,
+          terms_version: CURRENT_TERMS_VERSION,
         },
       },
     });
     if (error || !data || !data.user) {
       captureException(new Error('Could not sign up user.'), (scope) => {
         scope.clear();
-        scope.setExtra('displayName', name);
-        scope.setExtra('email', email);
         scope.setExtra('error', JSON.stringify(error));
         return scope;
       });
@@ -160,6 +167,19 @@ const SignUpForm = () => {
               value={repeatPassword}
               onChange={(e) => setRepeatPassword(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-start gap-2">
+            <Checkbox id="accept-terms" checked={acceptedTerms} onCheckedChange={(checked) => setAcceptedTerms(checked === true)} />
+            <Label htmlFor="accept-terms" className="block text-sm font-normal leading-snug">
+              <Trans
+                i18nKey="auth.signup.terms"
+                components={{
+                  terms: <Link className="underline" to="/legal/terms" target="_blank" />,
+                  privacy: <Link className="underline" to="/legal/privacy" target="_blank" />,
+                }}
+              />
+            </Label>
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { TENANT } from '@/tenant/config';
 import { LatLng } from 'leaflet';
 
 import { Map, MapLocateControl, MapSearchControl, MapTileLayer } from '@/components/ui/map';
@@ -21,13 +22,7 @@ type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
   description: string | null;
 };
 
-const locationMap = {
-  'roundnet-karlsruhe': { latitude: 49.0069, longitude: 8.4037 },
-  'munich-roundnet': { latitude: 48.1351, longitude: 11.582 },
-};
-
-const defaultLocation =
-  locationMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof locationMap) || 'roundnet-karlsruhe'];
+const defaultLocation = TENANT.defaultMapLocation;
 
 const parseAddress = (raw: any) => {
   const addr = raw.address || raw;

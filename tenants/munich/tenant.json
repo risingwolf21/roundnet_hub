@@ -1,0 +1,8 @@
+{
+  "tenant": "munich-roundnet",
+  "viteMode": "munich",
+  "appId": "de.roundnet.hub.munich",
+  "appName": "Munich Roundnet",
+  "themeColor": "#6d0505",
+  "webHost": "munich-roundnet.web.app"
+}

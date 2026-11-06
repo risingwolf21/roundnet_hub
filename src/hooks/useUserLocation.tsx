@@ -31,20 +31,12 @@ export function useUserLocation() {
       }
     };
 
-    // 4. Watcher starten (feuert sofort einmal und dann bei jeder Bewegung)
-    const watchId = navigator.geolocation.watchPosition(
-      handleSuccess,
-      handleError,
-      {
-        enableHighAccuracy: true, // Nutzt GPS statt nur IP/WLAN (braucht etwas mehr Akku)
-        timeout: 10000,           // Gibt nach 10 Sekunden auf, falls kein Signal kommt
-        maximumAge: 0             // Keine veralteten Cache-Daten nutzen
-      }
-    );
-
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+    // 4. Einmalige Abfrage: kein dauerhaftes Tracking, nur der aktuelle Standort fuer die Kartenvorauswahl
+    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 60000,
+    });
   }, []);
 
   return userLocation;

@@ -9,8 +9,11 @@ import { Button } from './components/ui/button';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { FeatureToggleProvider } from './contexts/FeatureToggleContext';
 import './instrument';
+import { initNative } from './native/init';
 import './styles/global.css';
 import './translation/i18n';
+
+initNative();
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {

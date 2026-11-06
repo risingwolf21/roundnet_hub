@@ -16,6 +16,7 @@ export const DialogsProvider = lazyWithRetry(() => import('@/contexts/DialogsPro
 export const AdminAnalytics = lazyWithRetry(() => import('@/features/admin/AdminAnalytics'));
 export const AdminDashboard = lazyWithRetry(() => import('@/features/admin/AdminDashboard'));
 export const AdminUserList = lazyWithRetry(() => import('@/features/admin/AdminUserList'));
+export const LegalPage = lazyWithRetry(() => import('@/features/legal/LegalPage'));
 export const AuthLayout = lazyWithRetry(() => import('@/features/auth/AuthLayout'));
 export const ForgotPassword = lazyWithRetry(() => import('@/features/auth/ForgotPassword'));
 export const ResetPassword = lazyWithRetry(() => import('@/features/auth/ResetPassword'));
@@ -27,12 +28,11 @@ export const Leaderboard = lazyWithRetry(() => import('@/features/games/Leaderbo
 export const MatchInformation = lazyWithRetry(() => import('@/features/games/MatchInformation'));
 export const HomePage = lazyWithRetry(() => import('@/features/homepage/HomePage'));
 export const ItemHolderScreen = lazyWithRetry(() => import('@/features/keys/ItemHolderScreen'));
-export const DatabaseManager = lazyWithRetry(() => import('@/features/supabase/components/database'));
-export const LogsManager = lazyWithRetry(() => import('@/features/supabase/components/logs'));
 export const GrantsManager = lazyWithRetry(() => import('@/features/grants/GrantsManager'));
 export const AdminHistoryScreen = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen'));
 export const PaymentsPendingAdmin = lazyWithRetry(() => import('@/features/admin/PaymentsPendingAdmin'));
 export const UserPlayerMapping = lazyWithRetry(() => import("@/features/admin/UserPlayerMapping"));
+export const ModerationScreen = lazyWithRetry(() => import('@/features/admin/ModerationScreen'));
 export const NotifyUsersScreen = lazyWithRetry(() => import('@/features/admin/NotifyUsersScreen'));
 export const RecurringEvents = lazyWithRetry(() => import('@/features/events/RecurringEvents'));
 export const User = lazyWithRetry(() => import('@/features/profile/User'));

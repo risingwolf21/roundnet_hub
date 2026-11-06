@@ -1133,51 +1133,54 @@ export type Database = {
       }
       web_push_subscriptions: {
         Row: {
-          auth: string
+          auth: string | null
           created_at: string
           device_id: string | null
           endpoint: string
           expiration_time: string | null
           failure_count: number | null
           id: string
+          kind: string
           last_error: string | null
           last_seen: string
           last_status: number | null
-          p256dh: string
+          p256dh: string | null
           platform: string | null
           revoked_at: string | null
           user: string
           user_agent: string | null
         }
         Insert: {
-          auth: string
+          auth?: string | null
           created_at?: string
           device_id?: string | null
           endpoint: string
           expiration_time?: string | null
           failure_count?: number | null
           id?: string
+          kind?: string
           last_error?: string | null
           last_seen?: string
           last_status?: number | null
-          p256dh: string
+          p256dh?: string | null
           platform?: string | null
           revoked_at?: string | null
           user: string
           user_agent?: string | null
         }
         Update: {
-          auth?: string
+          auth?: string | null
           created_at?: string
           device_id?: string | null
           endpoint?: string
           expiration_time?: string | null
           failure_count?: number | null
           id?: string
+          kind?: string
           last_error?: string | null
           last_seen?: string
           last_status?: number | null
-          p256dh?: string
+          p256dh?: string | null
           platform?: string | null
           revoked_at?: string | null
           user?: string
@@ -1208,12 +1211,14 @@ export type Database = {
       enqueue_notification: {
         Args: {
           p_body?: string
+          p_body_en?: string
           p_data?: Json
           p_dedupe_key?: string
           p_source_id?: string
           p_source_type?: string
           p_tenant?: string
           p_title: string
+          p_title_en?: string
           p_topic?: string
           p_ttl_seconds?: number
           p_urgency?: string
@@ -1263,6 +1268,7 @@ export type Database = {
       notify_emit: {
         Args: {
           p_body: string
+          p_body_en?: string
           p_data: Json
           p_recipients: string[]
           p_scope_id: string
@@ -1270,6 +1276,7 @@ export type Database = {
           p_source_id: string
           p_source_type: string
           p_title: string
+          p_title_en?: string
           p_topic: string
           p_urgency: string
         }
@@ -1293,7 +1300,12 @@ export type Database = {
         Returns: number
       }
       notify_event_updated: {
-        Args: { p_actor?: string; p_body: string; p_event: string }
+        Args: {
+          p_actor?: string
+          p_body: string
+          p_body_en?: string
+          p_event: string
+        }
         Returns: number
       }
       notify_game_added: {
@@ -1317,11 +1329,13 @@ export type Database = {
       notify_users: {
         Args: {
           p_body: string
+          p_body_en?: string
           p_data: Json
           p_scope: string
           p_source_id: string
           p_source_type: string
           p_title: string
+          p_title_en?: string
           p_topic: string
           p_users: string[]
         }
@@ -1353,6 +1367,32 @@ export type Database = {
         Args: { p_endpoint: string }
         Returns: undefined
       }
+      upsert_native_push_token: {
+        Args: {
+          p_device_id: string
+          p_kind: string
+          p_platform: string
+          p_token: string
+        }
+        Returns: {
+          auth: string | null
+          created_at: string
+          device_id: string | null
+          endpoint: string
+          expiration_time: string | null
+          failure_count: number | null
+          id: string
+          kind: string
+          last_error: string | null
+          last_seen: string
+          last_status: number | null
+          p256dh: string | null
+          platform: string | null
+          revoked_at: string | null
+          user: string
+          user_agent: string | null
+        }
+      }
       upsert_webpush_subscription: {
         Args: {
           p_auth: string
@@ -1363,17 +1403,18 @@ export type Database = {
           p_user_agent: string
         }
         Returns: {
-          auth: string
+          auth: string | null
           created_at: string
           device_id: string | null
           endpoint: string
           expiration_time: string | null
           failure_count: number | null
           id: string
+          kind: string
           last_error: string | null
           last_seen: string
           last_status: number | null
-          p256dh: string
+          p256dh: string | null
           platform: string | null
           revoked_at: string | null
           user: string
@@ -1578,6 +1619,77 @@ export type Database = {
             columns: ["challenge_stat"]
             isOneToOne: true
             referencedRelation: "challenge_stats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_reports: {
+        Row: {
+          comment_id: string | null
+          comment_text: string | null
+          created_at: string
+          details: string | null
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          reason: string
+          reported_user: string | null
+          reporter: string
+          status: string
+        }
+        Insert: {
+          comment_id?: string | null
+          comment_text?: string | null
+          created_at?: string
+          details?: string | null
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          reason: string
+          reported_user?: string | null
+          reporter: string
+          status?: string
+        }
+        Update: {
+          comment_id?: string | null
+          comment_text?: string | null
+          created_at?: string
+          details?: string | null
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          reason?: string
+          reported_user?: string | null
+          reporter?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "event_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_handled_by_fkey"
+            columns: ["handled_by"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_reported_user_fkey"
+            columns: ["reported_user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_reporter_fkey"
+            columns: ["reporter"]
+            isOneToOne: false
+            referencedRelation: "user"
             referencedColumns: ["id"]
           },
         ]
@@ -2674,6 +2786,8 @@ export type Database = {
           last_seen_at: string | null
           name: string
           role: Database["public"]["Enums"]["UserRole"]
+          terms_accepted_at: string | null
+          terms_version: string | null
           verified: boolean
         }
         Insert: {
@@ -2687,6 +2801,8 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           verified?: boolean
         }
         Update: {
@@ -2700,9 +2816,44 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           verified?: boolean
         }
         Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked: string
+          blocker: string
+          created_at: string
+        }
+        Insert: {
+          blocked: string
+          blocker: string
+          created_at?: string
+        }
+        Update: {
+          blocked?: string
+          blocker?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_fkey"
+            columns: ["blocked"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_fkey"
+            columns: ["blocker"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_direct_grants: {
         Row: {
@@ -3092,6 +3243,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      anonymize_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       apply_series_occurrences: {
         Args: { p_mode?: string; p_series_id: string; p_slots: Json }
         Returns: Json
@@ -3375,6 +3530,10 @@ export type Database = {
           holder: string
           key_id: number
         }[]
+      }
+      moderate_report: {
+        Args: { p_action: string; p_report: string }
+        Returns: undefined
       }
       purge_bundesliga_cache: {
         Args: Record<PropertyKey, never>

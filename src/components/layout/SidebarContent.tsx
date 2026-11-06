@@ -1,10 +1,11 @@
 import { useGrants } from '@/features/auth/GrantsContext';
+import { useAdminAttention } from '@/features/admin/useAdminAttention';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ClipboardList, Database, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Logs, Package, Receipt, RefreshCcw, Search, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ClipboardList, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Package, Receipt, RefreshCcw, Search, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -38,6 +39,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useGrants();
+  const { total: adminAttention } = useAdminAttention();
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -232,7 +234,8 @@ export function AppSidebar() {
           'drinks.history.admin',
           'grants.manage',
           'supabase.admin',
-          'admin.analytics.view'
+          'admin.analytics.view',
+          'moderation.manage'
         ],
         any: true
       },
@@ -241,6 +244,7 @@ export function AppSidebar() {
           title: t('browse.adminOverview'),
           icon: <LayoutDashboard />,
           path: 'admin',
+          secondaryAction: <div className="text-sm leading-none font-bold">{adminAttention || ''}</div>,
           permission: {
             perm: [
               'drinks.confirm.payments',
@@ -252,35 +256,11 @@ export function AppSidebar() {
               'admin.analytics.view',
               'games.admin.merge_accounts',
               'admin.notify_users',
+              'moderation.manage',
             ] as Permission[],
             any: true,
           },
         },
-      ]
-    },
-    {
-      key: "supabaseList",
-      header: "Supabase Admin",
-      permission: {
-        perm: 'supabase.admin'
-      },
-      children: [
-        {
-          title: t('browse.logs'),
-          icon: <Logs />,
-          path: 'supabase/logs',
-          permission: {
-            perm: 'supabase.admin'
-          }
-        },
-        {
-          title: t('browse.database'),
-          icon: <Database />,
-          path: 'supabase/database',
-          permission: {
-            perm: 'supabase.admin'
-          }
-        }
       ]
     },
     {

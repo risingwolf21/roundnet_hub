@@ -146,6 +146,11 @@ export const useUpdateLanguage = (user: User) =>
       ),
   });
 
+export const useDeleteAccount = () =>
+  useMutation({
+    mutationFn: (password: string) => UserRepository.deleteAccount(password),
+  });
+
 export const useUpdateAvatarFromPlayerMutation = (user: User) =>
   useMutation({
     mutationFn: async ({ avatarUrl }: { avatarUrl: string | null | undefined }) => {

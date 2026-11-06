@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { TablesUpdate } from '@/types/supabase-generated.types';
 import { GroupWithUserRole } from '@/types/supabaseTypes';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { FunctionsHttpError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import i18n from 'i18next';
 
 export const fetchGroups = () => supabase.schema('public').from('group_user_mapping').select('*, event_group(*)');
 export const fetchSimpleUser = () => supabase.from('user').select('id, name, avatarUrl');
@@ -88,5 +89,19 @@ export const UserRepository = {
       }
     }
     return users;
+  },
+
+  /** Anonymizes the account server-side. Throws a readable message on failure. */
+  async deleteAccount(password: string): Promise<void> {
+    const { error } = await supabase.functions.invoke('delete-account', {
+      body: { password },
+      headers: { 'Accept-Language': i18n.resolvedLanguage ?? 'de' },
+    });
+    if (!error) return;
+    if (error instanceof FunctionsHttpError) {
+      const body = await error.context.json().catch(() => null);
+      if (body?.error) throw new Error(body.error);
+    }
+    throw error;
   },
 };

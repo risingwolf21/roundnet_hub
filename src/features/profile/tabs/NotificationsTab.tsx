@@ -10,6 +10,8 @@ import { supabase } from "@/lib/supabase";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { iOS } from "@/utils";
+import { Capacitor } from "@capacitor/core";
+import { disableNativePush, enableNativePush, getNativePermission, hasNativeToken } from "@/features/push/nativePush";
 import { AlertTriangle, Bell, BellOff, CalendarIcon, CheckCircle2, Info, Swords, Trophy, Users, XCircle } from "lucide-react";
 import { ElementType, Fragment, useEffect, useMemo, useState } from "react";
 import i18n from "i18next";
@@ -76,8 +78,10 @@ async function revokeOnServer(endpoint?: string | null) {
 
 // ---------------------------------------------------------------------------
 
-const isNotificationSupported =
-  'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+const isNative = Capacitor.isNativePlatform();
+
+const isNotificationSupported = isNative ||
+  ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window);
 
 const CATEGORY_ICON_MAP: Record<string, ElementType> = {
   event:     CalendarIcon,
@@ -116,6 +120,13 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
   const isPWA = useMemo(() => window.matchMedia?.('(display-mode: standalone)').matches ?? false, []);
 
   useEffect(() => {
+    if (isNative) {
+      getNativePermission().then((p) => {
+        setPermission(p);
+        setRegistered(p === 'granted' && hasNativeToken());
+      });
+      return;
+    }
     (async () => {
       try {
         const reg = await getSW();
@@ -131,6 +142,12 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
     setPushError(null);
     setPushLoading(true);
     try {
+      if (isNative) {
+        const perm = await enableNativePush();
+        setPermission(perm);
+        setRegistered(perm === 'granted');
+        return;
+      }
       if (Notification.permission !== 'granted') {
         const perm = await Notification.requestPermission();
         setPermission(perm);
@@ -157,6 +174,11 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
     setPushError(null);
     setPushLoading(true);
     try {
+      if (isNative) {
+        await enableNativePush();
+        setRegistered(true);
+        return;
+      }
       if (!VAPID) throw new Error(t('profile.notifications.vapidMissing'));
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
@@ -179,6 +201,11 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
     setPushError(null);
     setPushLoading(true);
     try {
+      if (isNative) {
+        await disableNativePush();
+        setRegistered(false);
+        return;
+      }
       const reg = await getSW();
       const sub = await reg.pushManager.getSubscription();
       await revokeOnServer(sub?.endpoint);
@@ -205,7 +232,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
     );
   }
 
-  const installingHint = !isPWA
+  const installingHint = !isNative && !isPWA
     ? iOS
       ? t('profile.notifications.installHintIos')
       : t('profile.notifications.installHintAndroid')

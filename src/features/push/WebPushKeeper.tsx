@@ -1,9 +1,11 @@
 // @/push/WebPushKeeper.tsx
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { supabase } from '@/lib/supabase';
+import { Capacitor } from '@capacitor/core';
 import { captureException } from '@sentry/react';
 import { type Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
+import { listenForNativePushTaps, syncNativePushIfAllowed } from './nativePush';
 
 type Props = PropsWithChildren & {
   session: Session | null; // reingegeben aus deinem Auth-Context
@@ -30,6 +32,16 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    return listenForNativePushTaps();
+  }, []);
+
+  useEffect(() => {
+    // Store apps use APNs/FCM and never prompt on their own; the user turns notifications on in the profile.
+    if (Capacitor.isNativePlatform()) {
+      if (session?.user) syncNativePushIfAllowed();
+      return;
+    }
     (async () => {
       try {
         if (!session?.user) {

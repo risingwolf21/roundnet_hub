@@ -1,0 +1,145 @@
+name: Native apps
+"on":
+  workflow_dispatch:
+    inputs:
+      tenant:
+        description: "Which store app to build"
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - karlsruhe
+          - munich
+  pull_request:
+    paths:
+      - "native/**"
+      - "capacitor.config.ts"
+      - "tenants/**"
+      - ".github/workflows/native.yml"
+
+env:
+  CI: ""
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      tenants: ${{ steps.pick.outputs.tenants }}
+    steps:
+      - id: pick
+        run: |
+          case "${{ github.event.inputs.tenant || 'all' }}" in
+            karlsruhe) echo 'tenants=[{"id":"karlsruhe","environment":"Roundnet Karlsruhe"}]' >> "$GITHUB_OUTPUT" ;;
+            munich) echo 'tenants=[{"id":"munich","environment":"Munich Roundnet"}]' >> "$GITHUB_OUTPUT" ;;
+            *) echo 'tenants=[{"id":"karlsruhe","environment":"Roundnet Karlsruhe"},{"id":"munich","environment":"Munich Roundnet"}]' >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  android:
+    name: "Android (${{ matrix.tenant.id }})"
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tenant: ${{ fromJson(needs.matrix.outputs.tenants) }}
+    environment: ${{ matrix.tenant.environment }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: yarn install --frozen-lockfile
+
+      - name: Build web bundle and sync into the Android project
+        run: yarn cap:sync:${{ matrix.tenant.id }}
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ github.sha }}
+          VITE_ENV: production
+
+      - name: Add Firebase config (push notifications)
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 -d > native/${{ matrix.tenant.id }}/android/app/google-services.json
+          else
+            echo "::warning::GOOGLE_SERVICES_JSON_B64 is not set, the app is built without push notifications."
+          fi
+
+      - name: Restore upload keystore
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_B64" ]; then
+            echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/upload.keystore" >> "$GITHUB_ENV"
+          else
+            echo "::warning::ANDROID_KEYSTORE_B64 is not set, the bundle is built unsigned."
+          fi
+
+      - name: Build release bundle
+        working-directory: native/${{ matrix.tenant.id }}/android
+        run: ./gradlew bundleRelease
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.tenant.id }}-aab
+          path: native/${{ matrix.tenant.id }}/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 14
+
+  ios:
+    name: "iOS compile check (${{ matrix.tenant.id }})"
+    needs: matrix
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tenant: ${{ fromJson(needs.matrix.outputs.tenants) }}
+    environment: ${{ matrix.tenant.environment }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+
+      - name: Build web bundle and sync into the iOS project
+        run: yarn cap:sync:${{ matrix.tenant.id }}
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ github.sha }}
+          VITE_ENV: production
+
+      # Unsigned simulator build: proves the project compiles. Signing and the upload to TestFlight
+      # are done from Xcode until the Apple certificates are set up (see docs/NATIVE_APPS.md).
+      - name: Compile for the simulator
+        working-directory: native/${{ matrix.tenant.id }}/ios/App
+        run: >
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release
+          -sdk iphonesimulator -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build

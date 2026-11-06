@@ -4,7 +4,6 @@ import { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import { useQuery } from '@tanstack/react-query';
-import _ from 'lodash';
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -19,7 +18,7 @@ export const useCurrentUser = (session: Session | null) =>
     staleTime: Infinity,
     queryFn: async () => {
       if (!session) return null;
-      setUser({ email: session.user.email, id: session.user.id, ...(_.omit(session.user, ['id', 'email'])) });
+      setUser({ id: session.user.id });
       const [{ data: user, error }, groups] = await Promise.all([
         UserRepository.fetchUser(session.user.id),
         UserRepository.fetchGroupsForUser(session.user.id),

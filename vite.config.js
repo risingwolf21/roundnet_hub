@@ -32,9 +32,11 @@ export default defineConfig(async ({ mode }) => {
   const ICON_PREFIX = env.VITE_ICON_PREFIX ?? '/icons'; // z.B. /icons/roundnet-karlsruhe oder /icons/munich-roundnet
   const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true'; // SW im Dev aktiv? meist false
   const IS_ANALYZE = mode === 'analyze';
+  // Build that is bundled into the iOS/Android apps (Capacitor): no service worker, assets are served from the app itself.
+  const IS_NATIVE = process.env.VITE_NATIVE === 'true';
 
   return {
-    base: BASE_PATH,
+    base: IS_NATIVE ? '/' : BASE_PATH,
     envDir: './environments',
     plugins: [
       // e2e code coverage (playwright.yml sets E2E_COVERAGE=true); never active in normal dev/prod.
@@ -58,7 +60,7 @@ export default defineConfig(async ({ mode }) => {
         // By default a failed upload (e.g. a revoked token) stops the build and with it the deploy.
         errorHandler: (err) => console.warn('[sentry] source map upload failed:', err.message),
       }),
-      VitePWA({
+      !IS_NATIVE && VitePWA({
         strategies: 'injectManifest',
         srcDir: 'src',
         filename: 'service-worker.ts',
@@ -106,7 +108,7 @@ export default defineConfig(async ({ mode }) => {
       target: 'es2020',
       // Source maps are only built when they can be uploaded to Sentry (SENTRY_AUTH_TOKEN is set), 'hidden' = no link in the bundle.
       sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
-      outDir: 'build', // CRA's default build output
+      outDir: process.env.VITE_NATIVE_OUT_DIR || 'build', // CRA's default build output
       rollupOptions: {},
     },
     test: {
@@ -126,6 +128,7 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
+        ...(IS_NATIVE ? { 'virtual:pwa-register/react': fileURLToPath(new URL('./src/native/pwaRegisterStub.ts', import.meta.url)) } : {}),
       },
     },
   };

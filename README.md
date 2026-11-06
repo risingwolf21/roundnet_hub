@@ -238,7 +238,6 @@ Abdeckung = (voll + ½ · teilweise) / Funktionen. „Teilweise“: die App wird
 
 **Bewusst nicht getestet**
 
-- Datenbank-Browser (/supabase/database) — bewusst ausgenommen
 - Analytics-Dashboard (/admin/analytics) — bewusst ausgenommen
 - Event umwandeln (Transformation) — im UI deaktiviert (Menüpunkt disabled)
 - Gruppe verlassen — keine Funktion im UI (Mutation useLeaveGroupMutation vorhanden, aber nirgends eingebunden)

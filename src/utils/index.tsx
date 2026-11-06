@@ -1,29 +1,17 @@
 import { Duration, format, intervalToDuration, parse } from 'date-fns';
 import { t } from 'i18next';
-import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
-import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
+import { TENANT } from '../tenant/config';
 
 export const SUPABASE_PROJECT_REF = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-const logoMap = {
-  'roundnet-karlsruhe': RoundnetKarlsruheLogo,
-  'munich-roundnet': RoundnetMunichLogo,
-};
-
-const iconMap = {
-  'roundnet-karlsruhe': '🐺',
-  'munich-roundnet': '🏐',
-};
-
-export const TENANT_LOGO = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
-const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap) || 'roundnet-karlsruhe'];
+export const TENANT_LOGO = TENANT.logo;
 
 export const BRANDING = {
   get logo() {
     return <img src={TENANT_LOGO} alt={t('common.logo')} style={{ height: 96, objectFit: 'contain' }} />;
   },
   title: import.meta.env.VITE_WEBSITE_NAME,
-  icon: icon,
+  icon: TENANT.icon,
 };
 
 export const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);

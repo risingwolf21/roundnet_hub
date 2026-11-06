@@ -84,8 +84,6 @@
     "payment": "Zahlung",
     "postgresClient": "Postgres Client",
     "auditLogs": "Audit Logs",
-    "logs": "Logs",
-    "database": "Datenbank",
     "user": "Benutzer",
     "notifyUsers": "Nachrichten senden",
     "training": "Training",
@@ -751,7 +749,11 @@
       "updateSuccess": "Profil erfolgreich aktualisiert",
       "updateError": "Fehler beim Aktualisieren des Profils: {{error}}",
       "language": "Sprache",
-      "avatarPreview": "Vorschau des Profilbilds"
+      "avatarPreview": "Vorschau des Profilbilds",
+      "deleteAccountTitle": "Konto endgültig löschen?",
+      "deleteAccountDescription": "Dein Konto wird anonymisiert und du wirst aus allen Gruppen und kommenden Veranstaltungen entfernt. Profilbild, Name und E-Mail-Adresse werden gelöscht. Spielergebnisse und Kommentare von dir bleiben ohne deinen Namen sichtbar. Das kann nicht rückgängig gemacht werden.",
+      "deleteAccountPassword": "Zur Bestätigung Passwort eingeben",
+      "deleteAccountConfirm": "Endgültig löschen"
     },
     "password": {
       "title": "Passwort ändern",
@@ -935,6 +937,16 @@
       "cancelled": "Der Merge wurde abgebrochen",
       "success": "Die Accounts wurden erfolgreich gemerged!",
       "assign": "Zuordnen"
+    },
+    "moderation": {
+      "title": "Gemeldete Inhalte",
+      "empty": "Keine offenen Meldungen.",
+      "dismiss": "Behalten",
+      "remove": "Kommentar entfernen",
+      "removeConfirm": "Diesen Kommentar für alle entfernen?",
+      "removed": "Kommentar entfernt.",
+      "dismissed": "Meldung abgelehnt.",
+      "error": "Das hat nicht geklappt. Bitte versuche es erneut."
     }
   },
   "notifications": {
@@ -965,7 +977,9 @@
       "failed": "Registrierung fehlgeschlagen. [{{message}}]",
       "titleAt": "Registrierung bei",
       "submit": "Registrieren",
-      "submitting": "Account wird erstellt..."
+      "submitting": "Account wird erstellt...",
+      "terms": "Ich akzeptiere die <terms>Nutzungsbedingungen</terms> und habe die <privacy>Datenschutzerklärung</privacy> gelesen.",
+      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung."
     },
     "forgot": {
       "failed": "Zurücksetzen des Passworts fehlgeschlagen. Versuche es erneut!",
@@ -1117,6 +1131,232 @@
       "error": "Fehler: {{message}}",
       "notFound": "{{value}} wurde nicht gefunden.",
       "unknown": "Unbekannt"
+    }
+  },
+  "legal": {
+    "back": "Zurück",
+    "contact": {
+      "email": "E-Mail"
+    },
+    "deleteAccount": {
+      "title": "Konto und Daten löschen",
+      "sections": [
+        {
+          "title": "In der App",
+          "body": [
+            "1. Melde dich in „{{app}}“ an.",
+            "2. Öffne dein Profil und wähle den Reiter „Konto“.",
+            "3. Tippe auf „Konto löschen“ und bestätige mit deinem Passwort."
+          ]
+        },
+        {
+          "title": "Was gelöscht wird",
+          "body": [
+            "Name, E-Mail-Adresse, Profilbild, Push-Adressen, Gruppenmitgliedschaften und Zusagen zu kommenden Veranstaltungen. Du kannst dich danach nicht mehr anmelden."
+          ]
+        },
+        {
+          "title": "Was erhalten bleibt",
+          "body": [
+            "Spielergebnisse und Kommentare bleiben ohne Namen („Gelöschter Nutzer“) erhalten, damit Ranglisten und Diskussionen für andere Mitglieder vollständig bleiben."
+          ]
+        },
+        {
+          "title": "Kein Zugang mehr zur App?",
+          "body": [
+            "Schreibe uns über die im Impressum genannte Kontaktadresse. Wir löschen dein Konto nach Prüfung deiner Identität."
+          ]
+        }
+      ]
+    },
+    "imprint": {
+      "title": "Impressum",
+      "providerTitle": "Angaben gemäß § 5 DDG",
+      "sections": [
+        {
+          "title": "Verantwortlich für den Inhalt",
+          "body": [
+            "{{operator}}, privat betrieben. Die App „{{app}}“ ist ein nicht-kommerzielles Angebot für die Roundnet-Community."
+          ]
+        },
+        {
+          "title": "Streitbeilegung",
+          "body": [
+            "Ich bin nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+          ]
+        }
+      ]
+    },
+    "links": {
+      "imprint": "Impressum",
+      "privacy": "Datenschutz",
+      "deleteAccount": "Konto löschen",
+      "terms": "Nutzungsbedingungen"
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "updated": "Stand: November 2026",
+      "controllerTitle": "1. Verantwortlicher",
+      "sections": [
+        {
+          "title": "2. Welche Daten wir verarbeiten",
+          "body": [
+            "Konto: Vor- und Nachname, Anzeigename, E-Mail-Adresse und ein Passwort (nur als Hash gespeichert). Optional: Profilbild und Sprache.",
+            "Nutzung: Gruppenmitgliedschaften, Zu- und Absagen zu Veranstaltungen, Kommentare, Getränke- und Zahlungseinträge, Spielergebnisse und Ranglisten, optional ein Link zu deinem Playerzone-Profil.",
+            "Geräte-Daten: Wenn du Push-Benachrichtigungen erlaubst, speichern wir die technische Adresse deines Geräts oder Browsers bei dessen Push-Dienst.",
+            "Technische Daten: Beim Aufruf fallen IP-Adresse, Zeitpunkt und Browser-/Geräteinformationen in Server-Protokollen an. Bei Fehlern werden technische Fehlerberichte ohne Name und E-Mail-Adresse, aber mit deiner Konto-ID, übermittelt."
+          ]
+        },
+        {
+          "title": "3. Zwecke und Rechtsgrundlagen",
+          "body": [
+            "Bereitstellung der App, Konto- und Gruppenverwaltung, Veranstaltungsorganisation: Art. 6 Abs. 1 lit. b DSGVO (Nutzungsvertrag).",
+            "Sicherheit, Fehleranalyse und Stabilität: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).",
+            "Push-Benachrichtigungen und Standortfreigabe: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung). Du kannst sie jederzeit in den Geräte- bzw. Browser-Einstellungen und im Profil widerrufen."
+          ]
+        },
+        {
+          "title": "4. Sichtbarkeit für andere Mitglieder",
+          "body": [
+            "Mitglieder deiner Gruppen sehen deinen Anzeigenamen, dein Profilbild, deine Zu- und Absagen, deine Kommentare sowie deine Spielergebnisse. Kommentare und Inhalte kannst du jederzeit melden; Gruppenverantwortliche können Inhalte entfernen."
+          ]
+        },
+        {
+          "title": "5. Standort",
+          "body": [
+            "Die App fragt deinen Standort nur ab, wenn du die Kartenfunktion verwendest und der Zugriff erlaubt ist. Der Standort wird nur auf deinem Gerät zur Anzeige auf der Karte genutzt und nicht auf unseren Servern gespeichert."
+          ]
+        },
+        {
+          "title": "6. Empfänger und Dienstleister",
+          "body": [
+            "Supabase (Datenbank, Authentifizierung, Dateispeicher, Server-Funktionen): speichert alle Konto- und Nutzungsdaten in unserem Auftrag.",
+            "Google Firebase Hosting: Auslieferung der Web-App und der statischen Seiten.",
+            "Sentry: Fehlerüberwachung (ohne Name und E-Mail-Adresse).",
+            "OpenStreetMap-Kachelserver: Beim Anzeigen einer Karte wird deine IP-Adresse an den Kartenanbieter übertragen.",
+            "Push-Dienste von Apple, Google bzw. deinem Browser-Hersteller: Zustellung von Benachrichtigungen.",
+            "Playerzone (Roundnet Germany): Wenn du einen Playerzone-Link hinterlegst, rufen wir die dort öffentlich einsehbaren Profildaten ab.",
+            "Soweit Anbieter Daten in Drittländern (z. B. USA) verarbeiten, geschieht das auf Grundlage von Standardvertragsklauseln bzw. eines Angemessenheitsbeschlusses."
+          ]
+        },
+        {
+          "title": "7. Speicherdauer",
+          "body": [
+            "Wir speichern deine Daten, solange dein Konto besteht. Wenn du dein Konto löschst, werden Name, E-Mail-Adresse, Profilbild, Push-Adressen, Gruppenmitgliedschaften und Zusagen zu kommenden Veranstaltungen entfernt. Spielergebnisse und Kommentare bleiben ohne Personenbezug („Gelöschter Nutzer“) erhalten, damit Ranglisten und Diskussionen konsistent bleiben."
+          ]
+        },
+        {
+          "title": "8. Konto löschen",
+          "body": [
+            "Du kannst dein Konto jederzeit in der App unter Profil → Konto → „Konto löschen“ löschen. Alternativ siehst du die Schritte unter „Konto löschen“ auf dieser Website."
+          ]
+        },
+        {
+          "title": "9. Deine Rechte",
+          "body": [
+            "Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Wende dich dazu an die oben genannte Kontaktadresse."
+          ]
+        },
+        {
+          "title": "10. Beschwerderecht",
+          "body": [
+            "Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. beim Bayerischen Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18, 91522 Ansbach."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "updated": "Stand: November 2026",
+      "sections": [
+        {
+          "title": "1. Geltungsbereich",
+          "body": [
+            "Diese Bedingungen gelten für die Nutzung der App „{{app}}“, einem kostenlosen Community-Angebot von {{operator}} zur Organisation von Roundnet-Events, Spielen und Getränken."
+          ]
+        },
+        {
+          "title": "2. Dein Konto",
+          "body": [
+            "Mache korrekte Angaben, halte dein Passwort geheim und gib dein Konto nicht weiter. Du kannst dein Konto jederzeit in deinem Profil löschen."
+          ]
+        },
+        {
+          "title": "3. Keine Toleranz für anstößige Inhalte",
+          "body": [
+            "Kommentare und andere Inhalte müssen respektvoll sein. Nicht erlaubt sind rechtswidrige, belästigende, bedrohende, hasserfüllte, diskriminierende, sexuell explizite oder täuschende Inhalte, Spam sowie das Ausgeben als andere Personen."
+          ]
+        },
+        {
+          "title": "4. Melden und Blockieren",
+          "body": [
+            "Zu jedem Kommentar gibt es die Aktionen „Melden“ und „Blockieren“. Meldungen werden von Moderatoren geprüft, in der Regel innerhalb von 24 Stunden. Inhalte, die gegen diese Regeln verstoßen, werden entfernt.",
+            "Wenn du einen Nutzer blockierst, werden seine Kommentare für dich ausgeblendet. Du kannst das jederzeit in deinem Profil rückgängig machen."
+          ]
+        },
+        {
+          "title": "5. Folgen bei Verstößen",
+          "body": [
+            "Inhalte, die gegen diese Regeln verstoßen, werden entfernt. Nutzer, die wiederholt oder schwerwiegend verstoßen, können ohne Vorankündigung aus Gruppen entfernt oder gesperrt werden."
+          ]
+        },
+        {
+          "title": "6. Deine Inhalte",
+          "body": [
+            "Du bleibst Inhaber dessen, was du schreibst. Du erlaubst der App, es zu speichern und den Mitgliedern der jeweiligen Gruppe anzuzeigen, solange es für den Betrieb des Dienstes nötig ist."
+          ]
+        },
+        {
+          "title": "7. Verfügbarkeit und Haftung",
+          "body": [
+            "Der Dienst wird kostenlos und wie verfügbar bereitgestellt. Die Haftung ist auf Vorsatz und grobe Fahrlässigkeit beschränkt, außer bei Verletzung von Leben, Körper oder Gesundheit und soweit das Gesetz etwas anderes vorschreibt."
+          ]
+        },
+        {
+          "title": "8. Kontakt",
+          "body": [
+            "Fragen oder Beschwerden zu Inhalten oder diesen Bedingungen: siehe Kontaktangaben im Impressum."
+          ]
+        }
+      ]
+    },
+    "termsGate": {
+      "title": "Nutzungsbedingungen",
+      "description": "Damit die Community sicher bleibt, akzeptiere bitte die Nutzungsbedingungen, um fortzufahren. Sie enthalten Regeln für Kommentare sowie die Möglichkeit, Nutzer zu melden und zu blockieren.",
+      "links": "Lies die <terms>Nutzungsbedingungen</terms> und die <privacy>Datenschutzerklärung</privacy>.",
+      "accept": "Akzeptieren und weiter",
+      "error": "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut."
+    }
+  },
+  "moderation": {
+    "block": {
+      "action": "Blockieren",
+      "title": "{{name}} blockieren?",
+      "description": "Du siehst keine Kommentare dieses Nutzers mehr. Du kannst die Blockierung in deinem Profil aufheben.",
+      "confirm": "Blockieren",
+      "success": "{{name}} ist blockiert.",
+      "error": "Das hat nicht geklappt. Bitte versuche es erneut."
+    },
+    "blockedList": {
+      "title": "Blockierte Nutzer",
+      "description": "Du siehst keine Kommentare dieser Nutzer.",
+      "unblock": "Entsperren"
+    },
+    "reasons": {
+      "harassment": "Belästigung oder Hass",
+      "inappropriate": "Unangemessen oder beleidigend",
+      "spam": "Spam",
+      "other": "Etwas anderes"
+    },
+    "reported": "Gemeldet",
+    "report": {
+      "action": "Melden",
+      "title": "Kommentar melden",
+      "description": "Warum möchtest du den Kommentar von {{name}} melden? Moderatoren prüfen Meldungen innerhalb von 24 Stunden.",
+      "details": "Weitere Details (optional)",
+      "submit": "Meldung senden",
+      "success": "Danke. Der Kommentar wird geprüft.",
+      "error": "Die Meldung konnte nicht gesendet werden."
     }
   }
 }

@@ -2,6 +2,7 @@ import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
 import webpush from "web-push";
 import { Database } from '../_shared/supabase-generated.types.ts';
+import { loadNativeConfig, sendApns, sendFcm, NativePushError } from './native.ts';
 
 type NotificationOutbox = Database['notifications']['Tables']['notification_outbox']['Row'];
 
@@ -34,11 +35,14 @@ type TargetRow = {
   web_push_subscriptions?: {
     id: string;
     endpoint: string;
-    p256dh: string;
-    auth: string;
+    kind: 'web' | 'apns' | 'fcm';
+    p256dh: string | null;
+    auth: string | null;
     revoked_at: string | null;
   } | null;
 };
+
+const NATIVE = loadNativeConfig(Deno.env);
 
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
@@ -100,6 +104,29 @@ function validateSubscription(sub: TargetRow['web_push_subscriptions']): { valid
   return { valid: true };
 }
 
+async function sendNative(
+  kind: 'apns' | 'fcm',
+  token: string,
+  payload: { title: string; body: string | null; data: unknown },
+  job: NotificationOutbox,
+) {
+  const p = {
+    title: payload.title,
+    body: payload.body ?? '',
+    data: payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data) ? payload.data as Record<string, unknown> : {},
+    ttlSeconds: job.ttl_seconds,
+    highPriority: job.urgency !== 'low' && job.urgency !== 'very-low',
+  };
+  if (kind === 'apns') {
+    if (!NATIVE.apns) throw new NativePushError(0, 'APNs is not configured');
+    await sendApns(NATIVE.apns, token, p);
+  } else {
+    if (!NATIVE.fcm) throw new NativePushError(0, 'FCM is not configured');
+    await sendFcm(NATIVE.fcm, token, p);
+  }
+  return undefined;
+}
+
 async function fetchDueJobs(limit: number): Promise<NotificationOutbox[]> {
   const { data, error } = await supabase
     .schema("notifications")
@@ -145,7 +172,7 @@ async function fetchPendingTargets(jobId: number): Promise<TargetRow[]> {
       last_error,
       next_attempt_at,
       web_push_subscriptions (
-        id, endpoint, p256dh, auth, revoked_at
+        id, endpoint, kind, p256dh, auth, revoked_at
       )
     `,
     )
@@ -267,7 +294,7 @@ async function processJob(job: NotificationOutbox) {
         const sub = t.web_push_subscriptions!;
         
         // Validate subscription data before attempting to send
-        const validation = validateSubscription(sub);
+        const validation = sub.kind === 'web' ? validateSubscription(sub) : { valid: true as const, reason: undefined };
         if (!validation.valid) {
           allSent = false;
           const msg = `Invalid subscription: ${validation.reason}`;
@@ -295,14 +322,16 @@ async function processJob(job: NotificationOutbox) {
             TTL: job.ttl_seconds ?? undefined,
             urgency: job.urgency,
           };
-          const res = await webpush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh, auth: sub.auth },
-            } as any,
-            payload,
-            opts,
-          );
+          const res = sub.kind === 'web'
+            ? await webpush.sendNotification(
+              {
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh, auth: sub.auth },
+              } as any,
+              payload,
+              opts,
+            )
+            : await sendNative(sub.kind, sub.endpoint, payloadObj, job);
 
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);

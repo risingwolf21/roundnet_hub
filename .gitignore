@@ -60,3 +60,9 @@ supabase/backup/
 **/node_modules/*
 # e2e code coverage (Istanbul dumps)
 /.nyc_output
+
+# Firebase / Google service-account keys
+service-account*.json
+
+# Capacitor
+/build-native

@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 
+import { LegalLinks } from '../legal/LegalPage';
 import { useApplication } from './ApplicationContext';
 
 
@@ -20,6 +21,7 @@ const AuthLayout = () => {
 
   return <div className='relative flex h-auto min-h-screen items-center justify-center overflow-x-hidden px-4 py-10 sm:px-6 lg:px-8'>
     <Outlet />
+    <LegalLinks className='absolute inset-x-0 bottom-4' />
   </div>
 };
 export default AuthLayout;

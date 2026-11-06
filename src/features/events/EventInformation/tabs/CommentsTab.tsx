@@ -6,13 +6,15 @@ import { TabsContent } from '@/components/ui/tabs';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useAddCommentMutation } from '@/tanstack/events';
+import { useBlockUser, useMyReportedCommentIds } from '@/tanstack/moderation';
 import { eventInThePast, EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { getInitials } from '@/utils';
 import { format } from 'date-fns';
-import { MessageSquare, Trash2 } from 'lucide-react';
+import { Ban, Flag, MessageSquare, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import ReportCommentDialog from '../../dialogs/ReportCommentDialog';
 
 const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
   const { t } = useTranslation();
@@ -20,6 +22,49 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
   const addCommentMutation = useAddCommentMutation(user);
   const { hasPerm } = useGrants();
   const [replyingTo, setReplyingTo] = useState<FullComment | null>(null);
+  const blockUser = useBlockUser(user.id);
+  const { data: reportedIds = [] } = useMyReportedCommentIds(user.id);
+
+  const report = (comment: FullComment) =>
+    dialogs.open(ReportCommentDialog, {
+      commentId: comment.id,
+      authorName: comment.displayName || comment.user.displayName || '',
+      userId: user.id,
+    });
+
+  const block = async (comment: FullComment) => {
+    const name = comment.user.displayName || comment.displayName;
+    const confirmed = await dialogs.confirm(t('moderation.block.title', { name }), {
+      message: t('moderation.block.description'),
+      okText: t('moderation.block.confirm'),
+    });
+    if (!confirmed) return;
+    blockUser.mutate(comment.user.id, {
+      onSuccess: () => toast.success(t('moderation.block.success', { name })),
+      onError: () => toast.error(t('moderation.block.error')),
+    });
+  };
+
+  const moderationButtons = (comment: FullComment) =>
+    comment.user.id !== user.id && (
+      <span className="inline-flex gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          className="text-xs text-muted-foreground"
+          disabled={reportedIds.includes(comment.id)}
+          onClick={() => report(comment)}
+        >
+          <Flag className="size-3" />
+          {reportedIds.includes(comment.id) ? t('moderation.reported') : t('moderation.report.action')}
+        </Button>
+        <Button type="button" variant="ghost" size="xs" className="text-xs text-muted-foreground" onClick={() => block(comment)}>
+          <Ban className="size-3" />
+          {t('moderation.block.action')}
+        </Button>
+      </span>
+    );
 
   const submit = (formEvent: React.FormEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
@@ -73,18 +118,21 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
                       </div>
                       <p className="text-sm text-foreground/90 ">{comment.comment}</p>
 
-                      {/* Reply button */}
-                      {!eventInThePast(event) && hasPerm('event.comment') && (
-                        <Button
-                          type="button"
-                          variant={"outline"}
-                          size={"xs"}
-                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                          onClick={() => setReplyingTo(comment)}
-                        >
-                          {t('events.reply')}
-                        </Button>
-                      )}
+                      <div className="flex flex-wrap items-center gap-1">
+                        {/* Reply button */}
+                        {!eventInThePast(event) && hasPerm('event.comment') && (
+                          <Button
+                            type="button"
+                            variant={"outline"}
+                            size={"xs"}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            onClick={() => setReplyingTo(comment)}
+                          >
+                            {t('events.reply')}
+                          </Button>
+                        )}
+                        {moderationButtons(comment)}
+                      </div>
                     </div>
                   </ItemContent>
                 </Item>
@@ -112,6 +160,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
                             <div className="text-foreground/90 mt-0.5">
                               {reply.comment}
                             </div>
+                            <div className="mt-1">{moderationButtons(reply)}</div>
                           </div>
                         </ItemContent>
                       </Item>
