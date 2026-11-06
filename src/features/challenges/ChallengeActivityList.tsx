@@ -10,7 +10,8 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Item, ItemContent, ItemDescription, ItemHeader, ItemTitle } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { useInfiniteChallengeStats } from '@/tanstack/challenge';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, isToday } from 'date-fns';
+import { de, enGB } from 'date-fns/locale';
 import groupBy from 'lodash.groupby';
 import { Activity, BadgeCheck, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -22,7 +23,7 @@ import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Day, MonthCaption, Nav, Week } from 'react-day-picker';
 
 export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_stats: ChallengeStats[] }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date());
 
@@ -31,7 +32,7 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
   const hasEntry = (date: Date) => activeDates.some((activeDate) => isSameDay(activeDate, date));
 
   return (
-    <Item variant={"outline"} className="flex flex-col gap-0" >
+    <Item variant={"outline"} className="flex flex-col flex-nowrap shrink-0 gap-0">
       <ItemHeader className='flex justify-between w-full pb-2' onClick={() => {
         setIsOpen(!isOpen);
         setMonth(new Date());
@@ -47,6 +48,8 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
       <ItemContent className="w-full">
         <Calendar
           mode="single"
+          weekStartsOn={1}
+          locale={i18n.resolvedLanguage === 'de' ? de : enGB}
           className="p-0 pt-2 w-full"
           month={month}
           onMonthChange={(m) => setMonth(m)}
@@ -65,7 +68,7 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
 
             // eslint-disable-next-line @eslint-react/no-nested-component-definitions
             Week: ({ children, week, ...props }) => {
-              if (!isOpen && week.weekNumber.toString() !== format(new Date(), "I"))
+              if (!isOpen && !week.days.some((d) => isToday(d.date)))
                 return <></>
 
               return <Week week={week} {...props}>

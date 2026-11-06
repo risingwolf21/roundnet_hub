@@ -9,7 +9,7 @@ import { useEvents } from '@/tanstack/events';
 import { format, startOfMonth, subDays } from 'date-fns';
 import {
   AlertCircle, CalendarClock, ChartArea, ChevronRight, CircleCheck, Euro, GitMerge,
-  History, KeyRound, Send, ShieldAlert, Users, Volleyball
+  History, KeyRound, Send, Users, Volleyball
 } from 'lucide-react';
 import { ElementType, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -190,7 +190,6 @@ const AdminDashboard = () => {
         { title: t('browse.manageUsers'), description: t('admin.dashboard.tools.users'), icon: Users, path: '/admin/users', perm: 'users.manage' },
         { title: t('browse.merge_accounts'), description: t('admin.dashboard.tools.mergeAccounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' },
         { title: t('browse.notifyUsers'), description: t('admin.dashboard.tools.notify'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' },
-        { title: t('browse.moderation'), description: t('admin.dashboard.tools.moderation'), icon: ShieldAlert, path: '/admin/moderation', perm: 'moderation.manage', badge: attention.reports },
       ],
     },
     {
@@ -213,7 +212,7 @@ const AdminDashboard = () => {
     .map((group) => ({ ...group, items: group.items.filter((item) => hasPerm(item.perm as Permission)) }))
     .filter((group) => group.items.length > 0);
 
-  const attentionVisible = hasPerm('moderation.manage') || hasPerm('drinks.confirm.payments') || hasPerm('groups.manage.admin');
+  const attentionVisible = hasPerm('drinks.confirm.payments') || hasPerm('groups.manage.admin');
 
   return (
     <div>
@@ -239,15 +238,6 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   <>
-                    {attention.reports > 0 && (
-                      <AttentionRow
-                        icon={ShieldAlert}
-                        title={t('admin.dashboard.openReports')}
-                        description={t('admin.dashboard.openReportsDesc')}
-                        count={attention.reports}
-                        onClick={() => navigate('/admin/moderation')}
-                      />
-                    )}
                     {attention.payments > 0 && (
                       <AttentionRow
                         icon={Euro}

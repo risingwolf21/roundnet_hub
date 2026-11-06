@@ -81,7 +81,7 @@ export const EventRepository = {
     };
 
     const dateFieldsChanged =
-      !!updates.startingDateTime || !!updates.endDateTime || !!updates.meetingDateTime || !!updates.answerDeadline;
+      !!updates.startingDateTime || !!updates.endDateTime || !!updates.meetingDateTime || !!updates.answerDeadline || !!updates.answerStart;
 
     const changesFor = (e: EventTable, index: number): TablesUpdate<'events'> => {
       if (!dateFieldsChanged && !recurrenceChanged) return updates;
@@ -99,6 +99,7 @@ export const EventRepository = {
         ...(updates.endDateTime && { endDateTime: relativeTo(newStart, updates.endDateTime) }),
         ...(updates.meetingDateTime && { meetingDateTime: relativeTo(newStart, updates.meetingDateTime) }),
         ...(updates.answerDeadline && { answerDeadline: relativeTo(newStart, updates.answerDeadline) }),
+        ...(updates.answerStart && { answerStart: relativeTo(newStart, updates.answerStart) }),
       };
     };
 
@@ -477,6 +478,8 @@ export const EventRepository = {
           durationMs: Math.round((s.duration_s ?? 0) * 1000),
           meetingOffsetMs: s.meeting_offset_s != null ? Math.round(s.meeting_offset_s * 1000) : null,
           answerOffsetMs: s.answer_offset_s != null ? Math.round(s.answer_offset_s * 1000) : null,
+          answerStartOffsetMs:
+            s.answer_start_offset_s != null ? Math.round(s.answer_start_offset_s * 1000) : null,
         },
         now,
         rangeEnd

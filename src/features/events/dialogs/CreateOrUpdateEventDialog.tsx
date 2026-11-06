@@ -19,7 +19,7 @@ import { TimePicker } from '@/components/ui/time-picker';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
-import { add, addDays, addMilliseconds, differenceInCalendarDays, differenceInMinutes, Duration, format, isAfter, isSameDay, set } from 'date-fns';
+import { add, addDays, addMilliseconds, differenceInCalendarDays, differenceInMinutes, Duration, format, isAfter, isBefore, isSameDay, set } from 'date-fns';
 import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
 import { CalendarClock, CalendarX2, ChevronRight, Info, Map, MapPin, Package, Pencil, Repeat, ShoppingBag, Trash2, TriangleAlert, Type, UserCheck, Users } from 'lucide-react';
@@ -36,6 +36,9 @@ const SearchPlacesDialog = React.lazy(() => import('./SearchPlacesDialog'));
 const DEFAULT_DURATION: Duration = { hours: 2 };
 const FORM_ID = 'create-or-update-event-form';
 
+// Attendance opens this long before the start unless the creator changes or removes it.
+const DEFAULT_ANSWER_START_DAYS_BEFORE = 5;
+
 const createEmptyEvent = () => ({
   title: '',
   description: '',
@@ -47,11 +50,13 @@ const createEmptyEvent = () => ({
   max_trial_attendees: null,
   required_item: null,
   answerDeadline: null,
-  // answerStart: null,
+  answerStart: formatDateToDatabase(
+    add(set(new Date(), { seconds: 0, milliseconds: 0 }), { days: -DEFAULT_ANSWER_START_DAYS_BEFORE })
+  ),
   place: null,
 }) as EventTable;
 
-const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline', 'answerStart'] as const;
 
 // Derive a recurring-series template from the edited event. Used both when creating a recurring
 // event and when editing "this and all following" (which redefines the series going forward).
@@ -78,6 +83,7 @@ const buildSeriesFromEvent = (
     duration: intervalSecondsLiteral(start, ev.endDateTime),
     meeting_offset: ev.meetingDateTime ? intervalSecondsLiteral(start, ev.meetingDateTime) : null,
     answer_offset: ev.answerDeadline ? intervalSecondsLiteral(start, ev.answerDeadline) : null,
+    answer_start_offset: ev.answerStart ? intervalSecondsLiteral(start, ev.answerStart) : null,
     max_attendees: ev.maxAttendees ?? null,
     max_trial_attendees: ev.max_trial_attendees ?? null,
     required_item: ev.required_item ?? null,
@@ -187,6 +193,16 @@ export const CreateOrUpdateEventDialog = ({
       if (finalEvent.answerDeadline && isAfter(finalEvent.answerDeadline, finalEvent.startingDateTime))
         throw new Error(t('events.creation.answerDeadlineAfterStart'));
 
+      if (finalEvent.answerStart && !isBefore(finalEvent.answerStart, finalEvent.startingDateTime))
+        throw new Error(t('events.creation.answerStartAfterStart'));
+
+      if (
+        finalEvent.answerStart &&
+        finalEvent.answerDeadline &&
+        isAfter(finalEvent.answerStart, finalEvent.answerDeadline)
+      )
+        throw new Error(t('events.creation.answerStartAfterDeadline'));
+
       if (!finalEvent.title || finalEvent.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
 
       if (!finalEvent.description || finalEvent.description.length < 1)
@@ -293,6 +309,7 @@ export const CreateOrUpdateEventDialog = ({
         startingDateTime: formatDateToDatabase(next),
         endDateTime: moved(prev.endDateTime) as string,
         meetingDateTime: moved(prev.meetingDateTime),
+        answerStart: moved(prev.answerStart),
       };
     });
 
@@ -303,6 +320,9 @@ export const CreateOrUpdateEventDialog = ({
   const durationLabel = `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ''}`;
   const deadline = editedEvent.answerDeadline ? new Date(editedEvent.answerDeadline) : null;
   const deadlineAfterStart = !!deadline && isAfter(deadline, start);
+  const answerStart = editedEvent.answerStart ? new Date(editedEvent.answerStart) : null;
+  const answerStartAfterStart = !!answerStart && !isBefore(answerStart, start);
+  const answerStartAfterDeadline = !!answerStart && !!deadline && isAfter(answerStart, deadline);
   const isRecurring = !!editedEvent.recurrence && editedEvent.recurrence !== 'None';
   const titleError = submitted && (editedEvent.title ?? '').length < 6;
   const descriptionError = submitted && !editedEvent.description;
@@ -322,6 +342,8 @@ export const CreateOrUpdateEventDialog = ({
       });
     }
   };
+
+  const defaultAnswerStart = () => formatDateToDatabase(add(start, { days: -DEFAULT_ANSWER_START_DAYS_BEFORE }));
 
   const defaultDeadline = () => {
     const dayBefore = add(start, { days: -1 });
@@ -579,6 +601,40 @@ export const CreateOrUpdateEventDialog = ({
           )}
 
           <FormSection icon={UserCheck} title={t('events.creation.sectionRegistration')}>
+            <ToggleRow
+              id="event-answerstart-enabled"
+              title={t('events.creation.answerStart')}
+              description={t('events.creation.answerStartHint')}
+              checked={!!editedEvent.answerStart}
+              onCheckedChange={(checked) => patch({ answerStart: checked ? defaultAnswerStart() : null })}
+            >
+              <div className='grid grid-cols-[1fr_7rem] gap-3'>
+                <DatePicker
+                  id='event-answerstartdate'
+                  placeholder={t('costs.date')}
+                  className='w-full'
+                  value={answerStart ?? undefined}
+                  onValueChange={(val) => {
+                    if (!val || !answerStart) return;
+                    patch({
+                      answerStart: formatDateToDatabase(
+                        set(answerStart, { date: val.getDate(), month: val.getMonth(), year: val.getFullYear() })
+                      ),
+                    });
+                  }} />
+                <TimePicker
+                  id="event-answerstarttime"
+                  className='!w-full'
+                  value={answerStart ?? undefined}
+                  onValueChange={(newDate) => newDate && patch({ answerStart: formatDateToDatabase(newDate) })}
+                />
+              </div>
+              {answerStartAfterStart && <FieldHint error>{t('events.creation.answerStartAfterStart')}</FieldHint>}
+              {!answerStartAfterStart && answerStartAfterDeadline && (
+                <FieldHint error>{t('events.creation.answerStartAfterDeadline')}</FieldHint>
+              )}
+            </ToggleRow>
+
             <ToggleRow
               id="event-deadline-enabled"
               title={t('events.creation.signupDeadline')}

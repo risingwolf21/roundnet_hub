@@ -1,4 +1,3 @@
-import { DangerZone } from "@/components/DangerZone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,15 +7,12 @@ import { useDialogs } from "@/contexts/DialogsProvider";
 import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
-import BlockedUsersList from '../BlockedUsersList';
-import { LegalLinks } from '@/features/legal/LegalPage';
 import { Camera, Image, LogOut, Trash } from "lucide-react";
 import { lazy, ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 const CropImageDialog = lazy(() => import('@/components/CropImageDialog'));
-const DeleteAccountDialog = lazy(() => import('../dialogs/DeleteAccountDialog'));
 
 const LANGUAGES = [
   { value: 'de', label: 'Deutsch' },
@@ -60,13 +56,6 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
   };
 
   const openPicker = () => inputRef.current?.click();
-
-  const deleteAccount = async () => {
-    const deleted = await dialogs.open(DeleteAccountDialog);
-    if (!deleted) return;
-    toast.success(t('profile.account.deleteAccountSuccess'));
-    handleSignOut();
-  };
 
   const submit = async () => {
     try {
@@ -192,20 +181,10 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
         </Button>
       </Section>
 
-      <BlockedUsersList userId={user.id} />
-
       <Button variant="outline" className='max-sm:w-full' onClick={handleSignOut}>
         <LogOut />
         {t('profile.account.logout')}
       </Button>
-
-      <LegalLinks className="py-2" />
-
-      <DangerZone
-        description={t('profile.account.dangerZoneDescription')}
-        actionLabel={t('profile.account.deleteAccount')}
-        onAction={deleteAccount}
-      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 // Integration tests for the authorization of admin edge functions.
 // Requires the local stack (`supabase start`) incl. edge runtime. Run via `yarn test:functions`.
-import { assert, assertEquals, assertStringIncludes } from '@std/assert';
+import { assert, assertEquals } from '@std/assert';
 import { createClient, SupabaseClient } from 'supabase';
 
 const API_URL = Deno.env.get('API_URL') ?? Deno.env.get('SUPABASE_URL');
@@ -66,45 +66,6 @@ Deno.test({
     const target = await createUser('target');
 
     try {
-      await t.step('management-proxy: answers CORS preflight', async () => {
-        const res = await callFunction('management-proxy', { method: 'OPTIONS' });
-        await res.body?.cancel();
-        assertEquals(res.status, 200);
-      });
-
-      await t.step('management-proxy: rejects calls without a user session', async () => {
-        const res = await callFunction('management-proxy', {
-          token: ANON_KEY,
-          body: { method: 'POST', path: '/v1/projects/x/database/query' },
-        });
-        assertEquals(res.status, 401);
-        await res.body?.cancel();
-      });
-
-      await t.step('management-proxy: rejects users without supabase.admin', async () => {
-        for (const user of [normal, resetter]) {
-          const res = await callFunction('management-proxy', {
-            token: user.token,
-            body: { method: 'POST', path: '/v1/projects/x/database/query', payload: { query: 'select 1' } },
-          });
-          assertEquals(res.status, 403, user.email);
-          assertStringIncludes((await res.json()).error, 'Only Admins');
-        }
-      });
-
-      await t.step('management-proxy: admins cannot reach endpoints outside the allow-list', async () => {
-        for (const [method, path] of [
-          ['GET', '/v1/projects/x/secrets'],
-          ['GET', '/v1/projects/x/api-keys'],
-          ['DELETE', '/v1/projects/x'],
-          ['GET', '/v1/organizations'],
-        ]) {
-          const res = await callFunction('management-proxy', { token: admin.token, body: { method, path } });
-          assertEquals(res.status, 403, `${method} ${path}`);
-          assertStringIncludes((await res.json()).error, 'is not allowed');
-        }
-      });
-
       await t.step('reset-user-password: only POST is accepted', async () => {
         const res = await callFunction('reset-user-password', { method: 'GET', token: admin.token });
         await res.body?.cancel();

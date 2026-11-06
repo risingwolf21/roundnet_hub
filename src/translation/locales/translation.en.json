@@ -257,7 +257,11 @@
       "noBringItems": "Nothing to bring",
       "createEvent": "Create event",
       "editingSingle": "Only this event is changed.",
-      "editingFollowing": "This and all following events are changed."
+      "editingFollowing": "This and all following events are changed.",
+      "answerStart": "Registration opens",
+      "answerStartHint": "Participants can only sign up or cancel from this point on",
+      "answerStartAfterStart": "Registration must open before the event starts",
+      "answerStartAfterDeadline": "Registration must open before the registration deadline"
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -318,7 +322,8 @@
       "full": "Full",
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Answer by {{date}}",
-      "leaveWaitingList": "Leave waiting list"
+      "leaveWaitingList": "Leave waiting list",
+      "answerNotOpenYet": "Registration opens on {{date}}"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -370,7 +375,8 @@
       "answerUntil": "Answer by {{date}}",
       "answerNeeded": "Answer needed",
       "deadlinePassed": "Deadline passed",
-      "full": "Full"
+      "full": "Full",
+      "opensOn": "Opens {{date}}"
     },
     "replyTo": "Replying to @{{name}}",
     "reply": "Reply",

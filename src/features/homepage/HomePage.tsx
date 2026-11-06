@@ -15,9 +15,9 @@ import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
-import { differenceInCalendarDays } from 'date-fns';
+import { differenceInCalendarDays, format } from 'date-fns';
 import {
   AlertCircle,
   Bell,
@@ -124,9 +124,11 @@ const NextEventCard = ({
   const waiting =
     event.user_state === 'Waiting' || event.user_state === 'WaitingAsTrial' || event.user_state === 'RequestedAttendance';
   const trainer = event.user_state === 'AttendingAsTrainer';
-  const needsAnswer = event.user_state === null && !answerDeadlineExpired(event) && !eventHasStarted(event);
-  const cannotDecline = eventHasStarted(event);
-  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event);
+  const notOpenYet = answerNotOpenYet(event);
+  const opensLater = event.user_state === null && notOpenYet;
+  const needsAnswer = event.user_state === null && !notOpenYet && !answerDeadlineExpired(event) && !eventHasStarted(event);
+  const cannotDecline = eventHasStarted(event) || notOpenYet;
+  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event) || notOpenYet;
   const count = event.attending_count ?? 0;
 
   return (
@@ -173,6 +175,12 @@ const NextEventCard = ({
           {event.maxAttendees ? t('events.item.attendingOfMax', { count, max: event.maxAttendees }) : count}
         </Badge>
         {needsAnswer && <Badge variant="warning">{t('events.item.answerNeeded')}</Badge>}
+        {opensLater && event.answerStart && (
+          <Badge variant="outline">
+            <Clock />
+            {t('events.item.opensOn', { date: format(event.answerStart, 'dd.MM. HH:mm') })}
+          </Badge>
+        )}
       </div>
 
       {trainer ? (
@@ -198,7 +206,7 @@ const NextEventCard = ({
             {t('home.decline')}
           </Button>
           <Button
-            variant={attending ? 'ghost' : 'default'}
+            variant={attending ? 'ghost' : notOpenYet ? 'outline' : 'default'}
             className={cn(attending && 'bg-success text-success-foreground')}
             aria-pressed={attending}
             disabled={cannotAttend || pending}
@@ -232,7 +240,7 @@ const DrinksSection = () => {
       ) : available.length === 0 ? (
         <SectionMessage message={t('home.noDrinksAvailable')} />
       ) : (
-        <div className="no-scrollbar -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1">
+        <div className="no-scrollbar -mx-4 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1">
           {available.map((drink: Drink) => {
             const pending = updateHistory.isPending && updateHistory.variables?.drinks.some((x) => x.id === drink.id);
             return (
@@ -344,7 +352,8 @@ const HomePage = () => {
   const next = upcoming.find((x) => !x.isCancelled);
   const following = upcoming.filter((x) => x.id !== next?.id).slice(0, UPCOMING_LIMIT);
   const unanswered = upcoming.filter(
-    (x) => x.user_state === null && !x.isCancelled && !answerDeadlineExpired(x) && !eventHasStarted(x)
+    (x) =>
+      x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x)
   ).length;
   const unreadNotifications = notifications.filter((x) => !x.dismissed_at).length;
 

@@ -252,28 +252,6 @@ const createRouter = (user: UserWithGroups | null) =>
               ],
             },
             {
-              path: '/supabase',
-              errorElement: <Pages.ErrorRouteElement />,
-              children: [
-                {
-                  path: 'logs',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.LogsManager />
-                    </Has >
-                  ),
-                },
-                {
-                  path: 'database',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.DatabaseManager />
-                    </Has>
-                  ),
-                }
-              ]
-            },
-            {
               path: '/admin',
               element: <Outlet />,
               errorElement: <Pages.ErrorRouteElement />,

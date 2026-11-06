@@ -67,9 +67,10 @@ export const useInfiniteDrinkHistory = () =>
     initialPageParam: 0,
   });
 
-export const useAllPayments = () =>
+export const useAllPayments = (enabled = true) =>
   useQuery<FullPayment[]>({
     queryKey: adminKeys.payments.list(),
+    enabled,
     queryFn: () => AdminUsersRepository.fetchOpenPayments(),
   });
 

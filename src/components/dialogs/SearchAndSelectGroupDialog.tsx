@@ -9,7 +9,7 @@ import { DialogProps } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { useGroups } from '@/tanstack/groups';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
-import { Check, Lock, Search, SearchX, ShieldCheck, Users } from 'lucide-react';
+import { Check, CornerDownRight, Lock, Search, SearchX, ShieldCheck, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -71,10 +71,15 @@ const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, 
           <ItemTitle className="min-w-0">
             <span className="truncate">{group.name}</span>
           </ItemTitle>
+          {parent && (
+            <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+              <CornerDownRight className="size-3.5 shrink-0" />
+              <span className="truncate">{t('groups.subgroupOf', { group: parent })}</span>
+            </div>
+          )}
           {group.description && <ItemDescription className="line-clamp-2">{group.description}</ItemDescription>}
-          {(parent || !group.is_public) && (
+          {!group.is_public && (
             <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              {parent && <Badge variant="outline">{t('groups.subgroupOf', { group: parent })}</Badge>}
               {!group.is_public && <Badge variant="outline"><Lock />{t('groups.private')}</Badge>}
             </div>
           )}

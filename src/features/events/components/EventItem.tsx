@@ -5,7 +5,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { sideBar } from '@/components/list/ListParts';
 import { cn } from '@/lib/utils';
 import { Has } from '@/hooks/useGrants';
-import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { format, isBefore, isSameDay } from 'date-fns';
 import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, UserX, Users, X } from 'lucide-react';
 import { useState } from 'react';
@@ -79,8 +79,9 @@ const AttendanceButtons = ({
     );
   }
 
-  const cannotDecline = eventHasStarted(event);
-  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event);
+  const notOpenYet = answerNotOpenYet(event);
+  const cannotDecline = eventHasStarted(event) || notOpenYet;
+  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event) || notOpenYet;
 
   return (
     <div className="flex gap-2">
@@ -147,7 +148,8 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
   const past = eventInThePast(event);
   const closed = event.isCancelled || past;
   const unanswered = event.user_state === null;
-  const needsAnswer = unanswered && !closed && !answerDeadlineExpired(event) && !eventHasStarted(event);
+  const opensLater = unanswered && !closed && answerNotOpenYet(event);
+  const needsAnswer = unanswered && !closed && !opensLater && !answerDeadlineExpired(event) && !eventHasStarted(event);
   const deadlinePassed = unanswered && !closed && answerDeadlineExpired(event) && !eventHasStarted(event);
 
   // eslint-disable-next-line @eslint-react/naming-convention/use-state
@@ -160,7 +162,8 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
 
   const dateFormat = new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', day: 'numeric', month: 'numeric' });
   const locationName = place.name?.trim();
-  const hasMeta = !!event.group || (needsAnswer && !!event.answerDeadline) || deadlinePassed || (full && !closed);
+  const hasMeta =
+    !!event.group || (needsAnswer && !!event.answerDeadline) || deadlinePassed || opensLater || (full && !closed);
 
   // Phone: title and time next to the buttons, location and group use the full width below.
   // Wide container: one table-like row. Layout classes are placed so every cell can be missing without breaking it.
@@ -296,6 +299,12 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             {needsAnswer && event.answerDeadline && (
               <Badge variant={deadlineSoon ? 'warning' : 'outline'} className="max-w-full shrink-0">
                 {t('events.item.answerUntil', { date: format(event.answerDeadline, 'dd.MM. HH:mm') })}
+              </Badge>
+            )}
+            {opensLater && event.answerStart && (
+              <Badge variant="outline" className="max-w-full shrink-0">
+                <Clock />
+                {t('events.item.opensOn', { date: format(event.answerStart, 'dd.MM. HH:mm') })}
               </Badge>
             )}
             {deadlinePassed && <Badge variant="outline" className="shrink-0">{t('events.item.deadlinePassed')}</Badge>}

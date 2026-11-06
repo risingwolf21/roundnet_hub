@@ -28,6 +28,7 @@ describe('RecurrenceExpander', () => {
       ending: '2026-03-18T19:30:00.000Z',
       meeting: null,
       deadline: null,
+      answer_start: null,
     });
   });
 
@@ -72,12 +73,13 @@ describe('RecurrenceExpander', () => {
     ]);
   });
 
-  it('calculates meeting and deadline from each occurrence start', () => {
+  it('calculates meeting, answer start and deadline from each occurrence start', () => {
     const slots = RecurrenceExpander.expand(
       {
         ...baseInput,
         meetingOffsetMs: -24 * 60 * 60 * 1000,
         answerOffsetMs: -60 * 60 * 1000,
+        answerStartOffsetMs: -5 * 24 * 60 * 60 * 1000,
       },
       new Date('2026-03-18T18:00:00.000Z'),
       new Date('2026-03-18T18:00:00.000Z'),
@@ -86,6 +88,7 @@ describe('RecurrenceExpander', () => {
     expect(slots).toHaveLength(1);
     expect(slots[0].meeting).toBe('2026-03-17T18:00:00.000Z');
     expect(slots[0].deadline).toBe('2026-03-18T17:00:00.000Z');
+    expect(slots[0].answer_start).toBe('2026-03-13T18:00:00.000Z');
   });
 
   it('returns no slots when the range contains no matching occurrence', () => {

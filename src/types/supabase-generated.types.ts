@@ -2083,6 +2083,7 @@ export type Database = {
         Row: {
           active: boolean
           answer_offset: unknown | null
+          answer_start_offset: unknown | null
           constellations_enabled: boolean
           created_at: string
           created_by: string | null
@@ -2109,6 +2110,7 @@ export type Database = {
         Insert: {
           active?: boolean
           answer_offset?: unknown | null
+          answer_start_offset?: unknown | null
           constellations_enabled?: boolean
           created_at?: string
           created_by?: string | null
@@ -2135,6 +2137,7 @@ export type Database = {
         Update: {
           active?: boolean
           answer_offset?: unknown | null
+          answer_start_offset?: unknown | null
           constellations_enabled?: boolean
           created_at?: string
           created_by?: string | null
@@ -2286,6 +2289,7 @@ export type Database = {
       events: {
         Row: {
           answerDeadline: string | null
+          answerStart: string | null
           constellations_enabled: boolean
           created_at: string
           description: string
@@ -2312,6 +2316,7 @@ export type Database = {
         }
         Insert: {
           answerDeadline?: string | null
+          answerStart?: string | null
           constellations_enabled?: boolean
           created_at?: string
           description?: string
@@ -2338,6 +2343,7 @@ export type Database = {
         }
         Update: {
           answerDeadline?: string | null
+          answerStart?: string | null
           constellations_enabled?: boolean
           created_at?: string
           description?: string
@@ -3140,6 +3146,7 @@ export type Database = {
       events_user_view: {
         Row: {
           answerDeadline: string | null
+          answerStart: string | null
           attending_count: number | null
           constellations_enabled: boolean | null
           created_at: string | null
@@ -3594,6 +3601,7 @@ export type Database = {
         Args: { p_series_id?: string }
         Returns: {
           answer_offset_s: number
+          answer_start_offset_s: number
           dtstart: string
           duration_s: number
           id: string

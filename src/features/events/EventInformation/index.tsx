@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
-import { answerDeadlineExpired, eventHasStarted, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase } from "@/utils";
 import { captureException } from "@sentry/react";
 import { isBefore, isSameDay } from 'date-fns';
@@ -99,7 +99,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
   const busy = updateAttendance.isPending;
   const status = statusOf(event.user_state);
   const isOver = eventInThePast(event);
-  const locked = event.isCancelled || isOver || eventHasStarted(event);
+  const locked = event.isCancelled || isOver || eventHasStarted(event) || answerNotOpenYet(event);
 
   const changeAttendance = (newState: EventAttendance) => {
     updateAttendance.mutate(
@@ -433,6 +433,14 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                   <Alert variant={"error"}>
                     <InfoIcon />
                     <AlertTitle><Trans i18nKey="events.information.eventCancelled" components={{ strong: <strong /> }} /></AlertTitle>
+                  </Alert>
+                )}
+                {answerNotOpenYet(event) && event.answerStart && !event.isCancelled && (
+                  <Alert variant={"info"}>
+                    <InfoIcon />
+                    <AlertTitle>{t('events.information.answerNotOpenYet', {
+                      date: dateTimeFormat.format(new Date(event.answerStart)),
+                    })}</AlertTitle>
                   </Alert>
                 )}
                 {answerDeadlineExpired(event) && event.answerDeadline && !event.isCancelled && (

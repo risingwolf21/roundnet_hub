@@ -4,7 +4,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ClipboardList, Database, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Logs, Package, Receipt, RefreshCcw, Search, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ClipboardList, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Package, Receipt, RefreshCcw, Search, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -256,31 +256,6 @@ export function AppSidebar() {
             any: true,
           },
         },
-      ]
-    },
-    {
-      key: "supabaseList",
-      header: "Supabase Admin",
-      permission: {
-        perm: 'supabase.admin'
-      },
-      children: [
-        {
-          title: t('browse.logs'),
-          icon: <Logs />,
-          path: 'supabase/logs',
-          permission: {
-            perm: 'supabase.admin'
-          }
-        },
-        {
-          title: t('browse.database'),
-          icon: <Database />,
-          path: 'supabase/database',
-          permission: {
-            perm: 'supabase.admin'
-          }
-        }
       ]
     },
     {

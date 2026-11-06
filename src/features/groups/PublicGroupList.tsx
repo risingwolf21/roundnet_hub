@@ -17,7 +17,7 @@ import { useGroups, useJoinGroup, useRequestedUsersPerGroup } from "@/tanstack/g
 import { useAllNotifications } from "@/tanstack/notifications";
 import { GroupWithUserMappings } from "@/types/supabaseTypes";
 import { captureException } from "@sentry/react";
-import { Clock, EyeOff, Info, Lock, Plus, SearchX, ShieldCheck, UserPlus, Users } from "lucide-react";
+import { Clock, CornerDownRight, EyeOff, Info, Lock, Plus, SearchX, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -118,9 +118,14 @@ const PublicGroupList = () => {
         </ItemMedia>
         <ItemContent>
           <ItemTitle>{x.name}</ItemTitle>
+          {parent && (
+            <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+              <CornerDownRight className="size-3.5 shrink-0" />
+              <span className="truncate">{t('groups.subgroupOf', { group: parent })}</span>
+            </div>
+          )}
           <ItemDescription className="line-clamp-2">{x.description}</ItemDescription>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {parent && <Badge variant="outline">{t('groups.subgroupOf', { group: parent })}</Badge>}
             {!x.user_group_role && x.need_request_to_join && (
               <Badge variant="secondary"><Lock />{t('groups.approvalRequired')}</Badge>
             )}

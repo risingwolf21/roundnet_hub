@@ -8,7 +8,7 @@ import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
-import { answerDeadlineExpired, eventHasStarted, EventsUserView } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import groupBy from 'lodash.groupby';
@@ -23,7 +23,7 @@ import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 type EventView = 'upcoming' | 'open' | 'past';
 
 const needsAnswer = (x: EventsUserView) =>
-  x.user_state === null && !x.isCancelled && !answerDeadlineExpired(x) && !eventHasStarted(x);
+  x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x);
 
 const EventScreen = () => {
   const { t, i18n } = useTranslation();

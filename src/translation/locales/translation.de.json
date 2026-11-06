@@ -257,7 +257,11 @@
       "noBringItems": "Nichts mitzubringen",
       "createEvent": "Event erstellen",
       "editingSingle": "Nur dieses Event wird geändert.",
-      "editingFollowing": "Dieses und alle folgenden Events werden geändert."
+      "editingFollowing": "Dieses und alle folgenden Events werden geändert.",
+      "answerStart": "Anmeldung ab",
+      "answerStartHint": "Erst ab diesem Zeitpunkt können sich Teilnehmende an- und abmelden",
+      "answerStartAfterStart": "Die Anmeldung muss vor dem Start des Events beginnen",
+      "answerStartAfterDeadline": "Die Anmeldung muss vor der Anmeldedeadline beginnen"
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -318,7 +322,8 @@
       "full": "Voll",
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Antwort bis {{date}}",
-      "leaveWaitingList": "Warteliste verlassen"
+      "leaveWaitingList": "Warteliste verlassen",
+      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}"
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -370,7 +375,8 @@
       "answerUntil": "Antwort bis {{date}}",
       "answerNeeded": "Antwort fehlt",
       "deadlinePassed": "Frist abgelaufen",
-      "full": "Voll"
+      "full": "Voll",
+      "opensOn": "Anmeldung ab {{date}}"
     },
     "replyTo": "Antworte auf @{{name}}",
     "reply": "Antworten",
