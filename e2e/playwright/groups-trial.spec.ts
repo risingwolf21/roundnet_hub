@@ -73,6 +73,7 @@ test.describe('Trial membership', () => {
   test('an admin accepts a join request as trial member', { annotation: flow('trials.accept') }, async ({ page }) => {
     await signIn(page, ADMIN_EMAIL);
     await page.goto(`/groups/${GROUP}`);
+    await page.getByRole('radio', { name: /^Anfragen/ }).click();
 
     await memberRow(page, TRIAL_NAME, 'Bearbeiten').getByRole('button', { name: 'Bearbeiten' }).click();
     await page.getByRole('menuitem', { name: 'Probenutzer' }).click();

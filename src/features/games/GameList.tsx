@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
-import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
 import { useMatches } from '@/tanstack/games';
 import { format, intlFormatDistance, isAfter, parseISO } from 'date-fns';
@@ -188,21 +187,20 @@ const GameList = () => {
             ))}
           </div>
         </PullToRefresh>
-        <Has perm="games.create">
-          <div
-            className="fixed right-6 z-50"
-            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+        {/* Every player may enter their own matches (add_match_with_sets checks participation). */}
+        <div
+          className="fixed right-6 z-50"
+          style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <Button
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+            aria-label={t('games.list.add')}
+            onClick={() => dialogs.open(ReportScore)}
           >
-            <Button
-              size="icon"
-              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-              aria-label={t('games.list.add')}
-              onClick={() => dialogs.open(ReportScore)}
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
-          </div>
-        </Has>
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
       </main>
     </div>
   );

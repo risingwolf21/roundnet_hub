@@ -81,7 +81,7 @@ test.describe('Administration', () => {
     const row = page.locator('[data-slot="item"]', { hasText: GUEST });
     await row.getByRole('button', { name: 'Zuordnen' }).click();
     // The picker filters by display name (renamed in the previous test) — pick the row by e-mail.
-    await page.getByRole('alertdialog').getByText(MEMBER.email, { exact: true }).click();
+    await page.getByRole('dialog').getByText(MEMBER.email, { exact: true }).click();
     await page.getByRole('button', { name: 'Bestätigen' }).click();
     await expect(page.getByText('Die Accounts wurden erfolgreich gemerged!')).toBeVisible();
     await expect(row).toHaveCount(0);

@@ -61,8 +61,8 @@ test.describe('Drinks', () => {
     await row.getByRole('button').last().click();
     await expect(row.getByText('2', { exact: true })).toBeVisible();
 
-    // Floating confirm button (rendered only with drinks.purchase and something added).
-    await page.locator('div.fixed.right-6 button').click();
+    // "Buchen" in the cart bar (rendered only with drinks.purchase and something added).
+    await page.getByRole('button', { name: 'Buchen', exact: true }).click();
     await expect(page.getByText('Getränke erfolgreich gebucht!')).toBeVisible();
 
     await expect.poll(bookedTotals).toEqual({ count: 2, amount: 2 * PRICE });

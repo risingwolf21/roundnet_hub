@@ -3,6 +3,10 @@
 -- them configured in the dashboard — so on a fresh stack every upload is refused (400).
 -- These mirror what the app needs: each user manages files in their own folder of the public
 -- `user` bucket (avatar upload: <user id>/<file>, see src/tanstack/user.ts).
+-- The buckets themselves are not in the repo either (production: dashboard). Public, like production.
+insert into storage.buckets (id, name, public) values ('user', 'user', true), ('challenge', 'challenge', true)
+on conflict (id) do nothing;
+
 drop policy if exists "e2e user bucket: own folder read" on storage.objects;
 create policy "e2e user bucket: own folder read" on storage.objects for select to authenticated
   using (bucket_id = 'user' and (storage.foldername(name))[1] = auth.uid()::text);

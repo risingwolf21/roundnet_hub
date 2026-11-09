@@ -34,9 +34,9 @@ async function openEditSingle(page: Page) {
   await expect(page.getByText('Event bearbeiten')).toBeVisible();
 }
 
-/** The "Gegenstände mitbringen" row's edit (pencil) button inside the event dialog. */
+/** The "Gegenstände mitbringen" section's "Ändern" button inside the event dialog. */
 const bringItemsButton = (page: Page) =>
-  page.getByRole('dialog').locator('[data-slot="field"]', { hasText: 'Gegenstände mitbringen' }).locator('button:has(svg.lucide-pencil)');
+  page.getByRole('dialog').locator('section', { has: page.getByText('Gegenstände mitbringen', { exact: true }) }).getByRole('button', { name: 'Ändern' });
 
 async function pledge(page: Page, qty: number) {
   await page.goto(`/training/event/${EVENT}`);
@@ -75,9 +75,8 @@ test.describe('Mitbringliste', () => {
     await openEditSingle(page);
 
     // "Benötigter Gegenstand" (feature `items`): which key/room is needed for this training.
-    // force: the switch sits in a <label> whose first control (the select) is disabled until it's on.
-    const requiredSwitch = page.getByRole('dialog').locator('[data-slot="field"]', { hasText: 'Benötigter Gegenstand' }).first().getByRole('switch');
-    await requiredSwitch.click({ force: true });
+    const requiredSwitch = page.getByRole('dialog').locator('label', { hasText: 'Benötigter Gegenstand' }).getByRole('switch');
+    await requiredSwitch.click();
     await expect(requiredSwitch).toHaveAttribute('aria-checked', 'true');
 
     await bringItemsButton(page).click();
