@@ -168,7 +168,9 @@ jobs:
         with:
           version: 3.0.0
       - name: Push unpublished migrations
-        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+        run: supabase db push --remote=${{ secrets.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
   migrate-munich:
     name: "Migrate Database Munich"
@@ -186,7 +188,9 @@ jobs:
         with:
           version: 3.0.0
       - name: Push unpublished migrations
-        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+        run: supabase db push --remote=${{ secrets.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
   deploy-functions-karlsruhe:
     name: "Deploy Edge Functions Karlsruhe"
