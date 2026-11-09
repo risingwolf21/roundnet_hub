@@ -261,6 +261,7 @@ export const EventRepository = {
       .from('event_series')
       .select('id, title, rrule, dtstart, until, fullGroup: event_group(id, name, color), occurrences: events(id, startingDateTime, endDateTime, isCancelled, detached)')
       .eq('active', true)
+      .or(`until.is.null,until.gte.'${formatDateToDatabase(from)}'`)
       .gte('occurrences.startingDateTime', formatDateToDatabase(from))
       .lt('occurrences.startingDateTime', formatDateToDatabase(to))
       .order('startingDateTime', { referencedTable: 'occurrences' })
