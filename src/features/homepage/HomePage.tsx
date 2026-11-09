@@ -206,7 +206,8 @@ const NextEventCard = ({
             {t('home.decline')}
           </Button>
           <Button
-            variant={attending ? 'ghost' : notOpenYet ? 'outline' : 'default'}
+            // Only filled once you attend: the primary colour (green in Karlsruhe) would read as "attending".
+            variant={attending ? 'ghost' : 'outline'}
             className={cn(attending && 'bg-success text-success-foreground')}
             aria-pressed={attending}
             disabled={cannotAttend || pending}
