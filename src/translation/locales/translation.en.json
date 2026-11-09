@@ -493,7 +493,12 @@
       "retry": "Try again",
       "groupFilter": "Group",
       "allGroups": "All",
-      "gridLabel": "Events in the next {{weeks}} weeks"
+      "gridLabel": "Events in the next {{weeks}} weeks",
+      "compare": "Compare series",
+      "compareHint": "Show only the selected series in the grid.",
+      "compareCount_one": "{{count}} of {{total}} series shown",
+      "compareCount_other": "{{count}} of {{total}} series shown",
+      "compareReset": "Clear selection"
     },
     "repositoryErrors": {
       "seriesNotFound": "The events of the series could not be found (missing permission or already deleted).",

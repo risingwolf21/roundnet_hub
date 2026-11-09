@@ -7,12 +7,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { useExpandRecurrences, useSeriesOverview } from '@/tanstack/events';
 import { addWeeks, getISOWeek } from 'date-fns';
-import { Ban, CalendarClock, CalendarSync, ChevronRight, RefreshCw } from 'lucide-react';
+import { Ban, CalendarClock, CalendarSync, Check, ChevronRight, RefreshCw } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
+import { ToggleRow } from './dialogs/EventFormParts';
 import { GRID_WEEKS, gridWeeks, rhythmOf, SeriesCell, weekCells } from './seriesGrid';
 
 type SeriesRow = {
@@ -46,6 +47,9 @@ const RecurringEvents = () => {
   const { data: series = [], isLoading, error, refetch } = useSeriesOverview(weeks[0], addWeeks(weeks[0], GRID_WEEKS));
   const createNextEvents = useExpandRecurrences();
   const [groupFilter, setGroupFilter] = useState('all');
+  // Compare mode: show only the picked series. Nothing picked yet = all series.
+  const [comparing, setComparing] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
 
   const rows = useMemo<SeriesRow[]>(() => {
     const lang = i18n.resolvedLanguage;
@@ -91,7 +95,9 @@ const RecurringEvents = () => {
     return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
   }, [rows]);
 
-  const shown = rows.filter((row) => groupFilter === 'all' || row.group?.id === groupFilter);
+  const inGroup = rows.filter((row) => groupFilter === 'all' || row.group?.id === groupFilter);
+  const shown = comparing && picked.length > 0 ? inGroup.filter((row) => picked.includes(row.id)) : inGroup;
+  const togglePick = (id: string) => setPicked((current) => (current.includes(id) ? current.filter((x) => x !== id) : [...current, id]));
 
   const createNext = () =>
     createNextEvents.mutate(undefined, {
@@ -147,6 +153,54 @@ const RecurringEvents = () => {
                     ]}
                   />
                 )}
+
+                <section className="rounded-xl border bg-card p-3">
+                  <ToggleRow
+                    id="recurring-compare"
+                    title={t('events.recurring.compare')}
+                    description={t('events.recurring.compareHint')}
+                    checked={comparing}
+                    onCheckedChange={(on) => {
+                      setComparing(on);
+                      if (!on) setPicked([]);
+                    }}
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {inGroup.map((row) => {
+                          const active = picked.includes(row.id);
+                          return (
+                            <button
+                              key={row.id}
+                              type="button"
+                              aria-pressed={active}
+                              onClick={() => togglePick(row.id)}
+                              className={cn(
+                                'flex h-9 max-w-full items-center gap-1.5 rounded-full border px-3 text-sm',
+                                active ? 'border-primary bg-primary/10 font-medium' : 'bg-background text-muted-foreground'
+                              )}
+                            >
+                              {active ? (
+                                <Check className="size-3.5 shrink-0 text-primary" />
+                              ) : (
+                                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: row.group?.color ?? 'var(--primary)' }} />
+                              )}
+                              <span className="truncate">{row.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <span>{t('events.recurring.compareCount', { count: shown.length, total: inGroup.length })}</span>
+                        {picked.length > 0 && (
+                          <Button variant="ghost" size="sm" onClick={() => setPicked([])}>
+                            {t('events.recurring.compareReset')}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </ToggleRow>
+                </section>
 
                 <section aria-label={t('events.recurring.gridLabel', { weeks: GRID_WEEKS })} className="overflow-hidden rounded-xl border bg-card">
                   <div className="sticky top-0 z-10 border-b border-l-4 border-l-transparent bg-card/95 px-3 pt-1 backdrop-blur @3xl:pl-[calc(20rem+1.75rem)]">

@@ -493,7 +493,12 @@
       "retry": "Erneut versuchen",
       "groupFilter": "Gruppe",
       "allGroups": "Alle",
-      "gridLabel": "Termine der nächsten {{weeks}} Wochen"
+      "gridLabel": "Termine der nächsten {{weeks}} Wochen",
+      "compare": "Serien vergleichen",
+      "compareHint": "Nur ausgewählte Serien im Raster zeigen.",
+      "compareCount_one": "{{count}} von {{total}} Serien sichtbar",
+      "compareCount_other": "{{count}} von {{total}} Serien sichtbar",
+      "compareReset": "Auswahl aufheben"
     },
     "repositoryErrors": {
       "seriesNotFound": "Die Events der Serie konnten nicht gefunden werden (fehlende Berechtigung oder bereits gelöscht).",
