@@ -1,4 +1,4 @@
-import { describePlainError } from '@/lib/sentryEvent';
+import { NETWORK_FAILURES, prepareEvent } from '@/lib/sentryEvent';
 import { supabase } from '@/lib/supabase';
 import * as Sentry from '@sentry/react';
 import { EventHint } from '@sentry/react';
@@ -43,8 +43,7 @@ Sentry.init({
     Sentry.extraErrorDataIntegration(),
     Sentry.eventFiltersIntegration({
       ignoreErrors: [
-        /Load failed/,
-        /Failed to fetch/,
+        ...NETWORK_FAILURES,
         /Script .*service-worker\.js load failed/,
         /Invalid login credentials/,
         /Maximum points per (week|day) already reached/,
@@ -60,7 +59,7 @@ Sentry.init({
     'https://munich-roundnet.web.app',
   ],
   beforeSend: (event: Sentry.ErrorEvent, hint: EventHint) => {
-    describePlainError(event, hint);
+    if (!prepareEvent(event, hint)) return null;
     // check if the originalException is your object and add the data as extras to the Sentry Event
     if (
       typeof hint.originalException === 'object' &&

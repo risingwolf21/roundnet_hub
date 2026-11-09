@@ -35,11 +35,13 @@ const LoginForm = () => {
         });
       if (result.error || !result.data.session) {
         setError(t('auth.login.failed'))
-        if (result.error && result.error.code !== 'invalid_credentials')
+        const authError = result.error;
+        if (authError && authError.code !== 'invalid_credentials')
           captureException(new Error('Could not sign in user.'), (scope) => {
             scope.clear();
+            scope.setTag('error_code', authError.code ?? 'unknown');
             scope.setExtra('email', email);
-            scope.setExtra('error', JSON.stringify(error));
+            scope.setExtra('error', { code: authError.code, status: authError.status, message: authError.message });
             return scope;
           });
       }

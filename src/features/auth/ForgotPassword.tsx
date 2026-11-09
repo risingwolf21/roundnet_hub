@@ -36,12 +36,14 @@ const ForgotPasswordForm = () => {
           redirectTo: (import.meta.env.VITE_PUBLIC_URL ?? '').replace(/\/$/, '') + '/auth/reset-password',
         });
 
-      if (result.error) {
+      const authError = result.error;
+      if (authError) {
         setError(t('auth.forgot.failed'))
-        captureException(new Error('Could not sign in user.'), (scope) => {
+        captureException(new Error('Could not send password reset email.'), (scope) => {
           scope.clear();
+          scope.setTag('error_code', authError.code ?? 'unknown');
           scope.setExtra('email', email);
-          scope.setExtra('error', JSON.stringify(error));
+          scope.setExtra('error', { code: authError.code, status: authError.status, message: authError.message });
           return scope;
         });
       } else {

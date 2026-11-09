@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react';
 import type { ErrorEvent, EventHint } from '@sentry/react';
 import { describe, expect, it } from 'vitest';
 import { PostgrestError } from '@supabase/postgrest-js';
-import { describePlainError } from '@/lib/sentryEvent';
+import { describePlainError, prepareEvent } from '@/lib/sentryEvent';
 
 // What Sentry builds for captureException(<plain object>): the values of the object are dropped.
 const eventFor = (): ErrorEvent =>
@@ -80,7 +80,7 @@ const captureWithRealSdk = async (integrations: ReturnType<typeof Sentry.extraEr
     dsn: 'https://public@example.ingest.sentry.io/1',
     defaultIntegrations: false,
     integrations,
-    beforeSend: (event, hint) => describePlainError(event, hint),
+    beforeSend: (event, hint) => prepareEvent(event, hint),
     transport: () => ({
       send: async (envelope) => {
         envelope[1].forEach(([, payload]) => (payload as ErrorEvent).exception && sent.push(payload as ErrorEvent));
@@ -119,5 +119,18 @@ describe('with the real Sentry SDK', () => {
     const [event] = await captureWithRealSdk([], thrown());
 
     expect(event.contexts?.PostgrestError).toBeUndefined();
+  });
+});
+
+describe('network failures', () => {
+  // What supabase-js returns when the request never reaches the server (offline, flaky mobile network).
+  const failedFetch = (message: string) => ({ code: '', details: '@https://app/assets/index.js:19:44178', hint: '', message });
+
+  it.each([
+    'TypeError: Load failed (uxmhiczxchtriikyetao.supabase.co)',
+    'TypeError: Failed to fetch (gfvaurdkieqkehsuwotr.supabase.co)',
+    'TypeError: NetworkError when attempting to fetch resource. (gfvaurdkieqkehsuwotr.supabase.co)',
+  ])('are not sent: %s', async (message) => {
+    expect(await captureWithRealSdk([], failedFetch(message))).toHaveLength(0);
   });
 });

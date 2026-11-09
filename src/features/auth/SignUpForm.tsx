@@ -71,13 +71,16 @@ const SignUpForm = () => {
       },
     });
     if (error || !data || !data.user) {
-      captureException(new Error('Could not sign up user.'), (scope) => {
-        scope.clear();
-        scope.setExtra('displayName', name);
-        scope.setExtra('email', email);
-        scope.setExtra('error', JSON.stringify(error));
-        return scope;
-      });
+      // An existing account is a user mistake, not an app error.
+      if (error?.code !== 'user_already_exists')
+        captureException(new Error('Could not sign up user.'), (scope) => {
+          scope.clear();
+          scope.setTag('error_code', error?.code ?? 'no_user');
+          scope.setExtra('displayName', name);
+          scope.setExtra('email', email);
+          scope.setExtra('error', error && { code: error.code, status: error.status, message: error.message });
+          return scope;
+        });
       setError(t('auth.signup.failed', { message: error?.message }));
     }
     setIsLoading(false);
