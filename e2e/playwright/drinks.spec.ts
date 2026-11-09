@@ -74,7 +74,7 @@ test.describe('Drinks', () => {
 
     await expect(page.getByText(DRINK_NAME, { exact: true })).toBeVisible();
     await expect(page.locator('div.flex.justify-between', { hasText: 'Gesamtkosten' }))
-      .toContainText(`${2 * PRICE} €`);
+      .toContainText(`${(2 * PRICE).toFixed(2).replace('.', ',')} €`);
   });
 
   test.afterAll(async () => {

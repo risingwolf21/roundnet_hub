@@ -2,9 +2,6 @@ name: Playwright tests
 
 on:
   workflow_call:
-  # TEMPORARY: run the suite on the fix branch while the specs are being updated. Remove before merging.
-  push:
-    branches: [claude/fervent-noether-uu60ja]
 
 jobs:
   playwright-tests:

@@ -149,7 +149,7 @@ test.describe('Events verwalten', () => {
       await expect(page).toHaveURL(/recurringEvents/);
       await expect(page.getByText(SERIES, { exact: true }).first()).toBeVisible();
 
-      await page.getByRole('button', { name: 'Erstellen' }).click();
+      await page.getByRole('button', { name: 'Erstellen', exact: true }).click();
       await expect(page.getByText(/Serie\(n\) aktualisiert/).first()).toBeVisible();
       // Idempotent: regenerating must not duplicate occurrences.
       expect((await eventsTitled(SERIES)).length).toBe(before);

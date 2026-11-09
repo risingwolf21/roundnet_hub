@@ -40,7 +40,8 @@ test.describe('Administration', () => {
   test('the admin dashboard shows the tiles the admin may use', { annotation: flow('admin.dashboard') }, async ({ page }) => {
     await signIn(page, BOSS.email);
     await page.goto('/admin');
-    await page.getByText('Offene Zahlungen').or(page.getByText(/Zahlungen/)).first().click();
+    // The "waits for you" row appears once the open payments are loaded.
+    await page.getByRole('button', { name: /^Offene Zahlungen/ }).click();
     await expect(page).toHaveURL(/\/admin\/drinks\/payments/);
   });
 

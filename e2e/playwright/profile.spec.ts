@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { test, expect, flow } from './fixtures';
-import { adminClient, ensureUser, logPageOnFailure, PASSWORD, signIn, SUPABASE_URL } from './helpers';
+import { adminClient, ensureUser, grantUser, logPageOnFailure, PASSWORD, signIn, SUPABASE_URL } from './helpers';
 
 // Profile page (/user): account data, password, calendar subscription, Playerzone link, logout.
 const stamp = Date.now();
@@ -22,6 +22,8 @@ test.describe('Profil', () => {
   test.beforeAll(async () => {
     admin = adminClient();
     userId = await ensureUser(admin, EMAIL, `E2E Profil ${stamp}`);
+    // The calendar tab is only offered with the events feature.
+    await grantUser(admin, userId, { feats: ['events'] });
   });
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
