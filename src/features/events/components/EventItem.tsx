@@ -19,21 +19,6 @@ type EventItemProps = {
   declineEvent: () => void;
 };
 
-export const formatDateRange = (start: Date, end: Date) => {
-  const sameDay = start.toDateString() === end.toDateString();
-  const sameTime = start.getHours() === end.getHours() && start.getMinutes() === end.getMinutes();
-
-  if (sameDay && sameTime) {
-    return format(start, "dd.MM.yyyy, HH:mm");
-  }
-
-  if (sameDay) {
-    return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "HH:mm")}`;
-  }
-
-  return `${format(start, "ccc, dd.MM, HH:mm")} - ${format(end, "ccc dd.MM, HH:mm")}`;
-}
-
 const parsePlace = (place: string | null): PlaceType => {
   try {
     return JSON.parse(place ?? '{}') as PlaceType;
