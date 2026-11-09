@@ -39,16 +39,12 @@ const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<F
             </ItemContent>
             <ItemActions>
               <div className='flex flex-row items-center gap-2'>
-                {
-                  newCount > 0 &&
-                  <>
-                    <Button variant={"outline"} size="icon"
-                      onClick={() => setNewCount(newCount - 1)}>
-                      <Minus className="size-4" />
-                    </Button>
-                    <span className="text-xl font-semibold w-8 text-center">{newCount}</span>
-                  </>
-                }
+                {/* The database rejects 0: an entry can only be removed by an admin. */}
+                <Button variant={"outline"} size="icon" disabled={newCount <= 1}
+                  onClick={() => setNewCount(newCount - 1)}>
+                  <Minus className="size-4" />
+                </Button>
+                <span className="text-xl font-semibold w-8 text-center">{newCount}</span>
                 <Button
                   variant={"outline"} size="icon"
                   onClick={() => setNewCount(newCount + 1)}>

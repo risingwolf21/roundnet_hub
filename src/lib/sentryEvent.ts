@@ -23,3 +23,14 @@ export function describePlainError(event: ErrorEvent, hint: EventHint): ErrorEve
   if (original.code) event.tags = { ...event.tags, error_code: original.code };
   return event;
 }
+
+/** Requests that never reached the server (offline, flaky mobile network): nothing to fix in the app. */
+export const NETWORK_FAILURES = [/Load failed/, /Failed to fetch/, /NetworkError when attempting to fetch resource/];
+
+// `ignoreErrors` runs before `beforeSend`, so it only sees "Object captured as exception" for a plain Supabase error.
+// Describe the event first, then drop network failures by their real message.
+export function prepareEvent(event: ErrorEvent, hint: EventHint): ErrorEvent | null {
+  describePlainError(event, hint);
+  const value = event.exception?.values?.[0]?.value ?? '';
+  return NETWORK_FAILURES.some((failure) => failure.test(value)) ? null : event;
+}
