@@ -1,4 +1,4 @@
-import { UpdateDownloading, UpdateReadyPage, UpdateSuccess } from '@/features/pwa/AppUpdate';
+import { UpdatePage, UpdateSuccess } from '@/features/pwa/AppUpdate';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,13 +8,14 @@ const FLAG = 'pwa-update-applied';
 beforeEach(() => sessionStorage.clear());
 afterEach(() => vi.useRealTimers());
 
-describe('UpdateReadyPage', () => {
+describe('UpdatePage', () => {
   it('asks the user to refresh and does nothing until they tap', () => {
-    const onRefresh = vi.fn().mockResolvedValue(undefined);
-    render(<UpdateReadyPage />);
+    const onUpdate = vi.fn();
+    render(<UpdatePage progress={1} onUpdate={onUpdate} />);
 
     expect(screen.getByRole('alertdialog', { name: 'Neue Version bereit' })).toBeInTheDocument();
-    expect(onRefresh).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Jetzt aktualisieren' })).toBeInTheDocument();
+    expect(onUpdate).not.toHaveBeenCalled();
     expect(sessionStorage.getItem(FLAG)).toBeNull();
   });
 });
@@ -47,16 +48,16 @@ describe('UpdateSuccess', () => {
   });
 });
 
-describe('UpdateDownloading', () => {
+describe('UpdatePage download progress', () => {
   it('shows the percentage and a progress bar while the new version downloads', () => {
-    render(<UpdateDownloading progress={0.42} />);
+    render(<UpdatePage progress={0.42} />);
 
     expect(screen.getByText('42 %')).toBeInTheDocument();
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '42');
   });
 
   it('shows an indeterminate bar while the number of files is not known yet', () => {
-    render(<UpdateDownloading progress={null} />);
+    render(<UpdatePage progress={null} />);
 
     expect(screen.getByRole('progressbar')).not.toHaveAttribute('aria-valuenow');
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
