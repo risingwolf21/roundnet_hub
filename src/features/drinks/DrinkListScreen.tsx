@@ -258,7 +258,7 @@ const DrinkListScreen = () => {
                           <span className="font-medium text-foreground">{money.format(drink.price ?? 0)}</span>
                           <Has perm="drinks.edit">
                             {!drink.active && <Badge variant="warning">{t('drinks.inactive')}</Badge>}
-                            {drink.stock !== null && <Badge variant="outline">{t('drinks.stock', { count: drink.stock })}</Badge>}
+                            {(drink.stock !== null && drink.stock > 0) && <Badge variant="outline">{t('drinks.stock', { count: drink.stock })}</Badge>}
                           </Has>
                         </ItemDescription>
                       </ItemContent>

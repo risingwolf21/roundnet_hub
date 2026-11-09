@@ -1,13 +1,13 @@
+import { sideBar } from '@/components/list/ListParts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
-import { sideBar } from '@/components/list/ListParts';
-import { cn } from '@/lib/utils';
 import { Has } from '@/hooks/useGrants';
+import { cn } from '@/lib/utils';
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { format, isBefore, isSameDay } from 'date-fns';
-import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, UserX, Users, X } from 'lucide-react';
+import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, Users, UserX, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../types';
@@ -211,129 +211,129 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       )}
     >
       <div className="flex w-full items-start gap-3 @3xl:items-center">
-      <DateTile date={start} color={event.group?.color} muted={closed} />
-      <div
-        className={cn(
-          'grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm',
-          '@3xl:grid-cols-[8rem_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.6fr)_auto] @3xl:gap-x-4'
-        )}
-      >
-        {/* Title */}
-        <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 @3xl:col-start-2">
-          <span
-            className={cn(
-              'line-clamp-2 min-w-0 break-words font-semibold leading-snug @3xl:line-clamp-1',
-              closed && 'text-muted-foreground'
-            )}
-          >
-            {event.title}
-          </span>
-          {event.isCancelled && (
-            <Badge variant="destructive" className="shrink-0">
-              <Ban />
-              {t('events.item.cancelled')}
-            </Badge>
-          )}
-        </div>
-
-        {/* Time and attendee count */}
-        <div className="col-start-1 row-start-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 @3xl:contents">
-          <div
-            className={cn(
-              'flex min-w-0 items-center gap-1.5 font-medium tabular-nums @3xl:col-start-1 @3xl:row-start-1 @3xl:flex-col @3xl:items-start @3xl:gap-0',
-              closed && 'text-muted-foreground'
-            )}
-          >
-            <span className="flex min-w-0 items-center gap-1.5">
-              <Clock className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className={cn(isSameDay(start, end) && 'whitespace-nowrap')}>{formatTimeRange(start, end, dateFormat)}</span>
-            </span>
-          </div>
-          {!event.isCancelled && (
-            <span
-              className={cn(
-                'flex shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:hidden',
-                full && 'font-medium text-warning'
-              )}
-            >
-              <Users className="size-3.5" />
-              {event.maxAttendees ? t('events.item.attendingOfMax', { count: attending, max: event.maxAttendees }) : attending}
-            </span>
-          )}
-        </div>
-
-        {/* Buttons */}
-        <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center @3xl:col-start-5 @3xl:row-span-1">
-          {event.isCancelled ? null : past ? (
-            <PastAnswer state={event.user_state} />
-          ) : (
-            <AttendanceButtons
-              event={event}
-              attendEvent={attendEvent}
-              declineEvent={declineEvent}
-              attendanceUpdating={attendanceUpdating}
-            />
-          )}
-        </div>
-
-        {/* Location: its own line on a phone so the name can be read in full */}
+        <DateTile date={start} color={event.group?.color} muted={closed} />
         <div
           className={cn(
-            'col-span-2 col-start-1 row-start-3 flex min-w-0 items-start gap-1.5 text-muted-foreground',
-            '@3xl:col-span-1 @3xl:col-start-3 @3xl:row-start-1 @3xl:items-center'
+            'grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm',
+            '@3xl:grid-cols-[8rem_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.6fr)_auto] @3xl:gap-x-4'
           )}
         >
-          <MapPin className="mt-0.5 size-3.5 shrink-0 @3xl:mt-0" />
-          <span className={cn('line-clamp-2 min-w-0 break-words @3xl:line-clamp-1', !locationName && 'italic')}>
-            {locationName || t('events.item.noLocation')}
-          </span>
-        </div>
+          {/* Title */}
+          <div className="col-start-1 row-start-1 flex min-w-0 items-center gap-2 @3xl:col-start-2">
+            <span
+              className={cn(
+                'line-clamp-2 min-w-0 break-words font-semibold leading-snug @3xl:line-clamp-1',
+                closed && 'text-muted-foreground'
+              )}
+            >
+              {event.title}
+            </span>
+            {event.isCancelled && (
+              <Badge variant="destructive" className="shrink-0">
+                <Ban />
+                {t('events.item.cancelled')}
+              </Badge>
+            )}
+          </div>
 
-        {/* Group, count (desktop) and answer hints */}
-        {(hasMeta || !event.isCancelled) && (
-          <div
-            className={cn(
-              'col-span-2 col-start-1 row-start-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1',
-              '@3xl:col-span-1 @3xl:col-start-4 @3xl:row-start-1',
-              !hasMeta && '@3xl:flex hidden'
-            )}
-          >
-            {event.group && (
-              <span className="flex min-w-0 max-w-full items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: event.group.color }} />
-                <span className="truncate">{event.group.name}</span>
+          {/* Time and attendee count */}
+          <div className="col-start-1 row-start-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 @3xl:contents">
+            <div
+              className={cn(
+                'flex min-w-0 items-center gap-1.5 font-medium tabular-nums @3xl:col-start-1 @3xl:row-start-1 @3xl:flex-col @3xl:items-start @3xl:gap-0',
+                closed && 'text-muted-foreground'
+              )}
+            >
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Clock className="size-3.5 shrink-0 text-muted-foreground" />
+                <span className={cn(isSameDay(start, end) && 'whitespace-nowrap')}>{formatTimeRange(start, end, dateFormat)}</span>
               </span>
-            )}
+            </div>
             {!event.isCancelled && (
-              <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:flex">
+              <span
+                className={cn(
+                  'flex shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:hidden',
+                  full && 'font-medium text-warning'
+                )}
+              >
                 <Users className="size-3.5" />
                 {event.maxAttendees ? t('events.item.attendingOfMax', { count: attending, max: event.maxAttendees }) : attending}
               </span>
             )}
-            {!event.isCancelled && declined > 0 && (
-              <Has perm="event.edit">
-                <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                  <UserX className="size-3.5" />
-                  {declined}
-                </span>
-              </Has>
-            )}
-            {full && !closed && <Badge variant="warning" className="shrink-0">{t('events.item.full')}</Badge>}
-            {needsAnswer && event.answerDeadline && (
-              <Badge variant={deadlineSoon ? 'warning' : 'outline'} className="max-w-full shrink-0">
-                {t('events.item.answerUntil', { date: format(event.answerDeadline, 'dd.MM. HH:mm') })}
-              </Badge>
-            )}
-            {opensLater && event.answerStart && (
-              <Badge variant="outline" className="max-w-full shrink-0">
-                <Clock />
-                {t('events.item.opensOn', { date: format(event.answerStart, 'dd.MM. HH:mm') })}
-              </Badge>
-            )}
-            {deadlinePassed && <Badge variant="outline" className="shrink-0">{t('events.item.deadlinePassed')}</Badge>}
           </div>
-        )}
-      </div>
+
+          {/* Buttons */}
+          <div className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center @3xl:col-start-5 @3xl:row-span-1">
+            {event.isCancelled ? null : past ? (
+              <PastAnswer state={event.user_state} />
+            ) : (
+              <AttendanceButtons
+                event={event}
+                attendEvent={attendEvent}
+                declineEvent={declineEvent}
+                attendanceUpdating={attendanceUpdating}
+              />
+            )}
+          </div>
+
+          {/* Location: its own line on a phone so the name can be read in full */}
+          <div
+            className={cn(
+              'col-span-2 col-start-1 row-start-3 flex min-w-0 items-start gap-1.5 text-muted-foreground',
+              '@3xl:col-span-1 @3xl:col-start-3 @3xl:row-start-1 @3xl:items-center'
+            )}
+          >
+            <MapPin className="mt-0.5 size-3.5 shrink-0 @3xl:mt-0" />
+            <span className={cn('line-clamp-2 min-w-0 break-words @3xl:line-clamp-1', !locationName && 'italic')}>
+              {locationName || t('events.item.noLocation')}
+            </span>
+          </div>
+
+          {/* Group, count (desktop) and answer hints */}
+          {(hasMeta || !event.isCancelled) && (
+            <div
+              className={cn(
+                'col-span-2 col-start-1 row-start-4 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1',
+                '@3xl:col-span-1 @3xl:col-start-4 @3xl:row-start-1',
+                !hasMeta && '@3xl:flex hidden'
+              )}
+            >
+              {event.group && (
+                <span className="flex min-w-0 max-w-full items-center gap-1.5 text-xs text-muted-foreground">
+                  <Users className="size-3.5" style={{ color: event.group.color }} />
+                  <span className="truncate line-clamp-2 min-w-0 break-words @3xl:line-clamp-1">{event.group.name}</span>
+                </span>
+              )}
+              {!event.isCancelled && (
+                <span className="hidden shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:flex">
+                  <Users className="size-3.5" />
+                  {event.maxAttendees ? t('events.item.attendingOfMax', { count: attending, max: event.maxAttendees }) : attending}
+                </span>
+              )}
+              {!event.isCancelled && declined > 0 && (
+                <Has perm="event.edit">
+                  <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                    <UserX className="size-3.5" />
+                    {declined}
+                  </span>
+                </Has>
+              )}
+              {full && !closed && <Badge variant="warning" className="shrink-0">{t('events.item.full')}</Badge>}
+              {needsAnswer && event.answerDeadline && (
+                <Badge variant={deadlineSoon ? 'warning' : 'outline'} className="max-w-full shrink-0">
+                  {t('events.item.answerUntil', { date: format(event.answerDeadline, 'dd.MM. HH:mm') })}
+                </Badge>
+              )}
+              {opensLater && event.answerStart && (
+                <Badge variant="outline" className="max-w-full shrink-0">
+                  <Clock />
+                  {t('events.item.opensOn', { date: format(event.answerStart, 'dd.MM. HH:mm') })}
+                </Badge>
+              )}
+              {deadlinePassed && <Badge variant="outline" className="shrink-0">{t('events.item.deadlinePassed')}</Badge>}
+            </div>
+          )}
+        </div>
       </div>
     </Item>
   );
