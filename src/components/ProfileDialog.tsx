@@ -290,7 +290,7 @@ export const ProfileDialog = ({ payload: { userId }, onClose }: DialogProps<Prof
                   </ItemActions>
                 </Item>
               )}
-              {!indexHidden && player?.rg_index && (
+              {!indexHidden && player?.rg_index !== null && player.rg_index > 0 && (
                 <Item variant="outline">
                   <ItemMedia>
                     <img src={pzLogo} alt={t('profile.dialog.pzLogoAlt')} width="20" height="20" />

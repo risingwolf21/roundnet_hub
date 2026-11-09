@@ -8,8 +8,7 @@ import { Item } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { useLeaderboard } from '@/tanstack/games';
-import { Minus, SearchX, TrendingDown, TrendingUp, Trophy } from 'lucide-react';
-import { useState } from 'react';
+import { Minus, TrendingDown, TrendingUp, Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGrants } from '../auth/GrantsContext';
 import { GameHistoryDialog } from './dialogs/GameHistoryDialog';
@@ -103,16 +102,13 @@ const Leaderboard = () => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const [search, setSearch] = useState('');
   const { data: leaderboard = [], isLoading, error, refetch } = useLeaderboard(0);
 
   const isMe = (entry: Entry) => entry.linked_user_id === user.id || entry.player_id === user.id;
   const mine = leaderboard.find(isMe);
-  const query = search.trim().toLowerCase();
-  const filtered = query ? leaderboard.filter((x) => (x.name ?? '').toLowerCase().includes(query)) : leaderboard;
-  const showPodium = !query && leaderboard.length >= 3;
+  const showPodium = leaderboard.length >= 3;
   const podium = showPodium ? leaderboard.slice(0, 3) : [];
-  const rest = showPodium ? leaderboard.slice(3) : filtered;
+  const rest = leaderboard.slice(3);
 
   const openHistory = (entry: Entry) => {
     if (entry.player_id && entry.name && entry.rating != null)
@@ -125,10 +121,6 @@ const Leaderboard = () => {
         className="!border-b !shadow-sm"
         title={t('matches.leaderboard')}
         user={user}
-        showSearch={leaderboard.length > 5}
-        searchPlaceholder={t('common.searchPlaceholder')}
-        searchValue={search}
-        onSearchChange={setSearch}
       />
       <main className="flex-1 size-full pb-safe-bottom">
         <PullToRefresh onRefresh={() => refetch()}>
@@ -184,17 +176,6 @@ const Leaderboard = () => {
                 )}
 
                 {showPodium && <Podium entries={podium} onOpen={openHistory} />}
-
-                {query && filtered.length === 0 && (
-                  <Empty className="mt-6">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <SearchX />
-                      </EmptyMedia>
-                      <EmptyTitle>{t('games.leaderboard.noResults')}</EmptyTitle>
-                    </EmptyHeader>
-                  </Empty>
-                )}
 
                 {rest.length > 0 && (
                   <section className="flex flex-col gap-2">
