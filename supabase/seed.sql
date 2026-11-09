@@ -58,14 +58,14 @@ VALUES
   (
     '00000000-0000-0000-0000-000000000000',
     '06fa06e9-0723-4e96-8ac7-748cee0adf52',
-    '{"action":"user_signedup","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@test.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}',
+    '{"action":"user_signedup","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}',
     '2026-11-09 10:27:13.743075+00',
     ''
   ),
   (
     '00000000-0000-0000-0000-000000000000',
     'a7ad1d27-1923-4b1c-a090-e36c1f0c3051',
-    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@test.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
     '2026-11-09 10:27:13.749739+00',
     ''
   );
@@ -122,7 +122,7 @@ VALUES
     '479397f0-bb2a-40b9-88a3-f4f485042005',
     'authenticated',
     'authenticated',
-    'admin@test.com',
+    'admin@admin.com',
     '$2a$10$4KZAeERQvX0xEz2YcGVrye8KfNn4QkZQpqff5IZ.zOyW/HoGnWXUe',
     '2026-11-09 10:27:13.743722+00',
     NULL,
@@ -135,7 +135,7 @@ VALUES
     NULL,
     '2026-11-09 10:27:13.750436+00',
     '{"provider": "email", "providers": ["email"]}',
-    '{"sub": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@test.com", "language": "en", "displayName": "Karl", "email_verified": true, "phone_verified": false}',
+    '{"sub": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "language": "en", "displayName": "Karl", "email_verified": true, "phone_verified": false}',
     NULL,
     '2026-11-09 10:27:13.732174+00',
     '2026-11-09 10:27:13.755452+00',
@@ -172,7 +172,7 @@ VALUES
   (
     '479397f0-bb2a-40b9-88a3-f4f485042005',
     '479397f0-bb2a-40b9-88a3-f4f485042005',
-    '{"sub": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@test.com", "language": "en", "displayName": "Karl", "email_verified": false, "phone_verified": false}',
+    '{"sub": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "language": "en", "displayName": "Karl", "email_verified": false, "phone_verified": false}',
     'email',
     '2026-11-09 10:27:13.741373+00',
     '2026-11-09 10:27:13.741405+00',
@@ -331,7 +331,7 @@ VALUES
   (
     '2026-11-09 10:27:13.731916+00',
     'Karl',
-    'admin@test.com',
+    'admin@admin.com',
     false,
     'user',
     false,
