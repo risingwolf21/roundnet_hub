@@ -121,6 +121,8 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
 
   const full = maxAttendeesExceeded(event, attendance);
   const deadlinePassed = answerDeadlineExpired(event);
+  // Someone who already attends keeps the attend button; waiting list and request are for everyone else.
+  const attendingNow = event.user_state === 'Attending' || event.user_state === 'AttendingAsTrial';
 
   return (
     <section className="flex flex-col gap-3 rounded-xl border bg-muted/30 p-3">
@@ -155,7 +157,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
       {!isOver && (
         <Has perm={'event.signup'}>
           <div className="flex gap-2">
-            {full && !deadlinePassed
+            {full && !deadlinePassed && !attendingNow
               ? <Button
                 onClick={() => changeAttendance('Waiting')}
                 variant={event.user_state === 'Waiting' ? 'info' : 'outline'}
@@ -165,7 +167,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
                 {pendingState === 'Waiting' ? <Spinner /> : <Hourglass className="size-4" />}
                 {t('events.information.waitingList')}
               </Button>
-              : deadlinePassed
+              : deadlinePassed && !attendingNow
                 ? <Button
                   onClick={() => changeAttendance('RequestedAttendance')}
                   variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}
@@ -177,7 +179,7 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
                 </Button>
                 : <Button
                   onClick={() => changeAttendance('Attending')}
-                  variant={event.user_state === 'Attending' ? 'success' : 'outline'}
+                  variant={attendingNow ? 'success' : 'outline'}
                   className="flex-1"
                   disabled={busy || locked}
                 >
