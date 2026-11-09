@@ -1,4 +1,6 @@
 import { useInsertItemMutation, useUpdateItemMutation } from '@/tanstack/items';
+import { useGroup } from '@/tanstack/groups';
+import { ChevronRight, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +9,8 @@ import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTit
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DialogProps } from '@/contexts/DialogsProvider';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { ToggleRow } from '@/features/events/dialogs/EventFormParts';
 import { toast } from 'sonner';
 
 type EditOrAddItemDialogProps = {
@@ -22,7 +25,22 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
     color: itemToEdit?.color,
     current_holder: itemToEdit?.current_holder,
     type: itemToEdit?.type,
+    group: itemToEdit?.group ?? null,
   });
+
+  const dialogs = useDialogs();
+  // Name of the key's current group; a newly picked group is kept in pickedGroup.
+  const { data: savedGroup, isLoading: savedGroupLoading } = useGroup(itemToEdit?.group ?? undefined);
+  const [pickedGroup, setPickedGroup] = useState<Group | null>(null);
+  const groupName = pickedGroup?.id === currentItem.group ? pickedGroup?.name : savedGroup?.name;
+
+  const pickGroup = async () => {
+    const group = await dialogs.selectGroup([], currentItem.group);
+    if (group) {
+      setPickedGroup(group);
+      setCurrentItem((item) => ({ ...item, group: group.id }));
+    }
+  };
 
   const updateItemMutation = useUpdateItemMutation();
   const insertItemMutation = useInsertItemMutation();
@@ -34,6 +52,7 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
       color: itemToEdit?.color,
       current_holder: itemToEdit?.current_holder,
       type: itemToEdit?.type,
+      group: itemToEdit?.group ?? null,
     });
   }
 
@@ -53,6 +72,8 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
           item: {
             ...currentItem,
             id: currentItem.id,
+            // Only send the group when it changed: setting it requires membership in that group.
+            group: currentItem.group === (itemToEdit?.group ?? null) ? undefined : currentItem.group,
           },
         },
         {
@@ -68,6 +89,7 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
             color: currentItem.color,
             type: currentItem.type,
             current_holder: currentItem.current_holder,
+            group: currentItem.group,
           },
         },
         {
@@ -145,6 +167,27 @@ export const EditOrAddItemDialog = ({ open, onClose, payload: { itemToEdit } }: 
             </SelectContent>
           </Select>
         </Field>
+
+        <ToggleRow
+          id="item-group"
+          title={t('keys.dialog.groupOnly')}
+          description={t('keys.dialog.groupOnlyDescription')}
+          checked={!!currentItem.group}
+          onCheckedChange={async (on) => {
+            if (on) await pickGroup();
+            else setCurrentItem((item) => ({ ...item, group: null }));
+          }}
+        >
+          <button
+            type="button"
+            className="flex items-center gap-3 rounded-lg border bg-background px-3 py-2.5 text-left"
+            onClick={pickGroup}
+          >
+            <Users className="size-4 text-muted-foreground" />
+            <span className="flex-1 truncate text-sm">{groupName ?? t(savedGroupLoading ? 'keys.dialog.groupLoading' : 'keys.dialog.groupUnknown')}</span>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
+        </ToggleRow>
       </DialogBody>
     </DialogContent>
   </Dialog>

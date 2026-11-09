@@ -977,7 +977,11 @@
       "create": "Create key",
       "name": "Key name",
       "type": "Key type",
-      "typePlaceholder": "Type"
+      "typePlaceholder": "Type",
+      "groupOnly": "Only for one group",
+      "groupOnlyDescription": "Only members of the group see the key and can take or hand it over. Without a group everyone sees it.",
+      "groupLoading": "Loading group…",
+      "groupUnknown": "Unknown group"
     }
   },
   "user": {

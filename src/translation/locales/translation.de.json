@@ -977,7 +977,11 @@
       "create": "Schlüssel erstellen",
       "name": "Schlüsselname",
       "type": "Schlüsseltyp",
-      "typePlaceholder": "Typ"
+      "typePlaceholder": "Typ",
+      "groupOnly": "Nur für eine Gruppe",
+      "groupOnlyDescription": "Nur Mitglieder der Gruppe sehen den Schlüssel und können ihn übernehmen oder abgeben. Ohne Gruppe sehen ihn alle.",
+      "groupLoading": "Gruppe wird geladen…",
+      "groupUnknown": "Unbekannte Gruppe"
     }
   },
   "user": {

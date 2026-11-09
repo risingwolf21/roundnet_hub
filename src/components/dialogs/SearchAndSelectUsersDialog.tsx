@@ -18,6 +18,8 @@ import { useTranslation } from 'react-i18next';
 
 type BasePayload = {
   usersToFilter: string[];
+  /** When set, only these users can be picked (e.g. the members of a group). */
+  onlyUsers?: string[];
   option: 'single' | 'multiple';
 };
 
@@ -25,7 +27,7 @@ type SearchAndSelectUserDialogProps = DialogProps<BasePayload, User[] | User | n
 
 const userName = (u: Pick<User, 'displayName' | 'name'>) => u.displayName || u.name || '?';
 
-const SearchAndSelectUserDialog = ({ open, onClose, payload: { usersToFilter, option } }: SearchAndSelectUserDialogProps) => {
+const SearchAndSelectUserDialog = ({ open, onClose, payload: { usersToFilter, onlyUsers, option } }: SearchAndSelectUserDialogProps) => {
   const { t, i18n } = useTranslation();
   const { hasPerm } = useGrants();
   const multiple = option === 'multiple';
@@ -36,9 +38,11 @@ const SearchAndSelectUserDialog = ({ open, onClose, payload: { usersToFilter, op
   const [search, setSearch] = useState('');
 
   const { data: users = [], isLoading, isError, refetch } = useQuery<User[]>({
-    queryKey: ['users', 'searchAndSelectDialog', ...usersToFilter],
+    queryKey: ['users', 'searchAndSelectDialog', ...usersToFilter, 'only', ...(onlyUsers ?? [])],
     queryFn: async () => {
+      if (onlyUsers?.length === 0) return [];
       let query = supabase.schema('public').from('user').select('*');
+      if (onlyUsers) query = query.in('id', onlyUsers);
       const excluded = usersToFilter.filter(Boolean);
       if (excluded.length > 0) query = query.not('id', 'in', `(${excluded.join(',')})`);
       const result = await query.throwOnError();

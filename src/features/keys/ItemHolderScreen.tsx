@@ -1,4 +1,5 @@
 import { Has } from '@/hooks/useGrants';
+import { fetchGroupMemberIds } from '@/tanstack/groups';
 import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
 import { captureException } from '@sentry/react';
 import { useEffect, useRef } from 'react';
@@ -64,7 +65,10 @@ const ItemHolderScreen = () => {
       let targetUser = null;
 
       if (type === 'handover') {
-        targetUser = await dialogs.selectSingleUser([user.id, keyHolder.current_holder ?? ""]);
+        targetUser = await dialogs.selectSingleUser(
+          [user.id, keyHolder.current_holder ?? ""],
+          keyHolder.group ? await fetchGroupMemberIds(keyHolder.group) : undefined
+        );
         if (!targetUser) return;
       } else if (type === 'take') {
         targetUser = user;
@@ -161,7 +165,8 @@ const ItemHolderScreen = () => {
               onClick={async (e) => {
                 e.stopPropagation();
                 if (isMine) {
-                  const target = await dialogs.selectSingleUser([user.id]);
+                  // A group's key can only go to a full member of that group.
+                  const target = await dialogs.selectSingleUser([user.id], x.group ? await fetchGroupMemberIds(x.group) : undefined);
                   if (target) await handOver(x, target, target);
                 } else {
                   await handOver(x, x.full_current_holder, user);

@@ -39,6 +39,7 @@ export interface AlertOptions {
 
 export interface SearchAndSelectUserOptions {
   usersToFilter: string[];
+  onlyUsers?: string[];
   option: "single" | "multiple";
 }
 
@@ -51,7 +52,7 @@ interface DialogsContextType {
   open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload?: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
-  selectSingleUser: (usersToFilter?: string[]) => Promise<User | null>;
+  selectSingleUser: (usersToFilter?: string[], onlyUsers?: string[]) => Promise<User | null>;
   selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
   selectGroup: (groupsToFilter?: string[], selectedGroupId?: string | null) => Promise<Group | null>;
   selectSingleOption: <T>(options: { value: T, label: string, icon?: React.ReactNode }[], selectedOption?: T) => Promise<T | null>;
@@ -105,8 +106,8 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return open(AlertDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, message: content }).then(() => undefined);
   }, [open]);
 
-  const selectSingleUser = useCallback(async (usersToFilter?: string[]) => {
-    const result = await open(SearchAndSelectUserDialog, { option: 'single', usersToFilter: usersToFilter ?? [] });
+  const selectSingleUser = useCallback(async (usersToFilter?: string[], onlyUsers?: string[]) => {
+    const result = await open(SearchAndSelectUserDialog, { option: 'single', usersToFilter: usersToFilter ?? [], onlyUsers });
 
     return result as User | null;
   }, [open]);

@@ -3417,8 +3417,10 @@ export type Database = {
       edit_item: {
         Args: {
           p_color?: string
+          p_group?: string
           p_id: number
           p_name?: string
+          p_set_group?: boolean
           p_type?: Database["public"]["Enums"]["ItemType"]
         }
         Returns: {
