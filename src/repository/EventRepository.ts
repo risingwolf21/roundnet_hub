@@ -6,7 +6,7 @@ import { add, differenceInCalendarDays, Duration, isAfter, set, startOfDay, sub 
 import { t } from 'i18next';
 import { EventTable } from 'types/supabase';
 import { Json, Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
-import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
+import { EventsUserView, FullAttendance, FullComment } from '../types/supabaseTypes';
 
 export const fetchEvents = () =>
   supabase
@@ -255,13 +255,17 @@ export const EventRepository = {
     return [];
   },
 
-  async fetchRecurringEvents(): Promise<EventWithGroup[]> {
+  /** Active series with their group and their occurrences in [from, to). */
+  async fetchSeriesOverview(from: Date, to: Date) {
     const result = await supabase
-      .from('current_distinct_event')
-      .select('*, fullGroup: event_group(id, created_at, description, name, color)')
-      .returns<EventWithGroup[]>()
+      .from('event_series')
+      .select('id, title, rrule, dtstart, until, fullGroup: event_group(id, name, color), occurrences: events(id, startingDateTime, endDateTime, isCancelled, detached)')
+      .eq('active', true)
+      .or(`until.is.null,until.gte.'${formatDateToDatabase(from)}'`)
+      .gte('occurrences.startingDateTime', formatDateToDatabase(from))
+      .lt('occurrences.startingDateTime', formatDateToDatabase(to))
+      .order('startingDateTime', { referencedTable: 'occurrences' })
       .throwOnError();
-
     return result.data ?? [];
   },
 

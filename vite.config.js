@@ -18,6 +18,18 @@ function pathFromPublicUrl(publicUrl) {
   }
 }
 
+/**
+ * Is this module loaded on start-up, i.e. statically reachable from the entry? Modules that only lazy
+ * routes use must stay out of the start-up chunks, or every first visit would download them.
+ */
+function loadedOnStartup(id, getModuleInfo, seen = new Set()) {
+  if (seen.has(id)) return false;
+  seen.add(id);
+  const info = getModuleInfo(id);
+  if (!info) return false;
+  return info.isEntry || info.importers.some((importer) => loadedOnStartup(importer, getModuleInfo, seen));
+}
+
 export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
@@ -107,7 +119,21 @@ export default defineConfig(async ({ mode }) => {
       // Source maps are only built when they can be uploaded to Sentry (SENTRY_AUTH_TOKEN is set), 'hidden' = no link in the bundle.
       sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
       outDir: 'build', // CRA's default build output
-      rollupOptions: {},
+      rollupOptions: {
+        output: {
+          // Smaller updates: a chunk's file name changes with every chunk it imports, so start-up code that every
+          // lazy page imports must not live in a chunk that names the lazy pages. Libraries go to `vendor` (changes
+          // only on dependency updates), shared app code to `app`, translations to `i18n`, and only `routes` (plus the
+          // tiny entry) lists the pages. A change in one page then renames ~4 files instead of ~150 (see PR).
+          manualChunks(id, { getModuleInfo }) {
+            if (id.includes('vite/preload-helper')) return 'vendor';
+            if (id.includes('/node_modules/') && loadedOnStartup(id, getModuleInfo)) return 'vendor';
+            if (id.includes('/src/translation/')) return 'i18n';
+            if (/\/src\/(AppRoutes\.tsx|routes\/|features\/auth\/AuthGate\.tsx)/.test(id)) return 'routes';
+            if (id.includes('/src/') && !/\/src\/(index|App)\.tsx$/.test(id) && loadedOnStartup(id, getModuleInfo)) return 'app';
+          },
+        },
+      },
     },
     test: {
       globals: true,

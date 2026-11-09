@@ -97,10 +97,11 @@ export const useEvent = (eventId?: string) =>
     queryFn: () => EventRepository.fetchUserEvent(eventId!),
   });
 
-export const useRecurringEvents = () =>
+/** Active series with their occurrences in [from, to) — the recurring-events overview. */
+export const useSeriesOverview = (from: Date, to: Date) =>
   useQuery({
-    queryKey: eventKeys.recurring(),
-    queryFn: () => EventRepository.fetchRecurringEvents(),
+    queryKey: [...eventKeys.recurring(), from.toISOString()] as const,
+    queryFn: () => EventRepository.fetchSeriesOverview(from, to),
   });
 
 export const useCreateNextOccurences = () => useMutation({
