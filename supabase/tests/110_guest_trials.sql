@@ -64,7 +64,7 @@ SELECT lives_ok($$ INSERT INTO public.trial_invites("group", token) VALUES ('000
   'a group admin creates a link');
 SELECT throws_ok($$ INSERT INTO public.trial_invites("group") VALUES ('00000000-0000-0000-0000-0000000011a2') $$,
   '42501', NULL, 'no link for a group without events.trials.guests');
-SELECT throws_ok($$ UPDATE public.trial_invites SET uses = 0 WHERE token = 'tok-admin' $$,
+SELECT throws_ok($$ UPDATE public.trial_invites SET uses = 5 WHERE token = 'tok-admin' $$,
   '42501', NULL, 'the use counter cannot be changed directly');
 
 SELECT tests.authenticate_as('gt_guest');
