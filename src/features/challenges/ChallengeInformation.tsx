@@ -26,7 +26,7 @@ import { differenceInCalendarDays, isAfter, isSameDay, isSameWeek } from 'date-f
 import { Edit, Infinity as InfinityIcon, Plus, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChallengeActivityList } from './ChallengeActivityList';
-import { ChallengeLeaderboard, rankLeaderboard } from './ChallengeLeaderboard';
+import { ChallengeLeaderboard, ChallengePodium, rankLeaderboard } from './ChallengeLeaderboard';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 import { ChallengeInformationSkeleton } from './skeleton/ChallengeInformationSkeleton';
@@ -47,7 +47,8 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
   const { t, i18n } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const [view, setView] = useState<View>('activity');
+  // null until the user picks a tab: ended challenges open on the leaderboard.
+  const [view, setView] = useState<View | null>(null);
   // eslint-disable-next-line @eslint-react/naming-convention/use-state
   const [now] = useState(() => new Date());
 
@@ -136,6 +137,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
   const ended = !!challenge.end_date && isAfter(now, formatDateFromDatabaseNotNull(challenge.end_date));
   const notStarted = !!challenge.start_date && isAfter(new Date(challenge.start_date), now);
   const daysLeft = challenge.end_date ? differenceInCalendarDays(new Date(challenge.end_date), now) : null;
+  const activeView: View = view ?? (ended ? 'leaderboard' : 'activity');
 
   return <div>
     <AppBar
@@ -205,14 +207,22 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
             {challenge.automated && (
               <p className="text-xs text-muted-foreground">{t('challenge.automatedChallenge')}</p>
             )}
+            {ended && <ChallengePodium challenge_points={leaderboard} />}
           </section>
 
-          <section aria-label={t('challenge.info.yourProgress')} className={cn('grid gap-2', mine.rank ? 'grid-cols-3' : 'grid-cols-2')}>
-            <Stat label={t('challenge.info.yourPoints')} value={mine.total} />
-            {mine.rank && <Stat label={t('challenge.info.yourRank')} value={`#${mine.rank}`} />}
-            <Stat label={t('challenge.info.today')} value={mine.today} limit={challenge.max_points_per_day} />
-          </section>
-          {challenge.max_points_per_week ? (
+          {ended && !mine.rank && !isLeaderboardLoading ? (
+            <p className="px-1 text-xs text-muted-foreground">{t('challenge.info.notParticipated')}</p>
+          ) : (
+            <section
+              aria-label={t(ended ? 'challenge.info.yourResult' : 'challenge.info.yourProgress')}
+              className={cn('grid gap-2', mine.rank && !ended ? 'grid-cols-3' : 'grid-cols-2')}
+            >
+              <Stat label={t('challenge.info.yourPoints')} value={mine.total} />
+              {mine.rank && <Stat label={t('challenge.info.yourRank')} value={`#${mine.rank}`} />}
+              {!ended && <Stat label={t('challenge.info.today')} value={mine.today} limit={challenge.max_points_per_day} />}
+            </section>
+          )}
+          {!ended && challenge.max_points_per_week ? (
             <p className="px-1 text-xs text-muted-foreground">
               {t('challenge.info.thisWeek', { count: mine.week, max: challenge.max_points_per_week })}
             </p>
@@ -220,7 +230,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
 
           <div className="sticky top-14 z-40 -mx-4 bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <SegmentedControl<View>
-              value={view}
+              value={activeView}
               onChange={setView}
               ariaLabel={t('challenge.info.view')}
               options={[
@@ -230,7 +240,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
             />
           </div>
 
-          {view === 'activity' ? (
+          {activeView === 'activity' ? (
             <ChallengeActivityList challenge={challenge} user_challenge_stats={user_challenge_stats} />
           ) : (
             <ChallengeLeaderboard challenge_points={leaderboard} isLoading={isLeaderboardLoading} currentUserId={user.id} />
@@ -238,7 +248,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
         </div>
       </main>
     </PullToRefresh>
-    <Has perm={'challenges.stats.write'}>
+    {!ended && <Has perm={'challenges.stats.write'}>
       <div
         className="fixed right-6 z-50"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
@@ -246,7 +256,6 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
         <Button
           size="icon"
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-          disabled={ended}
           onClick={async () => {
             const result = await dialogs.open(EnterPointDialog, {
               dates: user_challenge_stats.map((x) => x.created_at),
@@ -265,7 +274,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
           <span className="sr-only">{t('challenge.createPoint')}</span>
         </Button>
       </div>
-    </Has>
+    </Has>}
   </div>
 };
 

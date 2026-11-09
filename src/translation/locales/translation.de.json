@@ -783,7 +783,13 @@
       "yourRank": "Dein Rang",
       "today": "Heute",
       "thisWeek": "Diese Woche: {{count}} von {{max}} Punkten",
-      "view": "Challenge-Ansicht"
+      "view": "Challenge-Ansicht",
+      "podium": "Siegertreppchen",
+      "place": "Platz {{place}}",
+      "points_one": "{{count}} Punkt",
+      "points_other": "{{count}} Punkte",
+      "yourResult": "Dein Ergebnis",
+      "notParticipated": "Du hast bei dieser Challenge nicht mitgemacht."
     }
   },
   "filter": "Filtern",

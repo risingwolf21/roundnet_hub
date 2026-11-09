@@ -783,7 +783,13 @@
       "yourRank": "Your rank",
       "today": "Today",
       "thisWeek": "This week: {{count}} of {{max}} points",
-      "view": "Challenge view"
+      "view": "Challenge view",
+      "podium": "Podium",
+      "place": "Place {{place}}",
+      "points_one": "{{count}} point",
+      "points_other": "{{count}} points",
+      "yourResult": "Your result",
+      "notParticipated": "You didn't take part in this challenge."
     }
   },
   "filter": "Filter",
