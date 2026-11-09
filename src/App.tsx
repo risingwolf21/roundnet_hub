@@ -6,7 +6,7 @@ import { AuthGate } from './features/auth/AuthGate';
 import { UpdatePage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { supabase } from './lib/supabase';
 
-const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
+export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   // undefined = no download running, null = running but progress not known yet, else 0..1
   const [downloadProgress, setDownloadProgress] = useState<number | null | undefined>(undefined);
   const activationStarted = useRef(false);
@@ -68,13 +68,15 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
-  // Sends SKIP_WAITING to the waiting SW. The plugin reloads the page once the new SW controls it.
+  // Sends SKIP_WAITING to the waiting SW and reloads once the new SW controls the page. The plugin
+  // reloads too, but only when the page was controlled at load (an uncontrolled page stays stuck here).
   const activate = useCallback(() => {
     try {
       sessionStorage.setItem('pwa-update-applied', '1');
     } catch {
       // Storage may be unavailable.
     }
+    navigator.serviceWorker?.addEventListener('controllerchange', () => window.location.reload(), { once: true });
     updateServiceWorker().catch((error) => {
       console.error('Failed to activate service worker:', error);
       try {
@@ -92,12 +94,20 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     activate();
   }, [needRefresh, activate]);
 
+  // The button: SKIP_WAITING only reaches a waiting SW. When none is waiting anymore (the new
+  // version is already active, but the page was not reloaded), the tap would do nothing, so reload.
+  const updateNow = useCallback(async () => {
+    const registration = await navigator.serviceWorker?.getRegistration();
+    if (registration?.waiting) activate();
+    else window.location.reload();
+  }, [activate]);
+
   // Block the whole app while a new version downloads or activates.
   if (needRefresh || downloadProgress !== undefined) {
     return (
       <UpdatePage
         progress={needRefresh ? 1 : (downloadProgress ?? null)}
-        onUpdate={needRefresh ? activate : undefined}
+        onUpdate={needRefresh ? updateNow : undefined}
       />
     );
   }
