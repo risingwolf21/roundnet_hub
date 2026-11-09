@@ -116,7 +116,7 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-content"
       className={cn(
-        "gap-1 group-data-[size=xs]/item:gap-0 flex flex-1 flex-col [&+[data-slot=item-content]]:flex-none",
+        "gap-1 group-data-[size=xs]/item:gap-0 flex min-w-0 flex-1 flex-col [&+[data-slot=item-content]]:flex-none",
         className
       )}
       {...props}
@@ -154,7 +154,7 @@ function ItemActions({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="item-actions"
-      className={cn("gap-2 flex items-center", className)}
+      className={cn("gap-2 flex shrink-0 items-center", className)}
       {...props}
     />
   )

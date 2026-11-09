@@ -60,10 +60,53 @@
       "bicCopied": "BIC kopiert",
       "sendViaPayPal": "Per PayPal senden",
       "vouchers": "Gutscheine",
-      "totalCost": "Gesamtkosten"
+      "totalCost": "Gesamtkosten",
+      "title": "Getränke bezahlen",
+      "loadError": "Offene Getränke konnten nicht geladen werden",
+      "amountDue": "Offener Betrag",
+      "itemCount_one": "{{count}} Getränk",
+      "itemCount_other": "{{count}} Getränke",
+      "nothingToPay": "Alles bezahlt",
+      "nothingToPayDescription": "Du hast keine offenen Getränke. Es ist nichts zu zahlen.",
+      "noPaymentInfo": "Es sind keine Zahlungsinformationen hinterlegt. Bitte wende dich an einen Admin.",
+      "showQr": "QR-Code anzeigen",
+      "payWithPayPal": "{{amount}} mit PayPal bezahlen",
+      "confirmationHint": "Ein Admin bestätigt deine Zahlung, nachdem du bezahlt hast.",
+      "items": "Positionen",
+      "reference": "Getränkezahlung {{title}} App"
     },
     "productTypeSpecial": "Anderes",
-    "productTypeNone": "Ohne Typ"
+    "productTypeNone": "Ohne Typ",
+    "editMode": "Bearbeitungsmodus",
+    "editModeHint": "Getränke bearbeiten oder löschen.",
+    "editDone": "Fertig",
+    "noPurchasePermission": "Du kannst die Getränke sehen, aber nicht buchen.",
+    "loadError": "Getränke konnten nicht geladen werden",
+    "inactive": "Inaktiv",
+    "stock_one": "{{count}} auf Lager",
+    "stock_other": "{{count}} auf Lager",
+    "remove": "Eins weniger",
+    "add": "Eins mehr",
+    "cartCount_one": "{{count}} Artikel",
+    "cartCount_other": "{{count}} Artikel",
+    "clearCart": "Leeren",
+    "book": "Buchen",
+    "history": {
+      "title": "Getränkeverlauf",
+      "loadError": "Verlauf konnte nicht geladen werden",
+      "loadErrorDescription": "Bitte prüfe deine Verbindung und versuche es erneut.",
+      "empty": "Noch keine Getränke",
+      "emptyDescription": "Gebuchte Getränke erscheinen hier.",
+      "goToDrinks": "Zu den Getränken",
+      "openTitle": "Unbezahlte Getränke",
+      "openDescription": "Du hast noch Getränke, die nicht bezahlt sind.",
+      "payNow": "Jetzt bezahlen",
+      "voucher": "Gutschein",
+      "open": "Offen",
+      "paid": "Bezahlt",
+      "free": "gratis",
+      "dayTotal": "Summe: {{total}}"
+    }
   },
   "attendees": "Teilnehmer",
   "browse": {
@@ -84,8 +127,6 @@
     "payment": "Zahlung",
     "postgresClient": "Postgres Client",
     "auditLogs": "Audit Logs",
-    "logs": "Logs",
-    "database": "Datenbank",
     "user": "Benutzer",
     "notifyUsers": "Nachrichten senden",
     "training": "Training",
@@ -96,7 +137,8 @@
     "helpAndInformation": "Hilfe und Informationen",
     "appRefresh": "App aktualisieren",
     "merge_accounts": "Account-Merge",
-    "adminOverview": "Übersicht"
+    "adminOverview": "Übersicht",
+    "moderation": "Gemeldete Inhalte"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
@@ -185,7 +227,41 @@
       "deleteRecurrenceEnd": "Wiederholungsende löschen",
       "item": "Gegenstand",
       "quantity": "Anzahl",
-      "add": "Hinzufügen"
+      "add": "Hinzufügen",
+      "sectionBasics": "Grunddaten",
+      "titlePlaceholder": "z. B. Donnerstagstraining",
+      "titleHint": "Mindestens 6 Zeichen",
+      "descriptionPlaceholder": "Was sollten Teilnehmende wissen?",
+      "date": "Datum",
+      "from": "Von",
+      "until": "Bis",
+      "endBeforeStart": "Das Ende muss nach dem Beginn liegen",
+      "duration": "Dauer: {{value}}",
+      "endsOnOtherDay": "Endet an einem anderen Tag",
+      "meetingHint": "Standard: 15 Minuten vor Beginn",
+      "changeLocation": "Ort ändern",
+      "removeLocation": "Ort entfernen",
+      "chooseLocation": "Ort auswählen",
+      "recurrenceShort": {
+        "None": "Einmalig",
+        "Weekly": "Wöchentlich",
+        "Fortnightly": "Alle 2 Wochen",
+        "Monthly": "Monatlich"
+      },
+      "recurrenceNever": "Wiederholt sich, bis du es stoppst",
+      "change": "Ändern",
+      "sectionRegistration": "Anmeldung",
+      "signupDeadlineHint": "Bis dahin können sich Teilnehmende an- und abmelden",
+      "maxAttendeesHint": "Weitere Anmeldungen kommen auf die Warteliste",
+      "sectionExtras": "Extras",
+      "noBringItems": "Nichts mitzubringen",
+      "createEvent": "Event erstellen",
+      "editingSingle": "Nur dieses Event wird geändert.",
+      "editingFollowing": "Dieses und alle folgenden Events werden geändert.",
+      "answerStart": "Anmeldung ab",
+      "answerStartHint": "Erst ab diesem Zeitpunkt können sich Teilnehmende an- und abmelden",
+      "answerStartAfterStart": "Die Anmeldung muss vor dem Start des Events beginnen",
+      "answerStartAfterDeadline": "Die Anmeldung muss vor der Anmeldedeadline beginnen"
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -234,7 +310,20 @@
       "errorTitle": "Fehler",
       "notLoaded": "Event nicht geladen",
       "notLoadedDescription": "Das Event konnte leider nicht geladen werden. Möglicherweise wurde es gelöscht, du bist offline oder du hast keine Berechtigung, es zu sehen.",
-      "backToOverview": "Zurück zur Übersicht"
+      "backToOverview": "Zurück zur Übersicht",
+      "statusAttending": "Zugesagt",
+      "statusTrainer": "Als Trainer:in zugesagt",
+      "statusTrial": "Als Probetraining zugesagt",
+      "statusDeclined": "Abgesagt",
+      "statusWaiting": "Auf der Warteliste",
+      "statusRequested": "Angefragt",
+      "statusNone": "Noch keine Antwort",
+      "cancelledBadge": "Abgesagt",
+      "full": "Voll",
+      "capacity": "{{count}} / {{max}}",
+      "answerBy": "Antwort bis {{date}}",
+      "leaveWaitingList": "Warteliste verlassen",
+      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}"
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -262,10 +351,34 @@
       "joinGroupHint": "Versuche einer Gruppe beizutreten um Events einzusehen",
       "thisWeek": "Diese Woche",
       "nextWeek": "Nächste Woche",
-      "reload": "Neu laden"
+      "reload": "Neu laden",
+      "tabUpcoming": "Kommend",
+      "tabOpen": "Offen",
+      "tabPast": "Vergangen",
+      "create": "Event erstellen",
+      "recurring": "Wiederkehrende Events",
+      "loadError": "Events konnten nicht geladen werden",
+      "allAnswered": "Alles beantwortet",
+      "allAnsweredDescription": "Du hast alle kommenden Events beantwortet.",
+      "emptyPast": "Keine Events in den letzten 8 Wochen."
     },
     "item": {
-      "noLocation": "Kein Ort angegeben"
+      "noLocation": "Kein Ort angegeben",
+      "cancelled": "Abgesagt",
+      "waiting": "Wartet",
+      "trainer": "Trainer",
+      "attended": "Teilgenommen",
+      "declined": "Abgesagt",
+      "declineAria": "Absagen",
+      "attendAria": "Zusagen",
+      "attendingOfMax": "{{count}} / {{max}}",
+      "answerUntil": "Antwort bis {{date}}",
+      "answerNeeded": "Antwort fehlt",
+      "deadlinePassed": "Frist abgelaufen",
+      "full": "Voll",
+      "opensOn": "Anmeldung ab {{date}}",
+      "attending": "Dabei",
+      "notAttending": "Nicht dabei"
     },
     "replyTo": "Antworte auf @{{name}}",
     "reply": "Antworten",
@@ -326,7 +439,8 @@
       "trainer": "Trainer",
       "trial": "Probetraining",
       "noAttendances": "Noch keine Zusagen.",
-      "pending": "Wartend"
+      "pending": "Wartend",
+      "accept": "{{name}} annehmen"
     },
     "commentsTab": {
       "addError": "Kommentar konnte nicht hinzugefügt werden.",
@@ -345,7 +459,9 @@
     },
     "matchesTab": {
       "empty": "Noch keine Spiele.<br />Sei der Erste!",
-      "addMatch": "Spiel hinzufügen"
+      "addMatch": "Spiel hinzufügen",
+      "emptyTitle": "Noch keine Spiele",
+      "emptyDescription": "Füge als Erste:r ein Spiel für dieses Event hinzu."
     },
     "recurring": {
       "title": "Wiederkehrende Events",
@@ -392,7 +508,21 @@
     "placeholder": "Name suchen...",
     "noResults": "Keine Spieler gefunden",
     "noGroups": "Keine Gruppen gefunden",
-    "noUsers": "Keine Nutzer gefunden"
+    "noUsers": "Keine Nutzer gefunden",
+    "loadError": "Spieler konnten nicht geladen werden",
+    "loadErrorDescription": "Prüfe deine Verbindung und versuche es erneut.",
+    "noMembers": "Noch keine Spieler",
+    "noMembersDescription": "Du siehst die Mitglieder der Gruppen, in denen du bist. Tritt einer Gruppe bei, um hier Spieler zu finden.",
+    "noResultsDescription": "Prüfe die Schreibweise oder suche nach einem kürzeren Namen.",
+    "clear": "Suche zurücksetzen",
+    "picker": {
+      "title": "Spieler auswählen",
+      "titleMultiple": "Spieler auswählen",
+      "noUsersDescription": "Es gibt niemanden mehr zur Auswahl.",
+      "selectSome": "Spieler auswählen",
+      "addCount_one": "{{count}} Spieler hinzufügen",
+      "addCount_other": "{{count}} Spieler hinzufügen"
+    }
   },
   "groups": {
     "trialDaysLeft_one": "noch {{count}} Tag",
@@ -475,7 +605,54 @@
     "confirmLabel": "Bestätigung",
     "confirmHint": "Sollen Benutzer bestätigt werden müssen?",
     "nameTooShort": "Der Name der Gruppe muss aus mindestens 6 Zeichen bestehen.",
-    "descriptionTooShort": "Die Beschreibung der Gruppe muss aus mindestens 6 Zeichen bestehen."
+    "descriptionTooShort": "Die Beschreibung der Gruppe muss aus mindestens 6 Zeichen bestehen.",
+    "loadError": "Gruppen konnten nicht geladen werden",
+    "subgroupOf": "Untergruppe von {{group}}",
+    "approvalRequired": "Mit Bestätigung",
+    "hidden": "Versteckt",
+    "private": "Privat",
+    "openRequests_one": "{{count}} Anfrage",
+    "openRequests_other": "{{count}} Anfragen",
+    "openRequestsAlert_one": "{{count}} Beitrittsanfrage wartet auf deine Entscheidung.",
+    "openRequestsAlert_other": "{{count}} Beitrittsanfragen warten auf deine Entscheidung.",
+    "myGroups": "Meine Gruppen",
+    "pendingGroups": "Offene Anfragen",
+    "discover": "Gruppen entdecken",
+    "requestToJoin": "Beitritt anfragen",
+    "requestsTab": "Anfragen",
+    "viewAll": "Alle",
+    "roleChanged": "Rolle aktualisiert.",
+    "roleChangeError": "Rolle konnte nicht geändert werden: {{error}}",
+    "confirmRemove": "Möchtest du {{name}} wirklich aus der Gruppe entfernen?",
+    "leave": "Gruppe verlassen",
+    "leaveConfirm": "Möchtest du {{group}} wirklich verlassen?",
+    "leaveDescription": "Du siehst dann die Events und Mitglieder der Gruppe nicht mehr.",
+    "left": "Du hast {{group}} verlassen.",
+    "leaveError": "Die Gruppe konnte nicht verlassen werden: {{error}}",
+    "you": "Du",
+    "memberActions": "Aktionen für {{name}}",
+    "removeAdmin": "Admin-Rolle entfernen",
+    "makeAdmin": "Zum Admin machen",
+    "makeTrial": "Zum Probemitglied machen",
+    "acceptTrialMember": "Als Vollmitglied aufnehmen",
+    "memberCount_one": "{{count}} Mitglied",
+    "memberCount_other": "{{count}} Mitglieder",
+    "requestedHint": "Deine Anfrage wartet auf die Freigabe durch einen Gruppen-Admin.",
+    "reviewRequests": "Prüfen",
+    "select": "Auswählen",
+    "selectedCount_one": "{{count}} ausgewählt",
+    "selectedCount_other": "{{count}} ausgewählt",
+    "membersHidden": "Tritt der Gruppe bei, um die Mitglieder zu sehen.",
+    "noMembersFound": "Keine Mitglieder gefunden",
+    "lastAdminHint": "Du bist der einzige Admin. Ernenne zuerst jemand anderen zum Admin, bevor du gehst.",
+    "addMembers": "Mitglieder hinzufügen",
+    "picker": {
+      "title": "Gruppe wählen",
+      "selected": "Ausgewählt",
+      "others": "Weitere Gruppen",
+      "othersHint": "Du bist kein Mitglied dieser Gruppen.",
+      "emptyDescription": "Versuche es mit einem anderen Suchbegriff."
+    }
   },
   "costs": {
     "title": "Turnierkosten",
@@ -539,7 +716,22 @@
     "list": {
       "retry": "Erneut versuchen",
       "unknownError": "Unbekannter Fehler",
-      "archived": "Archivierte Challenges"
+      "archived": "Archivierte Challenges",
+      "create": "Challenge erstellen",
+      "empty": "Keine aktiven Challenges",
+      "emptyDescription": "Challenges deiner Gruppen erscheinen hier, sobald sie starten.",
+      "emptyAdminHint": "Erstelle eine mit dem +-Button.",
+      "active": "Aktive Challenges",
+      "startsOn": "Startet am {{date}}",
+      "ongoing": "Laufend",
+      "endsToday": "Endet heute",
+      "endsInDays_one": "Endet in {{count}} Tag",
+      "endsInDays_other": "Endet in {{count}} Tagen",
+      "maxPerDay_one": "max. {{count}} / Tag",
+      "maxPerDay_other": "max. {{count}} / Tag",
+      "automated": "Automatisch",
+      "endedOn": "Beendet am {{date}}",
+      "noPoints": "Keine Punkte eingetragen"
     },
     "dialog": {
       "titleUpdate": "Challenge aktualisieren",
@@ -578,6 +770,29 @@
       "errorTitle": "Es ist ein Fehler aufgetreten",
       "uploadError": "Beim Hochladen deines Bildes ist etwas schiefgelaufen. Bitte versuche es erneut.",
       "compressError": "Beim Komprimieren deines Bildes ist etwas schiefgelaufen. Bitte versuche es erneut."
+    },
+    "info": {
+      "leaderboardEmpty": "Noch keine Punkte",
+      "leaderboardEmptyDescription": "Die Rangliste füllt sich, sobald die ersten Punkte eingetragen sind.",
+      "you": "Du",
+      "activityEmpty": "Noch keine Aktivität",
+      "activityEmptyDescription": "Eingetragene Punkte erscheinen hier.",
+      "notFoundTitle": "Challenge nicht gefunden",
+      "notFoundDescription": "Diese Challenge existiert nicht oder du hast keinen Zugriff darauf.",
+      "maxPerWeek_one": "max. {{count}} / Woche",
+      "maxPerWeek_other": "max. {{count}} / Woche",
+      "yourProgress": "Dein Fortschritt",
+      "yourPoints": "Deine Punkte",
+      "yourRank": "Dein Rang",
+      "today": "Heute",
+      "thisWeek": "Diese Woche: {{count}} von {{max}} Punkten",
+      "view": "Challenge-Ansicht",
+      "podium": "Siegertreppchen",
+      "place": "Platz {{place}}",
+      "points_one": "{{count}} Punkt",
+      "points_other": "{{count}} Punkte",
+      "yourResult": "Dein Ergebnis",
+      "notParticipated": "Du hast bei dieser Challenge nicht mitgemacht."
     }
   },
   "filter": "Filtern",
@@ -659,14 +874,32 @@
       "emptyDescription": "Es gibt aktuell keine eingetragenen Spiele. Trage ein neues Spiel ein, um zu beginnen.",
       "unrated": "Ungewertet",
       "private": "Privat",
-      "enterScores": "Scores eintragen"
+      "enterScores": "Scores eintragen",
+      "tabAll": "Alle",
+      "tabMine": "Meine",
+      "tabMissing": "Score fehlt",
+      "noneMissing": "Nichts offen",
+      "noneMissingDescription": "Für alle deine Spiele sind Scores eingetragen.",
+      "emptyMine": "Du hast noch keine Spiele gespielt.",
+      "you": "Du",
+      "add": "Spiel eintragen"
     },
     "history": {
       "noGames": "Keine Spiele",
       "noGamesDescription": "Für diesen Spieler sind noch keine Spiele eingetragen."
     },
     "leaderboard": {
-      "empty": "Noch keine Einträge"
+      "empty": "Noch keine Einträge",
+      "provisional": "Vorläufig",
+      "loadError": "Rangliste konnte nicht geladen werden",
+      "loadErrorDescription": "Bitte prüfe deine Verbindung und versuche es erneut.",
+      "emptyDescription": "Spiele gewertete Spiele, um in der Rangliste zu erscheinen.",
+      "rank": "Rang",
+      "yourRank": "Dein Rang",
+      "matches_one": "{{count}} Spiel",
+      "matches_other": "{{count}} Spiele",
+      "notRankedHint": "Du bist noch nicht platziert. Spiele ein gewertetes Spiel, um in die Rangliste zu kommen.",
+      "noResults": "Keine Spieler gefunden"
     },
     "index": "Index",
     "sets": "Sätze",
@@ -688,7 +921,16 @@
       "player": "Spieler",
       "delta": "Delta",
       "oldRating": "Altes Rating",
-      "newRating": "Neues Rating"
+      "newRating": "Neues Rating",
+      "backToList": "Zurück zu den Spielen",
+      "editScores": "Ergebnis bearbeiten",
+      "noScores": "Noch keine Ergebnisse gemeldet.",
+      "setNumber": "Satz {{number}}",
+      "eloPending": "Die Wertungsänderungen wurden noch nicht berechnet.",
+      "deleteDescription": "Beim Löschen werden die Ergebnisse und Wertungsänderungen dieses Spiels endgültig entfernt.",
+      "delete": "Spiel löschen",
+      "applyEloError": "Wertung konnte nicht angewendet werden: {{error}}",
+      "applyEloSuccess": "Wertung angewendet."
     },
     "report": {
       "title": "Spiel erstellen",
@@ -719,7 +961,15 @@
       "loadErrorDescription": "Die Schlüssel konnten nicht geladen werden. Bitte versuche es später erneut.",
       "empty": "Keine Schlüssel gefunden",
       "emptyDescription": "Es sind aktuell keine Schlüssel im System hinterlegt.",
-      "noHolder": "Nicht vergeben"
+      "noHolder": "Nicht vergeben",
+      "mine": "Bei dir",
+      "unassigned": "Ohne Halter",
+      "others": "Bei anderen",
+      "you": "Du",
+      "retry": "Erneut versuchen",
+      "emptyAdminHint": "Lege über + den ersten Schlüssel an.",
+      "noHandoverPermission": "Du kannst sehen, wer welchen Schlüssel hat. Übergaben eintragen dürfen nur Personen mit Schlüsselrechten.",
+      "handoverSuccess": "Übergabe eingetragen"
     },
     "dialog": {
       "nameTooShort": "Der Schlüsselname ist zu kurz!",
@@ -729,7 +979,11 @@
       "create": "Schlüssel erstellen",
       "name": "Schlüsselname",
       "type": "Schlüsseltyp",
-      "typePlaceholder": "Typ"
+      "typePlaceholder": "Typ",
+      "groupOnly": "Nur für eine Gruppe",
+      "groupOnlyDescription": "Nur Mitglieder der Gruppe sehen den Schlüssel und können ihn übernehmen oder abgeben. Ohne Gruppe sehen ihn alle.",
+      "groupLoading": "Gruppe wird geladen…",
+      "groupUnknown": "Unbekannte Gruppe"
     }
   },
   "user": {
@@ -751,7 +1005,17 @@
       "updateSuccess": "Profil erfolgreich aktualisiert",
       "updateError": "Fehler beim Aktualisieren des Profils: {{error}}",
       "language": "Sprache",
-      "avatarPreview": "Vorschau des Profilbilds"
+      "avatarPreview": "Vorschau des Profilbilds",
+      "deleteAccount": "Konto löschen",
+      "dangerZone": "Gefahrenbereich",
+      "dangerZoneDescription": "Dein Konto wird anonymisiert und kann nicht wiederhergestellt werden.",
+      "deleteAccountTitle": "Konto endgültig löschen?",
+      "deleteAccountDescription": "Dein Konto wird anonymisiert und du wirst aus allen Gruppen und kommenden Veranstaltungen entfernt. Profilbild, Name und E-Mail-Adresse werden gelöscht. Spielergebnisse und Kommentare von dir bleiben ohne deinen Namen sichtbar. Das kann nicht rückgängig gemacht werden.",
+      "deleteAccountPassword": "Zur Bestätigung Passwort eingeben",
+      "deleteAccountConfirm": "Endgültig löschen",
+      "deleteAccountSuccess": "Dein Konto wurde gelöscht.",
+      "sectionProfile": "Profil",
+      "removeAvatar": "Profilbild entfernen"
     },
     "password": {
       "title": "Passwort ändern",
@@ -841,7 +1105,17 @@
       "rgIndex": "RG Index",
       "pro": "Pro",
       "eloHistory": "ELO Verlauf",
-      "points": "{{score}} Pkt"
+      "points": "{{score}} Pkt",
+      "indexHidden": "{{name}} hält den Index privat.",
+      "recordTitle": "Deine Spiele mit {{name}}",
+      "recordDescription_one": "{{count}} gewertetes Spiel, als Team oder Gegner",
+      "recordDescription_other": "{{count}} gewertete Spiele, als Team oder Gegner",
+      "wins": "Siege",
+      "draws": "Unentschieden",
+      "losses": "Niederlagen",
+      "playerzone": "Playerzone",
+      "copyRgId": "RG-ID kopieren",
+      "noData": "{{name}} hat noch keine Statistiken."
     },
     "avatarErrors": {
       "uploadFailed": "Fehler beim Hochladen des Bildes",
@@ -860,7 +1134,27 @@
       "lastTrainingDesc": "Anmeldungen",
       "monthlyActivity": "Aktivität (Monat)",
       "monthlyActivityDesc": "Nutzer mit mind. 1 Training diesen Monat",
-      "quickLinks": "Schnellzugriff",
+      "needsAttention": "Wartet auf dich",
+      "allCaughtUp": "Alles erledigt",
+      "allCaughtUpDesc": "Aktuell wartet nichts auf dich.",
+      "openReports": "Gemeldete Inhalte",
+      "openReportsDesc": "Kommentare warten auf Prüfung",
+      "insights": "Einblicke",
+      "groups": {
+        "community": "Community & Sicherheit",
+        "drinks": "Getränke & Zahlungen",
+        "access": "Zugriff & Auswertung"
+      },
+      "tools": {
+        "users": "Konten, E-Mails und Passwörter bearbeiten",
+        "mergeAccounts": "Spieler mit Benutzerkonten verknüpfen",
+        "notify": "Push-Nachricht an Mitglieder senden",
+        "moderation": "Gemeldete Kommentare prüfen",
+        "payments": "Offene Zahlungen bestätigen",
+        "history": "Alle Getränkebuchungen",
+        "permissions": "Rollen und Berechtigungen",
+        "analytics": "Teilnahme- und Getränkestatistiken"
+      },
       "noEvent": "Kein Training gefunden",
       "total": "Gesamt: {{amount}} €",
       "attendanceTrend": "Trainings-Trend (30 Tage)",
@@ -935,12 +1229,28 @@
       "cancelled": "Der Merge wurde abgebrochen",
       "success": "Die Accounts wurden erfolgreich gemerged!",
       "assign": "Zuordnen"
+    },
+    "moderation": {
+      "title": "Gemeldete Inhalte",
+      "empty": "Keine offenen Meldungen.",
+      "dismiss": "Behalten",
+      "remove": "Kommentar entfernen",
+      "removeConfirm": "Diesen Kommentar für alle entfernen?",
+      "removed": "Kommentar entfernt.",
+      "dismissed": "Meldung abgelehnt.",
+      "error": "Das hat nicht geklappt. Bitte versuche es erneut."
     }
   },
   "notifications": {
     "screen": {
       "title": "Benachrichtigungen",
-      "empty": "Du hast keine neuen Benachrichtigungen."
+      "empty": "Du hast keine neuen Benachrichtigungen.",
+      "clear": "Alle Benachrichtigungen löschen",
+      "clearTitle": "Alle Benachrichtigungen löschen?",
+      "clearDescription": "Alle deine Benachrichtigungen werden entfernt. Das kann nicht rückgängig gemacht werden.",
+      "clearConfirm": "Alle löschen",
+      "loadError": "Benachrichtigungen konnten nicht geladen werden",
+      "emptyDescription": "Neue Benachrichtigungen zu Terminen, Spielen und Gruppen erscheinen hier."
     }
   },
   "auth": {
@@ -965,7 +1275,9 @@
       "failed": "Registrierung fehlgeschlagen. [{{message}}]",
       "titleAt": "Registrierung bei",
       "submit": "Registrieren",
-      "submitting": "Account wird erstellt..."
+      "submitting": "Account wird erstellt...",
+      "terms": "Ich akzeptiere die <terms>Nutzungsbedingungen</terms> und habe die <privacy>Datenschutzerklärung</privacy> gelesen.",
+      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung."
     },
     "forgot": {
       "failed": "Zurücksetzen des Passworts fehlgeschlagen. Versuche es erneut!",
@@ -992,7 +1304,36 @@
     "features": "Features",
     "updateError": "Berechtigungen konnten nicht aktualisiert werden",
     "updateSuccess": "Berechtigungen wurden aktualisiert",
-    "editUser": "Benutzer \"{{name}}\" bearbeiten"
+    "editUser": "Benutzer \"{{name}}\" bearbeiten",
+    "intro": "Die Gesamtrechte eines Nutzers ergeben sich aus den Rechten seiner Gruppen plus allem, was ihm direkt zugewiesen wurde.",
+    "groupHint": "Änderungen gelten für alle Mitglieder der Gruppe.",
+    "userHint": "Hier stehen nur direkte Rechte. Gruppenrechte siehst du beim Öffnen eines Nutzers.",
+    "noDirectUsers": "Noch kein Nutzer hat direkte Rechte. Tippe auf +, um einen hinzuzufügen.",
+    "permissionCount_one": "{{count}} Berechtigung",
+    "permissionCount_other": "{{count}} Berechtigungen",
+    "featureCount_one": "{{count}} Feature",
+    "featureCount_other": "{{count}} Features",
+    "totalUser": "Gesamtrechte dieses Nutzers",
+    "totalGroup": "Für alle Mitglieder dieser Gruppe",
+    "inheritsFrom": "Erbt von:",
+    "noGroupGrants": "Erbt nichts von Gruppen",
+    "directHint": "Die Schalter setzen direkte Rechte. Rechte mit Gruppen-Hinweis kommen aus der Gruppe und können nur dort geändert werden.",
+    "viaGroup": "über {{groups}}",
+    "search": "Berechtigungen suchen",
+    "onlyActive": "Aktiv",
+    "noResults": "Nichts gefunden",
+    "all": "Alle",
+    "none": "Keine",
+    "saveChanges": "Speichern (+{{added}} / −{{removed}})",
+    "categories": {
+      "events": "Events",
+      "drinks": "Getränke",
+      "games": "Spiele",
+      "challenges": "Challenges",
+      "groups": "Gruppen",
+      "items": "Items",
+      "admin": "Verwaltung & Sonstiges"
+    }
   },
   "bundesliga": {
     "title": "Bundesliga-Aufstellung",
@@ -1048,7 +1389,22 @@
     "order": "Bestellen",
     "keys": "Schlüssel",
     "keysLoadError": "Fehler beim Laden der Schlüssel",
-    "noKeys": "Keine Schlüssel hinterlegt"
+    "noKeys": "Keine Schlüssel hinterlegt",
+    "nextEvent": "Nächster Termin",
+    "decline": "Kann nicht",
+    "attend": "Bin dabei",
+    "drinks": "Schnell bestellen",
+    "seeAll": "Alle anzeigen",
+    "youHoldKey": "Du hast diesen Schlüssel",
+    "greetingMorning": "Guten Morgen",
+    "greetingDay": "Hallo",
+    "greetingEvening": "Guten Abend",
+    "unanswered_one": "{{count}} Termin wartet auf deine Antwort",
+    "unanswered_other": "{{count}} Termine warten auf deine Antwort",
+    "unreadNotifications_one": "{{count}} ungelesene Benachrichtigung",
+    "unreadNotifications_other": "{{count}} ungelesene Benachrichtigungen",
+    "upcoming": "Demnächst",
+    "explore": "Entdecken"
   },
   "pwa": {
     "updateReady": {
@@ -1117,6 +1473,232 @@
       "error": "Fehler: {{message}}",
       "notFound": "{{value}} wurde nicht gefunden.",
       "unknown": "Unbekannt"
+    }
+  },
+  "legal": {
+    "back": "Zurück",
+    "links": {
+      "imprint": "Impressum",
+      "privacy": "Datenschutz",
+      "deleteAccount": "Konto löschen",
+      "terms": "Nutzungsbedingungen"
+    },
+    "contact": {
+      "email": "E-Mail"
+    },
+    "imprint": {
+      "title": "Impressum",
+      "providerTitle": "Angaben gemäß § 5 DDG",
+      "sections": [
+        {
+          "title": "Verantwortlich für den Inhalt",
+          "body": [
+            "{{operator}}, privat betrieben. Die App „{{app}}“ ist ein nicht-kommerzielles Angebot für die Roundnet-Community."
+          ]
+        },
+        {
+          "title": "Streitbeilegung",
+          "body": [
+            "Ich bin nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "updated": "Stand: November 2026",
+      "controllerTitle": "1. Verantwortlicher",
+      "sections": [
+        {
+          "title": "2. Welche Daten wir verarbeiten",
+          "body": [
+            "Konto: Vor- und Nachname, Anzeigename, E-Mail-Adresse und ein Passwort (nur als Hash gespeichert). Optional: Profilbild und Sprache.",
+            "Nutzung: Gruppenmitgliedschaften, Zu- und Absagen zu Veranstaltungen, Kommentare, Getränke- und Zahlungseinträge, Spielergebnisse und Ranglisten, optional ein Link zu deinem Playerzone-Profil.",
+            "Geräte-Daten: Wenn du Push-Benachrichtigungen erlaubst, speichern wir die technische Adresse deines Geräts oder Browsers bei dessen Push-Dienst.",
+            "Technische Daten: Beim Aufruf fallen IP-Adresse, Zeitpunkt und Browser-/Geräteinformationen in Server-Protokollen an. Bei Fehlern werden technische Fehlerberichte ohne Name und E-Mail-Adresse, aber mit deiner Konto-ID, übermittelt."
+          ]
+        },
+        {
+          "title": "3. Zwecke und Rechtsgrundlagen",
+          "body": [
+            "Bereitstellung der App, Konto- und Gruppenverwaltung, Veranstaltungsorganisation: Art. 6 Abs. 1 lit. b DSGVO (Nutzungsvertrag).",
+            "Sicherheit, Fehleranalyse und Stabilität: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).",
+            "Push-Benachrichtigungen und Standortfreigabe: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung). Du kannst sie jederzeit in den Geräte- bzw. Browser-Einstellungen und im Profil widerrufen."
+          ]
+        },
+        {
+          "title": "4. Sichtbarkeit für andere Mitglieder",
+          "body": [
+            "Mitglieder deiner Gruppen sehen deinen Anzeigenamen, dein Profilbild, deine Zu- und Absagen, deine Kommentare sowie deine Spielergebnisse. Kommentare und Inhalte kannst du jederzeit melden; Gruppenverantwortliche können Inhalte entfernen."
+          ]
+        },
+        {
+          "title": "5. Standort",
+          "body": [
+            "Die App fragt deinen Standort nur ab, wenn du die Kartenfunktion verwendest und der Zugriff erlaubt ist. Der Standort wird nur auf deinem Gerät zur Anzeige auf der Karte genutzt und nicht auf unseren Servern gespeichert."
+          ]
+        },
+        {
+          "title": "6. Empfänger und Dienstleister",
+          "body": [
+            "Supabase (Datenbank, Authentifizierung, Dateispeicher, Server-Funktionen): speichert alle Konto- und Nutzungsdaten in unserem Auftrag.",
+            "Google Firebase Hosting: Auslieferung der Web-App und der statischen Seiten.",
+            "Sentry: Fehlerüberwachung (ohne Name und E-Mail-Adresse).",
+            "OpenStreetMap-Kachelserver: Beim Anzeigen einer Karte wird deine IP-Adresse an den Kartenanbieter übertragen.",
+            "Push-Dienste von Apple, Google bzw. deinem Browser-Hersteller: Zustellung von Benachrichtigungen.",
+            "Playerzone (Roundnet Germany): Wenn du einen Playerzone-Link hinterlegst, rufen wir die dort öffentlich einsehbaren Profildaten ab.",
+            "Soweit Anbieter Daten in Drittländern (z. B. USA) verarbeiten, geschieht das auf Grundlage von Standardvertragsklauseln bzw. eines Angemessenheitsbeschlusses."
+          ]
+        },
+        {
+          "title": "7. Speicherdauer",
+          "body": [
+            "Wir speichern deine Daten, solange dein Konto besteht. Wenn du dein Konto löschst, werden Name, E-Mail-Adresse, Profilbild, Push-Adressen, Gruppenmitgliedschaften und Zusagen zu kommenden Veranstaltungen entfernt. Spielergebnisse und Kommentare bleiben ohne Personenbezug („Gelöschter Nutzer“) erhalten, damit Ranglisten und Diskussionen konsistent bleiben."
+          ]
+        },
+        {
+          "title": "8. Konto löschen",
+          "body": [
+            "Du kannst dein Konto jederzeit in der App unter Profil → Konto → „Konto löschen“ löschen. Alternativ siehst du die Schritte unter „Konto löschen“ auf dieser Website."
+          ]
+        },
+        {
+          "title": "9. Deine Rechte",
+          "body": [
+            "Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Wende dich dazu an die oben genannte Kontaktadresse."
+          ]
+        },
+        {
+          "title": "10. Beschwerderecht",
+          "body": [
+            "Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. beim Bayerischen Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18, 91522 Ansbach."
+          ]
+        }
+      ]
+    },
+    "deleteAccount": {
+      "title": "Konto und Daten löschen",
+      "sections": [
+        {
+          "title": "In der App",
+          "body": [
+            "1. Melde dich in „{{app}}“ an.",
+            "2. Öffne dein Profil und wähle den Reiter „Konto“.",
+            "3. Tippe auf „Konto löschen“ und bestätige mit deinem Passwort."
+          ]
+        },
+        {
+          "title": "Was gelöscht wird",
+          "body": [
+            "Name, E-Mail-Adresse, Profilbild, Push-Adressen, Gruppenmitgliedschaften und Zusagen zu kommenden Veranstaltungen. Du kannst dich danach nicht mehr anmelden."
+          ]
+        },
+        {
+          "title": "Was erhalten bleibt",
+          "body": [
+            "Spielergebnisse und Kommentare bleiben ohne Namen („Gelöschter Nutzer“) erhalten, damit Ranglisten und Diskussionen für andere Mitglieder vollständig bleiben."
+          ]
+        },
+        {
+          "title": "Kein Zugang mehr zur App?",
+          "body": [
+            "Schreibe uns über die im Impressum genannte Kontaktadresse. Wir löschen dein Konto nach Prüfung deiner Identität."
+          ]
+        }
+      ]
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "updated": "Stand: November 2026",
+      "sections": [
+        {
+          "title": "1. Geltungsbereich",
+          "body": [
+            "Diese Bedingungen gelten für die Nutzung der App „{{app}}“, einem kostenlosen Community-Angebot von {{operator}} zur Organisation von Roundnet-Events, Spielen und Getränken."
+          ]
+        },
+        {
+          "title": "2. Dein Konto",
+          "body": [
+            "Mache korrekte Angaben, halte dein Passwort geheim und gib dein Konto nicht weiter. Du kannst dein Konto jederzeit in deinem Profil löschen."
+          ]
+        },
+        {
+          "title": "3. Keine Toleranz für anstößige Inhalte",
+          "body": [
+            "Kommentare und andere Inhalte müssen respektvoll sein. Nicht erlaubt sind rechtswidrige, belästigende, bedrohende, hasserfüllte, diskriminierende, sexuell explizite oder täuschende Inhalte, Spam sowie das Ausgeben als andere Personen."
+          ]
+        },
+        {
+          "title": "4. Melden und Blockieren",
+          "body": [
+            "Zu jedem Kommentar gibt es die Aktionen „Melden“ und „Blockieren“. Meldungen werden von Moderatoren geprüft, in der Regel innerhalb von 24 Stunden. Inhalte, die gegen diese Regeln verstoßen, werden entfernt.",
+            "Wenn du einen Nutzer blockierst, werden seine Kommentare für dich ausgeblendet. Du kannst das jederzeit in deinem Profil rückgängig machen."
+          ]
+        },
+        {
+          "title": "5. Folgen bei Verstößen",
+          "body": [
+            "Inhalte, die gegen diese Regeln verstoßen, werden entfernt. Nutzer, die wiederholt oder schwerwiegend verstoßen, können ohne Vorankündigung aus Gruppen entfernt oder gesperrt werden."
+          ]
+        },
+        {
+          "title": "6. Deine Inhalte",
+          "body": [
+            "Du bleibst Inhaber dessen, was du schreibst. Du erlaubst der App, es zu speichern und den Mitgliedern der jeweiligen Gruppe anzuzeigen, solange es für den Betrieb des Dienstes nötig ist."
+          ]
+        },
+        {
+          "title": "7. Verfügbarkeit und Haftung",
+          "body": [
+            "Der Dienst wird kostenlos und wie verfügbar bereitgestellt. Die Haftung ist auf Vorsatz und grobe Fahrlässigkeit beschränkt, außer bei Verletzung von Leben, Körper oder Gesundheit und soweit das Gesetz etwas anderes vorschreibt."
+          ]
+        },
+        {
+          "title": "8. Kontakt",
+          "body": [
+            "Fragen oder Beschwerden zu Inhalten oder diesen Bedingungen: siehe Kontaktangaben im Impressum."
+          ]
+        }
+      ]
+    },
+    "termsGate": {
+      "title": "Nutzungsbedingungen",
+      "description": "Damit die Community sicher bleibt, akzeptiere bitte die Nutzungsbedingungen, um fortzufahren. Sie enthalten Regeln für Kommentare sowie die Möglichkeit, Nutzer zu melden und zu blockieren.",
+      "links": "Lies die <terms>Nutzungsbedingungen</terms> und die <privacy>Datenschutzerklärung</privacy>.",
+      "accept": "Akzeptieren und weiter",
+      "error": "Deine Entscheidung konnte nicht gespeichert werden. Bitte versuche es erneut."
+    }
+  },
+  "moderation": {
+    "reasons": {
+      "harassment": "Belästigung oder Hass",
+      "inappropriate": "Unangemessen oder beleidigend",
+      "spam": "Spam",
+      "other": "Etwas anderes"
+    },
+    "reported": "Gemeldet",
+    "report": {
+      "action": "Melden",
+      "title": "Kommentar melden",
+      "description": "Warum möchtest du den Kommentar von {{name}} melden? Moderatoren prüfen Meldungen innerhalb von 24 Stunden.",
+      "details": "Weitere Details (optional)",
+      "submit": "Meldung senden",
+      "success": "Danke. Der Kommentar wird geprüft.",
+      "error": "Die Meldung konnte nicht gesendet werden."
+    },
+    "block": {
+      "action": "Blockieren",
+      "title": "{{name}} blockieren?",
+      "description": "Du siehst keine Kommentare dieses Nutzers mehr. Du kannst die Blockierung in deinem Profil aufheben.",
+      "confirm": "Blockieren",
+      "success": "{{name}} ist blockiert.",
+      "error": "Das hat nicht geklappt. Bitte versuche es erneut."
+    },
+    "blockedList": {
+      "title": "Blockierte Nutzer",
+      "description": "Du siehst keine Kommentare dieser Nutzer.",
+      "unblock": "Entsperren"
     }
   }
 }

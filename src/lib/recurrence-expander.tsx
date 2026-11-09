@@ -14,6 +14,8 @@ export interface RecurrenceSeriesInput {
   meetingOffsetMs?: number | null;
   /** Offset from occurrence start to answer deadline. */
   answerOffsetMs?: number | null;
+  /** Offset from occurrence start to the instant attendance opens (negative = before). */
+  answerStartOffsetMs?: number | null;
 }
 
 export interface RecurrenceSlot {
@@ -25,6 +27,7 @@ export interface RecurrenceSlot {
   ending: string;
   meeting: string | null;
   deadline: string | null;
+  answer_start: string | null;
 }
 
 const DAY_MS = 86_400_000;
@@ -95,6 +98,10 @@ export class RecurrenceExpander {
         deadline:
           input.answerOffsetMs != null
             ? new Date(startMs + input.answerOffsetMs).toISOString()
+            : null,
+        answer_start:
+          input.answerStartOffsetMs != null
+            ? new Date(startMs + input.answerStartOffsetMs).toISOString()
             : null,
       });
     }

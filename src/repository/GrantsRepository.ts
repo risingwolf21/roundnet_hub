@@ -18,6 +18,46 @@ export const GrantsRepository = {
     return data?.map((x) => x.name) ?? [];
   },
 
+  async fetchPermissionCatalog() {
+    const result = await supabase.from('permissions').select('name, description').order('name').throwOnError();
+    return result.data ?? [];
+  },
+
+  async fetchFeatureCatalog() {
+    const result = await supabase.from('features').select('name, description').order('name').throwOnError();
+    return result.data ?? [];
+  },
+
+  /** Number of permissions and features every group holds, in a single round trip. */
+  async fetchGroupGrantCounts() {
+    const [perms, feats] = await Promise.all([
+      supabase.from('group_permissions').select('group').throwOnError(),
+      supabase.from('group_features').select('group').throwOnError(),
+    ]);
+    const counts = new Map<string, { perms: number; feats: number }>();
+    const entry = (id: string) => counts.get(id) ?? counts.set(id, { perms: 0, feats: 0 }).get(id)!;
+    perms.data?.forEach((x) => entry(x.group).perms++);
+    feats.data?.forEach((x) => entry(x.group).feats++);
+    return counts;
+  },
+
+  async fetchDirectGrantSummary() {
+    const result = await supabase.from('user_direct_grants').select('kind, user:user(*)').throwOnError();
+    const users = new Map<string, { user: User; perms: number; feats: number }>();
+    result.data?.forEach((x) => {
+      const entry = users.get(x.user.id) ?? { user: x.user as User, perms: 0, feats: 0 };
+      if (x.kind === 'perm') entry.perms++;
+      else entry.feats++;
+      users.set(x.user.id, entry);
+    });
+    return [...users.values()];
+  },
+
+  async fetchUserEffectiveGrants(userId: string) {
+    const result = await supabase.rpc('admin_user_effective_grants', { p_user: userId }).throwOnError();
+    return result.data ?? [];
+  },
+
   async fetchUsersWithDirectGrants(): Promise<User[]> {
     const result = await supabase.from('user_direct_grants').select('user:user(*)').throwOnError();
     const users = new Map<string, User>();

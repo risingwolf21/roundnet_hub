@@ -1,61 +1,78 @@
 import { AppBar } from '@/components/ui/appbar';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Has } from '@/hooks/useGrants';
-import { useAdminAnalytics, useAllPayments } from '@/tanstack/admin';
+import { Permission } from '@/generated/supabase-types';
+import { useAdminAnalytics } from '@/tanstack/admin';
 import { useEvents } from '@/tanstack/events';
-import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { format, startOfMonth, subDays } from 'date-fns';
 import {
-  AlertCircle, CalendarClock, ChartArea, Euro, GitMerge,
+  AlertCircle, CalendarClock, ChartArea, ChevronRight, CircleCheck, Euro, GitMerge,
   History, KeyRound, Send, Users, Volleyball
 } from 'lucide-react';
 import { ElementType, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
+import { useAdminAttention } from './useAdminAttention';
 
-const StatCard = ({
-  title,
+const AttentionRow = ({
   icon: Icon,
-  highlight,
-  isLoading,
-  isError,
+  title,
+  description,
+  count,
   onClick,
-  children,
 }: {
-  title: string;
   icon: ElementType;
-  highlight?: boolean;
-  isLoading?: boolean;
-  isError?: boolean;
-  onClick?: () => void;
-  children?: React.ReactNode;
+  title: string;
+  description: string;
+  count: number;
+  onClick: () => void;
 }) => (
-  <Card
-    className={`cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98] ${highlight ? 'ring-warning/70' : ''}`}
+  <button
+    type="button"
     onClick={onClick}
+    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
   >
-    <CardHeader>
-      <div className="flex items-center gap-2">
-        <Icon className={`size-4 ${highlight ? 'text-warning' : 'text-muted-foreground'}`} />
-        <CardTitle className="text-sm">{title}</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="pt-0">
-      {isLoading ? (
-        <Skeleton className="h-9 w-16 mb-1" />
-      ) : isError ? (
-        <div className="flex items-center gap-1 text-destructive/80 text-sm">
-          <AlertCircle className="size-3.5" />
-          <span>–</span>
-        </div>
-      ) : (
-        children
-      )}
-    </CardContent>
-  </Card>
+    <Icon className="size-5 shrink-0 text-warning" />
+    <div className="min-w-0 flex-1">
+      <div className="text-sm font-medium">{title}</div>
+      <div className="text-xs text-muted-foreground">{description}</div>
+    </div>
+    <Badge variant="error" className="min-w-5 px-1.5">{count}</Badge>
+    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+  </button>
+);
+
+const ToolRow = ({
+  icon: Icon,
+  title,
+  description,
+  badge,
+  onClick,
+}: {
+  icon: ElementType;
+  title: string;
+  description: string;
+  badge?: number;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
+  >
+    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+      <Icon className="size-4" />
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className="text-sm font-medium">{title}</div>
+      <div className="truncate text-xs text-muted-foreground">{description}</div>
+    </div>
+    {!!badge && <Badge variant="error" className="min-w-5 px-1.5">{badge}</Badge>}
+    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+  </button>
 );
 
 type TrendPoint = { attending_count: number | null; startingDateTime: string };
@@ -141,8 +158,8 @@ const AdminDashboard = () => {
     p_end: format(new Date(), 'yyyy-MM-dd'),
   }), []);
 
-  const { data: payments = [], isLoading: paymentsLoading, isError: paymentsError } = useAllPayments();
-  const { data: joinRequests = [], isLoading: requestsLoading, isError: requestsError } = useRequestedUsersPerGroup(user);
+  const attention = useAdminAttention();
+  const payments = attention.paymentList;
   const { data: pastEvents = [], isLoading: eventsLoading, isError: eventsError } = useEvents('past');
   const { data: monthlyUsers = [], isLoading: monthlyLoading, isError: monthlyError } = useAdminAnalytics(
     'admin_analytics_attendance_ranking',
@@ -165,15 +182,37 @@ const AdminDashboard = () => {
     .filter(e => !e.isCancelled && new Date(e.startingDateTime) >= cutoff)
     .toSorted((a, b) => a.startingDateTime.localeCompare(b.startingDateTime));
 
-  const quickLinks = [
-    { title: t('browse.managePayments'), icon: Euro, path: '/admin/drinks/payments', perm: 'drinks.confirm.payments' as const },
-    { title: t('browse.manageUsers'), icon: Users, path: '/admin/users', perm: 'users.manage' as const },
-    { title: t('browse.analytics'), icon: ChartArea, path: '/admin/analytics', perm: 'admin.analytics.view' as const },
-    { title: t('browse.permissions'), icon: KeyRound, path: '/admin/grants', perm: 'grants.manage' as const },
-    { title: t('browse.completeHistory'), icon: History, path: '/admin/drinks/history', perm: 'drinks.history.admin' as const },
-    { title: t('browse.merge_accounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' as const },
-    { title: t('browse.notifyUsers'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' as const },
-  ] as const;
+  const toolGroups = [
+    {
+      key: 'community',
+      title: t('admin.dashboard.groups.community'),
+      items: [
+        { title: t('browse.manageUsers'), description: t('admin.dashboard.tools.users'), icon: Users, path: '/admin/users', perm: 'users.manage' },
+        { title: t('browse.merge_accounts'), description: t('admin.dashboard.tools.mergeAccounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' },
+        { title: t('browse.notifyUsers'), description: t('admin.dashboard.tools.notify'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' },
+      ],
+    },
+    {
+      key: 'drinks',
+      title: t('admin.dashboard.groups.drinks'),
+      items: [
+        { title: t('browse.managePayments'), description: t('admin.dashboard.tools.payments'), icon: Euro, path: '/admin/drinks/payments', perm: 'drinks.confirm.payments', badge: attention.payments },
+        { title: t('browse.completeHistory'), description: t('admin.dashboard.tools.history'), icon: History, path: '/admin/drinks/history', perm: 'drinks.history.admin' },
+      ],
+    },
+    {
+      key: 'access',
+      title: t('admin.dashboard.groups.access'),
+      items: [
+        { title: t('browse.permissions'), description: t('admin.dashboard.tools.permissions'), icon: KeyRound, path: '/admin/grants', perm: 'grants.manage' },
+        { title: t('browse.analytics'), description: t('admin.dashboard.tools.analytics'), icon: ChartArea, path: '/admin/analytics', perm: 'admin.analytics.view' },
+      ],
+    },
+  ]
+    .map((group) => ({ ...group, items: group.items.filter((item) => hasPerm(item.perm as Permission)) }))
+    .filter((group) => group.items.length > 0);
+
+  const attentionVisible = hasPerm('drinks.confirm.payments') || hasPerm('groups.manage.admin');
 
   return (
     <div>
@@ -181,41 +220,53 @@ const AdminDashboard = () => {
       <main className="flex-1 size-full pb-safe-bottom">
         <div className="p-4 flex flex-col gap-4">
 
-          <div className="grid grid-cols-2 gap-3">
-            <Has perm="drinks.confirm.payments">
-              <StatCard
-                title={t('admin.dashboard.pendingPayments')}
-                icon={Euro}
-                highlight={!paymentsLoading && !paymentsError && payments.length > 0}
-                isLoading={paymentsLoading}
-                isError={paymentsError}
-                onClick={() => navigate('/admin/drinks/payments')}
-              >
-                <div className="text-3xl font-bold">{payments.length}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {payments.length > 0
-                    ? t('admin.dashboard.total', { amount: totalAmount.toFixed(2) })
-                    : t('admin.dashboard.pendingPaymentsDesc')}
-                </div>
-              </StatCard>
-            </Has>
+          {attentionVisible && (
+            <section>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
+                {t('admin.dashboard.needsAttention')}
+              </h3>
+              <Card className="gap-0 divide-y overflow-hidden py-0">
+                {attention.isLoading ? (
+                  <div className="p-4"><Skeleton className="h-10 w-full" /></div>
+                ) : attention.total === 0 && attention.joinRequests === 0 ? (
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <CircleCheck className="size-5 shrink-0 text-success" />
+                    <div>
+                      <div className="text-sm font-medium">{t('admin.dashboard.allCaughtUp')}</div>
+                      <div className="text-xs text-muted-foreground">{t('admin.dashboard.allCaughtUpDesc')}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {attention.payments > 0 && (
+                      <AttentionRow
+                        icon={Euro}
+                        title={t('admin.dashboard.pendingPayments')}
+                        description={t('admin.dashboard.total', { amount: totalAmount.toFixed(2) })}
+                        count={attention.payments}
+                        onClick={() => navigate('/admin/drinks/payments')}
+                      />
+                    )}
+                    {attention.joinRequests > 0 && (
+                      <AttentionRow
+                        icon={Users}
+                        title={t('admin.dashboard.joinRequests')}
+                        description={t('admin.dashboard.joinRequestsDesc')}
+                        count={attention.joinRequests}
+                        onClick={() => navigate('/groups')}
+                      />
+                    )}
+                  </>
+                )}
+              </Card>
+            </section>
+          )}
 
-            <Has perm="groups.manage.admin">
-              <StatCard
-                title={t('admin.dashboard.joinRequests')}
-                icon={Users}
-                highlight={!requestsLoading && !requestsError && joinRequests.length > 0}
-                isLoading={requestsLoading}
-                isError={requestsError}
-                onClick={() => navigate('/groups')}
-              >
-                <div className="text-3xl font-bold">{joinRequests.length}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {t('admin.dashboard.joinRequestsDesc')}
-                </div>
-              </StatCard>
-            </Has>
-          </div>
+          {(hasPerm('event.manage.attendees') || canViewAnalytics) && (
+            <h3 className="-mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide px-0.5">
+              {t('admin.dashboard.insights')}
+            </h3>
+          )}
 
           <Has perm="event.manage.attendees">
             <Card
@@ -312,25 +363,25 @@ const AdminDashboard = () => {
             </Card>
           </Has>
 
-          <div>
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
-              {t('admin.dashboard.quickLinks')}
-            </h3>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {quickLinks.map(({ title, icon: Icon, path, perm }) => (
-                <Has key={path} perm={perm}>
-                  <Button
-                    variant="outline"
-                    className="h-auto flex-col gap-1.5 py-3 px-2"
+          {toolGroups.map(({ key, title, items }) => (
+            <section key={key}>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
+                {title}
+              </h3>
+              <Card className="gap-0 divide-y overflow-hidden py-0">
+                {items.map(({ title: itemTitle, description, icon, path, badge }) => (
+                  <ToolRow
+                    key={path}
+                    icon={icon}
+                    title={itemTitle}
+                    description={description}
+                    badge={badge}
                     onClick={() => navigate(path)}
-                  >
-                    <Icon className="size-5 shrink-0" />
-                    <span className="text-xs text-center leading-tight break-words w-full">{title}</span>
-                  </Button>
-                </Has>
-              ))}
-            </div>
-          </div>
+                  />
+                ))}
+              </Card>
+            </section>
+          ))}
 
         </div>
       </main>

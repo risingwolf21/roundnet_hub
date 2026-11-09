@@ -1,368 +1,492 @@
-import { useFetchMode } from '@/hooks/useFetchMode';
+import { groupSideBar, ListSkeleton } from '@/components/list/ListParts';
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
+import { Feature } from '@/generated/supabase-types';
+import { Has } from '@/hooks/useGrants';
+import { queryClient } from '@/lib/queryClient';
+import { cn } from '@/lib/utils';
 import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
+import { useAllNotifications } from '@/tanstack/notifications';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
+import { differenceInCalendarDays, format } from 'date-fns';
+import {
+  AlertCircle,
+  Bell,
+  CalendarClock,
+  Check,
+  ChevronRight,
+  Clock,
+  Euro,
+  Hourglass,
+  Image,
+  Key,
+  MapPin,
+  Megaphone,
+  Plus,
+  Receipt,
+  Search,
+  Swords,
+  Target,
+  Trophy,
+  Users,
+  Volleyball,
+  X,
+} from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { useGrants } from '../auth/GrantsContext';
-
-import { AppBar } from '@/components/ui/appbar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
-import { Has } from '@/hooks/useGrants';
-import { answerDeadlineExpired, eventHasStarted, eventInThePast } from '@/types/supabaseTypes';
-import { format } from 'date-fns';
-import { t } from 'i18next';
-import { AlertCircle, AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, RefreshCcw, SearchX, Shapes, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGrants } from '../auth/GrantsContext';
+import { EventItem } from '../events/components/EventItem';
 import { PlaceType } from '../events/types';
 
-const EventLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-muted">
-  <CardHeader>
-    <Skeleton className="h-6 w-3/4" />
-  </CardHeader>
-  <CardContent className='gap-3 flex flex-col'>
-    <div className="flex items-center gap-3">
-      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
-      <Skeleton className="h-4 w-1/2" />
-    </div>
-    <div className="flex items-center gap-3">
-      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
-      <Skeleton className="h-4 w-1/3" />
-    </div>
-    <div className="flex items-center gap-3">
-      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
-      <Skeleton className="h-4 w-2/3" />
-    </div>
-  </CardContent>
-  <CardFooter className='flex-row justify-between items-center w-full mt-auto p-2'>
-    <Skeleton className="h-4 w-12" />
-    <div className="flex flex-row gap-2">
-      <Skeleton className="size-9 rounded-md" />
-      <Skeleton className="size-9 rounded-md" />
-    </div>
-  </CardFooter>
-</Card>
+const UPCOMING_LIMIT = 5;
 
-const DrinkLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 pt-0 snap-center">
-  <CardHeader className='flex flex-row p-2 gap-4 items-center'>
-    <Skeleton className="size-12 rounded-full shrink-0" />
-    <Skeleton className="h-6 w-full" />
-  </CardHeader>
-  <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
-    <Skeleton className="h-9 w-24 rounded-md" />
-  </CardFooter>
-</Card>
+const parsePlace = (place: string | null): Partial<PlaceType> => {
+  try {
+    return JSON.parse(place ?? '{}') as PlaceType;
+  } catch {
+    return {};
+  }
+};
 
-const ItemLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-muted">
-  <CardHeader className='flex flex-row gap-2 items-center'>
-    <Skeleton className="size-4 rounded-full shrink-0" />
-    <Skeleton className="h-6 w-3/4" />
-  </CardHeader>
-  <CardContent>
-    <div className="flex items-center gap-2">
-      <Skeleton className="size-10 rounded-full shrink-0" />
-      <Skeleton className="h-4 w-24" />
+const nextAttendance = (event: EventsUserView): EventAttendance =>
+  event.user_group_role === 'trial' ? 'AttendingAsTrial' : 'Attending';
+
+const SectionHeader = ({ title, actionLabel, onAction }: { title: string; actionLabel?: string; onAction?: () => void }) => (
+  <div className="flex items-center justify-between px-2">
+    <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+    {actionLabel && onAction && (
+      <Button variant="ghost" size="sm" onClick={onAction}>
+        {actionLabel}
+        <ChevronRight />
+      </Button>
+    )}
+  </div>
+);
+
+const SectionMessage = ({ message, error, onRetry }: { message: string; error?: boolean; onRetry?: () => void }) => {
+  const { t } = useTranslation();
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 rounded-xl border border-dashed p-4 text-sm',
+        error ? 'border-destructive/50 text-destructive' : 'text-muted-foreground'
+      )}
+    >
+      {error && <AlertCircle className="size-4 shrink-0" />}
+      <span className="flex-1">{message}</span>
+      {error && onRetry && (
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          {t('challenge.list.retry')}
+        </Button>
+      )}
     </div>
-  </CardContent>
-  <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
-    <Skeleton className="h-9 w-24 rounded-md" />
-  </CardFooter>
-</Card>
+  );
+};
+
+const NextEventCard = ({
+  event,
+  now,
+  pending,
+  onOpen,
+  onAnswer,
+}: {
+  event: EventsUserView;
+  now: Date;
+  pending: boolean;
+  onOpen: () => void;
+  onAnswer: (state: EventAttendance) => void;
+}) => {
+  const { t, i18n } = useTranslation();
+  const language = i18n.resolvedLanguage;
+  const start = new Date(event.startingDateTime);
+  const end = new Date(event.endDateTime);
+  const place = parsePlace(event.place);
+
+  const days = differenceInCalendarDays(start, now);
+  const when = new Intl.RelativeTimeFormat(language, { numeric: 'auto' }).format(Math.max(days, 0), 'day');
+  const dateText = new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(start);
+  const time = new Intl.DateTimeFormat(language, { timeStyle: 'short' });
+  const timeText = `${time.format(start)} – ${time.format(end)}`;
+
+  const attending = event.user_state === 'Attending' || event.user_state === 'AttendingAsTrial';
+  const declined = event.user_state === 'Declined';
+  const waiting =
+    event.user_state === 'Waiting' || event.user_state === 'WaitingAsTrial' || event.user_state === 'RequestedAttendance';
+  const trainer = event.user_state === 'AttendingAsTrainer';
+  const notOpenYet = answerNotOpenYet(event);
+  const opensLater = event.user_state === null && notOpenYet;
+  const needsAnswer = event.user_state === null && !notOpenYet && !answerDeadlineExpired(event) && !eventHasStarted(event);
+  const cannotDecline = eventHasStarted(event) || notOpenYet;
+  const cannotAttend = answerDeadlineExpired(event) || eventHasStarted(event) || notOpenYet;
+  const count = event.attending_count ?? 0;
+
+  return (
+    <section
+      className={cn('flex flex-col gap-3 rounded-xl border bg-card p-4', groupSideBar(event.group?.color).className)}
+      style={groupSideBar(event.group?.color).style}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t('home.nextEvent')}</span>
+        <Badge variant={days <= 0 ? 'warning' : 'secondary'}>
+          <span className="inline-block first-letter:uppercase">{when}</span>
+        </Badge>
+      </div>
+
+      <button type="button" onClick={onOpen} className="flex flex-col gap-2 text-left">
+        <span className="text-lg font-semibold leading-tight">{event.title}</span>
+        <span className="flex flex-col gap-1 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <CalendarClock className="size-4 shrink-0" />
+            {dateText}
+          </span>
+          <span className="flex items-center gap-2">
+            <Clock className="size-4 shrink-0" />
+            {timeText}
+          </span>
+          {place.name && (
+            <span className="flex items-center gap-2">
+              <MapPin className="size-4 shrink-0" />
+              <span className="truncate">{place.name}</span>
+            </span>
+          )}
+        </span>
+      </button>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        {event.group && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: event.group.color }} />
+            {event.group.name}
+          </span>
+        )}
+        <Badge variant="secondary">
+          <Users />
+          {event.maxAttendees ? t('events.item.attendingOfMax', { count, max: event.maxAttendees }) : count}
+        </Badge>
+        {needsAnswer && <Badge variant="warning">{t('events.item.answerNeeded')}</Badge>}
+        {opensLater && event.answerStart && (
+          <Badge variant="outline">
+            <Clock />
+            {t('events.item.opensOn', { date: format(event.answerStart, 'dd.MM. HH:mm') })}
+          </Badge>
+        )}
+      </div>
+
+      {trainer ? (
+        <Badge variant="success" className="self-start">
+          <Megaphone />
+          {t('events.item.trainer')}
+        </Badge>
+      ) : waiting ? (
+        <Badge variant="info" className="self-start">
+          <Hourglass />
+          {t('events.item.waiting')}
+        </Badge>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant={declined ? 'ghost' : 'outline'}
+            className={cn(declined && 'bg-error text-error-foreground')}
+            aria-pressed={declined}
+            disabled={cannotDecline || pending}
+            onClick={() => onAnswer('Declined')}
+          >
+            {pending ? <Spinner /> : <X />}
+            {t('home.decline')}
+          </Button>
+          <Button
+            // Only filled once you attend: the primary colour (green in Karlsruhe) would read as "attending".
+            variant={attending ? 'ghost' : 'outline'}
+            className={cn(attending && 'bg-success text-success-foreground')}
+            aria-pressed={attending}
+            disabled={cannotAttend || pending}
+            onClick={() => onAnswer(nextAttendance(event))}
+          >
+            {pending ? <Spinner /> : <Check />}
+            {t('home.attend')}
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+};
+
+const DrinksSection = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useGrants();
+  const { data: drinks = [], isLoading, error, refetch } = useDrinks();
+  const updateHistory = useInsertHistoryEntryMutation(user);
+
+  const available = drinks.filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink');
+
+  return (
+    <section className="flex flex-col gap-2">
+      <SectionHeader title={t('home.drinks')} actionLabel={t('home.seeAll')} onAction={() => navigate('/drinks/list')} />
+      {isLoading ? (
+        <Skeleton className="h-14 w-full rounded-xl" />
+      ) : error ? (
+        <SectionMessage error message={t('home.drinksLoadError')} onRetry={() => refetch()} />
+      ) : available.length === 0 ? (
+        <SectionMessage message={t('home.noDrinksAvailable')} />
+      ) : (
+        <div className="no-scrollbar -mx-4 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1">
+          {available.map((drink: Drink) => {
+            const pending = updateHistory.isPending && updateHistory.variables?.drinks.some((x) => x.id === drink.id);
+            return (
+              <button
+                key={drink.id}
+                type="button"
+                disabled={updateHistory.isPending}
+                aria-label={`${t('home.order')}: ${drink.name}`}
+                className="flex min-w-44 shrink-0 snap-start items-center gap-3 rounded-xl border bg-card p-2 pr-3 text-left disabled:opacity-60"
+                onClick={() =>
+                  updateHistory.mutate(
+                    { drinks: [{ ...drink, count: 1 }] },
+                    {
+                      onSuccess: () => toast.info(t('home.drinkBooked')),
+                      onError: (error) => toast.error(t('home.drinkBookError', { error: error.message })),
+                    }
+                  )
+                }
+              >
+                <Avatar className="size-10">
+                  <AvatarImage src={drink.imageUrl ?? undefined} />
+                  <AvatarFallback>
+                    <Image className="size-4 text-muted-foreground/50" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1 truncate font-medium">{drink.name}</span>
+                {pending ? <Spinner /> : <Plus className="size-4 text-muted-foreground" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+};
+
+const KeysSection = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { user } = useGrants();
+  const { data: items = [], isLoading, error, refetch } = useAllItems();
+
+  return (
+    <section className="flex flex-col gap-2">
+      <SectionHeader title={t('home.keys')} actionLabel={t('home.seeAll')} onAction={() => navigate('/keys')} />
+      {isLoading ? (
+        <ListSkeleton rows={1} />
+      ) : error ? (
+        <SectionMessage error message={t('home.keysLoadError')} onRetry={() => refetch()} />
+      ) : items.length === 0 ? (
+        <SectionMessage message={t('home.noKeys')} />
+      ) : (
+        items.map((item) => {
+          const mine = item.current_holder === user.id;
+          const query = `type=${mine ? 'handover' : 'take'}&key=${encodeURIComponent(item.id)}`;
+          return (
+            <Item key={item.id} variant="outline">
+              <ItemMedia variant="icon">
+                <Key style={{ color: item.color }} />
+              </ItemMedia>
+              <ItemContent>
+                <ItemTitle>{item.name}</ItemTitle>
+                <ItemDescription>
+                  {mine ? t('home.youHoldKey') : (item.full_current_holder?.name ?? t('keys.screen.noHolder'))}
+                </ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button variant={mine ? 'default' : 'outline'} size="sm" onClick={() => navigate(`/keys?${query}`)}>
+                  {mine ? t('handover_key') : t('take_key')}
+                </Button>
+              </ItemActions>
+            </Item>
+          );
+        })
+      )}
+    </section>
+  );
+};
+
+type Tile = { key: string; label: string; path: string; icon: ReactNode; feat?: Feature };
+
+const AttentionRow = ({ icon, text, onClick }: { icon: ReactNode; text: string; onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 p-3 text-left text-sm font-medium"
+  >
+    <span className="text-warning [&>svg]:size-5">{icon}</span>
+    <span className="flex-1">{text}</span>
+    <ChevronRight className="size-4 text-muted-foreground" />
+  </button>
+);
 
 const HomePage = () => {
-  const [fetchMode] = useFetchMode();
-
-  const { user } = useGrants();
-  const { data: drinks = [], isLoading: isDrinksLoading, isFetching: isDrinksFetching, error: drinksError, refetch: refetchDrinks } = useDrinks();
-  const { data: events = [], isLoading: isEventsLoading, isFetching: isEventsFetching, error: eventsError, refetch: refetchEvents } = useEvents(fetchMode, 10);
-  const { data: items = [], isLoading: isItemsLoading, isFetching: isItemsFetching, error: itemsError, refetch: refetchItems } = useAllItems();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useGrants();
+  // eslint-disable-next-line @eslint-react/naming-convention/use-state
+  const [now] = useState(() => new Date());
 
+  // The home page always shows what is coming up, whatever the events list is set to.
+  const { data: events = [], isLoading: isEventsLoading, error: eventsError, refetch: refetchEvents } = useEvents('upcoming');
+  const { data: notifications = [] } = useAllNotifications(user);
   const updateAttendance = useUpdateAttendanceMutation();
-  const updateHistory = useInsertHistoryEntryMutation(user);
+
+  const upcoming = events
+    .filter((x) => !eventInThePast(x))
+    .sort((a, b) => new Date(a.startingDateTime).getTime() - new Date(b.startingDateTime).getTime());
+  const next = upcoming.find((x) => !x.isCancelled);
+  const following = upcoming.filter((x) => x.id !== next?.id).slice(0, UPCOMING_LIMIT);
+  const unanswered = upcoming.filter(
+    (x) =>
+      x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x)
+  ).length;
+  const unreadNotifications = notifications.filter((x) => !x.dismissed_at).length;
+
+  const language = i18n.resolvedLanguage;
+  const hour = now.getHours();
+  const greeting = hour < 11 ? t('home.greetingMorning') : hour < 18 ? t('home.greetingDay') : t('home.greetingEvening');
+  const today = new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
+
+  const pendingFor = (event: EventsUserView) =>
+    updateAttendance.isPending && updateAttendance.variables?.event.id === event.id;
+  const answer = (event: EventsUserView, newState: EventAttendance) => updateAttendance.mutate({ user, event, newState });
+
+  const tiles: Tile[] = [
+    { key: 'events', label: t('navigation.training'), path: '/training/list', icon: <Volleyball />, feat: 'events' },
+    { key: 'groups', label: t('navigation.groups'), path: '/groups/list', icon: <Users /> },
+    { key: 'games', label: t('navigation.matches'), path: '/matches/list', icon: <Swords />, feat: 'games' },
+    { key: 'leaderboard', label: t('navigation.leaderboard'), path: '/matches/leaderboard', icon: <Trophy />, feat: 'games' },
+    { key: 'challenges', label: t('navigation.challenges'), path: '/challenges/list', icon: <Target />, feat: 'challenges' },
+    { key: 'drinks-payments', label: t('browse.payment'), path: '/drinks/payments', icon: <Euro />, feat: 'drinks' },
+    { key: 'costs', label: t('navigation.costs'), path: '/costs', icon: <Receipt />, feat: 'costs' },
+    { key: 'bundesliga', label: t('navigation.bundesliga'), path: '/bundesliga', icon: <Trophy />, feat: 'bundesliga' },
+    { key: 'search', label: t('navigation.search'), path: '/search', icon: <Search /> },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
-      <AppBar
-        className='!border-b !shadow-sm'
-        title={t('home.title')}
-        user={user}
-      />
+      <AppBar className='!border-b !shadow-sm' title={t('home.title')} user={user} />
       <main className='flex-1 size-full pb-safe-bottom'>
-        <div className='flex flex-col gap-4 p-4'>
-          <Has feat={"events"}>
-            <div className='flex flex-col gap-2'>
-              <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">{t('home.events')}</div>
-                <Button size={"icon-lg"} variant={"ghost"} disabled={(isEventsLoading || isEventsFetching)} onClick={() => refetchEvents()}>
-                  {
-                    (isEventsLoading || isEventsFetching) ? <Spinner /> : <RefreshCcw />
-                  }
-                </Button>
-              </div>
-              <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {(isEventsLoading || isEventsFetching) ? (
-                  Array.from({ length: 3 }).map((_, i) => <EventLoadingCard key={i} />)
-                ) : eventsError ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
-                    <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">{t('home.eventsLoadError')}</p>
-                  </div>
-                ) : events.length === 0 ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
-                    <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">{t('home.noUpcomingEvents')}</p>
-                  </div>
-                ) : (
-                  events.map(event => {
+        <PullToRefresh onRefresh={() => queryClient.invalidateQueries({ type: 'active' })}>
+          <div className='flex flex-col gap-5 p-4'>
+            <header className="flex flex-col gap-0.5 px-2">
+              <h1 className="text-2xl font-semibold leading-tight">
+                {greeting}, {user.displayName}
+              </h1>
+              <p className="text-sm text-muted-foreground first-letter:uppercase">{today}</p>
+            </header>
 
-                    const isAttending = event.user_state === "Attending" || event.user_state === "AttendingAsTrainer" || event.user_state === "AttendingAsTrial";
-                    const isWaiting = event.user_state === "RequestedAttendance" || event.user_state === "Waiting" || event.user_state === "WaitingAsTrial";
-                    const place = event.place ? JSON.parse(event.place) as PlaceType : null
-                    const date = format(event.startingDateTime, "PPPP").split(",").slice(0, 2).join(",")
-                    const time = format(event.startingDateTime, "HH:mm") + " - " + format(event.endDateTime, "HH:mm")
-
-                    return <Card key={event.id} className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-t-[color:var(--attendance-color)]"
-                      style={{ "--attendance-color": isAttending ? "var(--success)" : isWaiting ? "var(--warning)" : event.user_state === "Declined" ? "var(--error)" : "#000000" } as React.CSSProperties}>
-                      <CardHeader onClick={() => {
-                        navigate('/training/event/' + event.id)
-                      }}>
-                        <CardTitle className='truncate'>{event.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className='gap-4 py-2 flex flex-col' onClick={() => {
-                        navigate('/training/event/' + event.id)
-                      }}>
-                        <div className="flex items-start gap-3 text-sm text-foreground">
-                          <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
-                          <div>
-                            <p className="text-muted-foreground truncate">{date}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 text-sm text-foreground">
-                          <Clock className="h-5 w-5 text-muted-foreground shrink-0" />
-                          <div>
-                            <p className="text-muted-foreground truncate">{time}</p>
-                          </div>
-                        </div>
-                        {
-                          place && <div className="flex items-start gap-3 text-sm text-foreground">
-                            <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
-                            <div>
-                              <p className="text-muted-foreground truncate">{place.name}</p>
-                            </div>
-                          </div>
-                        }
-                      </CardContent>
-                      <CardFooter className='flex-row justify-between items-center w-full mt-auto p-2'>
-
-                        <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground pl-1">
-                          {
-                            ((event.attending_count ?? 0) > 0) && <div className="flex items-center gap-1" title={t('home.attending')}>
-                              <Check className="size-3.5 text-success" />
-                              <span>{event.attending_count}</span>
-                            </div>
-                          }
-                          {
-                            ((event.declined_count ?? 0) > 0) && <div className="flex items-center gap-1" title={t('home.declined')}>
-                              <X className="size-3.5 text-muted-foreground/70" />
-                              <span>{event.declined_count}</span>
-                            </div>
-                          }
-                        </div>
-
-                        <div className="flex flex-row gap-2">
-                          <Button
-                            variant={event.user_state === "Declined" ? "ghost" : "outline"}
-                            size="icon-lg"
-                            className={`size-9 ${event.user_state === "Declined" && "bg-error text-error-foreground"}`}
-                            onClick={(e) => {
-                              updateAttendance.mutate({ user, event, newState: "Declined" })
-                              e.stopPropagation();
-                            }}
-                            disabled={event.isCancelled || eventHasStarted(event) || eventInThePast(event)}
-                          >
-                            {
-                              updateAttendance.isPending ? <Spinner /> : <X className='size-5' />
-                            }
-                          </Button>
-                          <Button
-                            variant={isAttending ? "ghost" : "outline"}
-                            size="icon-lg"
-                            className={`size-9 ${isAttending && "bg-success text-success-foreground"}`}
-                            onClick={(e) => {
-                              const newState: EventAttendance = event.user_group_role === "trial" ? "AttendingAsTrial" : "Attending"
-                              updateAttendance.mutate({ user, event, newState })
-                              e.stopPropagation();
-                            }}
-                            disabled={event.isCancelled || answerDeadlineExpired(event) || eventHasStarted(event) || eventInThePast(event)}
-                          >
-                            {
-                              updateAttendance.isPending ? <Spinner /> :
-                                (event.user_state === "AttendingAsTrainer"
-                                  ? <Megaphone className='size-5' />
-                                  : event.user_state === "AttendingAsTrial"
-                                    ? <Shapes className='size-5' />
-                                    : <Check className='size-5' />)
-                            }
-                          </Button>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  })
+            {(unanswered > 0 || unreadNotifications > 0) && (
+              <div className="flex flex-col gap-2">
+                <Has feat="events">
+                  {unanswered > 0 && (
+                    <AttentionRow
+                      icon={<CalendarClock />}
+                      text={t('home.unanswered', { count: unanswered })}
+                      onClick={() => navigate('/training/list')}
+                    />
+                  )}
+                </Has>
+                {unreadNotifications > 0 && (
+                  <AttentionRow
+                    icon={<Bell />}
+                    text={t('home.unreadNotifications', { count: unreadNotifications })}
+                    onClick={() => navigate('/notifications')}
+                  />
                 )}
               </div>
-            </div>
-          </Has>
+            )}
 
-          <Has feat={"drinks"}>
-            <div className='flex flex-col gap-2'>
-              <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">{t('drinks.drinks')}</div>
-                <Button size={"icon-lg"} variant={"ghost"} disabled={(isDrinksLoading || isDrinksFetching)} onClick={() => refetchDrinks()}>
-                  {
-                    (isDrinksLoading || isDrinksFetching) ? <Spinner /> : <RefreshCcw />
-                  }
-                </Button>
+            <Has feat="events">
+              {isEventsLoading ? (
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-52 w-full rounded-xl" />
+                  <ListSkeleton rows={2} />
+                </div>
+              ) : eventsError ? (
+                <SectionMessage error message={t('home.eventsLoadError')} onRetry={() => refetchEvents()} />
+              ) : (
+                <>
+                  {next ? (
+                    <NextEventCard
+                      event={next}
+                      now={now}
+                      pending={pendingFor(next)}
+                      onOpen={() => navigate(`/training/event/${next.id}`)}
+                      onAnswer={(state) => answer(next, state)}
+                    />
+                  ) : (
+                    <SectionMessage message={t('home.noUpcomingEvents')} />
+                  )}
+
+                  {following.length > 0 && (
+                    <section className="flex flex-col gap-2">
+                      <SectionHeader
+                        title={t('home.upcoming')}
+                        actionLabel={t('home.seeAll')}
+                        onAction={() => navigate('/training/list')}
+                      />
+                      {following.map((event) => (
+                        <EventItem
+                          key={event.id}
+                          event={event}
+                          attendanceUpdating={pendingFor(event)}
+                          onClick={() => navigate(`/training/event/${event.id}`)}
+                          attendEvent={() => answer(event, nextAttendance(event))}
+                          declineEvent={() => answer(event, 'Declined')}
+                        />
+                      ))}
+                    </section>
+                  )}
+                </>
+              )}
+            </Has>
+
+            <Has feat="drinks" perm="drinks.select">
+              <DrinksSection />
+            </Has>
+
+            <Has feat="items">
+              <KeysSection />
+            </Has>
+
+            <section className="flex flex-col gap-2">
+              <SectionHeader title={t('home.explore')} />
+              <div className="grid grid-cols-2 gap-2">
+                {tiles.map((tile) => (
+                  <Has key={tile.key} feat={tile.feat}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(tile.path)}
+                      className="flex items-center gap-3 rounded-xl border bg-card p-3 text-left text-sm font-medium"
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&>svg]:size-5">
+                        {tile.icon}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{tile.label}</span>
+                    </button>
+                  </Has>
+                ))}
               </div>
-              <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {(isDrinksLoading || isDrinksFetching) ? (
-                  Array.from({ length: 3 }).map((_, i) => <DrinkLoadingCard key={i} />)
-                ) : drinksError ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
-                    <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">{t('home.drinksLoadError')}</p>
-                  </div>
-                ) : drinks.filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink').length === 0 ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
-                    <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">{t('home.noDrinksAvailable')}</p>
-                  </div>
-                ) : (
-                  drinks
-                    .filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink')
-                    .map(drink => {
-
-                      return <Card key={drink.id} className="shrink-0 w-50 flex flex-col h-full gap-0 pt-0 snap-center">
-                        <CardHeader className='flex flex-row p-2 gap-4 items-center'>
-                          <Avatar className="size-12">
-                            <AvatarImage src={drink.imageUrl ?? undefined} />
-                            <AvatarFallback>
-                              <Image className="text-muted-foreground/50" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <CardTitle className='truncate text-base'>{drink.name}</CardTitle>
-                        </CardHeader>
-
-                        <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
-                          <Button
-                            variant={"outline"}
-                            onClick={(e) => {
-                              updateHistory.mutate(
-                                { drinks: [{ ...drink, count: 1 }] },
-                                {
-                                  onSuccess: () => {
-                                    toast.info(t('home.drinkBooked'));
-                                  },
-                                  onError: (error) => {
-                                    toast.error(t('home.drinkBookError', { error: error.message }));
-                                  },
-                                }
-                              )
-                              e.stopPropagation();
-                            }}
-                          >
-                            {
-                              updateHistory.isPending ? <Spinner /> : t('home.order')
-                            }
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    })
-                )}
-              </div>
-            </div>
-          </Has>
-
-          <Has feat={"items"}>
-            <div className='flex flex-col gap-2'>
-              <div className='flex flex-row justify-between items-center'>
-                <div className="text-base font-semibold ml-2">{t('home.keys')}</div>
-                <Button size={"icon-lg"} variant={"ghost"} disabled={(isItemsLoading || isItemsFetching)} onClick={() => refetchItems()}>
-                  {
-                    isItemsFetching ? <Spinner /> : <RefreshCcw />
-                  }
-                </Button>
-              </div>
-              <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {(isItemsLoading || isItemsFetching) ? (
-                  Array.from({ length: 3 }).map((_, i) => <ItemLoadingCard key={i} />)
-                ) : itemsError ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
-                    <AlertCircle className="size-8 mb-2" />
-                    <p className="text-sm font-medium">{t('home.keysLoadError')}</p>
-                  </div>
-                ) : items.length === 0 ? (
-                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
-                    <SearchX className="size-8 mb-2 opacity-50" />
-                    <p className="text-sm">{t('home.noKeys')}</p>
-                  </div>
-                ) : (
-                  items
-                    .map(item => {
-
-                      const amICurrentHolder = item.current_holder === user.id;
-
-                      return <Card key={item.id} className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-t-[color:var(--item-color)]"
-                        style={{ "--item-color": item.color } as React.CSSProperties}>
-                        <CardHeader className='flex flex-row gap-2 items-center'>
-                          <Key className='size-4' style={{ color: item.color }} />
-                          <CardTitle className='truncate text-base'>{item.name}</CardTitle>
-                        </CardHeader>
-
-                        <CardContent className='py-2'>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Avatar>
-                                {item.full_current_holder && <AvatarImage src={item.full_current_holder?.avatarUrl || undefined} alt={item.full_current_holder.name || undefined} />}
-                                <AvatarFallback>
-                                  <AlertTriangle className="size-5 text-muted-foreground/50" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div>{item.full_current_holder?.name ?? t('keys.screen.noHolder')}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-
-                        <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
-
-                          <Button
-                            variant={"outline"}
-                            onClick={(e) => {
-                              const path = amICurrentHolder
-                                ? `type=handover&key=${encodeURIComponent(item.id)}`
-                                : `type=take&key=${encodeURIComponent(item.id)}`;
-                              navigate(`/keys?${path}`);
-                              e.stopPropagation();
-                            }}
-                          >
-                            {
-                              amICurrentHolder ? t('handover_key') : t('take_key')
-                            }
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    })
-                )}
-              </div>
-            </div>
-          </Has>
-        </div>
+            </section>
+          </div>
+        </PullToRefresh>
       </main>
     </div>
   );

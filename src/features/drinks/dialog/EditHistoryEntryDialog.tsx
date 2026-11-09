@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { useCurrency } from '@/hooks/useCurrency';
 import { ImageIcon, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import { FullHistoryUpdate } from '../types';
 
 const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<FullHistory, FullHistoryUpdate | null>) => {
   const { t } = useTranslation();
+  const formatCurrency = useCurrency();
   const [newCount, setNewCount] = useState<number>(entry.count);
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
@@ -31,7 +33,9 @@ const EditHistoryEntryDialog = ({ open, onClose, payload: entry }: DialogProps<F
             </ItemMedia>
             <ItemContent>
               <ItemTitle>{entry.drink.name}</ItemTitle>
-              <ItemDescription>{(entry.drink.price ?? 0).toFixed()} €</ItemDescription>
+              <ItemDescription>
+                {formatCurrency(entry.drink.price)} · {t('drinks.history.dayTotal', { total: formatCurrency(newCount * (entry.drink.price ?? 0)) })}
+              </ItemDescription>
             </ItemContent>
             <ItemActions>
               <div className='flex flex-row items-center gap-2'>

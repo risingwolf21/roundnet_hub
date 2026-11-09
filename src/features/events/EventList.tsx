@@ -1,50 +1,66 @@
+import { ListError, ListSectionHeader, ListSkeleton, SegmentedControl } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
-import { EventsUserView } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
-import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
-import { useTranslation } from 'react-i18next';
+import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import groupBy from 'lodash.groupby';
-import { CalendarArrowDown, CalendarArrowUp, CalendarSync, CalendarX, Filter, Plus } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { CalendarCheck, CalendarSync, CalendarX, Plus } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { EventItem } from './components/EventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
+type EventView = 'upcoming' | 'open' | 'past';
+
+const needsAnswer = (x: EventsUserView) =>
+  x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x);
+
 const EventScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [fetchMode, setFetchMode] = useFetchMode();
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  // eslint-disable-next-line @eslint-react/naming-convention/use-state
+  const [today] = useState(() => new Date());
 
   const { data: events = [], isLoading, error, refetch } = useEvents(fetchMode);
-
-  useEffect(() => {
-    if (error)
-      toast.error(error.message, {
-        action: {
-          label: t('events.list.reload'),
-          onClick: () => refetch()
-        }
-      });
-  }, [error, refetch, t]);
-
   const updateAttendance = useUpdateAttendanceMutation();
 
-  const eventsByWeek = useMemo(
-    () => Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))),
-    [events]
+  const view: EventView = fetchMode === 'past' ? 'past' : onlyOpen ? 'open' : 'upcoming';
+  const openCount = fetchMode === 'upcoming' ? events.filter(needsAnswer).length : 0;
+  const visibleEvents = view === 'open' ? events.filter(needsAnswer) : events;
+
+  const changeView = (next: EventView) => {
+    setOnlyOpen(next === 'open');
+    setFetchMode(next === 'past' ? 'past' : 'upcoming');
+  };
+
+  const eventsByDay = useMemo(
+    () => Object.entries(groupBy(visibleEvents, (x) => format(x.startingDateTime, 'yyyy-MM-dd'))),
+    [visibleEvents]
   );
+
+  // "Today" / "Tomorrow" in the user's language, then the full date, e.g. "Today · Thursday, 5 June".
+  const dayTitle = (key: string) => {
+    const day = parseISO(key);
+    const full = new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
+    const offset = differenceInCalendarDays(day, today);
+    if (Math.abs(offset) > 1) return full;
+    const relative = new Intl.RelativeTimeFormat(i18n.resolvedLanguage, { numeric: 'auto' }).format(offset, 'day');
+    return `${relative.charAt(0).toLocaleUpperCase(i18n.resolvedLanguage)}${relative.slice(1)} · ${full}`;
+  };
 
   return (
     <div>
@@ -55,21 +71,12 @@ const EventScreen = () => {
         actions={
           <>
             <Has perm={"event.edit"}>
-              <Button variant={"ghost"} size={"icon-lg"} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
+              <Button variant={"ghost"} size={"icon-lg"} aria-label={t('events.list.create')} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
                 <Plus />
               </Button>
             </Has>
-            <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
-              const result = await dialogs.selectSingleOption<'past' | 'upcoming'>([
-                { value: 'past', label: t('events.list.past'), icon: <CalendarArrowDown /> },
-                { value: 'upcoming', label: t('events.list.upcoming'), icon: <CalendarArrowUp /> }
-              ], fetchMode);
-              if (result) setFetchMode(result)
-            }}>
-              <Filter />
-            </Button>
             <Has perm={"event.edit"}>
-              <Button variant={"ghost"} size={"icon-lg"} onClick={() => navigate("/training/recurringEvents")}>
+              <Button variant={"ghost"} size={"icon-lg"} aria-label={t('events.list.recurring')} onClick={() => navigate("/training/recurringEvents")}>
                 <CalendarSync />
               </Button>
             </Has>
@@ -77,81 +84,72 @@ const EventScreen = () => {
         }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
+        <div className="mx-auto max-w-5xl px-4 pt-3">
+          <SegmentedControl<EventView>
+            ariaLabel={t('events.list.title')}
+            value={view}
+            onChange={changeView}
+            options={[
+              { value: 'upcoming', label: t('events.list.tabUpcoming') },
+              { value: 'open', label: t('events.list.tabOpen'), count: openCount },
+              { value: 'past', label: t('events.list.tabPast') },
+            ]}
+          />
+        </div>
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className="flex p-4 flex-col space-y-2">
+          <div className="mx-auto flex max-w-5xl flex-col gap-2 p-4 pt-2">
+            {isLoading && <ListSkeleton rows={5} />}
 
-            {isLoading && (
-              <div className="flex flex-col space-y-6">
-                {/* Wir simulieren 2 Wochen-Gruppen */}
-                {Array.from({ length: 2 }).map((_, groupIndex) => (
-                  <div key={`skeleton-group-${groupIndex}`} className="flex w-full gap-2 flex-col">
-                    {/* Wochen-Überschrift Skeleton */}
-                    <Skeleton className="h-5 w-32 ml-2 mb-1" />
+            {!isLoading && error && (
+              <ListError
+                title={t('events.list.loadError')}
+                description={error.message}
+                retryLabel={t('events.list.reload')}
+                onRetry={() => refetch()}
+              />
+            )}
 
-                    {/* 2-3 Event-Karten Skeletons pro Woche */}
-                    {Array.from({ length: groupIndex === 0 ? 3 : 2 }).map((_, itemIndex) => (
-                      <div key={`skeleton-item-${itemIndex}`} className="flex flex-col p-4 border rounded-xl shadow-sm bg-background gap-3">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2 w-2/3">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                          </div>
-                          <Skeleton className="size-10 rounded-full" /> {/* Simuliertes Avatar/Icon */}
-                        </div>
-                        <div className="flex gap-2 mt-2">
-                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
-                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {!isLoading && !error && visibleEvents.length === 0 && (
+              <Empty className="mt-12">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">{view === 'open' ? <CalendarCheck /> : <CalendarX />}</EmptyMedia>
+                  <EmptyTitle>{view === 'open' ? t('events.list.allAnswered') : t('events.list.empty')}</EmptyTitle>
+                  <EmptyDescription>
+                    {view === 'open'
+                      ? t('events.list.allAnsweredDescription')
+                      : view === 'past'
+                        ? t('events.list.emptyPast')
+                        : t('events.list.emptyDescription')}
+                  </EmptyDescription>
+                  {view === 'upcoming' && <EmptyDescription>{t('events.list.joinGroupHint')}</EmptyDescription>}
+                </EmptyHeader>
+                {view === 'upcoming' && (
+                  <Button onClick={() => navigate('/groups/list')}>{t('events.list.joinGroup')}</Button>
+                )}
+              </Empty>
+            )}
+
+            {!isLoading && !error && eventsByDay.map(([key, value]: [string, EventsUserView[]]) => (
+              <section key={key} className="flex w-full flex-col gap-2">
+                <ListSectionHeader title={dayTitle(key)} count={value.length} />
+                {value.map((event) => (
+                  <EventItem
+                    key={event.id}
+                    event={event}
+                    attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                    attendEvent={() => {
+                      updateAttendance.mutate({ event, user, newState: 'Attending' });
+                      sendMetricsToSentry('event_attend_from_list', 1);
+                    }}
+                    declineEvent={() => {
+                      updateAttendance.mutate({ event, user, newState: 'Declined' });
+                      sendMetricsToSentry('event_decline_from_list', 1);
+                    }}
+                    onClick={() => navigate('/training/event/' + event.id)}
+                  />
                 ))}
-              </div>
-            )}
-
-            {/* Leerer Zustand (Empty State) */}
-            {!isLoading && events.length === 0 && (
-              <div className="flex flex-col items-center justify-center p-8 mt-12 text-center text-muted-foreground">
-                <CalendarX className="size-16 mb-4 opacity-20" />
-                <h3 className="font-semibold text-lg mb-1 text-foreground/70">{t('events.list.empty')}</h3>
-                <p className="text-sm mb-1">{t('events.list.emptyDescription')}</p>
-                <p className='text-sm mb-1'>{t('events.list.joinGroupHint')}</p>
-                <Button onClick={() => navigate('/groups/list')}>{t('events.list.joinGroup')}</Button>
-              </div>
-            )}
-
-            {!isLoading && events.length > 0 && eventsByWeek.map(
-              ([key, value]: [string, EventsUserView[]]) => (
-                <div key={key} className="flex w-full gap-2 flex-col">
-                  <div className="text-sm font-semibold ml-2">
-                    {getISOWeek(key) === getISOWeek(new Date())
-                      ? t('events.list.thisWeek')
-                      : getISOWeek(key) === getISOWeek(new Date()) + 1
-                        ? t('events.list.nextWeek')
-                        : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
-                  </div>
-                  {value.map((event: EventsUserView) => (
-                    <EventItem
-                      key={event.id}
-                      event={event}
-                      t={t}
-                      attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
-                      attendEvent={() => {
-                        updateAttendance.mutate({ event, user, newState: 'Attending' });
-                        sendMetricsToSentry('event_attend_from_list', 1);
-                      }}
-                      declineEvent={() => {
-                        updateAttendance.mutate({ event, user, newState: 'Declined' });
-                        sendMetricsToSentry('event_decline_from_list', 1);
-                      }}
-                      onClick={() => {
-                        navigate('/training/event/' + event.id);
-                      }}
-                    />
-                  ))}
-                </div>
-              )
-            )}
+              </section>
+            ))}
           </div>
         </PullToRefresh>
       </main>

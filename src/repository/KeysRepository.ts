@@ -47,6 +47,9 @@ export const KeysRepository = {
         p_id: item.id,
         p_name: item.name,
         p_type: item.type,
+        // group: undefined = leave as is, null = visible to everyone, id = only for that group.
+        p_group: item.group ?? undefined,
+        p_set_group: item.group !== undefined,
       })
       .throwOnError();
     return result.data;

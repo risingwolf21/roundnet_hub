@@ -1,40 +1,43 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useCreateSeriesMutation, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSeriesMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase, nameOfRecurrence } from '@/utils';
+import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import { buildRRule, intervalSecondsLiteral, type EventRecurrence } from '@/utils/rrule';
 import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet, FieldTitle } from '@/components/ui/field';
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { Item, ItemContent } from '@/components/ui/item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
-import { add, Duration, format, isAfter, set } from 'date-fns';
+import { add, addDays, addMilliseconds, differenceInCalendarDays, differenceInMinutes, Duration, format, isAfter, isBefore, isSameDay, set } from 'date-fns';
 import { t } from 'i18next';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
-import { CalendarSync, CalendarX2, Map, Pencil, Trash2, TriangleAlert } from 'lucide-react';
-import { FormEvent, useMemo, useRef, useState } from 'react';
+import { CalendarClock, CalendarX2, ChevronRight, Info, Map, MapPin, Package, Pencil, Repeat, ShoppingBag, Trash2, TriangleAlert, Type, UserCheck, Users } from 'lucide-react';
+import { FormEvent, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { EventTable } from 'types/supabase';
 import { GroupWithUserRole } from '@/types/supabaseTypes';
 import { Json, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
+import { FieldHint, FormSection, Stepper, ToggleRow } from './EventFormParts';
 const SearchPlacesDialog = React.lazy(() => import('./SearchPlacesDialog'));
 
 const DEFAULT_DURATION: Duration = { hours: 2 };
+const FORM_ID = 'create-or-update-event-form';
+
+// Attendance opens this long before the start unless the creator changes or removes it.
+const DEFAULT_ANSWER_START_DAYS_BEFORE = 5;
 
 const createEmptyEvent = () => ({
   title: '',
@@ -47,11 +50,13 @@ const createEmptyEvent = () => ({
   max_trial_attendees: null,
   required_item: null,
   answerDeadline: null,
-  // answerStart: null,
+  answerStart: formatDateToDatabase(
+    add(set(new Date(), { seconds: 0, milliseconds: 0 }), { days: -DEFAULT_ANSWER_START_DAYS_BEFORE })
+  ),
   place: null,
 }) as EventTable;
 
-const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline', 'answerStart'] as const;
 
 // Derive a recurring-series template from the edited event. Used both when creating a recurring
 // event and when editing "this and all following" (which redefines the series going forward).
@@ -78,6 +83,7 @@ const buildSeriesFromEvent = (
     duration: intervalSecondsLiteral(start, ev.endDateTime),
     meeting_offset: ev.meetingDateTime ? intervalSecondsLiteral(start, ev.meetingDateTime) : null,
     answer_offset: ev.answerDeadline ? intervalSecondsLiteral(start, ev.answerDeadline) : null,
+    answer_start_offset: ev.answerStart ? intervalSecondsLiteral(start, ev.answerStart) : null,
     max_attendees: ev.maxAttendees ?? null,
     max_trial_attendees: ev.max_trial_attendees ?? null,
     required_item: ev.required_item ?? null,
@@ -135,7 +141,10 @@ export const CreateOrUpdateEventDialog = ({
   const [editedEvent, setEditedEvent] = useState<EventTable>(() => event ?? createEmptyEvent());
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [bringItems, setBringItems] = useState(items);
-  const ref = useRef<HTMLFormElement>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(
+    () => !!event && !isSameDay(new Date(event.startingDateTime), new Date(event.endDateTime))
+  );
 
   const place = useMemo(() => (editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null), [editedEvent]);
 
@@ -162,6 +171,7 @@ export const CreateOrUpdateEventDialog = ({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSaving) return;
+    setSubmitted(true);
 
     try {
       const bring_items = bringItems.filter((x) => x.name && x.required_qty && x.required_qty > 0);
@@ -183,10 +193,23 @@ export const CreateOrUpdateEventDialog = ({
       if (finalEvent.answerDeadline && isAfter(finalEvent.answerDeadline, finalEvent.startingDateTime))
         throw new Error(t('events.creation.answerDeadlineAfterStart'));
 
+      if (finalEvent.answerStart && !isBefore(finalEvent.answerStart, finalEvent.startingDateTime))
+        throw new Error(t('events.creation.answerStartAfterStart'));
+
+      if (
+        finalEvent.answerStart &&
+        finalEvent.answerDeadline &&
+        isAfter(finalEvent.answerStart, finalEvent.answerDeadline)
+      )
+        throw new Error(t('events.creation.answerStartAfterDeadline'));
+
       if (!finalEvent.title || finalEvent.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
 
       if (!finalEvent.description || finalEvent.description.length < 1)
         throw new Error(t('events.creation.descriptionEmpty'));
+
+      if (!isAfter(finalEvent.endDateTime, finalEvent.startingDateTime))
+        throw new Error(t('events.creation.endBeforeStart'));
 
       if (finalEvent.meetingDateTime)
         if (isAfter(finalEvent.meetingDateTime, finalEvent.startingDateTime))
@@ -275,59 +298,134 @@ export const CreateOrUpdateEventDialog = ({
     }
   }
 
+  const patch = (changes: Partial<EventTable>) => setEditedEvent((prev) => ({ ...prev, ...changes }));
+
+  // Moving the start carries the end and the meet-up time along, so the event keeps its length.
+  const moveStart = (next: Date, shift: (d: Date) => Date) =>
+    setEditedEvent((prev) => {
+      const moved = (v: string | null) => (v ? formatDateToDatabase(shift(new Date(v))) : v);
+      return {
+        ...prev,
+        startingDateTime: formatDateToDatabase(next),
+        endDateTime: moved(prev.endDateTime) as string,
+        meetingDateTime: moved(prev.meetingDateTime),
+        answerStart: moved(prev.answerStart),
+      };
+    });
+
+  const start = new Date(editedEvent.startingDateTime);
+  const end = new Date(editedEvent.endDateTime);
+  const endBeforeStart = !isAfter(end, start);
+  const minutes = differenceInMinutes(end, start);
+  const durationLabel = `${Math.floor(minutes / 60)} h${minutes % 60 ? ` ${minutes % 60} min` : ''}`;
+  const deadline = editedEvent.answerDeadline ? new Date(editedEvent.answerDeadline) : null;
+  const deadlineAfterStart = !!deadline && isAfter(deadline, start);
+  const answerStart = editedEvent.answerStart ? new Date(editedEvent.answerStart) : null;
+  const answerStartAfterStart = !!answerStart && !isBefore(answerStart, start);
+  const answerStartAfterDeadline = !!answerStart && !!deadline && isAfter(answerStart, deadline);
+  const isRecurring = !!editedEvent.recurrence && editedEvent.recurrence !== 'None';
+  const titleError = submitted && (editedEvent.title ?? '').length < 6;
+  const descriptionError = submitted && !editedEvent.description;
+  const groupError = submitted && !editedEvent.group;
+  const itemOptions = ITEMS.filter((x) => x.value !== null);
+
+  const pickPlace = async () => {
+    const result = await dialogs.open(SearchPlacesDialog);
+    if (result) {
+      patch({
+        place: JSON.stringify({
+          name: result.name,
+          description: result.description,
+          lat: result.lat,
+          lon: result.lon,
+        }),
+      });
+    }
+  };
+
+  const defaultAnswerStart = () => formatDateToDatabase(add(start, { days: -DEFAULT_ANSWER_START_DAYS_BEFORE }));
+
+  const defaultDeadline = () => {
+    const dayBefore = add(start, { days: -1 });
+    return formatDateToDatabase(isAfter(dayBefore, new Date()) ? dayBefore : add(start, { hours: -1 }));
+  };
+
+  const RECURRENCES: EventRecurrence[] = ['None', 'Weekly', 'Fortnightly', 'Monthly'];
+
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"fullscreen"}>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className={"flex-1"}>{event ? t('events.editEvent') : t('events.creation.titleCreate')}</DialogTitle>
         <DialogClose />
       </DialogHeader>
-      <DialogBody className='p-0'>
-        <form ref={ref} onSubmit={handleSubmit} noValidate className='flex flex-col gap-2'>
-          <FieldSet className='p-2'>
-            <Field className='gap-1'>
+      <DialogBody className='bg-muted/30 p-0'>
+        <form id={FORM_ID} onSubmit={handleSubmit} noValidate className='flex flex-col gap-3 p-3 pb-6'>
+          {option === 'UpdateSingle' && (
+            <Alert variant="info">
+              <Info />
+              <AlertDescription>{t('events.creation.editingSingle')}</AlertDescription>
+            </Alert>
+          )}
+          {option === 'UpdateRecurrence' && (
+            <Alert variant="info">
+              <Info />
+              <AlertDescription>{t('events.creation.editingFollowing')}</AlertDescription>
+            </Alert>
+          )}
+
+          <FormSection icon={Type} title={t('events.creation.sectionBasics')}>
+            <Field className='gap-1.5' data-invalid={titleError}>
               <FieldLabel htmlFor='event-title'>{t('events.creation.titleLabel')}</FieldLabel>
               <Input
                 id="event-title"
                 name="event-title"
-                placeholder={t('admin.notify.titleField')}
+                placeholder={t('events.creation.titlePlaceholder')}
                 className='w-full'
+                aria-invalid={titleError}
                 value={editedEvent.title}
-                onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
+                onChange={(e) => patch({ title: e.target.value })}
                 required
               />
+              <FieldHint error={titleError}>{t('events.creation.titleHint')}</FieldHint>
             </Field>
 
-            <Field className='gap-1'>
+            <Field className='gap-1.5' data-invalid={descriptionError}>
               <FieldLabel htmlFor='event-description'>{t('events.creation.descriptionLabel')}</FieldLabel>
               <Textarea
                 id="event-description"
                 name="event-description"
-                placeholder={t('costs.description')}
-                className='w-full'
+                placeholder={t('events.creation.descriptionPlaceholder')}
+                className='min-h-24 w-full'
+                aria-invalid={descriptionError}
                 value={editedEvent.description}
-                onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
+                onChange={(e) => patch({ description: e.target.value })}
                 required
               />
             </Field>
 
-            <Field className='gap-1'>
-              <FieldLabel htmlFor='event-group'>{t('events.creation.groupLabel')}</FieldLabel>
-              <Item variant={"outline"} onClick={async () => {
-                const result = await dialogs.selectGroup();
-                if (result) {
-                  setSelectedGroup(result);
-                  setEditedEvent({
-                    ...editedEvent,
-                    group: result.id,
-                  });
-                }
-              }}>
-                <ItemTitle>
-                  {
-                    selectedGroup?.name ?? t('events.creation.noGroupChosen')
+            <Field className='gap-1.5'>
+              <FieldLabel>{t('events.creation.groupLabel')}</FieldLabel>
+              <button
+                type="button"
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border bg-background px-3 py-2.5 text-left',
+                  groupError && 'border-destructive'
+                )}
+                onClick={async () => {
+                  const result = await dialogs.selectGroup([], selectedGroup?.id);
+                  if (result) {
+                    setSelectedGroup(result);
+                    patch({ group: result.id });
                   }
-                </ItemTitle>
-              </Item>
+                }}
+              >
+                <Users className='size-4 text-muted-foreground' />
+                <span className={cn('flex-1 truncate text-sm', !selectedGroup && 'text-muted-foreground')}>
+                  {selectedGroup?.name ?? t('events.creation.noGroupChosen')}
+                </span>
+                <ChevronRight className='size-4 text-muted-foreground' />
+              </button>
+              {groupError && <FieldHint error>{t('events.creation.noGroupSelected')}</FieldHint>}
             </Field>
 
             {!isMemberOfSelectedGroup && (
@@ -337,526 +435,343 @@ export const CreateOrUpdateEventDialog = ({
                 <AlertDescription>{t('events.creation.notMemberOfGroup')}</AlertDescription>
               </Alert>
             )}
-          </FieldSet>
+          </FormSection>
 
-          <FieldSeparator />
+          <FormSection icon={CalendarClock} title={t('events.creation.dateTimes')}>
+            <Field className='gap-1.5'>
+              <FieldLabel htmlFor="event-startdate">{t('events.creation.date')}</FieldLabel>
+              <DatePicker
+                id='event-startdate'
+                placeholder={t('costs.date')}
+                className='w-full'
+                value={start}
+                onValueChange={(val) => {
+                  if (!val) return;
+                  const next = set(start, { date: val.getDate(), month: val.getMonth(), year: val.getFullYear() });
+                  const days = differenceInCalendarDays(next, start);
+                  moveStart(next, (d) => addDays(d, days));
+                }} />
+            </Field>
 
-          <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>{t('events.creation.dateTimes')}</FieldLegend>
-            <FieldGroup className='flex-row'>
-              <Field>
-                <FieldLabel htmlFor="event-startdate">{t('events.creation.startDate')}</FieldLabel>
-                <DatePicker
-                  id='event-startdate'
-                  placeholder={t('costs.date')}
-                  onValueChange={(val) => {
-                    if (!val) return;
-                    setEditedEvent({
-                      ...editedEvent,
-                      startingDateTime: formatDateToDatabase(
-                        set(new Date(editedEvent.startingDateTime), {
-                          date: val.getDate(),
-                          year: val.getFullYear(),
-                          month: val.getMonth(),
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
-                    });
-                  }}
-                  value={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="event-starttime">{t('events.creation.time')}</FieldLabel>
+            <div className='grid grid-cols-2 gap-3'>
+              <Field className='gap-1.5'>
+                <FieldLabel htmlFor="event-starttime">{t('events.creation.from')}</FieldLabel>
                 <TimePicker
                   id="event-starttime"
-                  placeholder="12:30"
-                  value={editedEvent?.startingDateTime ? new Date(editedEvent.startingDateTime) : undefined}
+                  className='!w-full'
+                  value={start}
                   onValueChange={(newDate) => {
                     if (!newDate) return;
-
-                    const dbFormattedDate = formatDateToDatabase(newDate);
-
-                    setEditedEvent({
-                      ...editedEvent,
-                      startingDateTime: dbFormattedDate,
-                    });
+                    const delta = newDate.getTime() - start.getTime();
+                    moveStart(newDate, (d) => addMilliseconds(d, delta));
                   }}
                 />
               </Field>
-            </FieldGroup>
-
-            <FieldGroup className='flex-row'>
-              <Field>
-                <FieldLabel htmlFor="event-enddate">{t('events.creation.endDate')}</FieldLabel>
-                <DatePicker
-                  id='event-enddate'
-                  placeholder={t('costs.date')}
-                  onValueChange={(val) => {
-                    if (!val) return;
-                    setEditedEvent({
-                      ...editedEvent,
-                      endDateTime: formatDateToDatabase(
-                        set(new Date(editedEvent.endDateTime), {
-                          date: val.getDate(),
-                          year: val.getFullYear(),
-                          month: val.getMonth(),
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      )
-                    });
-                  }}
-                  value={formatDateFromDatabase(editedEvent.endDateTime) ?? undefined} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="event-endtime">{t('events.creation.time')}</FieldLabel>
+              <Field className='gap-1.5' data-invalid={endBeforeStart}>
+                <FieldLabel htmlFor="event-endtime">{t('events.creation.until')}</FieldLabel>
                 <TimePicker
                   id="event-endtime"
-                  placeholder="12:30"
-                  value={editedEvent?.endDateTime ? new Date(editedEvent.endDateTime) : undefined}
+                  className='!w-full'
+                  value={end}
                   onValueChange={(newDate) => {
-                    if (!newDate) return;
-
-                    setEditedEvent({
-                      ...editedEvent,
-                      endDateTime: formatDateToDatabase(set(editedEvent.endDateTime, {
-                        hours: newDate.getHours(),
-                        minutes: newDate.getMinutes()
-                      })
-                      )
-                    });
+                    if (newDate) patch({ endDateTime: formatDateToDatabase(newDate) });
                   }}
                 />
               </Field>
-            </FieldGroup>
+            </div>
+            {endBeforeStart
+              ? <FieldHint error>{t('events.creation.endBeforeStart')}</FieldHint>
+              : <FieldHint>{t('events.creation.duration', { value: durationLabel })}</FieldHint>}
 
-
-            <FieldGroup className='flex-col gap-2'>
-              <Field orientation="horizontal">
-                <Checkbox
-                  id="event-meetingdatetime-enabled"
-                  checked={editedEvent.meetingDateTime !== null}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      const newDate = new Date();
-                      setEditedEvent({
-                        ...editedEvent,
-                        meetingDateTime: formatDateToDatabase(set(editedEvent.startingDateTime, {
-                          hours: newDate.getHours(),
-                          minutes: newDate.getMinutes()
-                        })),
-                      });
-                    } else {
-                      setEditedEvent({
-                        ...editedEvent,
-                        meetingDateTime: null
-                      });
-                    }
-                  }}
-                />
-                <FieldLabel
-                  htmlFor="event-meetingdatetime-enabled"
-                  className="font-normal"
-                >
-                  {t('events.creation.meetingBeforeTraining')}
-                </FieldLabel>
-              </Field>
-              <Field className={cn("", {
-                "hidden": editedEvent.meetingDateTime === null
-              })}>
-                <TimePicker
-                  id="event-meetingdatetime"
-                  placeholder="12:30"
-                  value={editedEvent?.meetingDateTime ? new Date(editedEvent.meetingDateTime) : undefined}
-                  onValueChange={(newDate) => {
-                    if (!newDate) return;
-
-                    setEditedEvent({
-                      ...editedEvent,
-                      meetingDateTime: formatDateToDatabase(set(editedEvent.startingDateTime, {
-                        hours: newDate.getHours(),
-                        minutes: newDate.getMinutes()
-                      })),
-                    });
-                  }}
-                />
-              </Field>
-            </FieldGroup>
-          </FieldSet>
-
-          <FieldSeparator />
-
-          <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>{t('events.creation.location')}</FieldLegend>
-            <Item variant={"outline"}>
-              <ItemContent>
-                {
-                  place ? <>
-                    <ItemTitle className='truncate'>{place.name}</ItemTitle>
-                    <ItemDescription className='truncate'>{place?.description}</ItemDescription>
-                  </>
-                    : <ItemTitle>{t('events.creation.noLocation')}</ItemTitle>
-                }
-              </ItemContent>
-              <ItemActions>
-                {
-                  place && <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                    const result = await dialogs.open(SearchPlacesDialog);
-                    if (result) {
-                      setEditedEvent({
-                        ...editedEvent,
-                        place: JSON.stringify({
-                          name: result.name,
-                          description: result.description,
-                          lat: result.lat,
-                          lon: result.lon,
-                        }),
-                      });
-                    }
-                  }}>
-                    <Pencil />
-                  </Button>
-                }
-                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                  if (place !== null) {
-                    setEditedEvent({ ...editedEvent, place: null })
-                  } else {
-                    const result = await dialogs.open(SearchPlacesDialog);
-                    if (result) {
-                      setEditedEvent({
-                        ...editedEvent,
-                        place: JSON.stringify({
-                          name: result.name,
-                          description: result.description,
-                          lat: result.lat,
-                          lon: result.lon,
-                        }),
-                      });
-                    }
-                  }
-                }}>
-                  {
-                    place ? <Trash2 /> : <Map />
-                  }
-                </Button>
-              </ItemActions>
-            </Item>
-          </FieldSet>
-
-          <FieldSeparator />
-
-          <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>{t('events.creation.recurrence')}</FieldLegend>
-
-            <FieldLabel htmlFor="switch-notifications">
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldTitle>{t('events.creation.recurrence')}</FieldTitle>
-                  <FieldDescription>
-                    {nameOfRecurrence(editedEvent.recurrence)}
-                  </FieldDescription>
-                  {
-                    editedEvent.recurrenceEnd && <FieldDescription>
-                      {t('events.creation.endsAt', { date: format(editedEvent.recurrenceEnd, "dd.MM.yyyy HH:mm") })}
-                    </FieldDescription>
-                  }
-                </FieldContent>
-                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                  const result = await dialogs.selectSingleOption<EventRecurrence>([
-                    { value: 'None', label: t('events.creation.recurrenceNone') },
-                    { value: 'Weekly', label: t('events.creation.recurrenceWeekly') },
-                    { value: 'Fortnightly', label: t('events.creation.recurrenceFortnightly') },
-                    { value: 'Monthly', label: t('events.creation.recurrenceMonthly') },
-                  ], editedEvent.recurrence);
-                  if (result) {
-                    setEditedEvent({ ...editedEvent, recurrence: result, ...(result === "None" && { recurrenceEnd: null }) })
-                  }
-                }}>
-                  <CalendarSync />
-                </Button>
-                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                  const result = await dialogs.open(SelectRecurrenceEndDialog, formatDateFromDatabase(editedEvent.recurrenceEnd));
-                  if (result && result !== "unset")
-                    setEditedEvent({ ...editedEvent, recurrenceEnd: formatDateToDatabase(result) })
-                  else if (result === 'unset')
-                    setEditedEvent({ ...editedEvent, recurrenceEnd: null })
-
-                }}>
-                  <CalendarX2 />
-                </Button>
-              </Field>
-            </FieldLabel>
-
-          </FieldSet>
-
-          <FieldSeparator />
-
-          <FieldSet className='p-2'>
-            <FieldLegend className='font-semibold'>{t('events.creation.optionalFields')}</FieldLegend>
-            <FieldLabel>
-              <Field>
-                <FieldLabel htmlFor="event-maxattendees">{t('events.creation.signupDeadline')}</FieldLabel>
-                <FieldGroup className='flex-row gap-2'>
-                  <Field className='w-full'>
-                    <DatePicker
-                      id='event-signupstartdate'
-                      placeholder={t('costs.date')}
-                      className='w-full'
-                      onValueChange={(val) => {
-                        if (!val) return;
-                        setEditedEvent({
-                          ...editedEvent,
-                          answerDeadline: formatDateToDatabase(
-                            set(editedEvent.answerDeadline ? new Date(editedEvent.answerDeadline) : new Date(), {
-                              date: val.getDate(),
-                              year: val.getFullYear(),
-                              month: val.getMonth(),
-                              seconds: 0,
-                              milliseconds: 0,
-                            })
-                          ),
-                        });
-                      }}
-                      value={formatDateFromDatabase(editedEvent.answerDeadline) ?? undefined} />
-                  </Field>
-
-                  <Field className='w-24'>
-                    <FieldLabel htmlFor="event-signupstarttime" className='hidden'>{t('events.creation.time')}</FieldLabel>
-                    <TimePicker
-                      id="event-signupstarttime"
-                      className='!w-24'
-                      placeholder="12:30"
-                      value={editedEvent?.answerDeadline ? new Date(editedEvent.answerDeadline) : undefined}
-                      onValueChange={(newDate) => {
-                        if (!newDate) return;
-
-                        const dbFormattedDate = formatDateToDatabase(newDate);
-
-                        setEditedEvent({
-                          ...editedEvent,
-                          answerDeadline: dbFormattedDate,
-                        });
-                      }}
-                    />
-                  </Field>
-
-                  <Button className='flex-none min-w-0' variant={"outline"} onClick={() => {
-                    setEditedEvent({
-                      ...editedEvent,
-                      answerDeadline: null,
-                      reminder_before: null,
-                    })
-                  }}>
-                    <Trash2 />
-                  </Button>
-
-                </FieldGroup>
-
-                {editedEvent.answerDeadline && (
-                  <FieldGroup className='flex flex-row items-center gap-3 justify-between'>
-                    <FieldLabel className='shrink-0 w-32 text-sm'>{t('events.creation.reminderBefore')}</FieldLabel>
-                    <Select
-                      value={editedEvent.reminder_before ?? ''}
-                      onValueChange={(v) =>
-                        setEditedEvent((prev) => ({ ...prev, reminder_before: v || null }))
-                      }
-                    >
-                      <SelectTrigger className='flex-1 max-w-72' disabled={!editedEvent.answerDeadline}>
-                        <SelectValue placeholder={t('events.creation.reminderNone')}>
-                          {
-                            !editedEvent.reminder_before || editedEvent.reminder_before === "" ? t('events.creation.reminderNone') : t(`events.creation.reminder${editedEvent.reminder_before}`)
-                          }
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">{t('events.creation.reminderNone')}</SelectItem>
-                        <SelectItem value="PT30M">{t('events.creation.reminderPT30M')}</SelectItem>
-                        <SelectItem value="PT1H">{t('events.creation.reminderPT1H')}</SelectItem>
-                        <SelectItem value="PT6H">{t('events.creation.reminderPT6H')}</SelectItem>
-                        <SelectItem value="PT12H">{t('events.creation.reminderPT12H')}</SelectItem>
-                        <SelectItem value="PT24H">{t('events.creation.reminderPT24H')}</SelectItem>
-                        <SelectItem value="P2D">{t('events.creation.reminderP2D')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FieldGroup>
-                )}
-              </Field>
-            </FieldLabel>
-
-
-
-            <FieldLabel>
-              <Field>
-                <FieldLabel htmlFor="event-maxattendees">{t('events.creation.maxAttendees')}</FieldLabel>
-                <Field orientation={"horizontal"}>
-                  <Input
-                    type='number'
-                    disabled={editedEvent.maxAttendees === null}
-                    value={editedEvent.maxAttendees?.toFixed(0) ?? 0}
-                    onChange={(e) => {
-                      const parsed = Number.parseInt(e.target.value);
-                      if (Number.isNaN(parsed)) {
-                        setEditedEvent({
-                          ...editedEvent, maxAttendees: 0
-                        })
-                      } else {
-                        setEditedEvent({
-                          ...editedEvent,
-                          maxAttendees: parsed < 0 ? 0 : parsed
-                        })
-                      }
-                    }}
-                  />
-                  <Switch
-                    checked={typeof editedEvent.maxAttendees === 'number'}
-                    onCheckedChange={(val) => {
-                      setEditedEvent({
-                        ...editedEvent,
-                        maxAttendees: val ? 0 : null
-                      })
-                    }}
-                  />
-                </Field>
-              </Field>
-            </FieldLabel>
-
-            <Has feat={"events.trials"}>
-              <FieldLabel>
-                <Field>
-                  <FieldLabel htmlFor="event-max_trial_attendees">{t('events.creation.maxTrialAttendees')}</FieldLabel>
-                  <Field orientation={"horizontal"}>
-                    <Input
-                      type='number'
-                      disabled={editedEvent.max_trial_attendees === null}
-                      value={editedEvent.max_trial_attendees?.toFixed(0) ?? 0}
-                      onChange={(e) => {
-                        const parsed = Number.parseInt(e.target.value);
-                        if (Number.isNaN(parsed)) {
-                          setEditedEvent({
-                            ...editedEvent, max_trial_attendees: 0
-                          })
-                        } else {
-                          setEditedEvent({
-                            ...editedEvent,
-                            max_trial_attendees: parsed < 0 ? 0 : parsed
-                          })
-                        }
-                      }}
-                    />
-                    <Switch
-                      checked={typeof editedEvent.max_trial_attendees === 'number'}
-                      onCheckedChange={(val) => {
-                        setEditedEvent({
-                          ...editedEvent,
-                          max_trial_attendees: val ? 0 : null
-                        })
-                      }}
-                    />
-                  </Field>
-                </Field>
-              </FieldLabel>
-            </Has>
-
-            <Has feat={"items"}>
-              <FieldLabel>
-                <Field>
-                  <FieldLabel htmlFor="event-required-item">{t('events.creation.requiredItem')}</FieldLabel>
-                  <Field orientation={"horizontal"}>
-                    <Select items={ITEMS} value={editedEvent.required_item} onValueChange={(val) => setEditedEvent({
-                      ...editedEvent,
-                      required_item: val
-                    })}>
-                      <SelectTrigger className="w-full" disabled={editedEvent.required_item === null}>
-                        <SelectValue placeholder={t('events.creation.selectItem')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {
-                          ITEMS.map(x => (
-                            <SelectItem key={x.value} value={x.value} >{x.label}</SelectItem>
-                          ))
-                        }
-                      </SelectContent>
-                    </Select>
-                    <Switch
-                      checked={typeof editedEvent.required_item === "string"}
-                      onCheckedChange={(val) => {
-                        setEditedEvent({
-                          ...editedEvent,
-                          required_item: val ? 'mtvGym' : null
-                        })
-                      }}
-                    />
-                  </Field>
-                </Field>
-              </FieldLabel>
-            </Has>
-
-            <Has feat={"games"}>
-              <FieldLabel>
-                <Field orientation={"horizontal"}>
-                  <FieldContent className='w-full'>
-                    <FieldLabel>
-                      {t('events.creation.constellationsEnabled')}
-                    </FieldLabel>
-                    <FieldDescription>
-                      {t('events.creation.constellationsEnabledHint')}
-                    </FieldDescription>
-                  </FieldContent>
-                  <Switch
-                    id='event-constellations_enabled'
-                    checked={editedEvent.constellations_enabled}
-                    onCheckedChange={(val) => {
-                      setEditedEvent({
-                        ...editedEvent,
-                        constellations_enabled: val
-                      })
-                    }}
-                  />
-                </Field>
-              </FieldLabel>
-            </Has>
-
-            <FieldLabel>
-              <Field orientation={"horizontal"}>
-                <FieldContent className='w-full'>
-                  <FieldLabel>
-                    {t('events.creation.bringItems')}
-                  </FieldLabel>
-                  <FieldDescription>
-                    {
-                      bringItems.map((x) => (
-                        <Badge key={x.id}>{`${x.required_qty}x ${x.name}`}</Badge>
-                      ))
-                    }
-                  </FieldDescription>
-                </FieldContent>
-                <Button variant={"outline"} size={"icon-lg"} onClick={async () => {
-                  const result = await dialogs.open(PledgesDialog, {
-                    bringItems: bringItems,
-                    eventId: editedEvent.id,
-                    user: user
+            <ToggleRow
+              id="event-multiday"
+              title={t('events.creation.endsOnOtherDay')}
+              checked={showEndDate}
+              onCheckedChange={(checked) => {
+                setShowEndDate(checked);
+                patch({
+                  endDateTime: formatDateToDatabase(
+                    checked
+                      ? addDays(end, 1)
+                      : set(end, { date: start.getDate(), month: start.getMonth(), year: start.getFullYear() })
+                  ),
+                });
+              }}
+            >
+              <DatePicker
+                id='event-enddate'
+                placeholder={t('costs.date')}
+                className='w-full'
+                value={end}
+                onValueChange={(val) => {
+                  if (!val) return;
+                  patch({
+                    endDateTime: formatDateToDatabase(
+                      set(end, { date: val.getDate(), month: val.getMonth(), year: val.getFullYear() })
+                    ),
                   });
-                  setBringItems(result ?? [])
-                }}>
+                }} />
+            </ToggleRow>
+
+            <ToggleRow
+              id="event-meetingdatetime-enabled"
+              title={t('events.creation.meetingBeforeTraining')}
+              description={t('events.creation.meetingHint')}
+              checked={editedEvent.meetingDateTime !== null}
+              onCheckedChange={(checked) =>
+                patch({ meetingDateTime: checked ? formatDateToDatabase(add(start, { minutes: -15 })) : null })
+              }
+            >
+              <TimePicker
+                id="event-meetingdatetime"
+                className='!w-full'
+                value={editedEvent.meetingDateTime ? new Date(editedEvent.meetingDateTime) : undefined}
+                onValueChange={(newDate) => {
+                  if (!newDate) return;
+                  patch({
+                    meetingDateTime: formatDateToDatabase(
+                      set(start, { hours: newDate.getHours(), minutes: newDate.getMinutes() })
+                    ),
+                  });
+                }}
+              />
+            </ToggleRow>
+          </FormSection>
+
+          <FormSection icon={MapPin} title={t('events.creation.location')}>
+            {place ? (
+              <div className='flex items-center gap-3 rounded-lg border bg-background p-3'>
+                <MapPin className='size-4 shrink-0 text-primary' />
+                <div className='min-w-0 flex-1'>
+                  <div className='truncate text-sm font-medium'>{place.name}</div>
+                  {place.description && <div className='truncate text-xs text-muted-foreground'>{place.description}</div>}
+                </div>
+                <Button type="button" variant="outline" size="icon-lg" aria-label={t('events.creation.changeLocation')} onClick={pickPlace}>
                   <Pencil />
                 </Button>
+                <Button type="button" variant="outline" size="icon-lg" aria-label={t('events.creation.removeLocation')} onClick={() => patch({ place: null })}>
+                  <Trash2 />
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" variant="outline" className='h-14 w-full border-dashed' onClick={pickPlace}>
+                <Map />
+                {t('events.creation.chooseLocation')}
+              </Button>
+            )}
+          </FormSection>
+
+          {option !== 'UpdateSingle' && (
+            <FormSection icon={Repeat} title={t('events.creation.recurrence')}>
+              <div role="radiogroup" aria-label={t('events.creation.recurrence')} className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
+                {RECURRENCES.map((r) => (
+                  <Button
+                    key={r}
+                    type="button"
+                    role="radio"
+                    aria-checked={editedEvent.recurrence === r}
+                    variant={editedEvent.recurrence === r ? 'default' : 'outline'}
+                    onClick={() => patch({ recurrence: r, ...(r === 'None' && { recurrenceEnd: null }) })}
+                  >
+                    {t(`events.creation.recurrenceShort.${r}`)}
+                  </Button>
+                ))}
+              </div>
+              {isRecurring && (
+                <div className='flex items-center gap-3 rounded-lg border bg-background p-3'>
+                  <CalendarX2 className='size-4 shrink-0 text-muted-foreground' />
+                  <div className='min-w-0 flex-1'>
+                    <div className='text-sm font-medium'>{t('events.creation.recurrenceEnd')}</div>
+                    <div className='text-xs text-muted-foreground'>
+                      {editedEvent.recurrenceEnd
+                        ? t('events.creation.endsAt', { date: format(editedEvent.recurrenceEnd, "dd.MM.yyyy") })
+                        : t('events.creation.recurrenceNever')}
+                    </div>
+                  </div>
+                  <Button type="button" variant="outline" onClick={async () => {
+                    const result = await dialogs.open(SelectRecurrenceEndDialog, formatDateFromDatabase(editedEvent.recurrenceEnd));
+                    if (result && result !== 'unset') patch({ recurrenceEnd: formatDateToDatabase(result) });
+                    else if (result === 'unset') patch({ recurrenceEnd: null });
+                  }}>
+                    {t('events.creation.change')}
+                  </Button>
+                </div>
+              )}
+            </FormSection>
+          )}
+
+          <FormSection icon={UserCheck} title={t('events.creation.sectionRegistration')}>
+            <ToggleRow
+              id="event-answerstart-enabled"
+              title={t('events.creation.answerStart')}
+              description={t('events.creation.answerStartHint')}
+              checked={!!editedEvent.answerStart}
+              onCheckedChange={(checked) => patch({ answerStart: checked ? defaultAnswerStart() : null })}
+            >
+              <div className='grid grid-cols-[1fr_7rem] gap-3'>
+                <DatePicker
+                  id='event-answerstartdate'
+                  placeholder={t('costs.date')}
+                  className='w-full'
+                  value={answerStart ?? undefined}
+                  onValueChange={(val) => {
+                    if (!val || !answerStart) return;
+                    patch({
+                      answerStart: formatDateToDatabase(
+                        set(answerStart, { date: val.getDate(), month: val.getMonth(), year: val.getFullYear() })
+                      ),
+                    });
+                  }} />
+                <TimePicker
+                  id="event-answerstarttime"
+                  className='!w-full'
+                  value={answerStart ?? undefined}
+                  onValueChange={(newDate) => newDate && patch({ answerStart: formatDateToDatabase(newDate) })}
+                />
+              </div>
+              {answerStartAfterStart && <FieldHint error>{t('events.creation.answerStartAfterStart')}</FieldHint>}
+              {!answerStartAfterStart && answerStartAfterDeadline && (
+                <FieldHint error>{t('events.creation.answerStartAfterDeadline')}</FieldHint>
+              )}
+            </ToggleRow>
+
+            <ToggleRow
+              id="event-deadline-enabled"
+              title={t('events.creation.signupDeadline')}
+              description={t('events.creation.signupDeadlineHint')}
+              checked={!!editedEvent.answerDeadline}
+              onCheckedChange={(checked) =>
+                patch(checked ? { answerDeadline: defaultDeadline() } : { answerDeadline: null, reminder_before: null })
+              }
+            >
+              <div className='grid grid-cols-[1fr_7rem] gap-3'>
+                <DatePicker
+                  id='event-signupstartdate'
+                  placeholder={t('costs.date')}
+                  className='w-full'
+                  value={deadline ?? undefined}
+                  onValueChange={(val) => {
+                    if (!val || !deadline) return;
+                    patch({
+                      answerDeadline: formatDateToDatabase(
+                        set(deadline, { date: val.getDate(), month: val.getMonth(), year: val.getFullYear() })
+                      ),
+                    });
+                  }} />
+                <TimePicker
+                  id="event-signupstarttime"
+                  className='!w-full'
+                  value={deadline ?? undefined}
+                  onValueChange={(newDate) => newDate && patch({ answerDeadline: formatDateToDatabase(newDate) })}
+                />
+              </div>
+              {deadlineAfterStart && <FieldHint error>{t('events.creation.answerDeadlineAfterStart')}</FieldHint>}
+              <Field className='gap-1.5'>
+                <FieldLabel>{t('events.creation.reminderBefore')}</FieldLabel>
+                <Select
+                  value={editedEvent.reminder_before ?? ''}
+                  onValueChange={(v) => patch({ reminder_before: v || null })}
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder={t('events.creation.reminderNone')}>
+                      {!editedEvent.reminder_before ? t('events.creation.reminderNone') : t(`events.creation.reminder${editedEvent.reminder_before}`)}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">{t('events.creation.reminderNone')}</SelectItem>
+                    <SelectItem value="PT30M">{t('events.creation.reminderPT30M')}</SelectItem>
+                    <SelectItem value="PT1H">{t('events.creation.reminderPT1H')}</SelectItem>
+                    <SelectItem value="PT6H">{t('events.creation.reminderPT6H')}</SelectItem>
+                    <SelectItem value="PT12H">{t('events.creation.reminderPT12H')}</SelectItem>
+                    <SelectItem value="PT24H">{t('events.creation.reminderPT24H')}</SelectItem>
+                    <SelectItem value="P2D">{t('events.creation.reminderP2D')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
-            </FieldLabel>
-          </FieldSet>
+            </ToggleRow>
+
+            <ToggleRow
+              id="event-maxattendees-enabled"
+              title={t('events.creation.maxAttendees')}
+              description={t('events.creation.maxAttendeesHint')}
+              checked={typeof editedEvent.maxAttendees === 'number'}
+              onCheckedChange={(checked) => patch({ maxAttendees: checked ? 12 : null })}
+            >
+              <Stepper label={t('events.creation.maxAttendees')} value={editedEvent.maxAttendees ?? 0} onChange={(v) => patch({ maxAttendees: v })} />
+            </ToggleRow>
+
+            <Has feat={"events.trials"}>
+              <ToggleRow
+                id="event-maxtrial-enabled"
+                title={t('events.creation.maxTrialAttendees')}
+                checked={typeof editedEvent.max_trial_attendees === 'number'}
+                onCheckedChange={(checked) => patch({ max_trial_attendees: checked ? 2 : null })}
+              >
+                <Stepper label={t('events.creation.maxTrialAttendees')} value={editedEvent.max_trial_attendees ?? 0} onChange={(v) => patch({ max_trial_attendees: v })} />
+              </ToggleRow>
+            </Has>
+          </FormSection>
+
+          <Has feat={["items", "games"]} any>
+            <FormSection icon={Package} title={t('events.creation.sectionExtras')}>
+              <Has feat={"items"}>
+                <ToggleRow
+                  id="event-required-item-enabled"
+                  title={t('events.creation.requiredItem')}
+                  checked={typeof editedEvent.required_item === "string"}
+                  onCheckedChange={(checked) => patch({ required_item: checked ? 'mtvGym' : null })}
+                >
+                  <Select items={itemOptions} value={editedEvent.required_item} onValueChange={(val) => patch({ required_item: val })}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('events.creation.selectItem')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {itemOptions.map((x) => (
+                        <SelectItem key={x.value} value={x.value} >{x.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </ToggleRow>
+              </Has>
+
+              <Has feat={"games"}>
+                <ToggleRow
+                  id="event-constellations_enabled"
+                  title={t('events.creation.constellationsEnabled')}
+                  description={t('events.creation.constellationsEnabledHint')}
+                  checked={!!editedEvent.constellations_enabled}
+                  onCheckedChange={(val) => patch({ constellations_enabled: val })}
+                />
+              </Has>
+            </FormSection>
+          </Has>
+
+          <FormSection icon={ShoppingBag} title={t('events.creation.bringItems')}>
+            <div className='flex items-center gap-3'>
+              <div className='flex min-w-0 flex-1 flex-wrap gap-1.5'>
+                {bringItems.length
+                  ? bringItems.map((x, i) => <Badge key={x.id || i}>{`${x.required_qty}x ${x.name}`}</Badge>)
+                  : <span className='text-sm text-muted-foreground'>{t('events.creation.noBringItems')}</span>}
+              </div>
+              <Button type="button" variant="outline" onClick={async () => {
+                const result = await dialogs.open(PledgesDialog, {
+                  bringItems: bringItems,
+                  eventId: editedEvent.id,
+                  user: user
+                });
+                setBringItems(result ?? [])
+              }}>
+                <Pencil />
+                {t('events.creation.change')}
+              </Button>
+            </div>
+          </FormSection>
         </form>
       </DialogBody>
       <DialogFooter variant={"fullscreen"}>
-        <Button
-          disabled={isSaving}
-          onClick={() => {
-            if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-          }}
-        >
+        <Button type="submit" form={FORM_ID} className='w-full' disabled={isSaving}>
           {isSaving && <Spinner />}
-          {t('common.save')}
+          {event ? t('common.save') : t('events.creation.createEvent')}
         </Button>
       </DialogFooter>
     </DialogContent>

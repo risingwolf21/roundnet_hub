@@ -1,52 +1,132 @@
+import { ListError, ListSectionHeader, ListSkeleton, sideBar } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { useChallengePodiums, useChallenges, useInsertChallengeMutation } from '@/tanstack/challenge';
 import { withProfiler } from '@sentry/react';
 
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Item, ItemContent } from '@/components/ui/item';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
+import { ChallengeRepository, ChallengeWithGroup } from '@/repository/ChallengeRepository';
+import { differenceInCalendarDays, format } from 'date-fns';
 import groupBy from 'lodash.groupby';
-import { AlertCircle, Archive, Plus, RefreshCcw } from 'lucide-react';
+import { Archive, CalendarClock, ChevronRight, Infinity as InfinityIcon, Plus, Target, Trophy, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
+const MEDALS: Record<string, string> = { '1': '🥇', '2': '🥈', '3': '🥉' };
 
-const ChallengeListSkeleton = () => (
-  <div className='flex flex-col gap-2 p-2'>
-    {[1, 2, 3].map((i) => (
-      <Skeleton key={i} className="h-[60px] w-full rounded-xl" />
-    ))}
-    <div className='pt-4 flex flex-row gap-2 items-center'>
-      <Skeleton className="h-6 w-32" />
-    </div>
-    <Skeleton className="h-[200px] w-full rounded-xl" />
-  </div>
-);
+type ArchivedChallenge = Awaited<ReturnType<typeof ChallengeRepository.fetchPodiums>>[number];
 
-const ChallengeListError = ({ message, onRetry }: { message: string, onRetry: () => void }) => {
-  const { t } = useTranslation();
+/** Ended challenge: the winner on top, places 2 and 3 in one muted line. Tied players share a place. */
+const ArchivedChallengeRow = ({ challenge, onClick }: { challenge: ArchivedChallenge; onClick: () => void }) => {
+  const { t, i18n } = useTranslation();
+  const places = Object.entries(groupBy(challenge.podium, (x) => x.rank.toString())).sort(([a], [b]) => Number(a) - Number(b));
+  const [winners, ...others] = places.map(([rank, entries]) => ({ rank, entries }));
+
   return (
-  <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
-    <div className="bg-destructive/10 p-3 rounded-full">
-      <AlertCircle className="size-8 text-destructive" />
-    </div>
-    <div>
-      <h3 className="text-lg font-semibold">{t('games.list.loadError')}</h3>
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </div>
-    <Button variant="outline" onClick={onRetry} className="gap-2">
-      <RefreshCcw className="size-4" />
-      {t('challenge.list.retry')}
-    </Button>
-  </div>
+    <Item variant="outline" className={sideBar('neutral')} onClick={onClick}>
+      <ItemContent>
+        <ItemTitle className="line-clamp-2">{challenge.challenge_name}</ItemTitle>
+        {challenge.end_date && (
+          <ItemDescription>
+            {t('challenge.list.endedOn', {
+              date: new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'medium' }).format(new Date(challenge.end_date)),
+            })}
+          </ItemDescription>
+        )}
+        {winners ? (
+          <>
+            <div className="mt-1 flex items-center gap-2 rounded-lg bg-primary/10 px-2 py-1.5">
+              <span className="shrink-0 text-lg leading-none" role="img" aria-label={t('challenge.info.place', { place: 1 })}>
+                {MEDALS[winners.rank]}
+              </span>
+              <AvatarGroup className="shrink-0">
+                {winners.entries.slice(0, 3).map((x) => (
+                  <Avatar key={x.user_id} size="sm">
+                    <AvatarImage src={x.image_url || undefined} alt={x.name} />
+                    <AvatarFallback>{x.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ))}
+              </AvatarGroup>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{winners.entries.map((x) => x.name).join(', ')}</span>
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {t('challenge.info.points', { count: winners.entries[0].score })}
+              </span>
+            </div>
+            {others.length > 0 && (
+              <p className="truncate px-2 text-xs text-muted-foreground">
+                {others.map(({ rank, entries }) => `${MEDALS[rank] ?? `#${rank}`} ${entries.map((x) => x.name).join(', ')}`).join(' · ')}
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">{t('challenge.list.noPoints')}</p>
+        )}
+      </ItemContent>
+      <ItemActions>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </ItemActions>
+    </Item>
+  );
+};
+
+const ChallengeRow = ({ challenge, onClick }: { challenge: ChallengeWithGroup; onClick: () => void }) => {
+  const { t } = useTranslation();
+  const now = new Date();
+  const notStarted = !!challenge.start_date && new Date(challenge.start_date) > now;
+  const daysLeft = challenge.end_date ? differenceInCalendarDays(new Date(challenge.end_date), now) : null;
+
+  return (
+    <Item variant="outline" onClick={onClick}>
+      <ItemContent>
+        <ItemTitle>{challenge.name}</ItemTitle>
+        {challenge.description && <ItemDescription className="line-clamp-2">{challenge.description}</ItemDescription>}
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+          {challenge.fullGroup && (
+            <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: challenge.fullGroup.color }} />
+              <span className="truncate">{challenge.fullGroup.name}</span>
+            </span>
+          )}
+          {notStarted ? (
+            <Badge variant="info">
+              <CalendarClock />
+              {t('challenge.list.startsOn', { date: format(new Date(challenge.start_date!), 'dd.MM.yyyy') })}
+            </Badge>
+          ) : daysLeft === null ? (
+            <Badge variant="secondary">
+              <InfinityIcon />
+              {t('challenge.list.ongoing')}
+            </Badge>
+          ) : (
+            <Badge variant={daysLeft <= 3 ? 'warning' : 'secondary'}>
+              <CalendarClock />
+              {daysLeft <= 0 ? t('challenge.list.endsToday') : t('challenge.list.endsInDays', { count: daysLeft })}
+            </Badge>
+          )}
+          {challenge.max_points_per_day !== null && challenge.max_points_per_day > 0 && (
+            <Badge variant="outline">
+              <Target />
+              {t('challenge.list.maxPerDay', { count: challenge.max_points_per_day })}
+            </Badge>
+          )}
+          {challenge.automated && (
+            <Badge variant="outline">
+              <Zap />
+              {t('challenge.list.automated')}
+            </Badge>
+          )}
+        </div>
+      </ItemContent>
+    </Item>
   );
 };
 
@@ -57,12 +137,15 @@ const ChallengeListPage = () => {
   const navigate = useNavigate();
 
   const { data: challenges = [], error, isLoading, refetch } = useChallenges();
-  const { data: podium = [], isLoading: isPodiumLoading, refetch: archiveRefetch } = useChallengePodiums();
+  const { data: podium = [], isLoading: isPodiumLoading, error: podiumError, refetch: archiveRefetch } = useChallengePodiums();
   const insertChallengeMutation = useInsertChallengeMutation();
 
   const handleRefresh = async () => {
     await Promise.all([refetch(), archiveRefetch()]);
   };
+
+  const loading = isLoading || isPodiumLoading;
+  const failure = error ?? podiumError;
 
   return (
     <div>
@@ -72,7 +155,7 @@ const ChallengeListPage = () => {
         user={user}
         actions={
           <Has perm={"challenge.create"}>
-            <Button variant={"ghost"} size={"icon-lg"}
+            <Button variant={"ghost"} size={"icon-lg"} aria-label={t('challenge.list.create')}
               onClick={async () => {
                 const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user });
                 if (result) {
@@ -93,95 +176,51 @@ const ChallengeListPage = () => {
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={handleRefresh}>
-          {isLoading || isPodiumLoading ? (
-            <ChallengeListSkeleton />
-          ) : error ? (
-            <ChallengeListError
-              message={error instanceof Error ? error.message : t('challenge.list.unknownError')}
-              onRetry={handleRefresh}
-            />
-          ) : (
-            <div className='flex flex-col gap-2 p-2'>
-              {
-                challenges.map((entry) => <Item key={entry.id} variant={"outline"} className='p-1 pl-2' onClick={() => {
-                  navigate(`/challenges/${entry.id}`);
-                }}><div>
-                    <div className='text-md font-semibold'>{entry.name}</div>
-                    <div className='text-md text-muted-foreground'>{entry.description}</div>
-                  </div>
-                </Item>)
-              }
+          <div className='flex flex-col gap-2 p-2' style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}>
+            {loading && <ListSkeleton rows={4} />}
 
-              <div className='text-lg font-bold pt-4 flex flex-row gap-2 items-center'>
-                <Archive />
-                {t('challenge.list.archived')}
-              </div>
+            {!loading && failure && (
+              <ListError
+                title={t('games.list.loadError')}
+                description={failure instanceof Error ? failure.message : t('challenge.list.unknownError')}
+                retryLabel={t('challenge.list.retry')}
+                onRetry={handleRefresh}
+              />
+            )}
 
-              {
-                podium.map((entry) => <Item key={entry.challenge_id} variant={"outline"} className='p-1 pl-2' onClick={() => {
-                  navigate(`/challenges/${entry.challenge_id}`);
-                }}>
-                  <ItemContent className='p-2'>
-                    <div className='text-base font-semibold'>{entry.challenge_name}</div>
+            {!loading && !failure && (
+              <>
+                {challenges.length === 0 ? (
+                  <Empty className="mt-8">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon"><Trophy /></EmptyMedia>
+                      <EmptyTitle>{t('challenge.list.empty')}</EmptyTitle>
+                      <EmptyDescription>{t('challenge.list.emptyDescription')}</EmptyDescription>
+                      <Has perm="challenge.create">
+                        <EmptyDescription>{t('challenge.list.emptyAdminHint')}</EmptyDescription>
+                      </Has>
+                    </EmptyHeader>
+                  </Empty>
+                ) : (
+                  <section className="flex flex-col gap-2">
+                    <ListSectionHeader title={t('challenge.list.active')} count={challenges.length} />
+                    {challenges.map((entry) => (
+                      <ChallengeRow key={entry.id} challenge={entry} onClick={() => navigate(`/challenges/${entry.id}`)} />
+                    ))}
+                  </section>
+                )}
 
-                    <div
-                      className="grid [grid-template-columns:repeat(var(--rank-count),1fr)] gap-2 mx-auto"
-                      style={
-                        {
-                          "--rank-count": new Set(entry.podium.map((x) => x.rank)).size.toString(),
-                        } as React.CSSProperties
-                      }>
-                      {Object.entries(groupBy(entry.podium, x => x.rank.toString())).map(([rank, items]) => {
-                        return (
-                          <div
-                            key={rank}
-                            className={`flex flex-col items-center w-full transition-all`}
-                          >
-                            <Card className="w-full border-0 shadow-none bg-zinc-50 dark:bg-zinc-900 gap-1 pb-1">
-                              <CardHeader className='w-full flex flex-col items-center'>
-                                <div className='text-3xl'>
-                                  {
-                                    rank === '1' ? '🥇' : rank === '2' ? '🥈' : rank === '3' ? '🥉' : `#${rank}`
-                                  }
-                                </div>
-                                <AvatarGroup>
-                                  {
-                                    items.map((x: {
-                                      user_id: string;
-                                      name: string;
-                                      score: number;
-                                      rank: number;
-                                      image_url: string;
-                                    }) => (
-                                      <Avatar key={x.user_id}>
-                                        <AvatarImage src={x.image_url} alt={x.name} />
-                                        <AvatarFallback>{x.name.charAt(0)}</AvatarFallback>
-                                      </Avatar>
-                                    ))
-                                  }
-                                </AvatarGroup>
-                              </CardHeader>
-                              <CardContent className="flex flex-col items-center p-2 text-center">
-                                <div className='w-full truncate'>
-                                  {
-                                    items.map((x) => (
-                                      <div key={x.user_id} className='text-sm text-muted-foreground'>
-                                        {x.name}
-                                      </div>
-                                    ))
-                                  }
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </ItemContent>
-                </Item>)
-              }
-            </div>
-          )}
+                {podium.length > 0 && (
+                  <section className="flex flex-col gap-2">
+                    <ListSectionHeader icon={<Archive />} title={t('challenge.list.archived')} count={podium.length} className="pt-4" />
+                    {podium.map((entry) => (
+                      <ArchivedChallengeRow key={entry.challenge_id} challenge={entry} onClick={() => navigate(`/challenges/${entry.challenge_id}`)} />
+                    ))}
+                  </section>
+                )}
+              </>
+            )}
+          </div>
         </PullToRefresh>
       </main>
     </div>

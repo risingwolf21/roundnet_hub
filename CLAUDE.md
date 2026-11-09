@@ -62,3 +62,9 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it
 work") require constant clarification.
+
+## 5. UI Work Follows the Design Philosophy
+
+Before creating or changing any screen, dialog or form, read
+`docs/DESIGN_PHILOSOPHY.md` and follow it (topic cards, optional settings behind
+switches, inline validation, danger zones, de/en translations, 360 px first).

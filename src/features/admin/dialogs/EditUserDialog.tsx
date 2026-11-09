@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { groupSideBar } from "@/components/list/ListParts";
 import { UserWithGroups } from '../../../types/supabaseTypes';
 
 import { Button } from '@/components/ui/button';
@@ -131,9 +132,8 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
                 <div className='text-base font-semibold'>{t('navigation.groups')}</div>
                 {
                   user.groups.map(x => (
-                    <Item key={x.id} variant={"outline"} className='pl-2'>
-                      <div className='w-full h-full flex flex-row justify-between gap-4 relative rounded-md py-1 px-2 pl-6 text-sm after:absolute after:inset-y-0 after:left-0 after:w-2 after:rounded-full after:bg-[var(--after-bg)]'
-                        style={{ '--after-bg': x.color } as React.CSSProperties}>
+                    <Item key={x.id} variant={"outline"} className={groupSideBar(x.color).className} style={groupSideBar(x.color).style}>
+                      <div className='w-full h-full flex flex-row justify-between gap-4 py-1 text-sm'>
                         <ItemContent>
                           <ItemTitle>{x.name}</ItemTitle>
 

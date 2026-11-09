@@ -48,6 +48,15 @@ export const useGroupAllUsers = (groupId?: string) =>
     queryFn: () => GroupsRepository.fetchGroupUsers(groupId!),
   });
 
+/** Ids of the group's full members (role user or admin), e.g. everyone who may receive a group's key. */
+export const fetchGroupMemberIds = async (groupId: string) => {
+  const mappings = await queryClient.fetchQuery({
+    queryKey: groupKeys.users(groupId),
+    queryFn: () => GroupsRepository.fetchGroupUsers(groupId),
+  });
+  return mappings.filter((x) => x.role === 'user' || x.role === 'admin').map((x) => x.user.id);
+};
+
 export const useGroupUsers = (role: GroupRole, groupId?: string) =>
   useQuery({
     queryKey: groupKeys.singleForRole(groupId!, role),

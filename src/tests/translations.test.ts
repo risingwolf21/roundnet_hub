@@ -43,7 +43,6 @@ describe('translations', () => {
   it('every literal t(...) key used in src exists in both languages', () => {
     const src = join(__dirname, '..');
     const used = sourceFiles(src)
-      .filter((f) => !relative(src, f).startsWith('features/supabase')) // developer DB browser: English only, not translated
       .map((f) => ({ f, content: readFileSync(f, 'utf8') }))
       .filter(({ content }) => !/\bconst t\s*=|function t\(/.test(content)) // a local t() helper (e.g. a key prefix) can't be checked statically
       .flatMap(({ f, content }) =>

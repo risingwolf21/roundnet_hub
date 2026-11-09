@@ -27,8 +27,6 @@ export const Leaderboard = lazyWithRetry(() => import('@/features/games/Leaderbo
 export const MatchInformation = lazyWithRetry(() => import('@/features/games/MatchInformation'));
 export const HomePage = lazyWithRetry(() => import('@/features/homepage/HomePage'));
 export const ItemHolderScreen = lazyWithRetry(() => import('@/features/keys/ItemHolderScreen'));
-export const DatabaseManager = lazyWithRetry(() => import('@/features/supabase/components/database'));
-export const LogsManager = lazyWithRetry(() => import('@/features/supabase/components/logs'));
 export const GrantsManager = lazyWithRetry(() => import('@/features/grants/GrantsManager'));
 export const AdminHistoryScreen = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen'));
 export const PaymentsPendingAdmin = lazyWithRetry(() => import('@/features/admin/PaymentsPendingAdmin'));
@@ -38,6 +36,5 @@ export const RecurringEvents = lazyWithRetry(() => import('@/features/events/Rec
 export const User = lazyWithRetry(() => import('@/features/profile/User'));
 export const FeatureLockedRouteElement = lazyWithRetry(() => import('@/components/FeatureLockedRouteElement'));
 export const UnauthorizedRouteElement = lazyWithRetry(() => import('@/components/UnauthorizedRouteElement'));
-export const UserSearchPage = lazyWithRetry(() => import('@/features/search/UserSearchPage'));
 export const TournamentCostsPage = lazyWithRetry(() => import('@/features/costs/TournamentCostsPage'));
 export const BundesligaPlannerPage = lazyWithRetry(() => import('@/features/bundesliga/BundesligaPlannerPage'));

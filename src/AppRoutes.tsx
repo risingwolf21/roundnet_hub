@@ -98,10 +98,6 @@ const createRouter = (user: UserWithGroups | null) =>
               element: <Pages.NotificationScreen />,
             },
             {
-              path: '/search',
-              element: <Pages.UserSearchPage />,
-            },
-            {
               path: '/costs',
               element: (
                 <Has feat={'costs'} fallback={<Pages.FeatureLockedRouteElement />}>
@@ -250,28 +246,6 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Pages.Leaderboard />,
                 }
               ],
-            },
-            {
-              path: '/supabase',
-              errorElement: <Pages.ErrorRouteElement />,
-              children: [
-                {
-                  path: 'logs',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.LogsManager />
-                    </Has >
-                  ),
-                },
-                {
-                  path: 'database',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
-                      <Pages.DatabaseManager />
-                    </Has>
-                  ),
-                }
-              ]
             },
             {
               path: '/admin',

@@ -5,7 +5,7 @@
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 
-SELECT plan(97);
+SELECT plan(98);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (postgres, no JWT)
@@ -377,13 +377,24 @@ SELECT throws_ok(
   '42501', NULL, 'admin_notify_emit: anon has no EXECUTE');
 
 -- ===========================================================================
--- G. key_handover (14)
+-- G. key_handover (15)
 -- ===========================================================================
 SELECT tests.authenticate_as('sm_user');
 SELECT throws_ok($$ SELECT * FROM public.key_handover(-1, auth.uid()) $$,
   '23503', 'item -1 not found', 'key_handover: unknown item');
 SELECT throws_ok($$ SELECT * FROM public.key_handover(990002, auth.uid()) $$,
-  '23514', 'item 990002 has no group', 'key_handover: item without group');
+  '42501', 'missing permission items.update.holder for item 990002',
+  'key_handover: item without group needs items.update.holder');
+
+-- A key without a group belongs to no group: with items.update.holder anyone may hand it to anyone.
+RESET ROLE;
+INSERT INTO public.permissions(name) VALUES ('items.update.holder') ON CONFLICT DO NOTHING;
+INSERT INTO public.user_direct_grants("user", kind, key) VALUES (pg_temp.u('sm_trial_h'), 'perm', 'items.update.holder');
+SELECT tests.authenticate_as('sm_trial_h');
+SELECT results_eq(
+  format($$ SELECT * FROM public.key_handover(990002, %L) $$, pg_temp.u('sm_req')),
+  format($$ VALUES (990002::bigint, %L::uuid) $$, pg_temp.u('sm_req')),
+  'key_handover: item without group can be handed to anyone with items.update.holder');
 
 SELECT tests.authenticate_as('sm_trial');
 SELECT throws_ok($$ SELECT * FROM public.key_handover(990001, auth.uid()) $$,

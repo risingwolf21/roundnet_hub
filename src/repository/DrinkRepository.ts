@@ -3,6 +3,8 @@ import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
 
+export type HistoryWithPayment = FullHistory & { payments?: { paymentState: string } | null };
+
 export const fetchFullHistory = () => supabase.from('history').select('*, drinkId: drink, drink(*), user(*)');
 
 export const DrinkRepository = {
@@ -43,13 +45,15 @@ export const DrinkRepository = {
     return result.data ?? [];
   },
 
-  async fetchUserHistoryPage(userId: string, count: number, pageParam: number): Promise<{ data: FullHistory[]; nextPage: number | undefined }> {
-    const { data } = await fetchFullHistory()
+  async fetchUserHistoryPage(userId: string, count: number, pageParam: number): Promise<{ data: HistoryWithPayment[]; nextPage: number | undefined }> {
+    const { data } = await supabase
+      .from('history')
+      .select('*, drinkId: drink, drink(*), user(*), payments(paymentState)')
       .not('user', 'is', null)
       .eq('user.id', userId)
       .range(pageParam * count, pageParam * count + count - 1)
       .order('created_at', { ascending: false })
-      .returns<FullHistory[]>()
+      .returns<HistoryWithPayment[]>()
       .throwOnError();
     const hasMore = (data?.length ?? 0) === count;
     return { data: data ?? [], nextPage: hasMore ? pageParam + 1 : undefined };

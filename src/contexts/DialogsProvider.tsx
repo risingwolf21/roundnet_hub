@@ -39,20 +39,22 @@ export interface AlertOptions {
 
 export interface SearchAndSelectUserOptions {
   usersToFilter: string[];
+  onlyUsers?: string[];
   option: "single" | "multiple";
 }
 
 export interface SearchAndSelectGroupOptions {
   groupsToFilter: string[]
+  selectedGroupId?: string | null
 }
 
 interface DialogsContextType {
   open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload?: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
-  selectSingleUser: (usersToFilter?: string[]) => Promise<User | null>;
+  selectSingleUser: (usersToFilter?: string[], onlyUsers?: string[]) => Promise<User | null>;
   selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
-  selectGroup: (groupsToFilter?: string[]) => Promise<Group | null>;
+  selectGroup: (groupsToFilter?: string[], selectedGroupId?: string | null) => Promise<Group | null>;
   selectSingleOption: <T>(options: { value: T, label: string, icon?: React.ReactNode }[], selectedOption?: T) => Promise<T | null>;
   userProfile: (userId: string) => Promise<void>;
 }
@@ -104,8 +106,8 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return open(AlertDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, message: content }).then(() => undefined);
   }, [open]);
 
-  const selectSingleUser = useCallback(async (usersToFilter?: string[]) => {
-    const result = await open(SearchAndSelectUserDialog, { option: 'single', usersToFilter: usersToFilter ?? [] });
+  const selectSingleUser = useCallback(async (usersToFilter?: string[], onlyUsers?: string[]) => {
+    const result = await open(SearchAndSelectUserDialog, { option: 'single', usersToFilter: usersToFilter ?? [], onlyUsers });
 
     return result as User | null;
   }, [open]);
@@ -116,8 +118,8 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return result as User[] | null;
   }, [open]);
 
-  const selectGroup = useCallback(async (groupsToFilter?: string[]) => {
-    const result = await open(SearchAndSelectGroupDialog, { groupsToFilter: groupsToFilter ?? [] });
+  const selectGroup = useCallback(async (groupsToFilter?: string[], selectedGroupId?: string | null) => {
+    const result = await open(SearchAndSelectGroupDialog, { groupsToFilter: groupsToFilter ?? [], selectedGroupId });
 
     return result as Group | null;
   }, [open]);
@@ -164,8 +166,10 @@ const ConfirmDialogBase = ({ open, onClose, payload }: DialogProps<ConfirmOption
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{payload.title}</DialogTitle>
-          <DialogDescription>{payload.message}</DialogDescription>
+          <div className="flex flex-col gap-2">
+            <DialogTitle>{payload.title}</DialogTitle>
+            <DialogDescription>{payload.message}</DialogDescription>
+          </div>
         </DialogHeader>
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onClose(false)}>

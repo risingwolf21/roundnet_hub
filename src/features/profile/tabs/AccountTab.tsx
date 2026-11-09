@@ -1,16 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
-import { Image, Trash, UploadCloud } from "lucide-react";
-import { lazy, useRef, useState } from "react";
+import { Camera, Image, LogOut, Trash } from "lucide-react";
+import { lazy, ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -20,6 +18,13 @@ const LANGUAGES = [
   { value: 'de', label: 'Deutsch' },
   { value: 'en', label: 'English' },
 ];
+
+const Section = ({ title, children }: { title: string; children: ReactNode }) => (
+  <section className="flex flex-col gap-4 rounded-xl border bg-card p-4">
+    <h2 className="text-sm font-semibold">{title}</h2>
+    {children}
+  </section>
+);
 
 export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; handleSignOut: () => void }) => {
   const { t, i18n } = useTranslation();
@@ -87,106 +92,99 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
   };
 
   return (
-    <>
-      <CardContent className="px-4">
-        <div className='space-y-6 lg:col-span-2'>
-          <div className='mb-6 w-full space-y-2'>
-            <Label className="mb-4">{t('profile.account.avatar')}</Label>
-            <div className='flex items-center gap-4'>
-              <div
-                role='button'
-                tabIndex={0}
-                aria-label={t('profile.account.uploadAvatar')}
-                onClick={openPicker}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openPicker();
+    <div className="flex flex-col gap-3">
+      <Section title={t('profile.account.sectionProfile')}>
+        <div className='flex items-center gap-4'>
+          <button
+            type='button'
+            aria-label={t('profile.account.uploadAvatar')}
+            onClick={openPicker}
+            className='relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-dashed bg-muted'
+          >
+            {croppedImage ? (
+              <img src={croppedImage} alt={t('profile.account.avatarPreview')} className='size-full object-cover' />
+            ) : currentUser.avatarUrl ? (
+              <img src={currentUser.avatarUrl} alt={t('profile.account.avatar')} className='size-full object-cover' />
+            ) : (
+              <Image className="text-muted-foreground" />
+            )}
+            <span className="absolute inset-x-0 bottom-0 flex justify-center bg-foreground/60 py-0.5 text-background">
+              <Camera className="size-3.5" />
+            </span>
+          </button>
+          <div className='flex items-center gap-2'>
+            <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onSelect} />
+            <Button type='button' variant='outline' onClick={openPicker}>
+              {t('profile.account.uploadAvatar')}
+            </Button>
+            {(croppedImage || currentUser.avatarUrl) && (
+              <Button
+                type='button'
+                variant='ghost'
+                size="icon-lg"
+                aria-label={t('profile.account.removeAvatar')}
+                onClick={() => {
+                  if (croppedImage) {
+                    setCroppedImage(null);
+                  } else {
+                    setCurrentUser({ ...currentUser, avatarUrl: null });
                   }
                 }}
-                className='flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed hover:opacity-95'
+                className='text-destructive'
               >
-                {croppedImage ? (
-                  <img src={croppedImage} alt={t('profile.account.avatarPreview')} className='h-full w-full object-cover' />
-                ) : currentUser.avatarUrl ? (
-                  <img src={currentUser.avatarUrl} alt={t('profile.account.avatar')} className='h-full w-full object-cover' />
-                ) : (
-                  <Image />
-                )}
-              </div>
-              <div className='flex items-center gap-2'>
-                <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={onSelect} />
-                <Button type='button' variant='outline' onClick={openPicker} className='flex items-center gap-2'>
-                  <UploadCloud />
-                  {t('profile.account.uploadAvatar')}
-                </Button>
-                <Button
-                  type='button'
-                  variant='ghost'
-                  hidden={!croppedImage && !currentUser.avatarUrl}
-                  onClick={() => {
-                    if (croppedImage) {
-                      setCroppedImage(null);
-                    } else {
-                      setCurrentUser({ ...currentUser, avatarUrl: null });
-                    }
-                  }}
-                  className='text-destructive'
-                >
-                  <Trash />
-                </Button>
-              </div>
-            </div>
+                <Trash />
+              </Button>
+            )}
           </div>
-          <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-            <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-display-name'>{t('profile.account.displayName')}</Label>
-              <Input id='multi-step-personal-info-display-name' value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            </div>
-            <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-first-name'>{t('profile.account.firstName')}</Label>
-              <Input id='multi-step-personal-info-first-name' placeholder={t('profile.account.firstNamePlaceholder')} value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-last-name'>{t('profile.account.lastName')}</Label>
-              <Input id='multi-step-personal-info-last-name' placeholder={t('profile.account.lastNamePlaceholder')} value={surname} onChange={(e) => setSurname(e.target.value)} />
-            </div>
-            <div className='flex flex-col items-start gap-2'>
-              <Label htmlFor='multi-step-personal-info-language'>{t('profile.account.language')}</Label>
-              {/* Languages are shown by their own name so everyone can find theirs. */}
-              <Select
-                id='multi-step-personal-info-language'
-                items={LANGUAGES}
-                value={language}
-                onValueChange={(value) => value && setLanguage(value as 'de' | 'en')}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {LANGUAGES.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className='flex justify-end'>
-            <Button type='submit' className='max-sm:w-full' disabled={loadingSave} onClick={submit}>
-              {loadingSave && <Spinner />}
-              {t('profile.account.saveChanges')}
-            </Button>
-          </div>
-          <Separator />
-          <Button variant={"destructive"} className='max-sm:w-full' onClick={handleSignOut}>
-            {t('profile.account.logout')}
-          </Button>
         </div>
-      </CardContent>
-    </>
+
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+          <div className='flex flex-col items-start gap-2 sm:col-span-2'>
+            <Label htmlFor='multi-step-personal-info-display-name'>{t('profile.account.displayName')}</Label>
+            <Input id='multi-step-personal-info-display-name' value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          </div>
+          <div className='flex flex-col items-start gap-2'>
+            <Label htmlFor='multi-step-personal-info-first-name'>{t('profile.account.firstName')}</Label>
+            <Input id='multi-step-personal-info-first-name' placeholder={t('profile.account.firstNamePlaceholder')} value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className='flex flex-col items-start gap-2'>
+            <Label htmlFor='multi-step-personal-info-last-name'>{t('profile.account.lastName')}</Label>
+            <Input id='multi-step-personal-info-last-name' placeholder={t('profile.account.lastNamePlaceholder')} value={surname} onChange={(e) => setSurname(e.target.value)} />
+          </div>
+          <div className='flex flex-col items-start gap-2 sm:col-span-2'>
+            <Label htmlFor='multi-step-personal-info-language'>{t('profile.account.language')}</Label>
+            {/* Languages are shown by their own name so everyone can find theirs. */}
+            <Select
+              id='multi-step-personal-info-language'
+              items={LANGUAGES}
+              value={language}
+              onValueChange={(value) => value && setLanguage(value as 'de' | 'en')}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {LANGUAGES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Button type='submit' className='max-sm:w-full sm:self-end' disabled={loadingSave} onClick={submit}>
+          {loadingSave && <Spinner />}
+          {t('profile.account.saveChanges')}
+        </Button>
+      </Section>
+
+      <Button variant="outline" className='max-sm:w-full' onClick={handleSignOut}>
+        <LogOut />
+        {t('profile.account.logout')}
+      </Button>
+    </div>
   );
 };

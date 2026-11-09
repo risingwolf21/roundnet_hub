@@ -59,6 +59,7 @@ Purpose: Give Copilot sessions the essential commands, architecture overview, an
 - Tests:
   - Unit tests in `src/tests/` use Testing Library + Vitest.
   - E2E tests in `e2e/` use Jest + selenium-webdriver; the helper `e2e/config/driver.ts` centralizes browser setup.
+- UI design: before building or changing any screen, dialog or form, read and follow `docs/DESIGN_PHILOSOPHY.md` (reference implementations are listed at its end).
 - CI/Deployment: GitHub Actions build both tenants and deploy to Firebase. Source maps uploaded to Sentry on deploy.
 
 ---

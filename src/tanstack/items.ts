@@ -38,9 +38,9 @@ export const useHandoverKeyMutation = () =>
       const previousItemHistory = queryClient.getQueryData<FullItemHistory[]>(itemKeys.history(keyHolder.id));
       if (previousItemHolders) {
         const newItemHolders = previousItemHolders.map((x) => {
-          if (x.full_current_holder?.id === keyHolder.full_current_holder?.id) {
+          if (x.id === keyHolder.id) {
             return {
-              ...keyHolder,
+              ...x,
               full_current_holder: user,
               current_holder: user.id,
               lastUpdate: formatDateToDatabase(new Date()),

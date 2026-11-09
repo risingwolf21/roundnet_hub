@@ -1,4 +1,4 @@
-import { isBefore } from 'date-fns';
+import { isAfter, isBefore } from 'date-fns';
 import { EventTable, History } from 'types/supabase';
 import { Tables } from './helpers';
 import { Database, Enums } from './supabase-generated.types';
@@ -47,6 +47,12 @@ export type EventWithGroup = EventTable & {
 export function answerDeadlineExpired(x: EventsUserView) {
   if (!x.answerDeadline) return false;
   return isBefore(x.answerDeadline, Date.now());
+}
+
+/** Attendance is not open yet: the event defines a start of the answer period that is still ahead. */
+export function answerNotOpenYet(x: Pick<EventsUserView, 'answerStart'>) {
+  if (!x.answerStart) return false;
+  return isAfter(x.answerStart, Date.now());
 }
 
 export function eventInThePast(x: EventsUserView | EventWithGroup) {
@@ -101,6 +107,7 @@ export type FullGroupFeature = Tables<'group_features'> & {
 
 export type EventsUserView = {
   answerDeadline: string | null;
+  answerStart: string | null;
   attending_count: number | null;
   created_at: string;
   declined_count: number | null;

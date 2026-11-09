@@ -67,7 +67,7 @@ const updateEventEverywhere = (eventId: string, updater: (event: EventsUserView)
   queryClient.setQueryData<EventsUserView | null>(eventKeys.event(eventId), (old) => (old ? updater(old) : old));
 };
 
-const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline'] as const;
+const EVENT_DATE_FIELDS = ['startingDateTime', 'endDateTime', 'meetingDateTime', 'answerDeadline', 'answerStart'] as const;
 
 /**
  * Converts a table update into a shape that is safe to merge into `EventsUserView` cache entries:
