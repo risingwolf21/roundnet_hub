@@ -139,7 +139,7 @@
     "jest": "30.2.0",
     "jsdom": "27.2.0",
     "msw": "2.12.3",
-    "nyc": "17.1.0",
+    "nyc": "18.0.0",
     "playwright": "^1.59.1",
     "prettier": "3.4.2",
     "rollup-plugin-visualizer": "6.0.5",
