@@ -959,7 +959,15 @@
       "loadErrorDescription": "Die Schlüssel konnten nicht geladen werden. Bitte versuche es später erneut.",
       "empty": "Keine Schlüssel gefunden",
       "emptyDescription": "Es sind aktuell keine Schlüssel im System hinterlegt.",
-      "noHolder": "Nicht vergeben"
+      "noHolder": "Nicht vergeben",
+      "mine": "Bei dir",
+      "unassigned": "Ohne Halter",
+      "others": "Bei anderen",
+      "you": "Du",
+      "retry": "Erneut versuchen",
+      "emptyAdminHint": "Lege über + den ersten Schlüssel an.",
+      "noHandoverPermission": "Du kannst sehen, wer welchen Schlüssel hat. Übergaben eintragen dürfen nur Personen mit Schlüsselrechten.",
+      "handoverSuccess": "Übergabe eingetragen"
     },
     "dialog": {
       "nameTooShort": "Der Schlüsselname ist zu kurz!",

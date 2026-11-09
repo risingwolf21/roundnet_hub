@@ -95,10 +95,8 @@ test.describe('Turnierkosten & Schlüssel', () => {
   test('a key manager renames a key', { annotation: flow('keys.add') }, async ({ page }) => {
     await signIn(page, MANAGER.email);
     await page.goto('/keys');
-    // Edit mode (pencil in the app bar), then the key's own pencil.
-    await page.locator('button:has(svg.lucide-pencil)').first().click();
-    const row = page.locator('[data-slot="item"]', { has: page.getByText(KEY, { exact: true }) });
-    await row.locator('button:has(svg.lucide-pencil)').click();
+    // Key managers open the editor by tapping the key's row.
+    await page.getByText(KEY, { exact: true }).click();
     const renamed = `${KEY} neu`;
     await page.getByRole('dialog').locator('#item-name').first().fill(renamed);
     await page.getByRole('dialog').getByRole('button', { name: 'Speichern' }).click();
@@ -110,7 +108,8 @@ test.describe('Turnierkosten & Schlüssel', () => {
     await page.goto('/keys');
     await expect(page.getByText(KEY, { exact: false }).first()).toBeVisible();
     await expect(page.locator('button:has(svg.lucide-plus)')).toHaveCount(0);
-    await expect(page.locator('button:has(svg.lucide-pencil)')).toHaveCount(0);
+    await page.getByText(KEY, { exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
   test.afterAll(async () => {

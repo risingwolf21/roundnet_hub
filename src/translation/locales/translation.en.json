@@ -959,7 +959,15 @@
       "loadErrorDescription": "Could not load keys. Please try again later.",
       "empty": "No keys found",
       "emptyDescription": "No keys are currently registered in the system.",
-      "noHolder": "Unassigned"
+      "noHolder": "Unassigned",
+      "mine": "With you",
+      "unassigned": "No holder",
+      "others": "With others",
+      "you": "You",
+      "retry": "Try again",
+      "emptyAdminHint": "Add the first key with +.",
+      "noHandoverPermission": "You can see who holds which key. Only people with key rights can record handovers.",
+      "handoverSuccess": "Handover recorded"
     },
     "dialog": {
       "nameTooShort": "The key name is too short!",
