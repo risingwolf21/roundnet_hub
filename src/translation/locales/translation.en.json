@@ -376,7 +376,9 @@
       "answerNeeded": "Answer needed",
       "deadlinePassed": "Deadline passed",
       "full": "Full",
-      "opensOn": "Opens {{date}}"
+      "opensOn": "Opens {{date}}",
+      "attending": "Attending",
+      "notAttending": "Not attending"
     },
     "replyTo": "Replying to @{{name}}",
     "reply": "Reply",

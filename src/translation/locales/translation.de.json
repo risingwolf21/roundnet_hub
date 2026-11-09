@@ -376,7 +376,9 @@
       "answerNeeded": "Antwort fehlt",
       "deadlinePassed": "Frist abgelaufen",
       "full": "Voll",
-      "opensOn": "Anmeldung ab {{date}}"
+      "opensOn": "Anmeldung ab {{date}}",
+      "attending": "Dabei",
+      "notAttending": "Nicht dabei"
     },
     "replyTo": "Antworte auf @{{name}}",
     "reply": "Antworten",

@@ -98,9 +98,9 @@ If you need a pattern that more than one screen will use (e.g. a section card), 
 - Show every user what they may see; show extra detail (declined counts, stock, hidden/private flags, open requests) only behind `Has perm=…`. RLS still decides the data; the UI only hides what would be noise.
 - If an action is unavailable because of a missing permission, explain why instead of hiding it silently.
 - Each list needs three states: loading, error, and an empty state that says what to do next.
-- Event rows are a mobile-first grid, not a row of pills: title (2 lines) and time on the left, attend/decline buttons on the right, the **location on its own full-width line** so the name is readable, and a last optional line for the group and exceptions. Show chips only for exceptions (cancelled, full, answer deadline). The coloured bar on the left carries the user's answer.
-- Every event row starts with a date tile (weekday, day, month in the group colour, like the event page header), then title, time and location with their icons, and the attend/decline buttons on the right. Lists still group events by day ("Today · Thursday, 5 June").
-- On a wide container (`@3xl`, 48 rem) the same card turns into a table-like row: time, title, location, group and count, actions. Do this with container queries on the `Item` (`@container`) and `@3xl:` classes, not viewport breakpoints, so it works in narrow side panels too. Cap list pages at `max-w-5xl`.
+- Event rows: a date tile (weekday, day, month in the group colour, like the event page header), then title (2 lines), time and location with their icons, and one optional hint line (full, answer deadline, answer opens, deadline passed). Lists still group events by day ("Today · Thursday, 5 June").
+- The right side shows the attend/decline buttons **only while the user has not answered**. Once answered it shows the answer as a pill ("Dabei", "Nicht dabei", "Wartet", "Trainer"); changing it happens on the event page. Unanswered rows are then the only rows with buttons, so they stand out. The coloured bar on the left carries the answer.
+- Group, attendee counts and admin details live on the event page, not in the row. The same row is used at every width; cap list pages at `max-w-5xl`.
 
 ## Detail screens
 
