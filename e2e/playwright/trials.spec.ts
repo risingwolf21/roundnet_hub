@@ -66,12 +66,11 @@ test.describe('Probetraining', () => {
     // Trial rows show the remaining trial time.
     await expect(page.getByText(/noch \d+ Tage?/).first()).toBeVisible();
 
-    const row = page.locator('div', { has: page.getByText(TRIAL_A.name, { exact: true }) })
-      .filter({ has: page.locator('button:has(svg.lucide-circle-fading-arrow-up)') }).last();
-    await row.locator('button:has(svg.lucide-circle-fading-arrow-up)').click();
-    await page.getByRole('button', { name: 'Akzeptieren' }).click();
+    await page.getByRole('button', { name: `Aktionen für ${TRIAL_A.name}` }).click();
+    await page.getByRole('menuitem', { name: 'Als Vollmitglied aufnehmen' }).click();
+    await page.getByRole('button', { name: 'Bestätigen' }).click();
 
-    await expect(page.getByText('Anfrage erfolgreich akzeptiert.')).toBeVisible();
+    await expect(page.getByText('Rolle aktualisiert.')).toBeVisible();
     await expect.poll(() => roleOf(ids.TRIAL_A)).toBe('user');
   });
 
@@ -88,6 +87,7 @@ test.describe('Probetraining', () => {
     // The admin now sees them as an open join request again.
     await signIn(page, ADMIN.email);
     await page.goto(`/groups/${GROUP}`);
+    await page.getByRole('button', { name: 'Prüfen' }).click();
     await expect(page.getByText('Anfrage zum Beitritt')).toBeVisible();
     await expect(page.getByText(TRIAL_B.name, { exact: true })).toBeVisible();
   });

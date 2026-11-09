@@ -101,6 +101,7 @@ test.describe('Benachrichtigungen', () => {
     await page.goto('/notifications');
     await expect(page.getByText(N_PLAIN)).toBeVisible();
     await page.locator('button:has(svg.lucide-trash-2)').click();
+    await page.getByRole('button', { name: 'Alle löschen' }).click();
     await expect(page.getByText(N_PLAIN)).toHaveCount(0);
     await expect.poll(async () => (await notifications()).length).toBe(0);
   });

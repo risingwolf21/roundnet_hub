@@ -54,7 +54,7 @@ test.describe('Spiele', () => {
   test('a player enters a 2v2 match with its sets', { annotation: flow('games.report') }, async ({ page }) => {
     await signIn(page, P.ME.email);
     await page.goto('/matches/list');
-    await page.locator('div.fixed.right-6 button').click();
+    await page.getByRole('button', { name: 'Spiel eintragen' }).click();
     const dialog = page.getByRole('dialog', { name: 'Spiel erstellen' });
     await expect(dialog).toBeVisible();
     // Slot 0 (Team A, player 1) is the signed-in player.

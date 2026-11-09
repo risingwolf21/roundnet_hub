@@ -67,9 +67,9 @@ test.describe('Gruppenverwaltung', () => {
     await signIn(page, OWNER.email);
     await page.goto(`/groups/${groupId}`);
     await page.locator('div.fixed.right-6 button').click();
-    await page.getByRole('alertdialog').getByRole('searchbox').fill(NEWBIE.name.split(' ').slice(0, 2).join(' '));
-    await page.getByText(NEWBIE.name, { exact: true }).click();
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await page.getByRole('dialog').getByRole('searchbox').fill(NEWBIE.name.split(' ').slice(0, 2).join(' '));
+    await page.getByRole('dialog').getByText(NEWBIE.name, { exact: true }).click();
+    await page.getByRole('button', { name: '1 Spieler hinzufügen' }).click();
 
     await expect.poll(() => roleOf(ids.NEWBIE)).toBe('user');
     await expect(memberRow(page, NEWBIE.name)).toBeVisible();
@@ -78,13 +78,15 @@ test.describe('Gruppenverwaltung', () => {
   test('the admin promotes a member to admin and back', { annotation: flow('groups.role') }, async ({ page }) => {
     await signIn(page, OWNER.email);
     await page.goto(`/groups/${groupId}`);
-    await memberRow(page, NEWBIE.name).locator('button:has(svg.lucide-shield-check)').click();
+    await memberRow(page, NEWBIE.name).getByRole('button', { name: `Aktionen für ${NEWBIE.name}` }).click();
+    await page.getByRole('menuitem', { name: 'Zum Admin machen' }).click();
     await page.getByRole('button', { name: 'Bestätigen' }).click();
     await expect.poll(() => roleOf(ids.NEWBIE)).toBe('admin');
 
-    // Admin rows carry a demote button (back to a regular member).
+    // Admins can be demoted back to a regular member.
     await page.reload();
-    await memberRow(page, NEWBIE.name).locator('button:has(svg.lucide-move-down)').click();
+    await memberRow(page, NEWBIE.name).getByRole('button', { name: `Aktionen für ${NEWBIE.name}` }).click();
+    await page.getByRole('menuitem', { name: 'Admin-Rolle entfernen' }).click();
     await page.getByRole('button', { name: 'Bestätigen' }).click();
     await expect.poll(() => roleOf(ids.NEWBIE)).toBe('user');
   });
@@ -96,6 +98,8 @@ test.describe('Gruppenverwaltung', () => {
     ]).throwOnError();
     await signIn(page, OWNER.email);
     await page.goto(`/groups/${groupId}`);
+    // Join requests are listed under their own filter.
+    await page.getByRole('radio', { name: /^Anfragen/ }).click();
 
     await memberRow(page, ASKER.name).getByRole('button', { name: 'Bearbeiten' }).click();
     await page.getByRole('menuitem', { name: 'Akzeptieren' }).click();
@@ -111,8 +115,9 @@ test.describe('Gruppenverwaltung', () => {
   test('the admin removes a member', { annotation: flow('groups.remove') }, async ({ page }) => {
     await signIn(page, OWNER.email);
     await page.goto(`/groups/${groupId}`);
-    // Selecting works by tapping the avatar; a removal bar appears for the selection.
-    await memberRow(page, ASKER.name).locator('[data-slot="avatar"]').click();
+    // "Auswählen" starts the selection; a removal bar appears for the selected rows.
+    await page.getByRole('button', { name: 'Auswählen' }).click();
+    await memberRow(page, ASKER.name).click();
     await page.getByRole('button', { name: 'Entfernen' }).click();
     await page.getByRole('button', { name: 'Entfernen' }).last().click();
     await expect.poll(() => roleOf(ids.ASKER)).toBeNull();

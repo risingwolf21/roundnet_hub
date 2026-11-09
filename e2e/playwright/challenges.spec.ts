@@ -87,7 +87,7 @@ test.describe('Challenges', () => {
     }
     await signIn(page, HOST.email);
     await page.goto(`/challenges/${runningId}`);
-    await page.getByRole('tab', { name: 'Leaderboard' }).click();
+    await page.getByRole('radio', { name: 'Leaderboard' }).click();
     await expect(page.getByText(ATHLETE.name).first()).toBeVisible();
   });
 

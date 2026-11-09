@@ -28,7 +28,7 @@ const gapsInDays = (rows: { startingDateTime: string }[]) =>
 async function openCreate(page: Page) {
   await page.goto('/training/list');
   await page.locator('button:has(svg.lucide-plus)').click();
-  await expect(page.getByText('Event erstellen')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Event erstellen' })).toBeVisible();
 }
 
 async function createSeries(page: Page, title: string, recurrence: string) {
@@ -37,9 +37,8 @@ async function createSeries(page: Page, title: string, recurrence: string) {
   await page.locator('#event-description').fill('Serie aus dem E2E-Test');
   await page.getByText('Keine Gruppe gewählt').click();
   await page.getByText(GROUP_NAME, { exact: true }).click();
-  await page.getByRole('dialog').locator('button:has(svg.lucide-calendar-sync)').click();
-  await page.getByText(recurrence, { exact: true }).click();
-  await page.getByRole('button', { name: 'Speichern' }).click();
+  await page.getByRole('dialog').getByRole('radio', { name: recurrence }).click();
+  await page.getByRole('button', { name: 'Event erstellen' }).click();
   await expect(page.getByText('Serie wurde erstellt')).toBeVisible();
 }
 
@@ -60,11 +59,13 @@ test.describe('Events – Prüfungen & Serien', () => {
   test('the event form refuses incomplete events', { annotation: flow('events.validation') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openCreate(page);
-    const save = page.getByRole('button', { name: 'Speichern' });
+    const save = page.getByRole('button', { name: 'Event erstellen' });
+    const toast = (text: string) => page.locator('[data-sonner-toast]', { hasText: text });
 
     await save.click();
-    const noGroup = page.getByText('Es ist keine Gruppe für dieses Event ausgewählt!');
+    const noGroup = toast('Es ist keine Gruppe für dieses Event ausgewählt!');
     await expect(noGroup).toBeVisible();
+    await expect(page.locator('#event-title')).toHaveAttribute('aria-invalid', 'true');
     // The error toast sits over the save button until it fades out.
     await expect(noGroup).toBeHidden({ timeout: 15_000 });
 
@@ -72,16 +73,17 @@ test.describe('Events – Prüfungen & Serien', () => {
     await page.getByText(GROUP_NAME, { exact: true }).click();
     await page.locator('#event-title').fill('Kurz');
     await save.click();
-    const tooShort = page.getByText('Der Titel des Events muss aus mindestens 6 Zeichen bestehen');
+    const tooShort = toast('Der Titel des Events muss aus mindestens 6 Zeichen bestehen');
     await expect(tooShort).toBeVisible();
     await expect(tooShort).toBeHidden({ timeout: 15_000 });
 
     await page.locator('#event-title').fill(`E2E Ohne Beschreibung ${stamp}`);
     await save.click();
-    await expect(page.getByText('Die Beschreibung des Events darf nicht leer sein')).toBeVisible();
+    await expect(toast('Die Beschreibung des Events darf nicht leer sein')).toBeVisible();
+    await expect(page.locator('#event-description')).toHaveAttribute('aria-invalid', 'true');
 
     // Nothing was stored, and the dialog is still open.
-    await expect(page.getByText('Event erstellen')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Event erstellen' })).toBeVisible();
     const { data } = await admin.from('events').select('id').eq('group', GROUP);
     expect(data ?? []).toEqual([]);
   });
@@ -147,8 +149,8 @@ test.describe('Events – Prüfungen & Serien', () => {
     await expect(mapDialog.getByPlaceholder('Beschreibung')).toHaveValue('Teststraße 1, 76131 Karlsruhe');
     await mapDialog.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByRole('dialog').getByText('E2E Sporthalle')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Speichern' })).toHaveCount(1); // map dialog closed
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByRole('button', { name: 'Speichern' })).toHaveCount(0); // map dialog closed
+    await page.getByRole('button', { name: 'Event erstellen' }).click();
 
     await expect(page.getByText('Event wurde erstellt')).toBeVisible();
     await expect.poll(async () => {

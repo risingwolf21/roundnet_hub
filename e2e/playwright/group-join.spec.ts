@@ -18,7 +18,7 @@ let approvalGroupId = '';
 
 /** The list row for a group, located by its exact name (rows have no role / test id). */
 function groupRow(page: Page, name: string) {
-  return page.locator('div.flex-row.items-center', { has: page.getByText(name, { exact: true }) }).last();
+  return page.locator('[data-slot="item"]', { has: page.getByText(name, { exact: true }) });
 }
 
 async function mapping(groupId: string) {

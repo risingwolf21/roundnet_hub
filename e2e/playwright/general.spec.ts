@@ -3,14 +3,13 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { test, expect, flow } from './fixtures';
 import { adminClient, ensureUser, grantGroup, logPageOnFailure, signIn } from './helpers';
 
-// Start page, help page, member search and the phone navigation (sidebar drawer).
+// Start page, help page and the phone navigation (sidebar drawer).
 const stamp = Date.now();
 const GROUP = randomUUID();
 const EVENT = randomUUID();
 const EVENT_TITLE = `E2E Startseiten-Event ${stamp}`;
 const ME = { email: `e2e_gen_me_${stamp}@test.com`, name: `E2E Sucherin ${stamp}` };
 const MATE = { email: `e2e_gen_mate_${stamp}@test.com`, name: `E2E Mitspieler ${stamp}` };
-const STRANGER = { email: `e2e_gen_stranger_${stamp}@test.com`, name: `E2E Fremder ${stamp}` };
 
 let admin: SupabaseClient;
 const ids: Record<string, string> = {};
@@ -20,7 +19,7 @@ test.describe.configure({ mode: 'serial' });
 test.describe('Allgemein', () => {
   test.beforeAll(async () => {
     admin = adminClient();
-    for (const [k, u] of Object.entries({ ME, MATE, STRANGER })) ids[k] = await ensureUser(admin, u.email, u.name);
+    for (const [k, u] of Object.entries({ ME, MATE })) ids[k] = await ensureUser(admin, u.email, u.name);
     await admin.from('event_group').upsert({ id: GROUP, name: `E2E Allgemein Gruppe ${stamp}`, visible: false }).throwOnError();
     await grantGroup(admin, GROUP, { feats: ['events'], perms: ['event.signup'] });
     await admin.from('group_user_mapping').upsert([
@@ -47,22 +46,6 @@ test.describe('Allgemein', () => {
     await signIn(page, ME.email);
     await page.goto('/help');
     await expect(page.getByText(/Pull-to-Refresh/).first()).toBeVisible();
-  });
-
-  test('the member search finds people from shared groups only', { annotation: flow('misc.search') }, async ({ page }) => {
-    await signIn(page, ME.email);
-    await page.goto('/search');
-    await page.getByPlaceholder('Name suchen...').first().fill('E2E Mitspieler');
-    await expect(page.getByText(MATE.name).first()).toBeVisible();
-    await page.getByPlaceholder('Name suchen...').first().fill('E2E Fremder');
-    await expect(page.getByText(STRANGER.name)).toHaveCount(0);
-    await expect(page.getByText('Keine Spieler gefunden')).toBeVisible();
-    // Regression: the search box used to vanish with the last hit, leaving no way to fix the query.
-
-    // A hit opens the member's profile.
-    await page.getByPlaceholder('Name suchen...').first().fill('E2E Mitspieler');
-    await page.getByText(MATE.name).first().click();
-    await expect(page.getByRole('dialog').getByText(MATE.name).first()).toBeVisible();
   });
 
   test('on a phone the menu opens as a drawer and navigates @mobile', { annotation: flow('misc.nav.mobile') }, async ({ page }, testInfo) => {

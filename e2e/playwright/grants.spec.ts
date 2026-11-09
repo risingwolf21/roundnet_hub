@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Page } from '@playwright/test';
 import { test, expect, flow } from './fixtures';
 import { adminClient, ensureUser, grantUser, logPageOnFailure, signIn } from './helpers';
 
@@ -17,6 +18,9 @@ const directGrants = async (userId: string) => {
   const { data } = await admin.from('user_direct_grants').select('kind, key').eq('user', userId);
   return ((data ?? []) as { kind: string; key: string }[]).map((g) => `${g.kind}:${g.key}`).sort();
 };
+
+/** The switch of one grant row; its label reads "<description> <key>". */
+const grantSwitch = (page: Page, key: string) => page.locator(`label[for="grant-${key}"]`).getByRole('switch');
 
 test.describe.configure({ mode: 'serial' });
 
@@ -52,10 +56,10 @@ test.describe('Rechte & Features', () => {
     await page.locator('button:has(svg.lucide-plus)').last().click();
     await page.getByText(TARGET.name, { exact: true }).click();
 
-    await expect(page.getByRole('dialog').getByText(`Benutzer "${TARGET.name}" bearbeiten`)).toBeVisible();
-    await page.getByRole('switch', { name: 'drinks', exact: true }).click();
-    await page.getByRole('switch', { name: 'drinks.purchase', exact: true }).click();
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByRole('dialog').getByRole('heading', { name: TARGET.name })).toBeVisible();
+    await grantSwitch(page, 'drinks').click();
+    await grantSwitch(page, 'drinks.purchase').click();
+    await page.getByRole('button', { name: /^Speichern/ }).click();
 
     await expect.poll(() => directGrants(ids.TARGET)).toEqual(['feat:drinks', 'perm:drinks.purchase']);
 
@@ -70,8 +74,8 @@ test.describe('Rechte & Features', () => {
     await page.goto('/admin/grants');
     await page.getByRole('tab', { name: 'Benutzer' }).click();
     await page.getByText(TARGET.name).first().click();
-    await page.getByRole('switch', { name: 'drinks.purchase', exact: true }).click();
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await grantSwitch(page, 'drinks.purchase').click();
+    await page.getByRole('button', { name: /^Speichern/ }).click();
     await expect.poll(() => directGrants(ids.TARGET)).toEqual(['feat:drinks']);
   });
 
@@ -80,8 +84,8 @@ test.describe('Rechte & Features', () => {
     await page.goto('/admin/grants');
     await page.getByRole('tab', { name: 'Gruppen' }).click();
     await page.getByText(GROUP_NAME).first().click();
-    await page.getByRole('switch', { name: 'drinks', exact: true }).click();
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await grantSwitch(page, 'drinks').click();
+    await page.getByRole('button', { name: /^Speichern/ }).click();
     await expect.poll(async () => {
       const { data } = await admin.from('group_features').select('feature').eq('group', GROUP);
       return (data ?? []).map((r) => (r as { feature: string }).feature);

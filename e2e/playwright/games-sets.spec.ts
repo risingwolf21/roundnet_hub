@@ -50,8 +50,7 @@ test.describe('Sätze korrigieren', () => {
   test('a participant corrects a set and adds another', { annotation: flow('games.sets') }, async ({ page }) => {
     await signIn(page, P.ME.email);
     await page.goto(`/matches/${matchId}`);
-    const setsCard = page.locator('[data-slot="item"]', { has: page.getByText('Sätze', { exact: true }) }).first();
-    await setsCard.locator('button:has(svg.lucide-pencil)').click();
+    await page.getByRole('button', { name: 'Ergebnis bearbeiten' }).click();
 
     const dialog = page.getByRole('dialog', { name: 'Sätze bearbeiten' });
     const scores = dialog.locator('input[type="number"]');
@@ -69,8 +68,7 @@ test.describe('Sätze korrigieren', () => {
     await signIn(page, P.OUTSIDER.email);
     await page.goto(`/matches/${matchId}`);
     await expect(page.getByText('Sätze', { exact: true })).toBeVisible();
-    const setsCard = page.locator('[data-slot="item"]', { has: page.getByText('Sätze', { exact: true }) }).first();
-    await expect(setsCard.locator('button:has(svg.lucide-pencil)')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Ergebnis bearbeiten' })).toHaveCount(0);
   });
 
   test.afterAll(async () => {
