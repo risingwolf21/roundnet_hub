@@ -97,9 +97,9 @@ test.describe('Spiele', () => {
   test('the leaderboard lists the players and opens a game history', { annotation: flow('games.leaderboard', 'games.history') }, async ({ page }) => {
     await signIn(page, P.ME.email);
     await page.goto('/matches/leaderboard');
-    const row = page.locator('[data-slot="item"]', { hasText: P.ME.name }).first();
-    await expect(row).toBeVisible();
-    await row.getByRole('button').first().click();
+    await expect(page.getByText(P.ME.name).first()).toBeVisible();
+    // The signed-in player's own rank card opens their game history.
+    await page.getByText('Dein Rang').click();
     await expect(page.getByRole('dialog').locator('[data-slot="item"]', { hasText: String(stamp) }).first()).toBeVisible();
   });
 
@@ -123,7 +123,7 @@ test.describe('Spiele', () => {
     await signIn(page, P.ME.email);
     await page.goto(`/training/event/${EVENT}`);
     await page.getByRole('tab', { name: /Spiele \(0\)/ }).click();
-    await expect(page.getByText('Noch keine Spiele.', { exact: false })).toBeVisible();
+    await expect(page.getByText('Noch keine Spiele', { exact: true })).toBeVisible();
     await page.getByRole('tabpanel').getByRole('button').first().click();
     await pickPlayer(page, 1, P.OPP1.name);
     await pickPlayer(page, 2, P.MATE.name);
