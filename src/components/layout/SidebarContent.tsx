@@ -4,7 +4,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ClipboardList, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Package, Receipt, RefreshCcw, Search, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ClipboardList, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Package, Receipt, RefreshCcw, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -140,11 +140,6 @@ export function AppSidebar() {
     {
       key: "mainList",
       children: [
-        {
-          title: t('navigation.search'),
-          icon: <Search />,
-          path: 'search',
-        },
         {
           title: t('navigation.costs'),
           icon: <Receipt />,

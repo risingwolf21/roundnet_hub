@@ -98,10 +98,6 @@ const createRouter = (user: UserWithGroups | null) =>
               element: <Pages.NotificationScreen />,
             },
             {
-              path: '/search',
-              element: <Pages.UserSearchPage />,
-            },
-            {
               path: '/costs',
               element: (
                 <Has feat={'costs'} fallback={<Pages.FeatureLockedRouteElement />}>
