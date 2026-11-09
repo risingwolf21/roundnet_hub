@@ -36,7 +36,7 @@ async function fillBasics(page: Page, title: string) {
 async function openCreateDialog(page: Page) {
   await page.goto('/training/list');
   await page.locator('button:has(svg.lucide-plus)').click();
-  await expect(page.getByText('Event erstellen')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Event erstellen' })).toBeVisible();
 }
 
 async function openEventMenu(page: Page, eventId: string) {
@@ -65,7 +65,7 @@ test.describe('Events verwalten', () => {
     await signIn(page, EMAIL);
     await openCreateDialog(page);
     await fillBasics(page, title);
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    await page.getByRole('button', { name: 'Event erstellen' }).click();
 
     await expect(page.getByText('Event wurde erstellt')).toBeVisible();
     await expect.poll(async () => (await eventsTitled(title)).length).toBe(1);
@@ -101,7 +101,7 @@ test.describe('Events verwalten', () => {
     await page.getByRole('menuitem', { name: 'Absagen' }).click();
     await page.getByRole('button', { name: 'Bestätigen' }).click();
 
-    await expect(page.getByText('abgesagt')).toBeVisible();
+    await expect(page.getByText('abgesagt').first()).toBeVisible();
     await expect.poll(async () => (await eventsTitled(SINGLE_EDITED))[0]?.isCancelled).toBe(true);
 
     await page.locator('button:has(svg.lucide-ellipsis-vertical)').click();
@@ -125,10 +125,10 @@ test.describe('Events verwalten', () => {
     await signIn(page, EMAIL);
     await openCreateDialog(page);
     await fillBasics(page, SERIES);
-    await page.getByRole('dialog').locator('button:has(svg.lucide-calendar-sync)').click();
-    await page.getByText('Wöchentlich', { exact: true }).click();
-    await expect(page.locator('[data-slot="field-description"]', { hasText: 'Wöchentlich' })).toBeVisible();
-    await page.getByRole('button', { name: 'Speichern' }).click();
+    const weekly = page.getByRole('dialog').getByRole('radio', { name: 'Wöchentlich' });
+    await weekly.click();
+    await expect(weekly).toHaveAttribute('aria-checked', 'true');
+    await page.getByRole('button', { name: 'Event erstellen' }).click();
 
     await expect(page.getByText('Serie wurde erstellt')).toBeVisible();
     // The expander materialises the next weeks (60-day horizon) — all linked to one series.

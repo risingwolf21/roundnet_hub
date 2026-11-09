@@ -108,7 +108,7 @@ test.describe('Turnierkosten & Schlüssel', () => {
     await page.goto('/keys');
     await expect(page.getByText(KEY, { exact: false }).first()).toBeVisible();
     await expect(page.locator('button:has(svg.lucide-plus)')).toHaveCount(0);
-    await page.getByText(KEY, { exact: true }).click();
+    await page.getByText(KEY).first().click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
