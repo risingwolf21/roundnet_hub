@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1",
+    "supabase": "npm:@supabase/supabase-js@2",
+    "cheerio": "https://esm.sh/cheerio@1.0.0-rc.12"
+  }
+}

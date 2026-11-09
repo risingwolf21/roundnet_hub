@@ -1,0 +1,105 @@
+// src/features/grants/useUserGrantsQuery.ts
+import { Feature, Permission } from '@/generated/supabase-types';
+import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
+import { authKeys, useCurrentUserGrants } from '@/tanstack/auth';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+
+export type GrantsState = { perm: string[]; feat: string[] };
+export type Mode = 'all' | 'any';
+
+const empty: GrantsState = { perm: [], feat: [] };
+
+export function useUserGrantsQuery(userId: string | undefined | null) {
+  const q = useCurrentUserGrants(userId);
+
+  const timerRef = useRef<number | null>(null);
+  const invalidateSoon = useCallback(() => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(userId) });
+      timerRef.current = null;
+    }, 150);
+  }, [userId]);
+
+  useEffect(() => {
+    const subs: ReturnType<typeof supabase.channel>[] = [];
+    let mounted = true;
+
+    (async () => {
+      const { data: me } = await supabase.auth.getUser();
+      const uid = me?.user?.id ?? null;
+      if (!mounted || !uid) return;
+
+      subs.push(
+        supabase
+          .channel(`rt:udg:${uid}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'user_direct_grants', filter: `user=eq.${uid}` },
+            invalidateSoon
+          )
+          .subscribe()
+      );
+      subs.push(
+        supabase
+          .channel(`rt:gum:${uid}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'group_user_mapping', filter: `user=eq.${uid}` },
+            invalidateSoon
+          )
+          .subscribe()
+      );
+
+      subs.push(
+        supabase
+          .channel(`rt:gp`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'group_permissions' }, invalidateSoon)
+          .subscribe()
+      );
+      subs.push(
+        supabase
+          .channel(`rt:gf`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'group_features' }, invalidateSoon)
+          .subscribe()
+      );
+    })();
+
+    return () => {
+      mounted = false;
+      subs.forEach((c) => supabase.removeChannel(c));
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [userId]);
+
+  const toArray = (v?: Permission | Permission[] | Feature | Feature[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  const ensureArray = (list: any): string[] => Array.isArray(list) ? list : [];
+
+  const check = (need: string[], list: any, mode: Mode) => {
+    const safeList = ensureArray(list);
+
+    if (need.length === 0) return true;
+
+    return mode === 'any'
+      ? need.some((k) => safeList.includes(k))
+      : need.every((k) => safeList.includes(k));
+  };
+
+  const has = useMemo(() => {
+    const hasPerm = (k: Permission | Permission[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
+    const hasFeat = (k: Feature | Feature[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
+    return { hasPerm, hasFeat };
+  }, [q.data]);
+
+  return {
+    isEmpty: (q.data?.perm.length === 0) && (q.data?.feat.length === 0),
+    refetchUserGrants: q.refetch,
+    loading: q.isLoading,
+    grants: q.data ?? empty,
+    ...has,
+  };
+}

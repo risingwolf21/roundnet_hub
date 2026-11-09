@@ -1,0 +1,70 @@
+{
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.github",
+    "editor.formatOnSave": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": [
+    "^@mui/[^/]+$"
+  ],
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.unstable": true,
+  "deno.importMap": "supabase/functions/import_map.json",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "emmet.showExpandedAbbreviation": "never",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "files.associations": {
+    "*.action.js": "javascriptreact",
+    "*.js": "javascriptreact",
+    "*.jsx": "javascriptreact",
+    "*.react.js": "javascriptreact",
+    "*.reducer.js": "javascriptreact",
+    "*.stories.js": "javascriptreact",
+    "*.styles.js": "javascriptreact",
+    "*.styles.jsx": "javascriptreact",
+    "*.styles.react.js": "javascriptreact",
+    "*.svg.js": "javascriptreact",
+    ".stylelintrc": "jsonc"
+  },
+  "files.eol": "\n",
+  "i18n-ally.displayLanguage": "de",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.localesPaths": [
+    "src/translation/locales"
+  ],
+  "i18n-ally.pathMatcher": "translation.{locale}.json",
+  "i18n-ally.theme.annotation": "rgba(153, 153, 153, .8)",
+  "i18n-ally.theme.annotationBorder": "rgba(153, 153, 153, .8)",
+  "i18n-ally.theme.annotationMissing": "#d37070",
+  "i18n-ally.theme.annotationMissingBorder": "#d37070",
+  "prettier-eslint.eslintIntegration": true,
+  "remote.extensionKind": {
+    "ms-azuretools.vscode-docker": "workspace"
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "deno.enable": true
+}

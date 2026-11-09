@@ -1,0 +1,363 @@
+
+name: Production
+"on":
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Choose wich environment you would like to publish"
+        required: true
+        default: All
+        type: choice
+        options:
+          - Munich Roundnet
+          - Roundnet Karlsruhe
+          - All
+  push:
+    branches:
+      - production
+env:
+  CI: ""
+
+jobs:
+
+  db-test:
+    name: "Test database"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - run: supabase start --ignore-health-check
+      - run: supabase test db
+      - run: supabase db lint --schema public,util,notifications,games --fail-on error
+
+  e2e:
+    uses: ./.github/workflows/playwright.yml
+    permissions:
+      contents: write
+
+  load-hash:
+    runs-on: ubuntu-latest
+    needs: [e2e, db-test]
+    name: "Load latest hash"
+    outputs:
+      short_sha: ${{ steps.vars.outputs.sha_short }}
+    steps:
+      - name: Get short SHA
+        id: vars
+        run: echo "sha_short=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+  build-karlsruhe:
+    name: "Build Karlsruhe"
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    runs-on: ubuntu-latest
+    needs: [db-test, e2e, load-hash]
+    environment:
+      name: "Roundnet Karlsruhe"
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Unit tests (vitest)
+        run: yarn test --run
+
+      - name: Build
+        run: |
+          yarn run build:karlsruhe
+          # The build uploads the source maps to Sentry; make sure none is left over to be deployed.
+          find build -name '*.map' -delete
+        env:
+          # Optional: without this secret no source maps are built or uploaded (stack traces stay minified).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ needs.load-hash.outputs.short_sha }}
+          VITE_ENV: "production"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "${{ vars.WEBSITE_PATH }}-build"
+          path: ${{github.workspace}}/build
+          retention-days: 1
+
+  build-munich:
+    name: "Build Munich Roundnet"
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    runs-on: ubuntu-latest
+    needs: [db-test,e2e,load-hash]
+    environment:
+      name: "Munich Roundnet"
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Unit tests (vitest)
+        run: yarn test --run
+
+      - name: Build
+        run: |
+          yarn run build:munich
+          # The build uploads the source maps to Sentry; make sure none is left over to be deployed.
+          find build -name '*.map' -delete
+        env:
+          # Optional: without this secret no source maps are built or uploaded (stack traces stay minified).
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ needs.load-hash.outputs.short_sha }}
+          VITE_ENV: "production"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "${{ vars.WEBSITE_PATH }}-build"
+          path: ${{github.workspace}}/build
+          retention-days: 1
+
+
+  migrate-karlsruhe:
+    name: "Migrate Database Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [build-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Push unpublished migrations
+        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+
+  migrate-munich:
+    name: "Migrate Database Munich"
+    runs-on: ubuntu-latest
+    needs: [build-munich]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Push unpublished migrations
+        run: supabase db push --remote=${{ secrets.SUPABASE_CONNECTION_STRING }} --yes
+
+  deploy-functions-karlsruhe:
+    name: "Deploy Edge Functions Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [build-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment:
+      name: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  deploy-functions-munich:
+    name: "Deploy Edge Functions Munich"
+    runs-on: ubuntu-latest
+    needs: [build-munich]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    environment:
+      name: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+      # Pinned: "latest" queries the GitHub API on every run and fails under rate limiting.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --remote=${{ vars.SUPABASE_PROJECT_ID }} --yes
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  deploy-karlsruhe:
+    runs-on: ubuntu-latest
+    needs: [migrate-karlsruhe, deploy-functions-karlsruhe]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    name: "Deploy Karlsruhe"
+    environment:
+      name: "Roundnet Karlsruhe"
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: "${{ vars.WEBSITE_PATH }}-build"
+          path: ${{github.workspace}}/build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
+          channelId: live
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}
+
+  deploy-munich:
+    runs-on: ubuntu-latest
+    needs: [migrate-munich, deploy-functions-munich]
+    if: ${{ github.event_name != 'workflow_dispatch'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    name: "Deploy Munich Roundnet"
+    environment:
+      name: "Munich Roundnet"
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: yarn
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: "${{ vars.WEBSITE_PATH }}-build"
+          path: ${{github.workspace}}/build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
+          channelId: live
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}
+
+  update-hash-karlsruhe:
+    runs-on: ubuntu-latest
+    needs: [load-hash, deploy-karlsruhe]
+    environment: "Roundnet Karlsruhe"
+    name: "Update latest hash Karlsruhe"
+    steps:
+      - name: Update Supabase Hash
+        run: |
+          curl -X POST "${{ vars.SUPABASE_DB_URL }}/rest/v1/app_config" \
+          -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Content-Type: application/json" \
+          -H "Content-Profile: public" \
+          -H "Accept-Profile: public" \
+          -H "Prefer: resolution=merge-duplicates" \
+          -d '{
+            "key": "latest_deployment_hash",
+            "value": "${{ needs.load-hash.outputs.short_sha }}"
+          }'
+  
+  update-hash-munich:
+    runs-on: ubuntu-latest
+    needs: [load-hash, deploy-munich]
+    environment: "Munich Roundnet"
+    name: "Update latest hash Munich"
+    steps:
+      - name: Update Supabase Hash
+        run: |
+          curl -X POST "${{ vars.SUPABASE_DB_URL }}/rest/v1/app_config" \
+          -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+          -H "Content-Type: application/json" \
+          -H "Content-Profile: public" \
+          -H "Accept-Profile: public" \
+          -H "Prefer: resolution=merge-duplicates" \
+          -d '{
+            "key": "latest_deployment_hash",
+            "value": "${{ needs.load-hash.outputs.short_sha }}"
+          }'
+
+  cleanup-artifact-munich:
+    name: "Cleanup Artifacts Munich"
+    runs-on: ubuntu-latest
+    needs: [deploy-munich]
+    environment: "Munich Roundnet"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Delete build artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            ${{ vars.WEBSITE_PATH }}-build
+
+  cleanup-artifact-karlsruhe:
+    name: "Cleanup Artifacts Karlsruhe"
+    runs-on: ubuntu-latest
+    needs: [deploy-karlsruhe]
+    environment: "Roundnet Karlsruhe"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Delete build artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            ${{ vars.WEBSITE_PATH }}-build

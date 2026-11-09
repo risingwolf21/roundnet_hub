@@ -1,0 +1,71 @@
+name: Check on master and production branch
+on:
+  push:
+    branches:
+      - master
+  # All PRs (checks only, no deploys) — stacked PRs (e.g. test waves) need DB/function/unit tests too.
+  pull_request:
+env:
+  CI: ""
+
+jobs:
+  db-test:
+    name: "Test database"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      # Pinned: "latest" makes setup-cli query the GitHub API on every run, which fails under
+      # rate limiting ("Failed to resolve latest Supabase CLI release") before any test runs.
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+      - run: supabase start --ignore-health-check
+      - run: supabase test db
+      - run: supabase db lint --schema public,util,notifications,games --fail-on error
+
+  functions-test:
+    name: "Test edge functions (Deno)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          # Latest stable 2.x: the committed tests/deno.lock is lockfile v5, which
+          # older Deno (e.g. 2.1.x) cannot read.
+          deno-version: v2.x
+      # Runs the pure parser/proxy-allowlist unit tests. The stack-integration suite
+      # (edgeFunctionAuthz) carries `ignore: !configured`, so it self-skips without a
+      # running local stack rather than failing — keeping this a reliable required check.
+      - name: Edge function unit tests (Deno)
+        run: deno test --allow-read --allow-env --allow-net --config supabase/functions/tests/deno.json supabase/functions/tests
+
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Unit tests (vitest)
+        run: yarn test --run
+
+      - name: Build
+        run: yarn run build
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_ENV: development
+          VITE_SHORT_NAME: "Roundnet Karlsruhe"
+          VITE_THEME_COLOR: "#0e876c"
+          VITE_BG_COLOR: "#0e876c"
+          VITE_ICON_PREFIX: "roundnet-karlsruhe"
+          VITE_WEBSITE_PATH: "roundnet-karlsruhe"
+          VITE_WEBSITE_NAME: "Roundnet Localhost"
+          VITE_PUBLIC_URL: "http://localhost:5173"

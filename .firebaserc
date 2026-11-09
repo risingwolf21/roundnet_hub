@@ -1,0 +1,20 @@
+{
+  "projects": {
+    "default": "roundnet-karlsruhe"
+  },
+  "targets": {
+    "roundnet-karlsruhe": {
+      "hosting": {
+        "staging": [
+          "staging-roundnet-karlsruhe"
+        ],
+        "production": [
+          "roundnet-karlsruhe"
+        ],
+        "munich-roundnet-production": [
+          "munich-roundnet"
+        ]
+      }
+    }
+  }
+}

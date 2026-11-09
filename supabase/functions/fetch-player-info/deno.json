@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "supabase": "npm:@supabase/supabase-js@2",
+    "date-fns": "npm:date-fns@4.1.0",
+    "sentry": "npm:@sentry/deno",
+    "cheerio": "https://esm.sh/cheerio@1.0.0-rc.12"
+  }
+}

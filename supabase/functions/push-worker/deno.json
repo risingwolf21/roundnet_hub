@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "supabase": "npm:@supabase/supabase-js@2",
+    "sentry": "npm:@sentry/deno",
+    "web-push": "npm:web-push@3.6.7"
+  }
+}

@@ -1,0 +1,24 @@
+import { Spinner } from '@/components/ui/spinner';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Feature, Permission } from '@/generated/supabase-types';
+import React from 'react';
+
+type HasProps = {
+  perm?: Permission | Permission[];
+  feat?: Feature | Feature[];
+  /** Wenn true: es reicht eines (ANY). Standard: alle (ALL) müssen vorhanden sein. */
+  any?: boolean;
+  fallback?: React.ReactNode;
+  children: React.ReactNode;
+};
+
+export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = <></>, children }) => {
+  const { hasPerm, hasFeat, loading } = useGrants();
+  if (loading) return <Spinner />;
+
+  const permOk = perm ? hasPerm(perm, any ? 'any' : 'all') : true;
+  const featOk = feat ? hasFeat(feat, any ? 'any' : 'all') : true;
+
+  if (!permOk || !featOk) return <>{fallback}</>;
+  return <>{children}</>;
+};

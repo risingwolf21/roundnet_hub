@@ -1,0 +1,329 @@
+import { PullToRefresh } from '@/components/PullToRefresh';
+import { AppBar } from '@/components/ui/appbar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Separator } from '@/components/ui/separator';
+import { useDialogs } from '@/contexts/DialogsProvider';
+import { Has } from '@/hooks/useGrants';
+import { supabase } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
+import { useDeleteMatch, useMatch } from '@/tanstack/games';
+import { Loader2, Pencil, SearchX, Trash2 } from 'lucide-react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
+import { useGrants } from '../auth/GrantsContext';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
+
+
+const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: User | null, p2: User | null, fallback1: Player | null, fallback2: Player | null }) => {
+  const dialogs = useDialogs();
+  return <div className="flex flex-1 flex-col gap-4 min-w-0">
+    <div className='flex flex-1 flex-row gap-4 min-w-0'>
+      {[p1, p2].map((player, idx) => (
+        <div key={idx} className='flex flex-1 flex-col items-center gap-2 min-w-0'>
+          <Avatar className="w-full max-w-32 h-auto aspect-square shadow-sm" onClick={() => player && dialogs.userProfile(player.id)}>
+            <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
+            <AvatarFallback>{player?.name ? player.name[0] : 'U'}</AvatarFallback>
+          </Avatar>
+        </div>
+      ))}
+    </div>
+    <div>
+      <div className='text-center font-semibold text-sm w-full truncate'>
+        {p1?.name ?? fallback1?.display_name}
+      </div>
+      <div className='text-center font-semibold text-sm w-full truncate'>
+        {p2?.name ?? fallback2?.display_name}
+      </div>
+    </div>
+  </div>
+}
+
+const IndexRow = ({ player, fallback, history }: { player: User | null, fallback: Player | null, history: any }) => {
+  const dialogs = useDialogs();
+  return <Item className='p-0' onClick={() => player && dialogs.userProfile(player.id)}>
+    <ItemMedia>
+      <Avatar className={"mr-2"}>
+        <AvatarImage src={player?.avatarUrl || undefined} alt={player?.name || undefined} />
+        <AvatarFallback>{player?.name ? player.name[0] : 'U'}</AvatarFallback>
+      </Avatar>
+    </ItemMedia>
+    <ItemContent>
+      <div className="truncate">{player?.name ?? fallback?.display_name}</div>
+    </ItemContent>
+    <ItemActions>
+      <span className="text-sm text-muted-foreground">{history?.old_rating?.toFixed() ?? '-'}</span>
+      <Badge variant={!history ? 'warning' : history.delta > 0 ? "success" : "error"}>
+        {history?.delta?.toFixed() ?? '-'}
+      </Badge>
+    </ItemActions>
+  </Item>
+};
+
+const MatchInformation = () => {
+  const { t } = useTranslation();
+  const { matchId } = useParams();
+  const { user, hasPerm } = useGrants();
+  const dialogs = useDialogs();
+  const navigate = useNavigate();
+
+  const { data: match, isLoading, refetch } = useMatch(matchId);
+  const useDeleteMatchMutation = useDeleteMatch(matchId);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-screen">
+        <AppBar className='!border-b !shadow-sm' title={t('games.information.title')} user={user} primaryAction="back" />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="size-10 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!match) {
+    return (
+      <div className="flex flex-col h-screen">
+        <AppBar className='!border-b !shadow-sm' title={t('games.information.title')} user={user} primaryAction="back" />
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="rounded-full bg-muted p-6 mb-4">
+            <SearchX className="size-10 text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-bold tracking-tight">{t('games.information.notFound')}</h2>
+          <p className="text-muted-foreground mt-2 max-w-xs">
+            {t('games.information.notFoundDescription')}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. DATEN AUFBEREITEN
+  const normalSets = match.sets.filter((x: any) => x.type !== 'spezi');
+  const speziSet = match.sets.find((x: any) => x.type === 'spezi') ?? null;
+  const setsAWon = normalSets.filter((x: any) => x.team_a_score > x.team_b_score).length;
+  const setsBWon = normalSets.filter((x: any) => x.team_a_score < x.team_b_score).length;
+
+  const matchMember = [
+    match.player_1a?.player?.linked_user_id,
+    match.player_1b?.player?.linked_user_id,
+    match.player_2a?.player?.linked_user_id,
+    match.player_2b?.player?.linked_user_id
+  ].includes(user.id);
+
+
+  const getHistory = (playerId?: string) => match.elo_history.find((x: any) => x.user === playerId);
+
+  const playersData = [
+    { p: match.player_1a, f: match.player_1a.player, h: getHistory(match.player_1a.player?.player) },
+    { p: match.player_2a, f: match.player_2a.player, h: getHistory(match.player_2a.player?.player) },
+    { p: match.player_1b, f: match.player_1b.player, h: getHistory(match.player_1b.player?.player) },
+    { p: match.player_2b, f: match.player_2b.player, h: getHistory(match.player_2b.player?.player) },
+  ];
+
+  // 4. HAUPT RENDER
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AppBar
+        className='!border-b !shadow-sm'
+        title={t('games.information.title')}
+        user={user}
+        primaryAction="back"
+        actions={
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.confirm(t('games.information.deleteConfirm'));
+
+            if (result) {
+              useDeleteMatchMutation.mutate(undefined, {
+                onSuccess: () => navigate('/matches'),
+                onError: (error) =>
+                  toast.error(t('games.information.deleteError', { error: error.message })),
+              });
+            }
+          }}>
+            <Trash2 />
+          </Button>
+        }
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh onRefresh={() => refetch()}>
+          <div className='flex flex-col gap-4 p-4'>
+
+            {/* MATCH HEADER (Teams & Score) */}
+            <div>
+              <div className='flex flex-row justify-between items-center gap-4'>
+                <TeamBlock p1={match.player_1a.user} p2={match.player_2a.user} fallback1={match.player_1a.player} fallback2={match.player_2a.player} />
+
+                <div className='flex flex-col shrink-0 items-center justify-center px-2 sm:px-4'>
+                  <div className='flex flex-row gap-2'>
+                    <div className={cn("text-2xl sm:text-3xl whitespace-nowrap", { "font-bold": setsAWon > setsBWon })}>
+                      {setsAWon}
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black whitespace-nowrap"> : </div>
+                    <div className={cn("text-2xl sm:text-3xl whitespace-nowrap", { "font-bold": setsAWon < setsBWon })}>
+                      {setsBWon}
+                    </div>
+                  </div>
+                </div>
+
+                <TeamBlock p1={match.player_1b.user} p2={match.player_2b.user} fallback1={match.player_1b.player} fallback2={match.player_2b.player} />
+              </div>
+            </div>
+
+            {/* SÄTZE */}
+            <Item variant={"outline"}>
+              <ItemContent className='p-0'>
+                <ItemHeader>
+                  <ItemTitle className='font-semibold'>{t('games.sets')}</ItemTitle>
+                  {
+                    matchMember && hasPerm("games.update.score") &&
+                    <Button variant={"ghost"} size={"icon"} onClick={() => {
+                      dialogs.open(ReportSetsDialog, {
+                        matchId: match.id,
+                        team_a_name: match.team_a_name ?? '',
+                        team_b_name: match.team_b_name ?? '',
+                        sets: match.sets
+                      })
+                    }}>
+                      <Pencil />
+                    </Button>
+                  }
+                </ItemHeader>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex flex-row justify-between items-center'>
+                    <div className='flex flex-col gap-1'>
+                      <div className={cn('text-md', { "font-bold": setsAWon > setsBWon })}>{match.team_a_name}</div>
+                      <div className={cn('text-md', { "font-bold": setsAWon < setsBWon })}>{match.team_b_name}</div>
+                    </div>
+
+                    <div className='flex flex-row gap-4'>
+                      {normalSets.map((x: any, i: number) => (
+                        <div key={i} className="flex flex-col gap-1 text-center">
+                          <div className={cn('text-md', { "font-bold": x.team_a_score > x.team_b_score })}>{x.team_a_score}</div>
+                          <div className={cn('text-md', { "font-bold": x.team_a_score < x.team_b_score })}>{x.team_b_score}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {speziSet && (
+                    <>
+                      <Separator className="my-1" />
+                      <div className='flex flex-row justify-between items-center'>
+                        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                          <span>Spezi</span>
+                          {speziSet.set_awarded && (
+                            <Badge variant="success" className="text-xs">{t('games.information.awarded')}</Badge>
+                          )}
+                        </div>
+                        <div className='flex flex-row gap-4'>
+                          <div className="flex flex-col gap-1 text-center text-sm text-muted-foreground">
+                            <div className={cn({ "font-bold text-foreground": speziSet.team_a_score > speziSet.team_b_score })}>
+                              {speziSet.team_a_score}
+                            </div>
+                            <div className={cn({ "font-bold text-foreground": speziSet.team_a_score < speziSet.team_b_score })}>
+                              {speziSet.team_b_score}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </ItemContent>
+            </Item>
+
+            {/* INDEX HISTORY */}
+            <Item variant={"outline"}>
+              <ItemContent className='p-0'>
+                <ItemHeader>
+                  <ItemTitle className='font-semibold'>{t('games.index')}</ItemTitle>
+                </ItemHeader>
+                <div className='flex flex-col gap-2'>
+                  {playersData.map((data, index) => (
+                    <React.Fragment key={index}>
+                      <IndexRow player={data.p.user} fallback={data.f} history={data.h} />
+                      {index < playersData.length - 1 && <Separator />}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </ItemContent>
+            </Item>
+
+            <Has perm={["games.admin.view", "supabase.admin"]}>
+              <Separator />
+              <div className="text-sm font-semibold ml-2">
+                {t('games.information.adminActions')}
+              </div>
+              <Item variant="outline">
+                <ItemContent>
+                  <ItemTitle>{t('games.information.applyElo')}</ItemTitle>
+                  <ItemDescription>
+                    {t('games.information.applyEloDescription')}
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    supabase.schema("games").rpc("apply_elo_for_match", { p_match: match.id });
+                  }}>
+                    {t('games.information.start')}
+                  </Button>
+                </ItemActions>
+              </Item>
+            </Has>
+
+            <Has perm={"games.admin.view"}>
+              <Item variant={"outline"}>
+                <ItemContent className='p-0'>
+                  <ItemHeader>
+                    <ItemTitle className='font-semibold'>{t('games.information.adminInformation')}</ItemTitle>
+                  </ItemHeader>
+                  <div>
+
+                    {match.elo_history.map((elo) => {
+                      const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
+                        (x) => x?.player?.linked_user_id === elo.user
+                      );
+                      return (
+                        <div key={elo.id}>
+                          <div className='flex flex-row gap-2 w-full'>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{player?.player?.display_name ?? player?.user?.name ?? player?.user?.displayName}</div>
+                              <div>{t('games.information.player')}</div>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.delta.toFixed()}</div>
+                              <div>{t('games.information.delta')}</div>
+                            </div>
+                          </div>
+                          <div className='flex flex-row gap-2 w-full'>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.eff_old_rating?.toFixed(2)}</div>
+                              <div>{t('games.information.oldRating')}</div>
+                            </div>
+                            <div className='flex-1'>
+                              <div className='font-semibold'>{elo.eff_new_rating?.toFixed(2)}</div>
+                              <div>{t('games.information.newRating')}</div>
+                            </div>
+                          </div>
+                          <Separator />
+                        </div>
+                      );
+                    })}
+
+                  </div>
+                </ItemContent>
+              </Item>
+            </Has>
+
+          </div>
+        </PullToRefresh>
+      </main>
+    </div>
+  );
+};
+
+export default MatchInformation;

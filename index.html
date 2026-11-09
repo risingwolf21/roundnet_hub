@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" data-tenant="%VITE_WEBSITE_PATH%">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+  <meta name='viewport' content='width=device-width, viewport-fit=cover, initial-scale=1, user-scalable=no'>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="full-screen" content="yes">
+  <meta name="browsermode" content="application">
+  <meta name="screen-orientation" content="portrait">
+  <meta name="theme-color" content="#000000" />
+  <meta name="format-detection" content="telephone=no, email=no, address=no">
+
+  <link rel="icon" href="/%VITE_ICON_PREFIX%/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/%VITE_ICON_PREFIX%/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/%VITE_ICON_PREFIX%/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/%VITE_ICON_PREFIX%/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/%VITE_ICON_PREFIX%/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/%VITE_ICON_PREFIX%/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/%VITE_ICON_PREFIX%/android-chrome-192x192.png" />
+
+  <title>%VITE_WEBSITE_NAME%</title>
+
+  <script type="module" src="/src/index.tsx"></script>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <script>
+    // If React never mounts (e.g. stale SW serving old chunk hashes that 404),
+    // unregister the service worker and reload so the browser fetches fresh files.
+    window.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        var root = document.getElementById('root');
+        if (root && !root.hasChildNodes() && 'serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            regs.forEach(function (r) { r.unregister(); });
+            window.location.reload();
+          });
+        }
+      }, 4000);
+    });
+  </script>
+</body>
+
+</html>
