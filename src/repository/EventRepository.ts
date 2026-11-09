@@ -216,7 +216,8 @@ export const EventRepository = {
       .from('events_user_view')
       .select('*, group: event_group(*)')
       .eq('id', eventId)
-      .single()
+      // A deleted event or one the user cannot see is "not found", not an error.
+      .maybeSingle()
       .throwOnError();
 
     if (result.data) {
