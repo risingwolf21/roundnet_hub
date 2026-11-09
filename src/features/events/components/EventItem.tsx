@@ -13,8 +13,6 @@ import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../types';
 
 type EventItemProps = {
-  /** Show the date in front of the time; use it where rows are not grouped by day. */
-  showDate?: boolean;
   attendanceUpdating: boolean;
   event: EventsUserView;
   onClick: () => void;
@@ -117,6 +115,30 @@ const AttendanceButtons = ({
   );
 };
 
+/** Weekday, day and month in the group's colour, like the date block on the event page. */
+const DateTile = ({ date, color, muted }: { date: Date; color?: string; muted: boolean }) => {
+  const { i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage;
+  return (
+    <div
+      className={cn(
+        'flex size-12 shrink-0 flex-col items-center justify-center rounded-lg',
+        muted ? 'bg-muted text-muted-foreground' : 'bg-[color:var(--group-color)]/10 text-[color:var(--group-color)]'
+      )}
+      style={{ '--group-color': color ?? 'var(--primary)' } as React.CSSProperties}
+    >
+      <span className="sr-only">{new Intl.DateTimeFormat(lang, { dateStyle: 'full' }).format(date)}</span>
+      <span aria-hidden className="text-[10px] font-semibold uppercase leading-tight">
+        {new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(date)}
+      </span>
+      <span aria-hidden className="text-lg font-bold leading-none tabular-nums">{date.getDate()}</span>
+      <span aria-hidden className="text-[10px] uppercase leading-tight">
+        {new Intl.DateTimeFormat(lang, { month: 'short' }).format(date)}
+      </span>
+    </div>
+  );
+};
+
 /** After an event it is only a record: show the answer as text instead of buttons. */
 const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
   const { t } = useTranslation();
@@ -139,7 +161,7 @@ const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
   return null;
 };
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, showDate = false }: EventItemProps) => {
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }: EventItemProps) => {
   const { t, i18n } = useTranslation();
 
   const place = parsePlace(event.place);
@@ -188,9 +210,11 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         )
       )}
     >
+      <div className="flex w-full items-start gap-3 @3xl:items-center">
+      <DateTile date={start} color={event.group?.color} muted={closed} />
       <div
         className={cn(
-          'grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm',
+          'grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 text-sm',
           '@3xl:grid-cols-[8rem_minmax(0,2fr)_minmax(0,1.5fr)_minmax(0,1.6fr)_auto] @3xl:gap-x-4'
         )}
       >
@@ -220,17 +244,16 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
               closed && 'text-muted-foreground'
             )}
           >
-            {showDate && <span className="text-muted-foreground @3xl:text-xs">{dateFormat.format(start)}</span>}
             <span className="flex min-w-0 items-center gap-1.5">
-              <Clock className="size-3.5 shrink-0 text-muted-foreground @3xl:hidden" />
-              <span>{formatTimeRange(start, end, dateFormat)}</span>
+              <Clock className="size-3.5 shrink-0 text-muted-foreground" />
+              <span className={cn(isSameDay(start, end) && 'whitespace-nowrap')}>{formatTimeRange(start, end, dateFormat)}</span>
             </span>
           </div>
           {!event.isCancelled && (
             <span
               className={cn(
                 'flex shrink-0 items-center gap-1 text-xs text-muted-foreground @3xl:hidden',
-                full && 'font-medium text-warning-foreground'
+                full && 'font-medium text-warning'
               )}
             >
               <Users className="size-3.5" />
@@ -310,6 +333,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             {deadlinePassed && <Badge variant="outline" className="shrink-0">{t('events.item.deadlinePassed')}</Badge>}
           </div>
         )}
+      </div>
       </div>
     </Item>
   );

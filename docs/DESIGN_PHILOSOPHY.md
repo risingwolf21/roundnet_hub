@@ -99,7 +99,7 @@ If you need a pattern that more than one screen will use (e.g. a section card), 
 - If an action is unavailable because of a missing permission, explain why instead of hiding it silently.
 - Each list needs three states: loading, error, and an empty state that says what to do next.
 - Event rows are a mobile-first grid, not a row of pills: title (2 lines) and time on the left, attend/decline buttons on the right, the **location on its own full-width line** so the name is readable, and a last optional line for the group and exceptions. Show chips only for exceptions (cancelled, full, answer deadline). The coloured bar on the left carries the user's answer.
-- Group events by day ("Today · Thursday, 5 June"), so rows need no date block. Where rows are not grouped by day (home page), pass `showDate`.
+- Every event row starts with a date tile (weekday, day, month in the group colour, like the event page header), then title, time and location with their icons, and the attend/decline buttons on the right. Lists still group events by day ("Today · Thursday, 5 June").
 - On a wide container (`@3xl`, 48 rem) the same card turns into a table-like row: time, title, location, group and count, actions. Do this with container queries on the `Item` (`@container`) and `@3xl:` classes, not viewport breakpoints, so it works in narrow side panels too. Cap list pages at `max-w-5xl`.
 
 ## Detail screens

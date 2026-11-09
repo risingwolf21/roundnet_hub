@@ -445,7 +445,6 @@ const HomePage = () => {
                         <EventItem
                           key={event.id}
                           event={event}
-                          showDate
                           attendanceUpdating={pendingFor(event)}
                           onClick={() => navigate(`/training/event/${event.id}`)}
                           attendEvent={() => answer(event, nextAttendance(event))}
