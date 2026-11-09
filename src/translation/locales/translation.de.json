@@ -728,7 +728,8 @@
       "maxPerDay_one": "max. {{count}} / Tag",
       "maxPerDay_other": "max. {{count}} / Tag",
       "automated": "Automatisch",
-      "endedOn": "Beendet am {{date}}"
+      "endedOn": "Beendet am {{date}}",
+      "noPoints": "Keine Punkte eingetragen"
     },
     "dialog": {
       "titleUpdate": "Challenge aktualisieren",

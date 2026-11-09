@@ -1,4 +1,4 @@
-import { ListError, ListSectionHeader, ListSkeleton } from '@/components/list/ListParts';
+import { ListError, ListSectionHeader, ListSkeleton, sideBar } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { useChallengePodiums, useChallenges, useInsertChallengeMutation } from '@/tanstack/challenge';
 import { withProfiler } from '@sentry/react';
@@ -8,13 +8,13 @@ import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Item, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
-import { ChallengeWithGroup } from '@/repository/ChallengeRepository';
+import { ChallengeRepository, ChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { differenceInCalendarDays, format } from 'date-fns';
 import groupBy from 'lodash.groupby';
-import { Archive, CalendarClock, Infinity as InfinityIcon, Plus, Target, Trophy, Zap } from 'lucide-react';
+import { Archive, CalendarClock, ChevronRight, Infinity as InfinityIcon, Plus, Target, Trophy, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -22,6 +22,61 @@ import { useGrants } from '../auth/GrantsContext';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
 const MEDALS: Record<string, string> = { '1': '🥇', '2': '🥈', '3': '🥉' };
+
+type ArchivedChallenge = Awaited<ReturnType<typeof ChallengeRepository.fetchPodiums>>[number];
+
+/** Ended challenge: the winner on top, places 2 and 3 in one muted line. Tied players share a place. */
+const ArchivedChallengeRow = ({ challenge, onClick }: { challenge: ArchivedChallenge; onClick: () => void }) => {
+  const { t, i18n } = useTranslation();
+  const places = Object.entries(groupBy(challenge.podium, (x) => x.rank.toString())).sort(([a], [b]) => Number(a) - Number(b));
+  const [winners, ...others] = places.map(([rank, entries]) => ({ rank, entries }));
+
+  return (
+    <Item variant="outline" className={sideBar('neutral')} onClick={onClick}>
+      <ItemContent>
+        <ItemTitle className="line-clamp-2">{challenge.challenge_name}</ItemTitle>
+        {challenge.end_date && (
+          <ItemDescription>
+            {t('challenge.list.endedOn', {
+              date: new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'medium' }).format(new Date(challenge.end_date)),
+            })}
+          </ItemDescription>
+        )}
+        {winners ? (
+          <>
+            <div className="mt-1 flex items-center gap-2 rounded-lg bg-primary/10 px-2 py-1.5">
+              <span className="shrink-0 text-lg leading-none" role="img" aria-label={t('challenge.info.place', { place: 1 })}>
+                {MEDALS[winners.rank]}
+              </span>
+              <AvatarGroup className="shrink-0">
+                {winners.entries.slice(0, 3).map((x) => (
+                  <Avatar key={x.user_id} size="sm">
+                    <AvatarImage src={x.image_url || undefined} alt={x.name} />
+                    <AvatarFallback>{x.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ))}
+              </AvatarGroup>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{winners.entries.map((x) => x.name).join(', ')}</span>
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {t('challenge.info.points', { count: winners.entries[0].score })}
+              </span>
+            </div>
+            {others.length > 0 && (
+              <p className="truncate px-2 text-xs text-muted-foreground">
+                {others.map(({ rank, entries }) => `${MEDALS[rank] ?? `#${rank}`} ${entries.map((x) => x.name).join(', ')}`).join(' · ')}
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-muted-foreground">{t('challenge.list.noPoints')}</p>
+        )}
+      </ItemContent>
+      <ItemActions>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </ItemActions>
+    </Item>
+  );
+};
 
 const ChallengeRow = ({ challenge, onClick }: { challenge: ChallengeWithGroup; onClick: () => void }) => {
   const { t } = useTranslation();
@@ -159,38 +214,7 @@ const ChallengeListPage = () => {
                   <section className="flex flex-col gap-2">
                     <ListSectionHeader icon={<Archive />} title={t('challenge.list.archived')} count={podium.length} className="pt-4" />
                     {podium.map((entry) => (
-                      <Item key={entry.challenge_id} variant="outline" onClick={() => navigate(`/challenges/${entry.challenge_id}`)}>
-                        <ItemContent className="gap-3">
-                          <div>
-                            <ItemTitle>{entry.challenge_name}</ItemTitle>
-                            {entry.end_date && (
-                              <ItemDescription>
-                                {t('challenge.list.endedOn', { date: format(new Date(entry.end_date), 'dd.MM.yyyy') })}
-                              </ItemDescription>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(groupBy(entry.podium, (x) => x.rank.toString())).map(([rank, items]) => (
-                              <div key={rank} className="flex min-w-24 flex-1 flex-col items-center gap-1 rounded-lg bg-muted/50 p-2">
-                                <span className="text-2xl leading-none">{MEDALS[rank] ?? `#${rank}`}</span>
-                                <AvatarGroup>
-                                  {items.map((x) => (
-                                    <Avatar key={x.user_id}>
-                                      <AvatarImage src={x.image_url} alt={x.name} />
-                                      <AvatarFallback>{x.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                  ))}
-                                </AvatarGroup>
-                                <div className="w-full text-center text-sm text-muted-foreground">
-                                  {items.map((x) => (
-                                    <div key={x.user_id} className="truncate">{x.name}</div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </ItemContent>
-                      </Item>
+                      <ArchivedChallengeRow key={entry.challenge_id} challenge={entry} onClick={() => navigate(`/challenges/${entry.challenge_id}`)} />
                     ))}
                   </section>
                 )}
