@@ -8,7 +8,8 @@ select tests.create_supabase_user('user_1b', 'user_1b@test.com');
 select tests.create_supabase_user('user_2b', 'user_2b@test.com');
 select tests.create_supabase_user('user_1c', 'user_1c@test.com');
 select tests.create_supabase_user('user_group_empty', 'user_group_empty@test.com');
-select tests.create_supabase_user('admin', 'admin@test.com');
+-- Not admin@test.com: supabase/seed.sql already has a local login with that address.
+select tests.create_supabase_user('admin', 'pgtap_admin@test.com');
 
 DO $$
 BEGIN
