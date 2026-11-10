@@ -4,7 +4,7 @@ import { PropsWithChildren, useCallback, useEffect, useRef, useState } from 'rea
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
 import { UpdatePage, UpdateSuccess } from './features/pwa/AppUpdate';
-import { supabase } from './lib/supabase';
+import { checkForAppUpdate, setUpdateRegistration } from './features/pwa/checkForUpdate';
 
 export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   // undefined = no download running, null = running but progress not known yet, else 0..1
@@ -36,35 +36,19 @@ export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
           if (installing.state === 'redundant') setDownloadProgress(undefined);
         });
       });
-      // Cheap SW update check: browser byte-compares the SW script, no DB needed.
-      const triggerSwUpdate = () => registration.update().catch(() => { });
+      setUpdateRegistration(registration);
+      checkForAppUpdate(); // app start
 
-      // Full check: confirm a new deployment exists before triggering an update.
-      const checkDeploymentHash = async () => {
-        try {
-          const { data } = await supabase
-            .from('app_config')
-            .select('value')
-            .eq('key', 'latest_deployment_hash')
-            .single();
-
-          if (data?.value && data.value !== import.meta.env.VITE_GIT_COMMIT) {
-            triggerSwUpdate();
-          }
-        } catch {
-          // Offline or DB unavailable — ignore
-        }
-      };
-
-      // Fast path: SW byte-check on every tab focus (no DB round-trip).
+      // Returning to the app (tab focus, app back in the foreground).
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') triggerSwUpdate();
+        if (document.visibilityState === 'visible') checkForAppUpdate();
       });
-      window.addEventListener('focus', triggerSwUpdate);
+      window.addEventListener('focus', checkForAppUpdate);
 
-      // Slow path: confirm deployment via DB hash every 20s (a new version is found sooner).
-      setInterval(checkDeploymentHash, 20_000);
-      checkDeploymentHash();
+      // For an app left open on screen. Navigations check too (AppRoutes).
+      setInterval(() => {
+        if (document.visibilityState === 'visible') checkForAppUpdate();
+      }, 5 * 60_000);
     },
   });
 
