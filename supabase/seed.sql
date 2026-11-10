@@ -108,6 +108,22 @@ SET
 --
 -- Data for Name: elo_config; Type: TABLE DATA; Schema: games; Owner: postgres
 --
+INSERT INTO
+  "games"."elo_config" (
+    "id",
+    "w_rg",
+    "w_ka",
+    "rg_offset",
+    "rg_scale",
+    "k_factor",
+    "men_offset",
+    "mixed_offset",
+    "women_offset",
+    "upset_bonus_per_level"
+  )
+VALUES
+  (1, 0.5, 0.5, 0, 1, 32, 0, 0, 0, 0) ON CONFLICT DO NOTHING;
+
 --
 -- Data for Name: elo_history; Type: TABLE DATA; Schema: games; Owner: postgres
 --
@@ -222,7 +238,7 @@ VALUES
   (
     'trial_duration_days',
     '28',
-    '2026-11-10 08:21:12.11231+00'
+    '2026-11-10 08:22:36.481565+00'
   ) ON CONFLICT DO NOTHING;
 
 --
