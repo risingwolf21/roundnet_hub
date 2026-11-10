@@ -353,9 +353,12 @@ const HomePage = () => {
     .sort((a, b) => new Date(a.startingDateTime).getTime() - new Date(b.startingDateTime).getTime());
   const next = upcoming.find((x) => !x.isCancelled);
   const following = upcoming.filter((x) => x.id !== next?.id).slice(0, UPCOMING_LIMIT);
+  // Only the coming week: events created a month ahead would otherwise pile up here.
+  const weekAhead = now.getTime() + 7 * 24 * 60 * 60 * 1000;
   const unanswered = upcoming.filter(
     (x) =>
-      x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x)
+      x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x) &&
+      new Date(x.startingDateTime).getTime() <= weekAhead
   ).length;
   const unreadNotifications = notifications.filter((x) => !x.dismissed_at).length;
 
