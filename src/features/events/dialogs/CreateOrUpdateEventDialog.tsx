@@ -48,6 +48,7 @@ const createEmptyEvent = () => ({
   recurrence: 'None',
   maxAttendees: null,
   max_trial_attendees: null,
+  trials_open: false,
   required_item: null,
   answerDeadline: null,
   answerStart: formatDateToDatabase(
@@ -86,6 +87,7 @@ const buildSeriesFromEvent = (
     answer_start_offset: ev.answerStart ? intervalSecondsLiteral(start, ev.answerStart) : null,
     max_attendees: ev.maxAttendees ?? null,
     max_trial_attendees: ev.max_trial_attendees ?? null,
+    trials_open: ev.trials_open ?? false,
     required_item: ev.required_item ?? null,
     items_enabled: items.length > 0,
     constellations_enabled: ev.constellations_enabled ?? false,
@@ -702,12 +704,23 @@ export const CreateOrUpdateEventDialog = ({
 
             <Has feat={"events.trials"}>
               <ToggleRow
-                id="event-maxtrial-enabled"
-                title={t('events.creation.maxTrialAttendees')}
-                checked={typeof editedEvent.max_trial_attendees === 'number'}
-                onCheckedChange={(checked) => patch({ max_trial_attendees: checked ? 2 : null })}
+                id="event-trials-open"
+                title={t('events.creation.trialsOpen')}
+                description={t('events.creation.trialsOpenHint')}
+                checked={!!editedEvent.trials_open}
+                onCheckedChange={(checked) => patch({ trials_open: checked, ...(!checked && { max_trial_attendees: null }) })}
               >
-                <Stepper label={t('events.creation.maxTrialAttendees')} value={editedEvent.max_trial_attendees ?? 0} onChange={(v) => patch({ max_trial_attendees: v })} />
+                <div className="flex flex-col gap-3 border-l-2 pl-3">
+                  <ToggleRow
+                    id="event-maxtrial-enabled"
+                    title={t('events.creation.trialSeatsLimit')}
+                    description={t('events.creation.maxTrialAttendeesHint')}
+                    checked={typeof editedEvent.max_trial_attendees === 'number'}
+                    onCheckedChange={(checked) => patch({ max_trial_attendees: checked ? 2 : null })}
+                  >
+                    <Stepper label={t('events.creation.maxTrialAttendees')} min={1} value={editedEvent.max_trial_attendees ?? 1} onChange={(v) => patch({ max_trial_attendees: v })} />
+                  </ToggleRow>
+                </div>
               </ToggleRow>
             </Has>
           </FormSection>

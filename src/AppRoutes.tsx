@@ -61,6 +61,12 @@ const createRouter = (user: UserWithGroups | null) =>
       ],
     },
     {
+      // A trial invite link: works signed out (start as a guest) and signed in.
+      path: '/probe/:token',
+      element: <Pages.TrialInvitePage />,
+      errorElement: <Pages.ErrorRouteElement />,
+    },
+    {
       path: '/',
       element: <PrivateRoute />,
       errorElement: <Pages.ErrorRouteElement />,

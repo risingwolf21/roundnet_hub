@@ -16,7 +16,7 @@ import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useGroups, useJoinGroup, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
-import { AlertCircle, CheckCircle2, CircleFadingArrowUp, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
+import { AlertCircle, CalendarCheck, CheckCircle2, CircleFadingArrowUp, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -26,19 +26,13 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
+import { trialDaysLeft } from "../trials/trialPeriod";
+import { GuestInvitesCard } from "../trials/GuestInvitesCard";
+import { TrialLimitDialog, TrialMemberBadges } from "../trials/TrialMemberParts";
 
 type MemberView = "all" | "admin" | "user" | "trial" | "joinRequested";
 
-// Mirrors the server-side `trial_duration_days` (app_config, default 28). Used only
-// for the informational countdown; the authoritative expiry runs in the DB cron job.
-const TRIAL_DURATION_DAYS = 28;
 const SEARCH_THRESHOLD = 8;
-
-const trialDaysLeft = (startedAt: string | null | undefined, now: number): number | null => {
-  if (!startedAt) return null;
-  const elapsedDays = Math.floor((now - new Date(startedAt).getTime()) / 86_400_000);
-  return TRIAL_DURATION_DAYS - elapsedDays;
-};
 
 const JoinButton = ({ group, user }: { group: Group; user: User }) => {
   const { t } = useTranslation();
@@ -305,6 +299,7 @@ const PublicGroupInformation = () => {
                 </Badge>
               )}
               {role === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
+              {role === "trial" && canManage && <TrialMemberBadges groupId={group.id} userId={x.user.id} />}
               {daysLeft !== null && (
                 <Badge variant={daysLeft <= 3 ? "warning" : "outline"}>
                   {daysLeft > 0 ? t("groups.trialDaysLeft", { count: daysLeft }) : t("groups.trialExpiring")}
@@ -348,10 +343,16 @@ const PublicGroupInformation = () => {
                     </>
                   )}
                   {role === "trial" && (
-                    <DropdownMenuItem onClick={() => changeRole(x.user, "user", t("groups.confirmAcceptTrial"))}>
-                      <CircleFadingArrowUp className="size-4" />
-                      {t("groups.acceptTrialMember")}
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => changeRole(x.user, "user", t("groups.confirmAcceptTrial"))}>
+                        <CircleFadingArrowUp className="size-4" />
+                        {t("groups.acceptTrialMember")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => dialogs.open(TrialLimitDialog, { groupId: group.id, userId: x.user.id, name: x.user.name })}>
+                        <CalendarCheck className="size-4" />
+                        {t("trials.member.limitAction")}
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={() => removeOne(x.user)}>
@@ -521,6 +522,12 @@ const PublicGroupInformation = () => {
 
             {canSeeMembers && !usersLoading && !usersError && query && visibleSections.every(({ role }) => byRole[role].filter(matches).length === 0) && (
               <p className="py-6 text-center text-sm text-muted-foreground">{t("groups.noMembersFound")}</p>
+            )}
+
+            {isGroupAdmin && (
+              <Has feat="events.trials.guests">
+                <GuestInvitesCard group={group} />
+              </Has>
             )}
 
             {isMember && onlyAdmin && (

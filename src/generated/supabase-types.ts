@@ -53,6 +53,7 @@ export type Feature =
   | 'drinks'
   | 'events'
   | 'events.trials'
+  | 'events.trials.guests'
   | 'events.transformations'
   | 'games'
   | 'items';

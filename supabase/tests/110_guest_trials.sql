@@ -22,6 +22,8 @@ INSERT INTO public.event_group(id, name, visible, is_public) VALUES
   (:'grp2', 'NoGuests',  true, true),
   (:'open', 'OpenGrp',   true, true);
 
+-- Features the test needs, whatever the seed contains.
+INSERT INTO public.features(name) VALUES ('events'), ('events.trials'), ('events.trials.guests') ON CONFLICT DO NOTHING;
 INSERT INTO public.group_features("group", feature) VALUES
   (:'grp',  'events'), (:'grp',  'events.trials'), (:'grp', 'events.trials.guests'),
   (:'grp2', 'events'), (:'grp2', 'events.trials');

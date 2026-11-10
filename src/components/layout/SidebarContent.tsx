@@ -91,11 +91,9 @@ export function AppSidebar() {
         {
           title: t('navigation.home'),
           icon: <Home />,
+          // No gate: the home page adapts to the user's grants, and without it accounts with few
+          // features (e.g. trial guests) have no way back once they leave it.
           path: 'home',
-          permission: {
-            any: true,
-            feat: ['drinks', 'events', 'items']
-          }
         },
         {
           title: t('navigation.account'),
