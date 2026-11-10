@@ -14,7 +14,8 @@
     "loading": "Lädt",
     "loadingData": "Daten werden geladen",
     "logo": "Logo",
-    "ok": "OK"
+    "ok": "OK",
+    "retry": "Erneut versuchen"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
@@ -261,7 +262,11 @@
       "answerStart": "Anmeldung ab",
       "answerStartHint": "Erst ab diesem Zeitpunkt können sich Teilnehmende an- und abmelden",
       "answerStartAfterStart": "Die Anmeldung muss vor dem Start des Events beginnen",
-      "answerStartAfterDeadline": "Die Anmeldung muss vor der Anmeldedeadline beginnen"
+      "answerStartAfterDeadline": "Die Anmeldung muss vor der Anmeldedeadline beginnen",
+      "trialsOpen": "Offen für Probetraining",
+      "trialsOpenHint": "Probe-Mitglieder und Gäste sehen das Event und können zusagen.",
+      "trialSeatsLimit": "Probeplätze begrenzen",
+      "maxTrialAttendeesHint": "Ohne Begrenzung gibt es beliebig viele Probeplätze."
     },
     "information": {
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
@@ -1728,6 +1733,107 @@
       "title": "Blockierte Nutzer",
       "description": "Du siehst keine Kommentare dieser Nutzer.",
       "unblock": "Entsperren"
+    }
+  },
+  "trials": {
+    "invite": {
+      "title": "Komm zum Probetraining!",
+      "invitedTo": "Du wurdest zur Gruppe {{group}} eingeladen.",
+      "invalidTitle": "Dieser Link funktioniert nicht mehr",
+      "invalidDescription": "Er ist abgelaufen, schon zu oft genutzt oder wurde deaktiviert. Frag deine Trainer:innen nach einem neuen Link.",
+      "toApp": "Zur App",
+      "trainings_one": "{{count}} Probetraining",
+      "trainings_other": "{{count}} Probetrainings",
+      "trainingsHint": "Bei allen Trainings, die für Probetraining offen sind",
+      "period": "Höchstens 28 Tage",
+      "periodHint": "Je nachdem, was zuerst endet",
+      "alreadyMember": "Du bist schon dabei – zur App",
+      "signedInAs": "Du bist angemeldet als {{name}}.",
+      "start": "Probetraining starten",
+      "nameLabel": "Wie heißt du?",
+      "nameHint": "So sehen dich die Trainer:innen auf der Teilnehmerliste.",
+      "nameRequired": "Bitte gib deinen Namen ein.",
+      "noAccountNeeded": "Ohne E-Mail und Passwort. Du kannst später ein Konto erstellen, deine Zusagen bleiben erhalten.",
+      "haveAccount": "Schon ein Konto?",
+      "login": "Anmelden",
+      "joinFailed": "Beitreten hat nicht geklappt. Der Link ist vielleicht nicht mehr gültig.",
+      "signInFailed": "Anmelden als Gast hat nicht geklappt. Versuche es erneut."
+    },
+    "home": {
+      "title": "Probezeit in {{group}}",
+      "titleNoLimit": "Deine Probezeit läuft",
+      "left_one": "Noch {{count}} von {{total}} Probetrainings",
+      "left_other": "Noch {{count}} von {{total}} Probetrainings",
+      "used": "Genutzte Probetrainings",
+      "usedUp": "Alle Probetrainings sind verplant. Deine Probezeit endet nach dem letzten.",
+      "hint": "Jede Zusage nutzt ein Training. Eine Absage gibt es dir zurück."
+    },
+    "secure": {
+      "title": "Konto sichern",
+      "description": "Dein Gastzugang gilt nur auf diesem Gerät. Mit deiner E-Mail-Adresse kommst du überall wieder rein.",
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "submit": "Konto erstellen",
+      "sent": "E-Mail verschickt",
+      "failed": "Das hat nicht geklappt. Ist die Adresse vielleicht schon vergeben?",
+      "checkMailTitle": "Fast geschafft",
+      "checkMail": "Bestätige den Link in der E-Mail an {{email}}. Danach legst du dein Passwort fest."
+    },
+    "links": {
+      "title": "Gast-Probetrainings",
+      "description": "Mit einem Link können Interessierte ohne Konto zum Probetraining kommen.",
+      "new": "Neuer Einladungslink",
+      "eventLimit": "Probetrainings pro Gast",
+      "eventLimitHint": "Jede Zusage zählt",
+      "limit": "Link begrenzen",
+      "limitHint": "Ablaufdatum und Anzahl Gäste",
+      "validDays": "Gültig für Tage",
+      "validUntil": "Gültig bis {{date}}",
+      "maxUses": "Max. Gäste",
+      "endsHint_one": "Die Probezeit endet nach {{count}} Training oder nach 28 Tagen, je nachdem, was zuerst eintritt.",
+      "endsHint_other": "Die Probezeit endet nach {{count}} Trainings oder nach 28 Tagen, je nachdem, was zuerst eintritt.",
+      "create": "Link erstellen",
+      "created": "Link erstellt",
+      "createFailed": "Der Link konnte nicht erstellt werden.",
+      "loadFailed": "Links konnten nicht geladen werden.",
+      "empty": "Noch keine aktiven Links.",
+      "expired": "Abgelaufen",
+      "full": "Ausgeschöpft",
+      "trainings_one": "{{count}} Training",
+      "trainings_other": "{{count}} Trainings",
+      "usesOf": "{{uses}} von {{max}} Gästen",
+      "uses_one": "{{count}} Gast",
+      "uses_other": "{{count}} Gäste",
+      "until": "bis {{date}}",
+      "share": "Link teilen",
+      "shareTitle": "Probetraining bei {{group}}",
+      "copied": "Link kopiert",
+      "shareFailed": "Der Link konnte nicht geteilt werden.",
+      "deactivate": "Link deaktivieren",
+      "deactivateConfirm": "Link deaktivieren? Neue Gäste können ihn dann nicht mehr nutzen. Laufende Probezeiten bleiben.",
+      "deactivated": "Link deaktiviert",
+      "deactivateFailed": "Der Link konnte nicht deaktiviert werden."
+    },
+    "member": {
+      "guest": "Gast",
+      "trainings": "{{used}}/{{total}} Trainings",
+      "trainingsNoLimit_one": "{{count}} Training",
+      "trainingsNoLimit_other": "{{count}} Trainings",
+      "limitAction": "Probetrainings begrenzen",
+      "limitTitle": "Probezeit von {{name}}",
+      "usedSoFar_one": "Bisher {{count}} Training zugesagt",
+      "usedSoFar_other": "Bisher {{count}} Trainings zugesagt",
+      "limit": "Trainings begrenzen",
+      "limitHint": "Sonst gilt nur die Probezeit von 28 Tagen.",
+      "limitTotal": "Insgesamt erlaubt",
+      "canStillSignUp_one": "Kann noch {{count}} Training zusagen. Bestehende Zusagen bleiben.",
+      "canStillSignUp_other": "Kann noch {{count}} Trainings zusagen. Bestehende Zusagen bleiben.",
+      "noMoreSignUps": "Keine weiteren Zusagen möglich. Bestehende Zusagen bleiben.",
+      "limitSaved": "Probezeit gespeichert",
+      "limitFailed": "Die Probezeit konnte nicht gespeichert werden."
+    },
+    "errors": {
+      "limitReached": "Deine Probetrainings sind aufgebraucht. Sag ein anderes Training ab oder frag deine Trainer:innen.",
+      "eventClosed": "Dieses Training ist nicht für Probetraining offen."
     }
   }
 }

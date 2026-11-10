@@ -14,7 +14,8 @@
     "loading": "Loading",
     "loadingData": "Loading data",
     "logo": "Logo",
-    "ok": "OK"
+    "ok": "OK",
+    "retry": "Try again"
   },
   "date-fns": {
     "diffInDaysPrior_zero": "The same day",
@@ -261,7 +262,11 @@
       "answerStart": "Registration opens",
       "answerStartHint": "Participants can only sign up or cancel from this point on",
       "answerStartAfterStart": "Registration must open before the event starts",
-      "answerStartAfterDeadline": "Registration must open before the registration deadline"
+      "answerStartAfterDeadline": "Registration must open before the registration deadline",
+      "trialsOpen": "Open for trial training",
+      "trialsOpenHint": "Trial members and guests see the event and can sign up.",
+      "trialSeatsLimit": "Limit trial seats",
+      "maxTrialAttendeesHint": "Without a limit there are unlimited trial seats."
     },
     "information": {
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
@@ -1728,6 +1733,107 @@
       "title": "Blocked users",
       "description": "You do not see comments of these users.",
       "unblock": "Unblock"
+    }
+  },
+  "trials": {
+    "invite": {
+      "title": "Join a trial training!",
+      "invitedTo": "You've been invited to the group {{group}}.",
+      "invalidTitle": "This link no longer works",
+      "invalidDescription": "It has expired, been used too often or been turned off. Ask your coach for a new link.",
+      "toApp": "Go to the app",
+      "trainings_one": "{{count}} trial training",
+      "trainings_other": "{{count}} trial trainings",
+      "trainingsHint": "At every training that is open for trials",
+      "period": "At most 28 days",
+      "periodHint": "Whichever ends first",
+      "alreadyMember": "You're already in – go to the app",
+      "signedInAs": "You're signed in as {{name}}.",
+      "start": "Start trial",
+      "nameLabel": "What's your name?",
+      "nameHint": "This is how coaches see you on the attendance list.",
+      "nameRequired": "Please enter your name.",
+      "noAccountNeeded": "No e-mail or password needed. You can create an account later and keep your sign-ups.",
+      "haveAccount": "Already have an account?",
+      "login": "Sign in",
+      "joinFailed": "Joining didn't work. The link may no longer be valid.",
+      "signInFailed": "Signing in as a guest didn't work. Please try again."
+    },
+    "home": {
+      "title": "Trial in {{group}}",
+      "titleNoLimit": "Your trial is running",
+      "left_one": "{{count}} of {{total}} trial trainings left",
+      "left_other": "{{count}} of {{total}} trial trainings left",
+      "used": "Trial trainings used",
+      "usedUp": "All trial trainings are booked. Your trial ends after the last one.",
+      "hint": "Each sign-up uses one training. Declining gives it back."
+    },
+    "secure": {
+      "title": "Keep your account",
+      "description": "Your guest access only works on this device. With your e-mail address you can sign in anywhere.",
+      "invalidEmail": "Please enter a valid e-mail address.",
+      "submit": "Create account",
+      "sent": "E-mail sent",
+      "failed": "That didn't work. Is the address already in use?",
+      "checkMailTitle": "Almost done",
+      "checkMail": "Confirm the link in the e-mail to {{email}}. Then you set your password."
+    },
+    "links": {
+      "title": "Guest trials",
+      "description": "With a link, people can come to a trial training without an account.",
+      "new": "New invite link",
+      "eventLimit": "Trial trainings per guest",
+      "eventLimitHint": "Every sign-up counts",
+      "limit": "Limit the link",
+      "limitHint": "Expiry date and number of guests",
+      "validDays": "Valid for days",
+      "validUntil": "Valid until {{date}}",
+      "maxUses": "Max. guests",
+      "endsHint_one": "The trial ends after {{count}} training or after 28 days, whichever comes first.",
+      "endsHint_other": "The trial ends after {{count}} trainings or after 28 days, whichever comes first.",
+      "create": "Create link",
+      "created": "Link created",
+      "createFailed": "The link couldn't be created.",
+      "loadFailed": "Links couldn't be loaded.",
+      "empty": "No active links yet.",
+      "expired": "Expired",
+      "full": "Used up",
+      "trainings_one": "{{count}} training",
+      "trainings_other": "{{count}} trainings",
+      "usesOf": "{{uses}} of {{max}} guests",
+      "uses_one": "{{count}} guest",
+      "uses_other": "{{count}} guests",
+      "until": "until {{date}}",
+      "share": "Share link",
+      "shareTitle": "Trial training at {{group}}",
+      "copied": "Link copied",
+      "shareFailed": "The link couldn't be shared.",
+      "deactivate": "Turn off link",
+      "deactivateConfirm": "Turn off the link? New guests can't use it any more. Running trials continue.",
+      "deactivated": "Link turned off",
+      "deactivateFailed": "The link couldn't be turned off."
+    },
+    "member": {
+      "guest": "Guest",
+      "trainings": "{{used}}/{{total}} trainings",
+      "trainingsNoLimit_one": "{{count}} training",
+      "trainingsNoLimit_other": "{{count}} trainings",
+      "limitAction": "Limit trial trainings",
+      "limitTitle": "Trial of {{name}}",
+      "usedSoFar_one": "{{count}} training signed up so far",
+      "usedSoFar_other": "{{count}} trainings signed up so far",
+      "limit": "Limit trainings",
+      "limitHint": "Otherwise only the 28-day trial period applies.",
+      "limitTotal": "Allowed in total",
+      "canStillSignUp_one": "Can still sign up for {{count}} training. Existing sign-ups stay.",
+      "canStillSignUp_other": "Can still sign up for {{count}} trainings. Existing sign-ups stay.",
+      "noMoreSignUps": "No further sign-ups. Existing sign-ups stay.",
+      "limitSaved": "Trial saved",
+      "limitFailed": "The trial couldn't be saved."
+    },
+    "errors": {
+      "limitReached": "Your trial trainings are used up. Decline another training or ask your coaches.",
+      "eventClosed": "This training isn't open for trial training."
     }
   }
 }

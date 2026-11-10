@@ -1,3 +1,5 @@
+import { trialAttendanceError } from '@/features/trials/trialErrors';
+import { toast } from 'sonner';
 import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
@@ -430,7 +432,10 @@ export const useUpdateAttendanceMutation = () => {
       return { previousLists, previousAttendance, previousEvent, event };
     },
     onError: (error, variables, context) => {
-      captureException(error, {
+      // A trial member's limit or a closed event is a rule, not a bug: explain it, don't report it.
+      const trialError = trialAttendanceError(error);
+      if (trialError) toast.error(trialError);
+      else captureException(error, {
         extra: {
           event: variables.event.id,
           eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),

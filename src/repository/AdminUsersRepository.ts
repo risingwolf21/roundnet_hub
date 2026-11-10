@@ -7,7 +7,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 export type RpcName = keyof Database['public']['Functions'];
 
 export const fetchGroupWithUsers = () =>
-  supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role, trial_started_at )');
+  supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role, trial_started_at, trial_event_limit )');
 
 export const AdminUsersRepository = {
   async removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
