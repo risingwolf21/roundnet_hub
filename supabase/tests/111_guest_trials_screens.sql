@@ -67,14 +67,14 @@ SELECT results_eq(format($$ SELECT event_limit, events_used, is_guest FROM publi
 RESET ROLE;
 SELECT set_config('request.jwt.claims', NULL, true);
 SELECT event_id AS ev FROM public.insert_event_with_bring_items(
-  jsonb_build_object('title', 'Probe', 'startingDateTime', now() + interval '1 day', 'endDateTime', now() + interval '1 day 2 hours',
+  jsonb_build_object('title', 'Probe', 'description', 'Probetraining', 'startingDateTime', now() + interval '1 day', 'endDateTime', now() + interval '1 day 2 hours',
                      'group', :'grp', 'trials_open', true, 'max_trial_attendees', 4),
   '[]'::jsonb) \gset
 SELECT is((SELECT trials_open FROM public.events WHERE id = :'ev'::uuid), true, 'trials_open is stored');
 SELECT is((SELECT max_trial_attendees FROM public.events WHERE id = :'ev'::uuid), 4::numeric, 'max_trial_attendees is stored');
 
 SELECT event_id AS ev2 FROM public.insert_event_with_bring_items(
-  jsonb_build_object('title', 'Ohne', 'startingDateTime', now() + interval '1 day', 'endDateTime', now() + interval '1 day 2 hours', 'group', :'grp'),
+  jsonb_build_object('title', 'Ohne', 'description', 'Ohne Probe', 'startingDateTime', now() + interval '1 day', 'endDateTime', now() + interval '1 day 2 hours', 'group', :'grp'),
   '[]'::jsonb) \gset
 SELECT is((SELECT trials_open FROM public.events WHERE id = :'ev2'::uuid), false, 'events are closed for trials unless opened');
 
