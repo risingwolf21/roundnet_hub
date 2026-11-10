@@ -2,7 +2,7 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
-import { useRequestedUsersPerGroup } from '@/tanstack/groups';
+import { useGroups, useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
 import { Bell, ClipboardList, Euro, HelpCircle, History, Home, KeyRound, LayoutDashboard, Package, Receipt, RefreshCcw, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
@@ -39,6 +39,10 @@ export function AppSidebar() {
   const location = useLocation();
   const { user } = useGrants();
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
+  const { data: groups = [] } = useGroups();
+  // Only requests the user can accept: members may read them too, but only group admins act on them.
+  const adminGroups = new Set(groups.filter((x) => x.user_group_role === 'admin').map((x) => x.id));
+  const openJoinRequests = requested_group_joins.filter((x) => adminGroups.has(x.group)).length;
   const { data: notifications = [] } = useAllNotifications(user);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -158,7 +162,7 @@ export function AppSidebar() {
           path: 'groups/list',
           secondaryAction: <div className="text-sm leading-none font-bold">
             {
-              requested_group_joins.length || ''
+              openJoinRequests || ''
             }
           </div >
         },
