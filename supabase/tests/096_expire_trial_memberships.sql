@@ -42,11 +42,11 @@ UPDATE public.group_user_mapping SET trial_started_at = NULL
   WHERE "user" = tests.get_supabase_uid('tx_null') AND "group" = :'grp';   -- never started
 
 -- Future + past events in the group; expired user holds a trial seat on each.
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group")
-VALUES ('exp-fut','Fut','—', now()+interval '2 days', now()+interval '2 days 2 hours', :'grp')
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","trials_open")
+VALUES ('exp-fut','Fut','—', now()+interval '2 days', now()+interval '2 days 2 hours', :'grp', true)
 RETURNING id AS ev_fut \gset
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group")
-VALUES ('exp-past','Past','—', now()-interval '2 days', now()-interval '2 days'+interval '2 hours', :'grp')
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","trials_open")
+VALUES ('exp-past','Past','—', now()-interval '2 days', now()-interval '2 days'+interval '2 hours', :'grp', true)
 RETURNING id AS ev_past \gset
 
 INSERT INTO public.event_attendance_user_mapping("user","event","state") VALUES

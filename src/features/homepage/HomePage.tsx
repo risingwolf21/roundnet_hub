@@ -1,5 +1,6 @@
 import { groupSideBar, ListSkeleton } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { TrialHomeSection } from '@/features/trials/TrialHomeSection';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -391,6 +392,8 @@ const HomePage = () => {
               </h1>
               <p className="text-sm text-muted-foreground first-letter:uppercase">{today}</p>
             </header>
+
+            <TrialHomeSection />
 
             {(unanswered > 0 || unreadNotifications > 0) && (
               <div className="flex flex-col gap-2">

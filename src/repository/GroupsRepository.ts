@@ -35,7 +35,7 @@ export const GroupsRepository = {
     return {
       ...data,
       user_group_role: group.role,
-      users: data.mapping.map((x) => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.id, trial_started_at: x.trial_started_at } })),
+      users: data.mapping.map((x) => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.id, trial_started_at: x.trial_started_at, trial_event_limit: x.trial_event_limit } })),
     };
   },
 

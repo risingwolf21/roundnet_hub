@@ -1,3 +1,4 @@
+import { trialAttendanceError } from '@/features/trials/trialErrors';
 import { PullToRefresh } from "@/components/PullToRefresh";
 import {
   Alert,
@@ -105,8 +106,9 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
     updateAttendance.mutate(
       { user, event, newState },
       {
-        onError: () => {
-          toast.error(t('events.information.attendanceUpdateError'));
+        onError: (error) => {
+          // Trial rules already get their own message from the mutation.
+          if (!trialAttendanceError(error)) toast.error(t('events.information.attendanceUpdateError'));
         },
       }
     );
@@ -249,8 +251,9 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
     updateAttendance.mutate(
       { user, event, newState },
       {
-        onError: () => {
-          toast.error(t('events.information.attendanceUpdateError'));
+        onError: (error) => {
+          // Trial rules already get their own message from the mutation.
+          if (!trialAttendanceError(error)) toast.error(t('events.information.attendanceUpdateError'));
         },
       }
     );

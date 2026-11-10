@@ -10,9 +10,10 @@ SELECT plan(24);
 -- ---------------------------------------------------------------------------
 SELECT tests.authenticate_as_service_role();
 
-INSERT INTO public.events("key","title","description","recurrence","startingDateTime","endDateTime","group")
+-- Open for trials: the trial member below must see and join it (20261109150000_guest_trials).
+INSERT INTO public.events("key","title","description","recurrence","startingDateTime","endDateTime","group","trials_open")
 VALUES ('sec-evt','Sec','D','None', now() + interval '1 day', now() + interval '1 day 3 hours',
-        '00000000-0000-0000-0000-000000000042');
+        '00000000-0000-0000-0000-000000000042', true);
 
 INSERT INTO public.permissions(name) VALUES ('event.signup') ON CONFLICT DO NOTHING;
 INSERT INTO public.group_permissions("group","permission")
@@ -178,8 +179,9 @@ SELECT is(
     WHERE n.nspname IN ('public','games','notifications','util','audit','private')
       AND p.prokind = 'f' AND p.prosecdef
       AND has_function_privilege('anon', p.oid, 'EXECUTE')),
-  '{}'::text[],
-  'no SECURITY DEFINER function is executable by anon'
+  -- The invite page asks which group a trial link belongs to before anyone signs in.
+  ARRAY['public.trial_invite_info']::text[],
+  'only the trial invite info is executable by anon among SECURITY DEFINER functions'
 );
 
 SELECT set_eq(
@@ -203,6 +205,9 @@ SELECT set_eq(
     'public.key_handover',
     'public.edit_item',
     'public.admin_expire_trials',
+    'public.redeem_trial_invite',
+    'public.trial_status',
+    'public.trial_invite_info',
     'public.admin_user_effective_grants',
     'public._sum_challenge_points_for_self',
     'public.increase_challenge_stats_count',

@@ -20,6 +20,7 @@ export const AuthLayout = lazyWithRetry(() => import('@/features/auth/AuthLayout
 export const ForgotPassword = lazyWithRetry(() => import('@/features/auth/ForgotPassword'));
 export const ResetPassword = lazyWithRetry(() => import('@/features/auth/ResetPassword'));
 export const LoginForm = lazyWithRetry(() => import('@/features/auth/LoginForm'));
+export const TrialInvitePage = lazyWithRetry(() => import('@/features/trials/TrialInvitePage'));
 export const SignUpForm = lazyWithRetry(() => import('@/features/auth/SignUpForm'));
 export const ChallengeList = lazyWithRetry(() => import('@/features/challenges/ChallengeList'));
 export const GameList = lazyWithRetry(() => import('@/features/games/GameList'));

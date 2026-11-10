@@ -1,3 +1,8 @@
+import { applyTrialUsage, trialUsageDelta } from '@/features/trials/trialUsage';
+import type { TrialStatus } from '@/repository/TrialRepository';
+import { trialKeys } from './trialKeys';
+import { trialAttendanceError } from '@/features/trials/trialErrors';
+import { toast } from 'sonner';
 import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
@@ -406,6 +411,7 @@ export const useUpdateAttendanceMutation = () => {
         cancelEventLists(),
         queryClient.cancelQueries({ queryKey: eventKeys.eventAttendance(event.id) }),
         queryClient.cancelQueries({ queryKey: eventKeys.event(event.id), exact: true }),
+        ...(event.group?.id ? [queryClient.cancelQueries({ queryKey: trialKeys.status(event.group.id) })] : []),
       ]);
 
       const previousLists = snapshotEventLists();
@@ -413,6 +419,14 @@ export const useUpdateAttendanceMutation = () => {
       const previousEvent = queryClient.getQueryData<EventsUserView | null>(eventKeys.event(event.id));
 
       updateEventEverywhere(event.id, (ev) => ({ ...ev, user_state: newState }));
+
+      // A trial member sees "Noch x von y Probetrainings" on the home page change right away.
+      const trialStatusKey = event.group?.id ? trialKeys.status(event.group.id) : null;
+      const previousTrialStatus = trialStatusKey ? queryClient.getQueryData<TrialStatus | null>(trialStatusKey) : undefined;
+      const trialDelta = trialUsageDelta(event, newState);
+      if (trialStatusKey && previousTrialStatus && trialDelta !== 0) {
+        queryClient.setQueryData(trialStatusKey, applyTrialUsage(previousTrialStatus, trialDelta));
+      }
 
       if (previousAttendance) {
         const now = formatDateToDatabase(new Date());
@@ -427,10 +441,13 @@ export const useUpdateAttendanceMutation = () => {
         queryClient.setQueryData(eventKeys.eventAttendance(event.id), updatedAttendance);
       }
 
-      return { previousLists, previousAttendance, previousEvent, event };
+      return { previousLists, previousAttendance, previousEvent, previousTrialStatus, event };
     },
     onError: (error, variables, context) => {
-      captureException(error, {
+      // A trial member's limit or a closed event is a rule, not a bug: explain it, don't report it.
+      const trialError = trialAttendanceError(error);
+      if (trialError) toast.error(trialError);
+      else captureException(error, {
         extra: {
           event: variables.event.id,
           eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -448,6 +465,9 @@ export const useUpdateAttendanceMutation = () => {
       if (context.previousAttendance) {
         queryClient.setQueryData(eventKeys.eventAttendance(variables.event.id!), context.previousAttendance);
       }
+      if (context.previousTrialStatus && variables.event.group?.id) {
+        queryClient.setQueryData(trialKeys.status(variables.event.group.id), context.previousTrialStatus);
+      }
     },
 
     onSettled: (_data, _error, variables) =>
@@ -455,6 +475,8 @@ export const useUpdateAttendanceMutation = () => {
         invalidateEventLists(),
         // Prefix match: refreshes the event itself and its attendance.
         queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.event.id) }),
+        // The server's count of used trial trainings (also after a refused sign-up).
+        ...(variables.event.group?.id ? [queryClient.invalidateQueries({ queryKey: trialKeys.status(variables.event.group.id) })] : []),
       ]),
   });
 };

@@ -95,7 +95,9 @@
     "playwright:install-browsers": "npx playwright install",
     "test:e2e": "dotenv -e environments/.env.local -- playwright test e2e/playwright",
     "test:e2e:ci": "E2E_COVERAGE=true playwright test",
-    "test:e2e:report": "nyc report --reporter=json-summary --reporter=text-summary --report-dir=coverage/e2e && node scripts/e2e-report.mjs"
+    "test:e2e:report": "nyc report --reporter=json-summary --reporter=text-summary --report-dir=coverage/e2e && node scripts/e2e-report.mjs",
+    "db:dump:local": "supabase db dump --local --data-only -f supabase/seed.sql -x audit.log -x auth.sessions -x auth.refresh_tokens -x auth.mfa_amr_claims -x auth.audit_log_entries -x auth.flow_state -x auth.one_time_tokens -x notifications.notification_outbox -x notifications.notification_outbox_targets && yarn db:dump:local:lint",
+    "db:dump:local:lint": "perl -pi -e 's/^(?!.*pg_catalog\\.)(.*\\))\\s*;\\s*$/$1 ON CONFLICT DO NOTHING;/' supabase/seed.sql"
   },
   "browserslist": {
     "production": [
