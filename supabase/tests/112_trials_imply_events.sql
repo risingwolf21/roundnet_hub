@@ -17,6 +17,8 @@ UPDATE auth.users SET is_anonymous = true WHERE id = tests.get_supabase_uid('ti_
 INSERT INTO public.event_group(id, name, visible, is_public) VALUES
   (:'open', 'Main Group', true, true),
   (:'closed', 'Ohne Probetraining', true, true);
+-- Features the test needs, whatever the seed contains.
+INSERT INTO public.features(name) VALUES ('events'), ('events.trials'), ('events.trials.guests'), ('items') ON CONFLICT DO NOTHING;
 -- Like the reported setup: trials on, but no `events` feature on the group itself.
 INSERT INTO public.group_features("group", feature) VALUES
   (:'open', 'events.trials'), (:'open', 'events.trials.guests'),
