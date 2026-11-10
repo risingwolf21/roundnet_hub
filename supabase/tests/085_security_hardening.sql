@@ -10,9 +10,10 @@ SELECT plan(24);
 -- ---------------------------------------------------------------------------
 SELECT tests.authenticate_as_service_role();
 
-INSERT INTO public.events("key","title","description","recurrence","startingDateTime","endDateTime","group")
+-- Open for trials: the trial member below must see and join it (20261109150000_guest_trials).
+INSERT INTO public.events("key","title","description","recurrence","startingDateTime","endDateTime","group","trials_open")
 VALUES ('sec-evt','Sec','D','None', now() + interval '1 day', now() + interval '1 day 3 hours',
-        '00000000-0000-0000-0000-000000000042');
+        '00000000-0000-0000-0000-000000000042', true);
 
 INSERT INTO public.permissions(name) VALUES ('event.signup') ON CONFLICT DO NOTHING;
 INSERT INTO public.group_permissions("group","permission")
