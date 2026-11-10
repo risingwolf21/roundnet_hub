@@ -41,6 +41,17 @@ export const TrialRepository = {
     return data?.[0] ?? null;
   },
 
+  /** Guest links work only in a group that has both features itself (not via another group or a direct grant). */
+  async fetchGroupAllowsGuests(groupId: string): Promise<boolean> {
+    const { data } = await supabase
+      .from('group_features')
+      .select('feature')
+      .eq('group', groupId)
+      .in('feature', ['events.trials', 'events.trials.guests'])
+      .throwOnError();
+    return (data ?? []).length === 2;
+  },
+
   async fetchInvites(groupId: string): Promise<TrialInvite[]> {
     const { data } = await supabase
       .from('trial_invites')

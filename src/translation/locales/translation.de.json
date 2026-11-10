@@ -1811,7 +1811,8 @@
       "deactivate": "Link deaktivieren",
       "deactivateConfirm": "Link deaktivieren? Neue Gäste können ihn dann nicht mehr nutzen. Laufende Probezeiten bleiben.",
       "deactivated": "Link deaktiviert",
-      "deactivateFailed": "Der Link konnte nicht deaktiviert werden."
+      "deactivateFailed": "Der Link konnte nicht deaktiviert werden.",
+      "notEnabled": "Gast-Probetrainings sind für {{group}} nicht freigeschaltet. Aktiviere im Grants Manager für diese Gruppe „Probenutzer für Events“ und „Gäste per Link für Probetraining“."
     },
     "member": {
       "guest": "Gast",

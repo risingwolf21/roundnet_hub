@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { signIn, redeem, inviteInfo, application } = vi.hoisted(() => ({
+const { signIn, redeem, inviteInfo, application, guestsAllowed } = vi.hoisted(() => ({
+  guestsAllowed: { data: true as boolean | undefined, isLoading: false },
   signIn: vi.fn(),
   redeem: vi.fn(),
   inviteInfo: { data: null as unknown, isLoading: false },
@@ -14,11 +15,18 @@ vi.mock('@/tanstack/trials', () => ({
   useTrialInviteInfo: () => inviteInfo,
   useSignInAsGuest: () => ({ mutate: signIn, isPending: false, isError: false }),
   useRedeemTrialInvite: () => ({ mutate: redeem, isPending: false, isError: false }),
+  useGroupAllowsGuests: () => guestsAllowed,
+  useTrialInvites: () => ({ data: [], isLoading: false, isError: false, refetch: vi.fn() }),
+  useCreateTrialInvite: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeactivateTrialInvite: () => ({ mutate: vi.fn(), isPending: false }),
 }));
+vi.mock('@/contexts/DialogsProvider', () => ({ useDialogs: () => ({ confirm: vi.fn() }) }));
+vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/features/auth/ApplicationContext', () => ({ useApplication: () => application }));
 
 import { trialAttendanceError } from '@/features/trials/trialErrors';
 import TrialInvitePage from '@/features/trials/TrialInvitePage';
+import { GuestInvitesCard } from '@/features/trials/GuestInvitesCard';
 
 const VALID = { group_id: 'g-1', group_name: 'Basic Training', event_limit: 3, expires_at: null, valid: true };
 
@@ -97,5 +105,24 @@ describe('TrialInvitePage', () => {
     application.user = { id: 'u-3', displayName: 'Mia', groups: [{ id: 'g-1', user_role: 'user' }] };
     renderPage();
     expect(screen.getByRole('button', { name: 'Du bist schon dabei – zur App' })).toBeInTheDocument();
+  });
+});
+
+describe('GuestInvitesCard', () => {
+  const group = { id: 'g-1', name: 'Basic Training' } as Group;
+
+  it('offers new links in a group that has guest trials itself', () => {
+    guestsAllowed.data = true;
+    render(<GuestInvitesCard group={group} />);
+    expect(screen.getByRole('button', { name: 'Neuer Einladungslink' })).toBeInTheDocument();
+  });
+
+  // The admin may have the feature through another group or a direct grant; the database only
+  // accepts links for a group that has it itself.
+  it('explains instead of offering a link when this group lacks the feature', () => {
+    guestsAllowed.data = false;
+    render(<GuestInvitesCard group={group} />);
+    expect(screen.getByText(/nicht freigeschaltet/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Neuer Einladungslink' })).not.toBeInTheDocument();
   });
 });

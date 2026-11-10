@@ -1811,7 +1811,8 @@
       "deactivate": "Turn off link",
       "deactivateConfirm": "Turn off the link? New guests can't use it any more. Running trials continue.",
       "deactivated": "Link turned off",
-      "deactivateFailed": "The link couldn't be turned off."
+      "deactivateFailed": "The link couldn't be turned off.",
+      "notEnabled": "Guest trials are not enabled for {{group}}. In the grants manager, turn on \"Probenutzer für Events\" and \"Gäste per Link für Probetraining\" for this group."
     },
     "member": {
       "guest": "Guest",

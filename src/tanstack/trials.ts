@@ -9,6 +9,7 @@ export const trialKeys = {
   all: ['trials'] as const,
   inviteInfo: (token: string) => [...trialKeys.all, 'invite', token] as const,
   invites: (groupId: string) => [...trialKeys.all, 'invites', groupId] as const,
+  groupAllowsGuests: (groupId: string) => [...trialKeys.all, 'allowsGuests', groupId] as const,
   status: (groupId: string, userId?: string) => [...trialKeys.all, 'status', groupId, userId ?? 'me'] as const,
 };
 
@@ -37,6 +38,12 @@ export const useRedeemTrialInvite = () =>
       queryClient.invalidateQueries({ queryKey: groupKeys.all });
       queryClient.invalidateQueries({ queryKey: trialKeys.all });
     },
+  });
+
+export const useGroupAllowsGuests = (groupId: string) =>
+  useQuery({
+    queryKey: trialKeys.groupAllowsGuests(groupId),
+    queryFn: () => TrialRepository.fetchGroupAllowsGuests(groupId),
   });
 
 export const useTrialInvites = (groupId: string) =>

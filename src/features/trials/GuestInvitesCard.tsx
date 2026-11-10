@@ -5,12 +5,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { FormSection, Stepper, ToggleRow } from '@/features/events/dialogs/EventFormParts';
 import { trialInviteUrl, TrialInvite } from '@/repository/TrialRepository';
-import { useCreateTrialInvite, useDeactivateTrialInvite, useTrialInvites } from '@/tanstack/trials';
+import { useCreateTrialInvite, useDeactivateTrialInvite, useGroupAllowsGuests, useTrialInvites } from '@/tanstack/trials';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { addDays, endOfDay } from 'date-fns';
 import { t as translate } from 'i18next';
-import { Link2, Plus, Share2, X } from 'lucide-react';
+import { Info, Link2, Plus, Share2, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -37,6 +38,24 @@ const shareInvite = async (invite: TrialInvite, groupName: string) => {
 
 /** Group admins create and manage the invite links guests use to start a trial. */
 export const GuestInvitesCard = ({ group }: { group: Group }) => {
+  const { t } = useTranslation();
+  const { data: allowed, isLoading } = useGroupAllowsGuests(group.id);
+  if (isLoading) return null;
+  if (allowed) return <GuestInvites group={group} />;
+
+  // The admin has the feature through another group or a direct grant, but links only work in a
+  // group that has it itself: say so instead of offering a button the database refuses.
+  return (
+    <FormSection icon={Link2} title={t('trials.links.title')}>
+      <Alert variant="info">
+        <Info />
+        <AlertDescription>{t('trials.links.notEnabled', { group: group.name })}</AlertDescription>
+      </Alert>
+    </FormSection>
+  );
+};
+
+const GuestInvites = ({ group }: { group: Group }) => {
   const { t, i18n } = useTranslation();
   const dialogs = useDialogs();
   const { data: invites = [], isLoading, isError, refetch } = useTrialInvites(group.id);
