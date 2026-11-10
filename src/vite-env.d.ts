@@ -23,6 +23,7 @@ interface ImportMetaEnv {
   readonly VITE_VAPID_PUBLIC_KEY: string;
   readonly VITE_WEBSITE_PATH: string;
   readonly VITE_WEBSITE_NAME: string;
+  readonly VITE_ICON_PREFIX: string;
   readonly VITE_APP_HOMEPAGE: string;
 }
 
