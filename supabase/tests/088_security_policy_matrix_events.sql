@@ -65,6 +65,8 @@ INSERT INTO public.events(id, "key", title, description, recurrence, "startingDa
   ('e1000000-0000-0000-0000-000000000004', 'sm-e4', 'SM E4', '', 'None', now() + interval '1 day',  now() + interval '1 day 2 hours',  'a1000000-0000-0000-0000-000000000002', false, true),
   ('e1000000-0000-0000-0000-000000000005', 'sm-e5', 'SM E5', '', 'None', now() + interval '2 days', now() + interval '2 days 2 hours', 'a1000000-0000-0000-0000-000000000001', false, false),
   ('e1000000-0000-0000-0000-000000000006', 'sm-e6', 'SM E6', '', 'None', now() + interval '3 days', now() + interval '3 days 2 hours', 'a1000000-0000-0000-0000-000000000001', false, false);
+-- The trial member's checks below are about the policy matrix: open the events for trials.
+UPDATE public.events SET trials_open = true WHERE "group" IN ('a1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000002');
 
 INSERT INTO public.event_attendance_user_mapping("user", event, state) VALUES
   (pg_temp.u('sm_user2'), 'e1000000-0000-0000-0000-000000000001', 'Attending'),

@@ -17,8 +17,8 @@ INSERT INTO public.events("key","title","description","startingDateTime","endDat
 VALUES ('cap-a','A','—', now()+interval '2 days', now()+interval '2 days 2 hours', :'grp', 1)
 RETURNING id AS eva \gset
 
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","maxAttendees","max_trial_attendees")
-VALUES ('cap-b','B','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 10, 1)
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","maxAttendees","max_trial_attendees","trials_open")
+VALUES ('cap-b','B','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 10, 1, true)
 RETURNING id AS evb \gset
 
 -- ============================================================================

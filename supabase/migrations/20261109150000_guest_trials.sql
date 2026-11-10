@@ -17,7 +17,7 @@
 --     their own groups.
 
 -- ---------------------------------------------------------------------
--- 1. The feature and the event limit
+-- 1. The feature, the event limit and events open for trials
 -- ---------------------------------------------------------------------
 insert into public.features(name, description)
 values ('events.trials.guests', 'Gäste per Link für Probetrainings')
@@ -29,6 +29,27 @@ alter table public.group_user_mapping
 
 comment on column public.group_user_mapping.trial_event_limit is
   'Trainings a trial member may sign up for in this group. NULL = only the time limit applies.';
+
+-- Trial members only see and join events a trainer opened for trials (section 8).
+-- max_trial_attendees stays the optional seat limit: NULL = unlimited trial seats.
+alter table public.events
+  add column if not exists trials_open boolean not null default false;
+alter table public.event_series
+  add column if not exists trials_open boolean not null default false;
+
+comment on column public.events.trials_open is
+  'Trial members may see and sign up for this event. Seats: max_trial_attendees (NULL = unlimited).';
+
+-- Existing events start closed, except where trial members already signed up for a coming
+-- training: those events (and their series) stay open so nobody loses a booked place.
+update public.events e set trials_open = true
+where e."startingDateTime" > now()
+  and exists (select 1 from public.event_attendance_user_mapping a
+              where a.event = e.id
+                and a.state in ('AttendingAsTrial'::public."EventAttendance", 'WaitingAsTrial'::public."EventAttendance"));
+
+update public.event_series s set trials_open = true
+where exists (select 1 from public.events e where e.series_id = s.id and e.trials_open);
 
 -- ---------------------------------------------------------------------
 -- 2. Helpers
@@ -215,8 +236,9 @@ grant execute on function public.redeem_trial_invite(text, text) to authenticate
 -- ---------------------------------------------------------------------
 -- 4. Signing up: the event limit
 -- ---------------------------------------------------------------------
--- Same as 20261101140000_attendance_capacity_enforcement, plus: a trial member's new sign-up
--- (attending or waiting, not a promotion from the waitlist) is refused once their limit is used.
+-- Same as 20261101140000_attendance_capacity_enforcement, plus for trial members: no sign-up on
+-- an event that is not open for trials (section 8), and a new sign-up (attending or waiting, not
+-- a promotion from the waitlist) is refused once their limit is used.
 CREATE OR REPLACE FUNCTION public.enforce_attendance_capacity()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -229,6 +251,7 @@ DECLARE
   v_is_trial boolean;
   v_group uuid;
   v_limit integer;
+  v_open boolean;
 BEGIN
   -- Trusted system/admin writes (service role) are not clamped.
   IF coalesce(auth.role(), '') = 'service_role' THEN
@@ -240,8 +263,8 @@ BEGIN
     PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('attendance:' || NEW.event::text)::bigint);
 
     -- Trial-role members are always on the trial states (prevents taking a regular seat directly).
-    SELECT e."group", gum.trial_event_limit, true
-    INTO v_group, v_limit, v_is_trial
+    SELECT e."group", gum.trial_event_limit, true, e.trials_open
+    INTO v_group, v_limit, v_is_trial, v_open
     FROM public.events e
     JOIN public.group_user_mapping gum ON gum."group" = e."group"
     WHERE e.id = NEW.event AND gum."user" = NEW."user" AND gum."role" = 'trial';
@@ -251,6 +274,11 @@ BEGIN
       NEW.state := CASE WHEN NEW.state IN ('Attending','AttendingAsTrial')
                         THEN 'AttendingAsTrial'::public."EventAttendance"
                         ELSE 'WaitingAsTrial'::public."EventAttendance" END;
+
+      IF NOT v_open THEN
+        RAISE EXCEPTION 'event is not open for trials'
+          USING errcode = 'P0001', hint = 'trial_event_closed';
+      END IF;
 
       -- A new sign-up uses one training; moving between attending and waiting does not.
       IF v_limit IS NOT NULL
@@ -298,8 +326,9 @@ REVOKE ALL ON FUNCTION public.enforce_attendance_capacity() FROM public, anon, a
 -- 5. Ending a trial
 -- ---------------------------------------------------------------------
 -- One trial ends: demote to joinRequested (revokes group access), drop future trial sign-ups,
--- keep past attendance, notify the person and the group admins. Moved out of
--- expire_trial_memberships so the feature switch (section 6) ends trials the same way.
+-- keep past attendance, notify the person and the group admins (German and English, as in
+-- 20261103110000_localized_notifications). Moved out of expire_trial_memberships so the
+-- feature switch (section 6) ends trials the same way.
 create or replace function public.end_trial(p_user uuid, p_group uuid)
 returns boolean
 language plpgsql
@@ -342,7 +371,9 @@ begin
     p_group,
     'normal',
     'group',
-    p_group
+    p_group,
+    'Trial period ended',
+    'Your trial period at ' || coalesce(v_group_name, 'the group') || ' has ended.'
   );
 
   select array_agg(gum2."user")
@@ -362,7 +393,9 @@ begin
       p_group,
       'normal',
       'group',
-      p_group
+      p_group,
+      'Trial period ended',
+      'A user''s trial period at ' || coalesce(v_group_name, 'the group') || ' has ended.'
     );
   end if;
 
@@ -534,3 +567,105 @@ create policy guests_user_scope on public."user"
     )
   )
   with check (not (select public.is_guest()) or id = (select auth.uid()));
+
+-- ---------------------------------------------------------------------
+-- 8. Events open for trials
+-- ---------------------------------------------------------------------
+-- Trial members (guests included) only see events that are open for trials.
+drop policy if exists events_trials_only_open on public.events;
+create policy events_trials_only_open on public.events
+  as restrictive for select to authenticated
+  using (
+    trials_open
+    or not exists (
+      select 1 from public.group_user_mapping gum
+      where gum."group" = events."group"
+        and gum."user" = (select auth.uid())
+        and gum.role = 'trial'::public."GroupRole"
+    )
+  );
+
+-- A new occurrence takes the setting of its series; changing the series changes its coming,
+-- series-managed occurrences (like apply_series_occurrences' sync does for the other fields).
+create or replace function public.trg_events_trials_open_from_series()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.series_id is not null then
+    select s.trials_open into new.trials_open from public.event_series s where s.id = new.series_id;
+    new.trials_open := coalesce(new.trials_open, false);
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.trg_events_trials_open_from_series() from public, anon, authenticated;
+
+drop trigger if exists trg_events_trials_open_from_series on public.events;
+create trigger trg_events_trials_open_from_series
+  before insert on public.events
+  for each row execute function public.trg_events_trials_open_from_series();
+
+create or replace function public.trg_event_series_sync_trials_open()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  update public.events
+     set trials_open = new.trials_open
+   where series_id = new.id
+     and detached = false
+     and "isCancelled" = false
+     and "startingDateTime" > now()
+     and trials_open is distinct from new.trials_open;
+  return new;
+end;
+$$;
+
+revoke execute on function public.trg_event_series_sync_trials_open() from public, anon, authenticated;
+
+drop trigger if exists trg_event_series_sync_trials_open on public.event_series;
+create trigger trg_event_series_sync_trials_open
+  after update of trials_open on public.event_series
+  for each row
+  when (old.trials_open is distinct from new.trials_open)
+  execute function public.trg_event_series_sync_trials_open();
+
+-- events_user_view: append the new column (must stay last for CREATE OR REPLACE).
+create or replace view public.events_user_view with (security_invoker=on) as
+  select e.id,
+    e.created_at,
+    e.title,
+    e.description,
+    e."meetingDateTime",
+    e."startingDateTime",
+    e."endDateTime",
+    e.key,
+    e."isCancelled",
+    e.place,
+    e."group",
+    e.recurrence,
+    e."answerDeadline",
+    e."recurrenceEnd",
+    e."maxAttendees",
+    e.max_trial_attendees,
+    e.required_item,
+    e.constellations_enabled,
+    eaus.state as user_state,
+    gus.role as user_group_role,
+    (select count(*) from public.event_attendance_user_mapping ea
+      where ea.event = e.id and ea.state = 'Attending'::public."EventAttendance") as attending_count,
+    (select count(*) from public.event_attendance_user_mapping ea
+      where ea.event = e.id and ea.state = 'Declined'::public."EventAttendance") as declined_count,
+    e."answerStart",
+    e.trials_open
+  from public.events e
+    left join public.event_attendance_user_mapping eaus
+      on e.id = eaus.event and eaus."user" = (select auth.uid())
+    join public.group_user_mapping gus
+      on e."group" = gus."group" and gus."user" = (select auth.uid());

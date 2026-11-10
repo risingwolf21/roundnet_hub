@@ -2,7 +2,7 @@
 -- the end of a trial, the feature switch and what guests (anonymous users) may touch.
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(32);
+SELECT plan(39);
 
 RESET ROLE;
 SELECT set_config('request.jwt.claims', NULL, true);
@@ -37,14 +37,22 @@ INSERT INTO public.trial_invites("group", token, event_limit) VALUES (:'grp2', '
 INSERT INTO public.trial_invites("group", token, expires_at) VALUES (:'grp', 'tok-expired', now() - interval '1 day');
 INSERT INTO public.trial_invites("group", token, max_uses, uses) VALUES (:'grp', 'tok-full', 1, 1);
 
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees")
-VALUES ('gt-1','E1','—', now()+interval '1 day', now()+interval '1 day 2 hours', :'grp', 5) RETURNING id AS e1 \gset
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees")
-VALUES ('gt-2','E2','—', now()+interval '2 days', now()+interval '2 days 2 hours', :'grp', 5) RETURNING id AS e2 \gset
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees")
-VALUES ('gt-3','E3','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 5) RETURNING id AS e3 \gset
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees")
-VALUES ('gt-past','EP','—', now()-interval '2 days', now()-interval '2 days'+interval '2 hours', :'grp', 5) RETURNING id AS ep \gset
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees","trials_open")
+VALUES ('gt-1','E1','—', now()+interval '1 day', now()+interval '1 day 2 hours', :'grp', 5, true) RETURNING id AS e1 \gset
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees","trials_open")
+VALUES ('gt-2','E2','—', now()+interval '2 days', now()+interval '2 days 2 hours', :'grp', 5, true) RETURNING id AS e2 \gset
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees","trials_open")
+VALUES ('gt-3','E3','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 5, true) RETURNING id AS e3 \gset
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","max_trial_attendees","trials_open")
+VALUES ('gt-past','EP','—', now()-interval '2 days', now()-interval '2 days'+interval '2 hours', :'grp', 5, true) RETURNING id AS ep \gset
+
+-- An event not opened for trials (the default) and a series opened for trials.
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group")
+VALUES ('gt-closed','Closed','—', now()+interval '4 days', now()+interval '4 days 2 hours', :'grp') RETURNING id AS ec \gset
+INSERT INTO public.event_series("group", title, rrule, dtstart, duration, trials_open)
+VALUES (:'grp', 'Offen', 'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU', now(), interval '2 hours', true) RETURNING id AS so \gset
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","series_id")
+VALUES ('gt-series','Series','—', now()+interval '5 days', now()+interval '5 days 2 hours', :'grp', :'so') RETURNING id AS es \gset
 
 -- A blocked table guests could otherwise read as group members.
 INSERT INTO public.event_series("group", title, rrule, dtstart, duration)
@@ -180,6 +188,24 @@ SELECT is(
        'user_activity','user_calender_settings','user_calendar_event_mapping']))),
   NULL,
   'no table with RLS is open to guests by accident (add new tables to the guest block)');
+
+-- ============================================================================
+-- G) Events open for trials
+-- ============================================================================
+SELECT is((SELECT trials_open FROM public.events WHERE id = :'es'::uuid), true, 'a new occurrence takes the trial setting of its series');
+UPDATE public.event_series SET trials_open = false WHERE id = :'so'::uuid;
+SELECT is((SELECT trials_open FROM public.events WHERE id = :'es'::uuid), false, 'closing the series closes its coming occurrences');
+
+SELECT tests.authenticate_as('gt_trial2');
+SELECT is((SELECT count(*)::int FROM public.events WHERE id = :'ec'::uuid), 0, 'trial members do not see an event closed for trials');
+SELECT is((SELECT count(*)::int FROM public.events_user_view WHERE id = :'ec'::uuid), 0, 'nor in events_user_view');
+SELECT is((SELECT count(*)::int FROM public.events WHERE id = :'e3'::uuid), 1, 'trial members see an event open for trials');
+SELECT throws_ok(format($$ INSERT INTO public.event_attendance_user_mapping("user","event","state") VALUES (%L, %L, 'Attending') $$,
+                        tests.get_supabase_uid('gt_trial2'), :'ec'),
+  'P0001', NULL, 'trial members cannot sign up for an event closed for trials');
+
+SELECT tests.authenticate_as('gt_admin');
+SELECT is((SELECT count(*)::int FROM public.events WHERE id = :'ec'::uuid), 1, 'members still see an event closed for trials');
 
 SELECT * FROM finish();
 ROLLBACK;

@@ -65,8 +65,8 @@ SELECT is((SELECT count(*)::int FROM public.event_attendance_user_mapping WHERE 
 -- C) Regular and trial pools are independent on promotion
 --    maxAttendees = 1, max_trial_attendees = 1
 -- ============================================================================
-INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","maxAttendees","max_trial_attendees")
-VALUES ('wl-mix','Mix','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 1, 1)
+INSERT INTO public.events("key","title","description","startingDateTime","endDateTime","group","maxAttendees","max_trial_attendees","trials_open")
+VALUES ('wl-mix','Mix','—', now()+interval '3 days', now()+interval '3 days 2 hours', :'grp', 1, 1, true)
 RETURNING id AS mix \gset
 
 -- regular seat + regular waiter
