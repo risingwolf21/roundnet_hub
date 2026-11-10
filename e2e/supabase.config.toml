@@ -7,3 +7,7 @@ project_id = "roundnet_karlsruhe_app"
 [api]
 schemas = ["public", "graphql_public", "games", "notifications", "util"]
 extra_search_path = ["public", "extensions"]
+
+[auth]
+# Guest trials sign newcomers in anonymously (guest-trials.spec.ts).
+enable_anonymous_sign_ins = true
