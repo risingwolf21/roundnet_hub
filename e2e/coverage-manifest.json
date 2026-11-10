@@ -170,6 +170,22 @@
         {
           "id": "trials.expire",
           "title": "Probemitgliedschaft läuft ab"
+        },
+        {
+          "id": "trials.guest.invite",
+          "title": "Gast-Einladungslink erstellen"
+        },
+        {
+          "id": "trials.guest.join",
+          "title": "Gast startet Probetraining per Link"
+        },
+        {
+          "id": "trials.guest.attend",
+          "title": "Gast sagt zu (Zähler)"
+        },
+        {
+          "id": "trials.guest.limit",
+          "title": "Gast-Limit erreicht"
         }
       ]
     },

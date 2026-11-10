@@ -33,6 +33,8 @@ test.describe('Administration', () => {
     ]).throwOnError();
     const { data } = await admin.schema('games').from('players').insert({ display_name: GUEST }).select('player').single().throwOnError();
     guestPlayer = (data as { player: string }).player;
+    // The dashboard's "waits for you" row needs an open payment; don't rely on the seed for it.
+    await admin.from('payments').insert({ user: ids.MEMBER, amountToPay: 2, paymentState: 'Open' }).throwOnError();
   });
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
@@ -92,6 +94,7 @@ test.describe('Administration', () => {
     try {
       await admin.schema('notifications').from('notifications').delete().eq('title', NOTE_TITLE);
       await admin.schema('games').from('players').delete().eq('player', guestPlayer);
+      await admin.from('payments').delete().eq('user', ids.MEMBER);
       await admin.from('group_user_mapping').delete().eq('group', GROUP);
       await admin.from('event_group').delete().eq('id', GROUP);
       for (const id of Object.values(ids)) {
