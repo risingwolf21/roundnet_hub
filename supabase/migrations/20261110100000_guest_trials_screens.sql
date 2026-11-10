@@ -8,6 +8,8 @@
 --   3. insert_event_with_bring_items stores max_trial_attendees (it accepted the key but dropped
 --      the value) and the new trials_open.
 --   4. When a guest links an e-mail address (converting to a real account), public.user gets it.
+--   5. Guests can sign up at all: public.user.email is NOT NULL, and an anonymous auth user has
+--      no e-mail, so the sign-up trigger stores '' for them (as the e-mail sync does).
 
 -- ---------------------------------------------------------------------
 -- 1. Invite info for the invite page
@@ -293,7 +295,7 @@ security definer
 set search_path = ''
 as $$
 begin
-  update public."user" set email = new.email where id = new.id and email is distinct from new.email;
+  update public."user" set email = coalesce(new.email, '') where id = new.id and email is distinct from coalesce(new.email, '');
   return new;
 end;
 $$;
@@ -306,3 +308,40 @@ create trigger on_auth_user_email_changed
   for each row
   when (old.email is distinct from new.email)
   execute function public.trg_sync_auth_email_to_user();
+
+-- ---------------------------------------------------------------------
+-- 5. Sign-up of guests: '' instead of a NULL e-mail
+-- ---------------------------------------------------------------------
+-- Same as 20261103100000_user_language, but anonymous users (no e-mail) get '' because
+-- public.user.email is NOT NULL; without it every anonymous sign-in fails.
+CREATE OR REPLACE FUNCTION public.trg_handle_new_auth_user()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  v_name    text;
+  v_display text;
+  v_lang    text;
+BEGIN
+  -- Aus Metadata sinnvolle Werte ziehen, mit Fallbacks
+  v_name    := COALESCE(
+                 NEW.raw_user_meta_data->>'name',
+                 NEW.raw_user_meta_data->>'displayName',
+                 'Anonymous'
+               );
+
+  v_display := COALESCE(
+                 NEW.raw_user_meta_data->>'displayName',
+                 v_name
+               );
+
+  -- Only the two supported languages are accepted; anything else falls back to German.
+  v_lang := CASE WHEN NEW.raw_user_meta_data->>'language' = 'en' THEN 'en' ELSE 'de' END;
+
+  INSERT INTO public."user"("id","displayName","email","name","language")
+  VALUES (NEW.id, v_display, COALESCE(NEW.email, ''), v_name, v_lang)
+  ON CONFLICT ("id") DO NOTHING;
+
+  RETURN NEW;
+END;$function$;

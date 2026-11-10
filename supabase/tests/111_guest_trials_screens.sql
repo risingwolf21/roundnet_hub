@@ -2,7 +2,7 @@
 -- trial_status.is_guest, insert_event_with_bring_items storing the trial fields, e-mail sync.
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(9);
+SELECT plan(11);
 
 RESET ROLE;
 SELECT set_config('request.jwt.claims', NULL, true);
@@ -10,7 +10,6 @@ SELECT set_config('request.jwt.claims', NULL, true);
 SELECT tests.create_supabase_user(n, n || '@guest-screens.test')
 FROM unnest(ARRAY['gs_guest','gs_admin']) n;
 UPDATE auth.users SET is_anonymous = true, email = NULL WHERE id = tests.get_supabase_uid('gs_guest');
-UPDATE public."user" SET email = NULL WHERE id = tests.get_supabase_uid('gs_guest');
 
 \set grp  '00000000-0000-0000-0000-0000000011b1'
 \set grp2 '00000000-0000-0000-0000-0000000011b2'
@@ -27,6 +26,16 @@ INSERT INTO public.group_user_mapping("user","group",role) VALUES
 INSERT INTO public.trial_invites("group", token, event_limit) VALUES (:'grp', 'gs-ok', 3);
 INSERT INTO public.trial_invites("group", token, active) VALUES (:'grp', 'gs-off', false);
 INSERT INTO public.trial_invites("group", token) VALUES (:'grp2', 'gs-nofeature');
+
+-- ============================================================================
+-- 0) A guest can sign up at all (anonymous auth user, no e-mail)
+-- ============================================================================
+INSERT INTO auth.users(id, aud, role, is_anonymous, raw_user_meta_data)
+VALUES ('00000000-0000-0000-0000-0000000011bf', 'authenticated', 'authenticated', true, '{"name": "Gast", "displayName": "Gast"}');
+SELECT is((SELECT email FROM public."user" WHERE id = '00000000-0000-0000-0000-0000000011bf'), '',
+          'an anonymous sign-up creates the profile with an empty e-mail');
+SELECT is((SELECT email FROM public."user" WHERE id = tests.get_supabase_uid('gs_guest')), '',
+          'removing the e-mail of an auth user leaves an empty e-mail, not NULL');
 
 -- ============================================================================
 -- A) The invite page, before anyone signs in
