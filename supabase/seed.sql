@@ -39,6 +39,961 @@ SET
 --
 -- Data for Name: log; Type: TABLE DATA; Schema: audit; Owner: postgres
 --
+INSERT INTO
+  "audit"."log" (
+    "id",
+    "at",
+    "actor_id",
+    "schema_name",
+    "table_name",
+    "op",
+    "row_pk",
+    "changed_cols",
+    "old_data",
+    "new_data",
+    "txid",
+    "request_id"
+  )
+VALUES
+  (
+    1,
+    '2026-11-10 06:55:00.782853+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "reset_user_password"}',
+    '{description,name}',
+    NULL,
+    '{"name": "reset_user_password", "description": "Passwörter von Nutzern zurücksetzen. Benötigt ebenfalls user.role=\"admin\""}',
+    1471,
+    NULL
+  ),
+  (
+    2,
+    '2026-11-10 06:55:01.321432+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "event.transform"}',
+    '{description,name}',
+    NULL,
+    '{"name": "event.transform", "description": "Erlaubt das Transformieren von Events via Event Transformation Regeln."}',
+    1485,
+    NULL
+  ),
+  (
+    3,
+    '2026-11-10 06:55:01.32763+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "games.admin.view"}',
+    '{description,name}',
+    NULL,
+    '{"name": "games.admin.view", "description": "Zeigt alle Werte aus dem Spiel wie ID und ELO Log"}',
+    1486,
+    NULL
+  ),
+  (
+    4,
+    '2026-11-10 06:55:01.32763+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "games.delete.own"}',
+    '{description,name}',
+    NULL,
+    '{"name": "games.delete.own", "description": "Erlaubt es eigene Spiele zu löschen"}',
+    1486,
+    NULL
+  ),
+  (
+    5,
+    '2026-11-10 06:55:01.424972+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "admin.analytics.view"}',
+    '{description,name}',
+    NULL,
+    '{"name": "admin.analytics.view", "description": "Admin analysen"}',
+    1492,
+    NULL
+  ),
+  (
+    6,
+    '2026-11-10 06:55:01.615081+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "games.admin.merge_accounts"}',
+    '{description,name}',
+    NULL,
+    '{"name": "games.admin.merge_accounts", "description": "Erlaubt das Mergen von Player und User Accounts"}',
+    1506,
+    NULL
+  ),
+  (
+    7,
+    '2026-11-10 06:55:01.731249+00',
+    'system',
+    'public',
+    'features',
+    'INSERT',
+    '{"name": "costs"}',
+    '{description,name}',
+    NULL,
+    '{"name": "costs", "description": null}',
+    1519,
+    NULL
+  ),
+  (
+    8,
+    '2026-11-10 06:55:01.852516+00',
+    'system',
+    'public',
+    'features',
+    'INSERT',
+    '{"name": "bundesliga"}',
+    '{description,name}',
+    NULL,
+    '{"name": "bundesliga", "description": null}',
+    1533,
+    NULL
+  ),
+  (
+    9,
+    '2026-11-10 06:55:01.854885+00',
+    'system',
+    'public',
+    'permissions',
+    'INSERT',
+    '{"name": "bundesliga.admin"}',
+    '{description,name}',
+    NULL,
+    '{"name": "bundesliga.admin", "description": "Erlaubt das harte Neuladen (Re-Scraping) der Bundesliga-Daten."}',
+    1534,
+    NULL
+  ),
+  (
+    10,
+    '2026-11-10 06:55:01.926201+00',
+    'system',
+    'public',
+    'features',
+    'INSERT',
+    '{"name": "events.trials.guests"}',
+    '{description,name}',
+    NULL,
+    '{"name": "events.trials.guests", "description": "Gäste per Link für Probetrainings"}',
+    1549,
+    NULL
+  ),
+  (
+    103,
+    '2026-11-10 06:55:50.077711+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-09T10:27:13.750508+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T06:55:50.078981+00:00"}',
+    1655,
+    NULL
+  ),
+  (
+    104,
+    '2026-11-10 06:55:59.719967+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    1660,
+    NULL
+  ),
+  (
+    105,
+    '2026-11-10 06:55:59.719967+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    1660,
+    NULL
+  ),
+  (
+    106,
+    '2026-11-10 06:56:13.969137+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T06:55:50.078981+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T06:56:13.970455+00:00"}',
+    1678,
+    NULL
+  ),
+  (
+    107,
+    '2026-11-10 07:04:02.924565+00',
+    'system',
+    'public',
+    'user',
+    'INSERT',
+    '{"id": "42d0607e-d32a-4ab9-a137-78edfe142996"}',
+    '{avatarUrl,created_at,disabled,displayName,email,id,language,last_seen_at,name,role,verified}',
+    NULL,
+    '{"id": "42d0607e-d32a-4ab9-a137-78edfe142996", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:04:02.924565+00:00", "displayName": "Karl", "last_seen_at": null}',
+    2027,
+    NULL
+  ),
+  (
+    108,
+    '2026-11-10 07:04:02.924565+00',
+    'system',
+    'games',
+    'players',
+    'INSERT',
+    '{"player": "d26f5491-6481-49cb-9911-f7b3121bccd6"}',
+    '{created_at,display_name,effective_rating_cached,gender,hide_rating,ka_index,linked_user_id,matches_played,player,pro_status,rg_avatar_url,rg_id,rg_index,rg_link}',
+    NULL,
+    '{"rg_id": null, "gender": "m", "player": "d26f5491-6481-49cb-9911-f7b3121bccd6", "rg_link": null, "ka_index": 1000, "rg_index": null, "created_at": "2026-11-10T07:04:02.924565+00:00", "pro_status": false, "hide_rating": false, "display_name": null, "rg_avatar_url": null, "linked_user_id": "42d0607e-d32a-4ab9-a137-78edfe142996", "matches_played": 0, "effective_rating_cached": 1000}',
+    2027,
+    NULL
+  ),
+  (
+    109,
+    '2026-11-10 07:04:02.924565+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "42d0607e-d32a-4ab9-a137-78edfe142996"}',
+    '{last_seen_at}',
+    '{"id": "42d0607e-d32a-4ab9-a137-78edfe142996", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:04:02.924565+00:00", "displayName": "Karl", "last_seen_at": null}',
+    '{"id": "42d0607e-d32a-4ab9-a137-78edfe142996", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:04:02.924565+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:04:02.937453+00:00"}',
+    2027,
+    NULL
+  ),
+  (
+    110,
+    '2026-11-10 07:04:03.024223+00',
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    'public',
+    'group_user_mapping',
+    'INSERT',
+    '{"user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    NULL,
+    '{"role": "trial", "user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:04:03.024223+00:00", "trial_event_limit": 3}',
+    2028,
+    NULL
+  ),
+  (
+    128,
+    '2026-11-10 07:10:02.083829+00',
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    'public',
+    'group_user_mapping',
+    'INSERT',
+    '{"user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    NULL,
+    '{"role": "trial", "user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:10:02.083829+00:00", "trial_event_limit": 3}',
+    2439,
+    NULL
+  ),
+  (
+    111,
+    '2026-11-10 07:07:34.088494+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T06:56:13.970455+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:07:34.089958+00:00"}',
+    2249,
+    NULL
+  ),
+  (
+    112,
+    '2026-11-10 07:08:36.772997+00',
+    'system',
+    'public',
+    'user',
+    'INSERT',
+    '{"id": "2470be5a-a653-49a9-9a88-6f27b0e57a70"}',
+    '{avatarUrl,created_at,disabled,displayName,email,id,language,last_seen_at,name,role,verified}',
+    NULL,
+    '{"id": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:08:36.772997+00:00", "displayName": "Karl", "last_seen_at": null}',
+    2325,
+    NULL
+  ),
+  (
+    113,
+    '2026-11-10 07:08:36.772997+00',
+    'system',
+    'games',
+    'players',
+    'INSERT',
+    '{"player": "1a823775-247c-462a-8d04-cb6a4106fd4c"}',
+    '{created_at,display_name,effective_rating_cached,gender,hide_rating,ka_index,linked_user_id,matches_played,player,pro_status,rg_avatar_url,rg_id,rg_index,rg_link}',
+    NULL,
+    '{"rg_id": null, "gender": "m", "player": "1a823775-247c-462a-8d04-cb6a4106fd4c", "rg_link": null, "ka_index": 1000, "rg_index": null, "created_at": "2026-11-10T07:08:36.772997+00:00", "pro_status": false, "hide_rating": false, "display_name": null, "rg_avatar_url": null, "linked_user_id": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "matches_played": 0, "effective_rating_cached": 1000}',
+    2325,
+    NULL
+  ),
+  (
+    114,
+    '2026-11-10 07:08:36.772997+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "2470be5a-a653-49a9-9a88-6f27b0e57a70"}',
+    '{last_seen_at}',
+    '{"id": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:08:36.772997+00:00", "displayName": "Karl", "last_seen_at": null}',
+    '{"id": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:08:36.772997+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:08:36.7805+00:00"}',
+    2325,
+    NULL
+  ),
+  (
+    115,
+    '2026-11-10 07:08:36.905753+00',
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    'public',
+    'group_user_mapping',
+    'INSERT',
+    '{"user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    NULL,
+    '{"role": "trial", "user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:08:36.905753+00:00", "trial_event_limit": 3}',
+    2326,
+    NULL
+  ),
+  (
+    116,
+    '2026-11-10 07:09:36.432802+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:07:34.089958+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:09:36.434004+00:00"}',
+    2397,
+    NULL
+  ),
+  (
+    117,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "3c3ae9fe-72b4-456f-88da-629d9517f729"}',
+    '{trials_open}',
+    '{"id": "3c3ae9fe-72b4-456f-88da-629d9517f729", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-09T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-15T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-15T10:32:00+00:00", "occurrence_date": "2026-11-15", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-15T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "3c3ae9fe-72b4-456f-88da-629d9517f729", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-09T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-15T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-15T10:32:00+00:00", "occurrence_date": "2026-11-15", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-15T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    118,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "243c6f00-5bc2-4305-a888-41796f19e397"}',
+    '{trials_open}',
+    '{"id": "243c6f00-5bc2-4305-a888-41796f19e397", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-16T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-22T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-22T10:32:00+00:00", "occurrence_date": "2026-11-22", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-22T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "243c6f00-5bc2-4305-a888-41796f19e397", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-16T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-22T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-22T10:32:00+00:00", "occurrence_date": "2026-11-22", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-22T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    119,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "4dcdd532-7453-49b2-be2b-3df94c998465"}',
+    '{trials_open}',
+    '{"id": "4dcdd532-7453-49b2-be2b-3df94c998465", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-23T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-29T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-29T10:32:00+00:00", "occurrence_date": "2026-11-29", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-29T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "4dcdd532-7453-49b2-be2b-3df94c998465", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-23T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-11-29T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-11-29T10:32:00+00:00", "occurrence_date": "2026-11-29", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-11-29T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    120,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "a00ce0db-9d38-4ab8-b54b-43b1a3a4c921"}',
+    '{trials_open}',
+    '{"id": "a00ce0db-9d38-4ab8-b54b-43b1a3a4c921", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-30T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-06T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-06T10:32:00+00:00", "occurrence_date": "2026-12-06", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-06T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "a00ce0db-9d38-4ab8-b54b-43b1a3a4c921", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-11-30T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-06T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-06T10:32:00+00:00", "occurrence_date": "2026-12-06", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-06T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    121,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "6f2a9fe0-314b-4fc4-88cf-a2fa75e9db48"}',
+    '{trials_open}',
+    '{"id": "6f2a9fe0-314b-4fc4-88cf-a2fa75e9db48", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-07T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-13T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-13T10:32:00+00:00", "occurrence_date": "2026-12-13", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-13T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "6f2a9fe0-314b-4fc4-88cf-a2fa75e9db48", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-07T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-13T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-13T10:32:00+00:00", "occurrence_date": "2026-12-13", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-13T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    122,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "3477d53f-f128-47d2-a115-7413520ed235"}',
+    '{trials_open}',
+    '{"id": "3477d53f-f128-47d2-a115-7413520ed235", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-14T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-20T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-20T10:32:00+00:00", "occurrence_date": "2026-12-20", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-20T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "3477d53f-f128-47d2-a115-7413520ed235", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-14T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-20T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-20T10:32:00+00:00", "occurrence_date": "2026-12-20", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-20T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    123,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "7d2a1fa1-1027-424b-bdaa-5996d1072624"}',
+    '{trials_open}',
+    '{"id": "7d2a1fa1-1027-424b-bdaa-5996d1072624", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-21T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-27T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-27T10:32:00+00:00", "occurrence_date": "2026-12-27", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-27T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "7d2a1fa1-1027-424b-bdaa-5996d1072624", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-21T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2026-12-27T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2026-12-27T10:32:00+00:00", "occurrence_date": "2026-12-27", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2026-12-27T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    124,
+    '2026-11-10 07:09:44.446154+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'events',
+    'UPDATE',
+    '{"id": "9655acd1-5801-479a-aff5-472e29eb901c"}',
+    '{trials_open}',
+    '{"id": "9655acd1-5801-479a-aff5-472e29eb901c", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-28T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2027-01-03T12:32:00+00:00", "isCancelled": false, "trials_open": false, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2027-01-03T10:32:00+00:00", "occurrence_date": "2027-01-03", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2027-01-03T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    '{"id": "9655acd1-5801-479a-aff5-472e29eb901c", "key": "9820c7d7-d5d0-47cb-8852-50b82c1d14b3", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "place": "{\"name\":\"Karoline-Luise-Tunnel\",\"description\":\"Karoline-Luise-Tunnel, 76133 Karlsruhe\",\"lat\":49.00547564596969,\"lon\":8.403553962707521}", "title": "Thursday Training", "detached": false, "series_id": "01de716f-bbdf-427b-843f-99cc7749ff27", "created_at": "2026-11-09T10:33:00.009103+00:00", "recurrence": "Weekly", "answerStart": "2026-12-28T09:32:00+00:00", "description": "Thursday Training", "endDateTime": "2027-01-03T12:32:00+00:00", "isCancelled": false, "trials_open": true, "maxAttendees": null, "items_enabled": false, "recurrenceEnd": null, "required_item": null, "answerDeadline": null, "meetingDateTime": "2027-01-03T10:32:00+00:00", "occurrence_date": "2027-01-03", "reminder_before": null, "reminder_sent_at": null, "startingDateTime": "2027-01-03T10:32:00+00:00", "max_trial_attendees": null, "constellations_enabled": false}',
+    2407,
+    NULL
+  ),
+  (
+    125,
+    '2026-11-10 07:10:01.990803+00',
+    'system',
+    'public',
+    'user',
+    'INSERT',
+    '{"id": "82486af7-d277-4bb0-910b-8d05066aaea1"}',
+    '{avatarUrl,created_at,disabled,displayName,email,id,language,last_seen_at,name,role,verified}',
+    NULL,
+    '{"id": "82486af7-d277-4bb0-910b-8d05066aaea1", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:10:01.990803+00:00", "displayName": "Karl", "last_seen_at": null}',
+    2438,
+    NULL
+  ),
+  (
+    126,
+    '2026-11-10 07:10:01.990803+00',
+    'system',
+    'games',
+    'players',
+    'INSERT',
+    '{"player": "a53143bc-f51f-4c25-9686-0c68d4d10c87"}',
+    '{created_at,display_name,effective_rating_cached,gender,hide_rating,ka_index,linked_user_id,matches_played,player,pro_status,rg_avatar_url,rg_id,rg_index,rg_link}',
+    NULL,
+    '{"rg_id": null, "gender": "m", "player": "a53143bc-f51f-4c25-9686-0c68d4d10c87", "rg_link": null, "ka_index": 1000, "rg_index": null, "created_at": "2026-11-10T07:10:01.990803+00:00", "pro_status": false, "hide_rating": false, "display_name": null, "rg_avatar_url": null, "linked_user_id": "82486af7-d277-4bb0-910b-8d05066aaea1", "matches_played": 0, "effective_rating_cached": 1000}',
+    2438,
+    NULL
+  ),
+  (
+    127,
+    '2026-11-10 07:10:01.990803+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "82486af7-d277-4bb0-910b-8d05066aaea1"}',
+    '{last_seen_at}',
+    '{"id": "82486af7-d277-4bb0-910b-8d05066aaea1", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:10:01.990803+00:00", "displayName": "Karl", "last_seen_at": null}',
+    '{"id": "82486af7-d277-4bb0-910b-8d05066aaea1", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:10:01.990803+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:10:01.997001+00:00"}',
+    2438,
+    NULL
+  ),
+  (
+    129,
+    '2026-11-10 07:11:43.085529+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:09:36.434004+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:11:43.086852+00:00"}',
+    2544,
+    NULL
+  ),
+  (
+    130,
+    '2026-11-10 07:11:51.94139+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    2553,
+    NULL
+  ),
+  (
+    131,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'DELETE',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    '{feature,group}',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    NULL,
+    2563,
+    NULL
+  ),
+  (
+    132,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'DELETE',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    '{feature,group}',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    NULL,
+    2563,
+    NULL
+  ),
+  (
+    133,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'UPDATE',
+    '{"user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{role,trial_event_limit,trial_started_at}',
+    '{"role": "trial", "user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:04:03.024223+00:00", "trial_event_limit": 3}',
+    '{"role": "joinRequested", "user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    2563,
+    NULL
+  ),
+  (
+    134,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'UPDATE',
+    '{"user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{role,trial_event_limit,trial_started_at}',
+    '{"role": "trial", "user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:08:36.905753+00:00", "trial_event_limit": 3}',
+    '{"role": "joinRequested", "user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    2563,
+    NULL
+  ),
+  (
+    135,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'UPDATE',
+    '{"user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{role,trial_event_limit,trial_started_at}',
+    '{"role": "trial", "user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:10:02.083829+00:00", "trial_event_limit": 3}',
+    '{"role": "joinRequested", "user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    2563,
+    NULL
+  ),
+  (
+    136,
+    '2026-11-10 07:11:59.602367+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'DELETE',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    '{feature,group}',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    NULL,
+    2563,
+    NULL
+  ),
+  (
+    137,
+    '2026-11-10 07:12:15.049921+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.transformations"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.transformations"}',
+    2589,
+    NULL
+  ),
+  (
+    138,
+    '2026-11-10 07:12:15.049921+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials"}',
+    2589,
+    NULL
+  ),
+  (
+    139,
+    '2026-11-10 07:12:15.049921+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.trials.guests"}',
+    2589,
+    NULL
+  ),
+  (
+    140,
+    '2026-11-10 07:12:36.702002+00',
+    'system',
+    'public',
+    'user',
+    'INSERT',
+    '{"id": "2d825450-b80e-455b-99a0-fb8f64b3892e"}',
+    '{avatarUrl,created_at,disabled,displayName,email,id,language,last_seen_at,name,role,verified}',
+    NULL,
+    '{"id": "2d825450-b80e-455b-99a0-fb8f64b3892e", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:12:36.702002+00:00", "displayName": "Karl", "last_seen_at": null}',
+    2615,
+    NULL
+  ),
+  (
+    141,
+    '2026-11-10 07:12:36.702002+00',
+    'system',
+    'games',
+    'players',
+    'INSERT',
+    '{"player": "64928a42-1cbf-4bd0-94b1-c085ffa293dd"}',
+    '{created_at,display_name,effective_rating_cached,gender,hide_rating,ka_index,linked_user_id,matches_played,player,pro_status,rg_avatar_url,rg_id,rg_index,rg_link}',
+    NULL,
+    '{"rg_id": null, "gender": "m", "player": "64928a42-1cbf-4bd0-94b1-c085ffa293dd", "rg_link": null, "ka_index": 1000, "rg_index": null, "created_at": "2026-11-10T07:12:36.702002+00:00", "pro_status": false, "hide_rating": false, "display_name": null, "rg_avatar_url": null, "linked_user_id": "2d825450-b80e-455b-99a0-fb8f64b3892e", "matches_played": 0, "effective_rating_cached": 1000}',
+    2615,
+    NULL
+  ),
+  (
+    142,
+    '2026-11-10 07:12:36.702002+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "2d825450-b80e-455b-99a0-fb8f64b3892e"}',
+    '{last_seen_at}',
+    '{"id": "2d825450-b80e-455b-99a0-fb8f64b3892e", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:12:36.702002+00:00", "displayName": "Karl", "last_seen_at": null}',
+    '{"id": "2d825450-b80e-455b-99a0-fb8f64b3892e", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:12:36.702002+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:12:36.709913+00:00"}',
+    2615,
+    NULL
+  ),
+  (
+    143,
+    '2026-11-10 07:12:36.790265+00',
+    '2d825450-b80e-455b-99a0-fb8f64b3892e',
+    'public',
+    'group_user_mapping',
+    'INSERT',
+    '{"user": "2d825450-b80e-455b-99a0-fb8f64b3892e", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    NULL,
+    '{"role": "trial", "user": "2d825450-b80e-455b-99a0-fb8f64b3892e", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:12:36.790265+00:00", "trial_event_limit": 3}',
+    2616,
+    NULL
+  ),
+  (
+    144,
+    '2026-11-10 07:13:17.973506+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:11:43.086852+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:13:17.974639+00:00"}',
+    2671,
+    NULL
+  ),
+  (
+    145,
+    '2026-11-10 07:13:28.487996+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'INSERT',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    '{feature,group}',
+    NULL,
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events"}',
+    2686,
+    NULL
+  ),
+  (
+    146,
+    '2026-11-10 07:13:28.50885+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_features',
+    'DELETE',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.transformations"}',
+    '{feature,group}',
+    '{"group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "feature": "events.transformations"}',
+    NULL,
+    2687,
+    NULL
+  ),
+  (
+    147,
+    '2026-11-10 07:14:00.238531+00',
+    'system',
+    'public',
+    'user',
+    'INSERT',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d"}',
+    '{avatarUrl,created_at,disabled,displayName,email,id,language,last_seen_at,name,role,verified}',
+    NULL,
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": null}',
+    2733,
+    NULL
+  ),
+  (
+    148,
+    '2026-11-10 07:14:00.238531+00',
+    'system',
+    'games',
+    'players',
+    'INSERT',
+    '{"player": "fd23d2b0-f56f-4ed3-9c0a-dfac8aa07ec5"}',
+    '{created_at,display_name,effective_rating_cached,gender,hide_rating,ka_index,linked_user_id,matches_played,player,pro_status,rg_avatar_url,rg_id,rg_index,rg_link}',
+    NULL,
+    '{"rg_id": null, "gender": "m", "player": "fd23d2b0-f56f-4ed3-9c0a-dfac8aa07ec5", "rg_link": null, "ka_index": 1000, "rg_index": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "pro_status": false, "hide_rating": false, "display_name": null, "rg_avatar_url": null, "linked_user_id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "matches_played": 0, "effective_rating_cached": 1000}',
+    2733,
+    NULL
+  ),
+  (
+    149,
+    '2026-11-10 07:14:00.238531+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d"}',
+    '{last_seen_at}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": null}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:14:00.24636+00:00"}',
+    2733,
+    NULL
+  ),
+  (
+    150,
+    '2026-11-10 07:14:00.339446+00',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    'public',
+    'group_user_mapping',
+    'INSERT',
+    '{"user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    NULL,
+    '{"role": "trial", "user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:14:00.339446+00:00", "trial_event_limit": 3}',
+    2734,
+    NULL
+  ),
+  (
+    151,
+    '2026-11-10 07:14:05.79386+00',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    'public',
+    'event_attendance_user_mapping',
+    'INSERT',
+    '{"user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "event": "3c3ae9fe-72b4-456f-88da-629d9517f729"}',
+    '{event,lastUpdate,state,user}',
+    NULL,
+    '{"user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "event": "3c3ae9fe-72b4-456f-88da-629d9517f729", "state": "AttendingAsTrial", "lastUpdate": "2026-11-10T07:14:05.79386+00:00"}',
+    2745,
+    NULL
+  ),
+  (
+    152,
+    '2026-11-10 07:14:56.153631+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d"}',
+    '{email}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:14:00.24636+00:00"}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "karl.wolf@gmail.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:14:00.24636+00:00"}',
+    2794,
+    NULL
+  ),
+  (
+    153,
+    '2026-11-10 07:15:20.138023+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d"}',
+    '{last_seen_at}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "karl.wolf@gmail.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:14:00.24636+00:00"}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "karl.wolf@gmail.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:15:20.139339+00:00"}',
+    2837,
+    NULL
+  ),
+  (
+    154,
+    '2026-11-10 07:15:37.002306+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005"}',
+    '{last_seen_at}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:13:17.974639+00:00"}',
+    '{"id": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-09T10:27:13.731916+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:15:37.003462+00:00"}',
+    2857,
+    NULL
+  ),
+  (
+    155,
+    '2026-11-10 07:15:56.350471+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'DELETE',
+    '{"user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    '{"role": "joinRequested", "user": "42d0607e-d32a-4ab9-a137-78edfe142996", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    NULL,
+    2881,
+    NULL
+  ),
+  (
+    156,
+    '2026-11-10 07:15:58.386809+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'DELETE',
+    '{"user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    '{"role": "joinRequested", "user": "2470be5a-a653-49a9-9a88-6f27b0e57a70", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    NULL,
+    2884,
+    NULL
+  ),
+  (
+    157,
+    '2026-11-10 07:16:00.253301+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'DELETE',
+    '{"user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{group,role,trial_event_limit,trial_started_at,user}',
+    '{"role": "joinRequested", "user": "82486af7-d277-4bb0-910b-8d05066aaea1", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": null}',
+    NULL,
+    2893,
+    NULL
+  ),
+  (
+    158,
+    '2026-11-10 07:16:06.365182+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    'public',
+    'group_user_mapping',
+    'UPDATE',
+    '{"user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    '{role,trial_started_at}',
+    '{"role": "trial", "user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": "2026-11-10T07:14:00.339446+00:00", "trial_event_limit": 3}',
+    '{"role": "user", "user": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465", "trial_started_at": null, "trial_event_limit": 3}',
+    2903,
+    NULL
+  ),
+  (
+    159,
+    '2026-11-10 07:16:18.910007+00',
+    'system',
+    'public',
+    'user',
+    'UPDATE',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d"}',
+    '{last_seen_at}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "karl.wolf@gmail.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:15:20.139339+00:00"}',
+    '{"id": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "name": "Karl", "role": "user", "email": "karl.wolf@gmail.com", "disabled": false, "language": "en", "verified": false, "avatarUrl": null, "created_at": "2026-11-10T07:14:00.238531+00:00", "displayName": "Karl", "last_seen_at": "2026-11-10T07:16:18.911224+00:00"}',
+    2920,
+    NULL
+  );
+
 --
 -- Data for Name: audit_log_entries; Type: TABLE DATA; Schema: auth; Owner: supabase_auth_admin
 --
@@ -92,6 +1047,160 @@ VALUES
     '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
     '2026-11-10 06:56:29.928439+00',
     ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'b54e2705-2b65-4b74-8f97-ae51e7654106',
+    '{"action":"logout","actor_id":"42d0607e-d32a-4ab9-a137-78edfe142996","actor_username":"","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:07:28.730592+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '0e615899-0c32-4744-9658-c11cf7b8ce4d',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:07:34.088751+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '84818042-af66-4296-91f7-cb2dfde0bd6a',
+    '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:08:32.282654+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '3fee0a46-553d-44a6-a19f-22b66909486a',
+    '{"action":"logout","actor_id":"2470be5a-a653-49a9-9a88-6f27b0e57a70","actor_username":"","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:09:30.960363+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'd5dda7ad-daad-4d86-a4a3-f773cfb4febd',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:09:36.43302+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '94c2a487-7d5c-42b4-b96f-4372d9f9700b',
+    '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:09:47.307796+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'bbbd03e0-bb70-4b36-94fd-8e7e3d6436dc',
+    '{"action":"logout","actor_id":"82486af7-d277-4bb0-910b-8d05066aaea1","actor_username":"","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:11:37.726601+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'e5f2b2e1-2c73-4d57-bcbf-bbcaefcc239f',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:11:43.085715+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'a5256e38-c5f4-40ea-a5f1-91f3382defe9',
+    '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:12:31.098638+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '9209708a-2259-4ef3-9761-2b9626e46027',
+    '{"action":"logout","actor_id":"2d825450-b80e-455b-99a0-fb8f64b3892e","actor_username":"","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:13:12.406834+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '7652af8b-d1d6-4935-aa7f-e0ebf39f2af6',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:13:17.973686+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'caeb616f-df49-4766-ac86-d8324d9b5c3a',
+    '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:13:55.023939+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '4af20268-0e91-405a-8f23-beca8e59677e',
+    '{"action":"user_modified","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"","actor_via_sso":false,"log_type":"user"}',
+    '2026-11-10 07:14:56.154159+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '8b8bc7de-cc0d-4f51-a771-2ccdf55c6927',
+    '{"action":"user_modified","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"user"}',
+    '2026-11-10 07:14:56.164276+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '508490c9-ecaa-43c1-895e-1aa30b82126c',
+    '{"action":"user_updated_password","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"user"}',
+    '2026-11-10 07:15:09.538153+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '6b380855-cfd4-4da5-b186-9a7e081d9bb7',
+    '{"action":"user_modified","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"user"}',
+    '2026-11-10 07:15:09.53881+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '5015dd97-376a-4def-920f-ccbec51d18b6',
+    '{"action":"logout","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:15:13.774276+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '4ac05c2b-8ae1-4aee-95e1-1db07df2b9eb',
+    '{"action":"login","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:15:20.138239+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '6b4de887-f663-4c2b-a0b3-6dab04556408',
+    '{"action":"logout","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:15:31.301716+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '4a59077c-4b53-4feb-ae11-29c6b273447f',
+    '{"action":"login","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:15:37.002515+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'f2057713-7158-4b52-aaee-dfd6781ea434',
+    '{"action":"logout","actor_id":"479397f0-bb2a-40b9-88a3-f4f485042005","actor_username":"admin@admin.com","actor_via_sso":false,"log_type":"account"}',
+    '2026-11-10 07:16:11.763377+00',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'aca174f5-8b7e-4196-bc74-afa5eb64f08e',
+    '{"action":"login","actor_id":"d4b31aa1-b5e7-40e9-b479-6de371670a4d","actor_username":"karl.wolf@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}',
+    '2026-11-10 07:16:18.910203+00',
+    ''
   );
 
 --
@@ -143,6 +1252,42 @@ INSERT INTO
 VALUES
   (
     '00000000-0000-0000-0000-000000000000',
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    'authenticated',
+    'authenticated',
+    NULL,
+    '',
+    NULL,
+    NULL,
+    '',
+    NULL,
+    '',
+    NULL,
+    '',
+    '',
+    NULL,
+    '2026-11-10 07:04:02.937371+00',
+    '{}',
+    '{"name": "Karl", "language": "en", "displayName": "Karl"}',
+    NULL,
+    '2026-11-10 07:04:02.925878+00',
+    '2026-11-10 07:04:02.94097+00',
+    NULL,
+    NULL,
+    '',
+    '',
+    NULL,
+    '',
+    0,
+    NULL,
+    '',
+    NULL,
+    false,
+    NULL,
+    true
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
     '479397f0-bb2a-40b9-88a3-f4f485042005',
     'authenticated',
     'authenticated',
@@ -157,12 +1302,12 @@ VALUES
     '',
     '',
     NULL,
-    '2026-11-10 06:56:13.970404+00',
+    '2026-11-10 07:15:37.003399+00',
     '{"provider": "email", "providers": ["email"]}',
     '{"sub": "479397f0-bb2a-40b9-88a3-f4f485042005", "name": "Karl Admin", "role": "user", "email": "admin@admin.com", "language": "en", "displayName": "Karl", "email_verified": true, "phone_verified": false}',
     NULL,
     '2026-11-09 10:27:13.732174+00',
-    '2026-11-10 06:56:13.976221+00',
+    '2026-11-10 07:15:37.008284+00',
     NULL,
     NULL,
     '',
@@ -176,6 +1321,150 @@ VALUES
     false,
     NULL,
     false
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    'authenticated',
+    'authenticated',
+    'karl.wolf@gmail.com',
+    '$2a$10$k7HnihQQ7/1V/NyrN9uGme/lB2COrPbYT6V5G2cQaxuVcDkOY86T2',
+    '2026-11-10 07:14:56.162772+00',
+    NULL,
+    '',
+    NULL,
+    '',
+    NULL,
+    '',
+    '',
+    NULL,
+    '2026-11-10 07:16:18.911177+00',
+    '{}',
+    '{"name": "Karl", "language": "en", "displayName": "Karl", "email_verified": true}',
+    NULL,
+    '2026-11-10 07:14:00.238859+00',
+    '2026-11-10 07:16:18.915928+00',
+    NULL,
+    NULL,
+    '',
+    '',
+    NULL,
+    '',
+    0,
+    NULL,
+    '',
+    NULL,
+    false,
+    NULL,
+    false
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    'authenticated',
+    'authenticated',
+    NULL,
+    '',
+    NULL,
+    NULL,
+    '',
+    NULL,
+    '',
+    NULL,
+    '',
+    '',
+    NULL,
+    '2026-11-10 07:08:36.780432+00',
+    '{}',
+    '{"name": "Karl", "language": "en", "displayName": "Karl"}',
+    NULL,
+    '2026-11-10 07:08:36.773363+00',
+    '2026-11-10 07:08:36.783198+00',
+    NULL,
+    NULL,
+    '',
+    '',
+    NULL,
+    '',
+    0,
+    NULL,
+    '',
+    NULL,
+    false,
+    NULL,
+    true
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    'authenticated',
+    'authenticated',
+    NULL,
+    '',
+    NULL,
+    NULL,
+    '',
+    NULL,
+    '',
+    NULL,
+    '',
+    '',
+    NULL,
+    '2026-11-10 07:10:01.996952+00',
+    '{}',
+    '{"name": "Karl", "language": "en", "displayName": "Karl"}',
+    NULL,
+    '2026-11-10 07:10:01.991022+00',
+    '2026-11-10 07:10:01.999969+00',
+    NULL,
+    NULL,
+    '',
+    '',
+    NULL,
+    '',
+    0,
+    NULL,
+    '',
+    NULL,
+    false,
+    NULL,
+    true
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '2d825450-b80e-455b-99a0-fb8f64b3892e',
+    'authenticated',
+    'authenticated',
+    NULL,
+    '',
+    NULL,
+    NULL,
+    '',
+    NULL,
+    '',
+    NULL,
+    '',
+    '',
+    NULL,
+    '2026-11-10 07:12:36.709854+00',
+    '{}',
+    '{"name": "Karl", "language": "en", "displayName": "Karl"}',
+    NULL,
+    '2026-11-10 07:12:36.702283+00',
+    '2026-11-10 07:12:36.712876+00',
+    NULL,
+    NULL,
+    '',
+    '',
+    NULL,
+    '',
+    0,
+    NULL,
+    '',
+    NULL,
+    false,
+    NULL,
+    true
   );
 
 --
@@ -202,6 +1491,16 @@ VALUES
     '2026-11-09 10:27:13.741405+00',
     '2026-11-09 10:27:13.741405+00',
     '5d75768f-fb3e-4026-9b27-f44634f405f1'
+  ),
+  (
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    '{"sub": "d4b31aa1-b5e7-40e9-b479-6de371670a4d", "email": "karl.wolf@gmail.com", "email_verified": true, "phone_verified": false}',
+    'email',
+    '2026-11-10 07:14:56.156167+00',
+    '2026-11-10 07:14:56.156201+00',
+    '2026-11-10 07:14:56.163919+00',
+    'a8210dff-4cad-467e-ac51-be849286208a'
   );
 
 --
@@ -248,6 +1547,23 @@ VALUES
     NULL,
     NULL,
     NULL
+  ),
+  (
+    '244af684-0b86-401f-9788-8cb2691122bc',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    '2026-11-10 07:16:18.911224+00',
+    '2026-11-10 07:16:18.911224+00',
+    NULL,
+    'aal1',
+    NULL,
+    NULL,
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    '192.168.65.1',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
   );
 
 --
@@ -268,6 +1584,13 @@ VALUES
     '2026-11-09 10:27:13.755853+00',
     'password',
     'e1750f6d-b840-477f-a69e-64ea10b3072f'
+  ),
+  (
+    '244af684-0b86-401f-9788-8cb2691122bc',
+    '2026-11-10 07:16:18.916357+00',
+    '2026-11-10 07:16:18.916357+00',
+    'password',
+    '8e73be6e-5858-478f-92cd-48dc13b48e76'
   );
 
 --
@@ -314,6 +1637,17 @@ VALUES
     '2026-11-09 10:27:13.754486+00',
     NULL,
     '50c65db8-afaf-45ac-a001-618d2bf6cca3'
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    15,
+    'tjzvnkbxn64v',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    false,
+    '2026-11-10 07:16:18.915273+00',
+    '2026-11-10 07:16:18.915273+00',
+    NULL,
+    '244af684-0b86-401f-9788-8cb2691122bc'
   );
 
 --
@@ -353,6 +1687,58 @@ INSERT INTO
   )
 VALUES
   (
+    '2026-11-10 07:04:02.924565+00',
+    'Karl',
+    '',
+    false,
+    'user',
+    false,
+    NULL,
+    'Karl',
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    '2026-11-10 07:04:02.937453+00',
+    'en'
+  ),
+  (
+    '2026-11-10 07:08:36.772997+00',
+    'Karl',
+    '',
+    false,
+    'user',
+    false,
+    NULL,
+    'Karl',
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    '2026-11-10 07:08:36.7805+00',
+    'en'
+  ),
+  (
+    '2026-11-10 07:10:01.990803+00',
+    'Karl',
+    '',
+    false,
+    'user',
+    false,
+    NULL,
+    'Karl',
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    '2026-11-10 07:10:01.997001+00',
+    'en'
+  ),
+  (
+    '2026-11-10 07:12:36.702002+00',
+    'Karl',
+    '',
+    false,
+    'user',
+    false,
+    NULL,
+    'Karl',
+    '2d825450-b80e-455b-99a0-fb8f64b3892e',
+    '2026-11-10 07:12:36.709913+00',
+    'en'
+  ),
+  (
     '2026-11-09 10:27:13.731916+00',
     'Karl',
     'admin@admin.com',
@@ -362,7 +1748,20 @@ VALUES
     NULL,
     'Karl Admin',
     '479397f0-bb2a-40b9-88a3-f4f485042005',
-    '2026-11-10 06:56:13.970455+00',
+    '2026-11-10 07:15:37.003462+00',
+    'en'
+  ),
+  (
+    '2026-11-10 07:14:00.238531+00',
+    'Karl',
+    'karl.wolf@gmail.com',
+    false,
+    'user',
+    false,
+    NULL,
+    'Karl',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    '2026-11-10 07:16:18.911224+00',
     'en'
   );
 
@@ -401,6 +1800,86 @@ VALUES
     false,
     NULL,
     '479397f0-bb2a-40b9-88a3-f4f485042005',
+    0
+  ),
+  (
+    'd26f5491-6481-49cb-9911-f7b3121bccd6',
+    '2026-11-10 07:04:02.924565+00',
+    1000,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    false,
+    'm',
+    1000,
+    false,
+    NULL,
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    0
+  ),
+  (
+    '1a823775-247c-462a-8d04-cb6a4106fd4c',
+    '2026-11-10 07:08:36.772997+00',
+    1000,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    false,
+    'm',
+    1000,
+    false,
+    NULL,
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    0
+  ),
+  (
+    'a53143bc-f51f-4c25-9686-0c68d4d10c87',
+    '2026-11-10 07:10:01.990803+00',
+    1000,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    false,
+    'm',
+    1000,
+    false,
+    NULL,
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    0
+  ),
+  (
+    '64928a42-1cbf-4bd0-94b1-c085ffa293dd',
+    '2026-11-10 07:12:36.702002+00',
+    1000,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    false,
+    'm',
+    1000,
+    false,
+    NULL,
+    '2d825450-b80e-455b-99a0-fb8f64b3892e',
+    0
+  ),
+  (
+    'fd23d2b0-f56f-4ed3-9c0a-dfac8aa07ec5',
+    '2026-11-10 07:14:00.238531+00',
+    1000,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    false,
+    'm',
+    1000,
+    false,
+    NULL,
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
     0
   );
 
@@ -491,7 +1970,7 @@ VALUES
     '2026-11-09 10:32:59.974927+00',
     '479397f0-bb2a-40b9-88a3-f4f485042005',
     '-145:00:00',
-    false
+    true
   );
 
 --
@@ -553,7 +2032,7 @@ VALUES
     '2026-11-15',
     false,
     '2026-11-09 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -581,7 +2060,7 @@ VALUES
     '2026-11-22',
     false,
     '2026-11-16 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -609,7 +2088,7 @@ VALUES
     '2026-11-29',
     false,
     '2026-11-23 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -637,7 +2116,7 @@ VALUES
     '2026-12-06',
     false,
     '2026-11-30 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -665,7 +2144,7 @@ VALUES
     '2026-12-13',
     false,
     '2026-12-07 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -693,7 +2172,7 @@ VALUES
     '2026-12-20',
     false,
     '2026-12-14 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -721,7 +2200,7 @@ VALUES
     '2026-12-27',
     false,
     '2026-12-21 09:32:00+00',
-    false
+    true
   ),
   (
     '2026-11-09 10:33:00.009103+00',
@@ -749,7 +2228,7 @@ VALUES
     '2027-01-03',
     false,
     '2026-12-28 09:32:00+00',
-    false
+    true
   );
 
 --
@@ -786,6 +2265,135 @@ VALUES
 --
 -- Data for Name: notification_outbox; Type: TABLE DATA; Schema: notifications; Owner: postgres
 --
+INSERT INTO
+  "notifications"."notification_outbox" (
+    "id",
+    "user",
+    "tenant",
+    "title",
+    "body",
+    "data",
+    "urgency",
+    "ttl_seconds",
+    "dedupe_key",
+    "status",
+    "attempt_count",
+    "next_attempt_at",
+    "last_error",
+    "notification",
+    "created_at",
+    "sent_at"
+  )
+VALUES
+  (
+    1,
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'Your trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    '8e95660d-f1e4-4430-ac63-e81285f5c51d',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  ),
+  (
+    2,
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'A user''s trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    'ae161f7e-dce9-4300-998c-3cbf9a276221',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  ),
+  (
+    3,
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'Your trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    'b416f8b4-9c59-4324-ae60-b9dceed7719e',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  ),
+  (
+    4,
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'A user''s trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    '85b99283-ea01-4017-8ccd-374c8b2ff22c',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  ),
+  (
+    5,
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'Your trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    'e7e49584-67a6-49ba-bf98-58427efe1b2a',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  ),
+  (
+    6,
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '00000000-0000-0000-0000-000000000000',
+    'Trial period ended',
+    'A user''s trial period at Main Group has ended.',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    'normal',
+    NULL,
+    NULL,
+    'pending',
+    0,
+    '2026-11-10 07:11:59.602367+00',
+    NULL,
+    '7b6be61d-9760-4068-972b-00327979ed0c',
+    '2026-11-10 07:11:59.602367+00',
+    NULL
+  );
+
 --
 -- Data for Name: web_push_subscriptions; Type: TABLE DATA; Schema: notifications; Owner: postgres
 --
@@ -880,11 +2488,119 @@ VALUES
     'Zahlung bestätigt',
     'payment',
     true
-  );
+  ) ON CONFLICT DO NOTHING;
 
 --
 -- Data for Name: notifications; Type: TABLE DATA; Schema: notifications; Owner: postgres
 --
+INSERT INTO
+  "notifications"."notifications" (
+    "id",
+    "created_at",
+    "body",
+    "title",
+    "user",
+    "data",
+    "dismissed_at",
+    "expires_at",
+    "read_at",
+    "source_id",
+    "source_type",
+    "tenant",
+    "topic"
+  )
+VALUES
+  (
+    '8e95660d-f1e4-4430-ac63-e81285f5c51d',
+    '2026-11-10 07:11:59.602367+00',
+    'Your trial period at Main Group has ended.',
+    'Trial period ended',
+    '42d0607e-d32a-4ab9-a137-78edfe142996',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired'
+  ),
+  (
+    'ae161f7e-dce9-4300-998c-3cbf9a276221',
+    '2026-11-10 07:11:59.602367+00',
+    'A user''s trial period at Main Group has ended.',
+    'Trial period ended',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired.admin'
+  ),
+  (
+    'b416f8b4-9c59-4324-ae60-b9dceed7719e',
+    '2026-11-10 07:11:59.602367+00',
+    'Your trial period at Main Group has ended.',
+    'Trial period ended',
+    '2470be5a-a653-49a9-9a88-6f27b0e57a70',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired'
+  ),
+  (
+    '85b99283-ea01-4017-8ccd-374c8b2ff22c',
+    '2026-11-10 07:11:59.602367+00',
+    'A user''s trial period at Main Group has ended.',
+    'Trial period ended',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired.admin'
+  ),
+  (
+    'e7e49584-67a6-49ba-bf98-58427efe1b2a',
+    '2026-11-10 07:11:59.602367+00',
+    'Your trial period at Main Group has ended.',
+    'Trial period ended',
+    '82486af7-d277-4bb0-910b-8d05066aaea1',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired'
+  ),
+  (
+    '7b6be61d-9760-4068-972b-00327979ed0c',
+    '2026-11-10 07:11:59.602367+00',
+    'A user''s trial period at Main Group has ended.',
+    'Trial period ended',
+    '479397f0-bb2a-40b9-88a3-f4f485042005',
+    '{"url": "/", "group": "68295616-0d6d-4d4b-8b86-fce4599f5465"}',
+    NULL,
+    NULL,
+    NULL,
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'group',
+    '00000000-0000-0000-0000-000000000000',
+    'group.trial.expired.admin'
+  );
+
 --
 -- Data for Name: user_notification_preferences; Type: TABLE DATA; Schema: notifications; Owner: postgres
 --
@@ -898,7 +2614,7 @@ VALUES
     'trial_duration_days',
     '28',
     '2026-11-10 06:55:01.734011+00'
-  );
+  ) ON CONFLICT DO NOTHING;
 
 --
 -- Data for Name: bundesliga_cache; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -1009,6 +2725,16 @@ VALUES
 --
 -- Data for Name: event_attendance_user_mapping; Type: TABLE DATA; Schema: public; Owner: postgres
 --
+INSERT INTO
+  "public"."event_attendance_user_mapping" ("lastUpdate", "user", "state", "event")
+VALUES
+  (
+    '2026-11-10 07:14:05.79386+00',
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    'AttendingAsTrial',
+    '3c3ae9fe-72b4-456f-88da-629d9517f729'
+  );
+
 --
 -- Data for Name: event_bring_items; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -1042,7 +2768,7 @@ VALUES
   ('events.transformations', NULL),
   ('events.trials', 'Probenutzer für Events'),
   ('games', 'Spiele verwalten'),
-  ('items', 'Gegenstände verwalten');
+  ('items', 'Gegenstände verwalten') ON CONFLICT DO NOTHING;
 
 --
 -- Data for Name: group_features; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -1057,7 +2783,8 @@ VALUES
   (
     '68295616-0d6d-4d4b-8b86-fce4599f5465',
     'events.trials.guests'
-  );
+  ),
+  ('68295616-0d6d-4d4b-8b86-fce4599f5465', 'events');
 
 --
 -- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -1196,7 +2923,7 @@ VALUES
     'testlab.shadcn',
     'Nutze die neue Shadcn Oberfläche'
   ),
-  ('users.manage', 'Benutzer verwalten');
+  ('users.manage', 'Benutzer verwalten') ON CONFLICT DO NOTHING;
 
 --
 -- Data for Name: group_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -1219,6 +2946,20 @@ VALUES
     'admin',
     NULL,
     NULL
+  ),
+  (
+    '2d825450-b80e-455b-99a0-fb8f64b3892e',
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'trial',
+    '2026-11-10 07:12:36.790265+00',
+    3
+  ),
+  (
+    'd4b31aa1-b5e7-40e9-b479-6de371670a4d',
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    'user',
+    NULL,
+    3
   );
 
 --
@@ -1379,9 +3120,21 @@ VALUES
     3,
     NULL,
     NULL,
-    0,
-    true,
+    3,
+    false,
     '2026-11-10 06:56:24.143909+00',
+    '479397f0-bb2a-40b9-88a3-f4f485042005'
+  ),
+  (
+    'b58b3a8b-9153-43a9-91e5-f7bb39c015e2',
+    '68295616-0d6d-4d4b-8b86-fce4599f5465',
+    '9ab11616e3cf476ab79ab03f01b18330',
+    3,
+    NULL,
+    NULL,
+    2,
+    true,
+    '2026-11-10 07:12:24.996587+00',
     '479397f0-bb2a-40b9-88a3-f4f485042005'
   );
 
@@ -1868,13 +3621,13 @@ VALUES
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: audit; Owner: postgres
 --
 SELECT
-  pg_catalog.setval ('"audit"."log_id_seq"', 106, true);
+  pg_catalog.setval ('"audit"."log_id_seq"', 159, true);
 
 --
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
 --
 SELECT
-  pg_catalog.setval ('"auth"."refresh_tokens_id_seq"', 3, true);
+  pg_catalog.setval ('"auth"."refresh_tokens_id_seq"', 15, true);
 
 --
 -- Name: notification_outbox_id_seq; Type: SEQUENCE SET; Schema: notifications; Owner: postgres
@@ -1882,8 +3635,8 @@ SELECT
 SELECT
   pg_catalog.setval (
     '"notifications"."notification_outbox_id_seq"',
-    1,
-    false
+    6,
+    true
   );
 
 --
