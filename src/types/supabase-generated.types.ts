@@ -2097,6 +2097,7 @@ export type Database = {
           key: string
           max_attendees: number | null
           max_trial_attendees: number | null
+          trials_open: boolean
           meeting_offset: unknown | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
@@ -2124,6 +2125,7 @@ export type Database = {
           key?: string
           max_attendees?: number | null
           max_trial_attendees?: number | null
+          trials_open?: boolean
           meeting_offset?: unknown | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -2151,6 +2153,7 @@ export type Database = {
           key?: string
           max_attendees?: number | null
           max_trial_attendees?: number | null
+          trials_open?: boolean
           meeting_offset?: unknown | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -2301,6 +2304,7 @@ export type Database = {
           items_enabled: boolean
           key: string
           max_trial_attendees: number | null
+          trials_open: boolean
           maxAttendees: number | null
           meetingDateTime: string | null
           occurrence_date: string | null
@@ -2328,6 +2332,7 @@ export type Database = {
           items_enabled?: boolean
           key?: string
           max_trial_attendees?: number | null
+          trials_open?: boolean
           maxAttendees?: number | null
           meetingDateTime?: string | null
           occurrence_date?: string | null
@@ -2355,6 +2360,7 @@ export type Database = {
           items_enabled?: boolean
           key?: string
           max_trial_attendees?: number | null
+          trials_open?: boolean
           maxAttendees?: number | null
           meetingDateTime?: string | null
           occurrence_date?: string | null
@@ -2485,18 +2491,21 @@ export type Database = {
         Row: {
           group: string
           role: Database["public"]["Enums"]["GroupRole"]
+          trial_event_limit: number | null
           trial_started_at: string | null
           user: string
         }
         Insert: {
           group: string
           role?: Database["public"]["Enums"]["GroupRole"]
+          trial_event_limit?: number | null
           trial_started_at?: string | null
           user: string
         }
         Update: {
           group?: string
           role?: Database["public"]["Enums"]["GroupRole"]
+          trial_event_limit?: number | null
           trial_started_at?: string | null
           user?: string
         }
@@ -2744,6 +2753,45 @@ export type Database = {
         Update: {
           description?: string | null
           name?: string
+        }
+        Relationships: []
+      }
+      trial_invites: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          event_limit: number
+          expires_at: string | null
+          group: string
+          id: string
+          max_uses: number | null
+          token: string
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_limit?: number
+          expires_at?: string | null
+          group: string
+          id?: string
+          max_uses?: number | null
+          token?: string
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_limit?: number
+          expires_at?: string | null
+          group?: string
+          id?: string
+          max_uses?: number | null
+          token?: string
+          uses?: number
         }
         Relationships: []
       }
@@ -3158,6 +3206,7 @@ export type Database = {
           isCancelled: boolean | null
           key: string | null
           max_trial_attendees: number | null
+          trials_open: boolean | null
           maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
@@ -3249,6 +3298,29 @@ export type Database = {
       admin_expire_trials: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      redeem_trial_invite: {
+        Args: { p_name?: string; p_token: string }
+        Returns: string
+      }
+      trial_invite_info: {
+        Args: { p_token: string }
+        Returns: {
+          event_limit: number
+          expires_at: string | null
+          group_id: string
+          group_name: string
+          valid: boolean
+        }[]
+      }
+      trial_status: {
+        Args: { p_group: string; p_user?: string }
+        Returns: {
+          event_limit: number | null
+          events_used: number
+          is_guest: boolean
+          trial_started_at: string | null
+        }[]
       }
       admin_user_effective_grants: {
         Args: { p_user: string }
