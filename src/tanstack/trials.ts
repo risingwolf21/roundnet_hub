@@ -4,14 +4,9 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { authKeys } from './auth';
 import { eventKeys } from './events';
 import { groupKeys } from './groups';
+import { trialKeys } from './trialKeys';
 
-export const trialKeys = {
-  all: ['trials'] as const,
-  inviteInfo: (token: string) => [...trialKeys.all, 'invite', token] as const,
-  invites: (groupId: string) => [...trialKeys.all, 'invites', groupId] as const,
-  groupAllowsGuests: (groupId: string) => [...trialKeys.all, 'allowsGuests', groupId] as const,
-  status: (groupId: string, userId?: string) => [...trialKeys.all, 'status', groupId, userId ?? 'me'] as const,
-};
+export { trialKeys };
 
 export const useTrialInviteInfo = (token: string) =>
   useQuery({
