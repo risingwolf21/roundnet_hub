@@ -40,7 +40,7 @@ test.describe('Probetraining', () => {
     ]).throwOnError();
     const now = Date.now();
     await admin.from('events').insert({
-      id: EVENT, title: TITLE, description: '—', group: GROUP, max_trial_attendees: 1,
+      id: EVENT, title: TITLE, description: '—', group: GROUP, max_trial_attendees: 1, trials_open: true,
       startingDateTime: new Date(now + 4 * 864e5).toISOString(),
       endDateTime: new Date(now + 4 * 864e5 + 2 * 36e5).toISOString(),
     }).throwOnError();

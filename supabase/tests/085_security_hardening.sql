@@ -203,6 +203,8 @@ SELECT set_eq(
     'public.key_handover',
     'public.edit_item',
     'public.admin_expire_trials',
+    'public.redeem_trial_invite',
+    'public.trial_status',
     'public.admin_user_effective_grants',
     'public._sum_challenge_points_for_self',
     'public.increase_challenge_stats_count',

@@ -64,6 +64,7 @@ test.describe('Trial membership', () => {
       endDateTime: new Date(now + 2 * 864e5 + 2 * 36e5).toISOString(),
       answerDeadline: new Date(now + 864e5).toISOString(),
       group: GROUP,
+      trials_open: true,
     }).throwOnError();
     await admin.from('event_attendance_user_mapping').delete().eq('event', EVENT);
   });
