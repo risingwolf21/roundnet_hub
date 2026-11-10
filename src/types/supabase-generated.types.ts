@@ -60,7 +60,10 @@ export type Database = {
     }
     Functions: {
       _changed_columns: {
-        Args: { new_row: Json; old_row: Json }
+        Args: {
+          new_row: Json
+          old_row: Json
+        }
         Returns: string[]
       }
       _current_actor: {
@@ -68,15 +71,22 @@ export type Database = {
         Returns: string
       }
       attach_trigger_for_table: {
-        Args: { p_schema: string; p_table: string }
+        Args: {
+          p_table: string
+          p_schema: string
+        }
         Returns: undefined
       }
       attach_triggers_for_schema: {
-        Args: { p_schema: string }
+        Args: {
+          p_schema: string
+        }
         Returns: undefined
       }
       retention_cleanup: {
-        Args: { days?: number }
+        Args: {
+          days?: number
+        }
         Returns: number
       }
       run_retention: {
@@ -791,56 +801,67 @@ export type Database = {
     Functions: {
       add_match_with_sets: {
         Args: {
-          created_by?: string
           event?: string
-          is_public?: boolean
+          player_names?: Json
           match_sets: Json
           player_1a: string
           player_1a_rating: number
-          player_1b: string
-          player_1b_rating: number
           player_2a: string
           player_2a_rating: number
+          player_1b: string
+          player_1b_rating: number
           player_2b: string
           player_2b_rating: number
-          player_names?: Json
-          rated?: boolean
           spezi_set?: Json
+          is_public?: boolean
+          rated?: boolean
+          created_by?: string
         }
         Returns: string
       }
       apply_elo_for_match: {
-        Args: { p_match: string }
+        Args: {
+          p_match: string
+        }
         Returns: undefined
       }
       calculate_effective_rating: {
-        Args: { ka: number; m_count?: number; rg: number }
+        Args: {
+          m_count?: number
+          rg: number
+          ka: number
+        }
         Returns: number
       }
       calculate_match_physics: {
         Args: {
-          p_eff_a1: number
-          p_eff_a2: number
-          p_eff_b1: number
-          p_eff_b2: number
-          p_m_count_a1: number
-          p_m_count_a2: number
-          p_m_count_b1: number
-          p_m_count_b2: number
-          p_outcome_a: number
           p_p1_id: string
           p_p2_id: string
           p_p3_id: string
+          p_m_count_a2: number
+          p_m_count_a1: number
+          p_eff_b2: number
+          p_eff_b1: number
+          p_eff_a2: number
+          p_m_count_b1: number
+          p_m_count_b2: number
+          p_outcome_a: number
           p_p4_id: string
+          p_eff_a1: number
         }
         Returns: Database["games"]["CompositeTypes"]["elo_calculation_result"]
       }
       category_offset: {
-        Args: { p_cat: string }
+        Args: {
+          p_cat: string
+        }
         Returns: number
       }
       determine_k_factor: {
-        Args: { base_k: number; m_count: number }
+        Args: {
+          m_count: number
+          base_k: number
+        }
         Returns: number
       }
       fetch_all_player_infos_from_pz: {
@@ -848,23 +869,34 @@ export type Database = {
         Returns: undefined
       }
       get_confidence_level: {
-        Args: { p_matches_played: number }
+        Args: {
+          p_matches_played: number
+        }
         Returns: number
       }
       get_player_short_name: {
-        Args: { p_player_id: string }
+        Args: {
+          p_player_id: string
+        }
         Returns: string
       }
       is_match_participant: {
-        Args: { p_match: string }
+        Args: {
+          p_match: string
+        }
         Returns: boolean
       }
       is_match_public_or_match_member: {
-        Args: { p_match: string }
+        Args: {
+          p_match: string
+        }
         Returns: boolean
       }
       merge_guest_player: {
-        Args: { guest_player_id: string; target_user_id: string }
+        Args: {
+          guest_player_id: string
+          target_user_id: string
+        }
         Returns: undefined
       }
       recompute_all_elo_from_scratch: {
@@ -872,7 +904,10 @@ export type Database = {
         Returns: undefined
       }
       team_category: {
-        Args: { p_p1: string; p_p2: string }
+        Args: {
+          p_p2: string
+          p_p1: string
+        }
         Returns: string
       }
     }
@@ -1133,54 +1168,51 @@ export type Database = {
       }
       web_push_subscriptions: {
         Row: {
-          auth: string | null
+          auth: string
           created_at: string
           device_id: string | null
           endpoint: string
           expiration_time: string | null
           failure_count: number | null
           id: string
-          kind: string
           last_error: string | null
           last_seen: string
           last_status: number | null
-          p256dh: string | null
+          p256dh: string
           platform: string | null
           revoked_at: string | null
           user: string
           user_agent: string | null
         }
         Insert: {
-          auth?: string | null
+          auth: string
           created_at?: string
           device_id?: string | null
           endpoint: string
           expiration_time?: string | null
           failure_count?: number | null
           id?: string
-          kind?: string
           last_error?: string | null
           last_seen?: string
           last_status?: number | null
-          p256dh?: string | null
+          p256dh: string
           platform?: string | null
           revoked_at?: string | null
           user: string
           user_agent?: string | null
         }
         Update: {
-          auth?: string | null
+          auth?: string
           created_at?: string
           device_id?: string | null
           endpoint?: string
           expiration_time?: string | null
           failure_count?: number | null
           id?: string
-          kind?: string
           last_error?: string | null
           last_seen?: string
           last_status?: number | null
-          p256dh?: string | null
+          p256dh?: string
           platform?: string | null
           revoked_at?: string | null
           user?: string
@@ -1195,159 +1227,211 @@ export type Database = {
     Functions: {
       admin_notify_emit: {
         Args: {
+          p_urgency: string
+          p_scope_type: string
+          p_scope_id: string
+          p_source_type: string
+          p_recipients: string[]
+          p_topic: string
+          p_title: string
           p_body: string
           p_data: Json
-          p_recipients: string[]
-          p_scope_id: string
-          p_scope_type: string
           p_source_id: string
-          p_source_type: string
-          p_title: string
-          p_topic: string
-          p_urgency: string
         }
         Returns: number
       }
       enqueue_notification: {
         Args: {
-          p_body?: string
-          p_body_en?: string
-          p_data?: Json
-          p_dedupe_key?: string
-          p_source_id?: string
-          p_source_type?: string
           p_tenant?: string
-          p_title: string
-          p_title_en?: string
           p_topic?: string
-          p_ttl_seconds?: number
-          p_urgency?: string
+          p_source_type?: string
+          p_source_id?: string
+          p_title_en?: string
+          p_body_en?: string
           p_user: string
+          p_title: string
+          p_body?: string
+          p_data?: Json
+          p_urgency?: string
+          p_ttl_seconds?: number
+          p_dedupe_key?: string
         }
         Returns: number
       }
       inc_target_attempt: {
         Args: {
           p_error?: string
-          p_outbox_id: number
           p_status: number
           p_subscription_id: string
+          p_outbox_id: number
         }
         Returns: undefined
       }
       is_topic_enabled_for_user: {
         Args: {
-          p_scope_id?: string
           p_scope_type?: string
           p_tenant: string
-          p_topic: string
           p_user: string
+          p_scope_id?: string
+          p_topic: string
         }
         Returns: boolean
       }
       mark_all_notifications_read: {
-        Args: { p_source_id?: string; p_source_type?: string; p_topic?: string }
+        Args: {
+          p_source_id?: string
+          p_topic?: string
+          p_source_type?: string
+        }
         Returns: number
       }
       mark_notification_read: {
-        Args: { p_id: string }
+        Args: {
+          p_id: string
+        }
         Returns: undefined
       }
       notify_challenge_added: {
-        Args: { p_actor?: string; p_challenge: string }
+        Args: {
+          p_challenge: string
+          p_actor?: string
+        }
         Returns: number
       }
       notify_challenge_entry_added: {
-        Args: { p_actor?: string; p_challenge: string }
+        Args: {
+          p_challenge: string
+          p_actor?: string
+        }
         Returns: number
       }
-      notify_drink_payment_fulfilled: {
-        Args: { p_payment: number } | { p_payment: string }
-        Returns: number
-      }
+      notify_drink_payment_fulfilled:
+        | {
+            Args: {
+              p_payment: number
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_payment: string
+            }
+            Returns: number
+          }
       notify_emit: {
         Args: {
-          p_body: string
-          p_body_en?: string
-          p_data: Json
-          p_recipients: string[]
-          p_scope_id: string
-          p_scope_type: string
-          p_source_id: string
-          p_source_type: string
-          p_title: string
-          p_title_en?: string
-          p_topic: string
           p_urgency: string
+          p_recipients: string[]
+          p_topic: string
+          p_title: string
+          p_body: string
+          p_data: Json
+          p_source_type: string
+          p_source_id: string
+          p_scope_type: string
+          p_scope_id: string
+          p_title_en?: string
+          p_body_en?: string
         }
         Returns: number
       }
       notify_event_canceled: {
-        Args: { p_actor?: string; p_event: string }
+        Args: {
+          p_event: string
+          p_actor?: string
+        }
         Returns: number
       }
       notify_event_comment_created: {
         Args: {
-          p_author: string
           p_comment: string
           p_event: string
           p_text: string
+          p_author: string
         }
         Returns: number
       }
       notify_event_group_updated: {
-        Args: { p_actor?: string; p_event: string; p_old_group: string }
+        Args: {
+          p_actor?: string
+          p_event: string
+          p_old_group: string
+        }
         Returns: number
       }
       notify_event_updated: {
         Args: {
-          p_actor?: string
-          p_body: string
-          p_body_en?: string
           p_event: string
+          p_body_en?: string
+          p_body: string
+          p_actor?: string
         }
         Returns: number
       }
       notify_game_added: {
-        Args: { p_actor?: string; p_match: string }
+        Args: {
+          p_match: string
+          p_actor?: string
+        }
         Returns: number
       }
       notify_group_join_requested: {
-        Args: { p_actor?: string; p_group: string; p_user: string }
+        Args: {
+          p_group: string
+          p_user: string
+          p_actor?: string
+        }
         Returns: number
       }
       notify_group_request_confirmed: {
-        Args: { p_actor?: string; p_group: string; p_user: string }
+        Args: {
+          p_user: string
+          p_actor?: string
+          p_group: string
+        }
         Returns: number
       }
-      notify_item_handover: {
-        Args:
-          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
-          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
-        Returns: number
-      }
+      notify_item_handover:
+        | {
+            Args: {
+              p_from: string
+              p_to: string
+              p_actor?: string
+              p_item: number
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_item: string
+              p_from: string
+              p_to: string
+              p_actor?: string
+            }
+            Returns: number
+          }
       notify_users: {
         Args: {
           p_body: string
-          p_body_en?: string
-          p_data: Json
-          p_scope: string
-          p_source_id: string
-          p_source_type: string
           p_title: string
-          p_title_en?: string
+          p_scope: string
           p_topic: string
           p_users: string[]
+          p_body_en?: string
+          p_title_en?: string
+          p_source_id: string
+          p_source_type: string
+          p_data: Json
         }
         Returns: number
       }
       set_notification_pref: {
         Args: {
-          p_channel?: string
-          p_enabled: boolean
           p_scope_id?: string
-          p_scope_type?: string
           p_topic: string
+          p_enabled: boolean
+          p_channel?: string
+          p_scope_type?: string
         }
         Returns: {
           channel: string
@@ -1364,57 +1448,32 @@ export type Database = {
         }
       }
       unregister_web_push_subscription: {
-        Args: { p_endpoint: string }
-        Returns: undefined
-      }
-      upsert_native_push_token: {
         Args: {
-          p_device_id: string
-          p_kind: string
-          p_platform: string
-          p_token: string
+          p_endpoint: string
         }
-        Returns: {
-          auth: string | null
-          created_at: string
-          device_id: string | null
-          endpoint: string
-          expiration_time: string | null
-          failure_count: number | null
-          id: string
-          kind: string
-          last_error: string | null
-          last_seen: string
-          last_status: number | null
-          p256dh: string | null
-          platform: string | null
-          revoked_at: string | null
-          user: string
-          user_agent: string | null
-        }
+        Returns: undefined
       }
       upsert_webpush_subscription: {
         Args: {
+          p_endpoint: string
+          p_platform: string
           p_auth: string
           p_device_id: string
-          p_endpoint: string
-          p_p256dh: string
-          p_platform: string
           p_user_agent: string
+          p_p256dh: string
         }
         Returns: {
-          auth: string | null
+          auth: string
           created_at: string
           device_id: string | null
           endpoint: string
           expiration_time: string | null
           failure_count: number | null
           id: string
-          kind: string
           last_error: string | null
           last_seen: string
           last_status: number | null
-          p256dh: string | null
+          p256dh: string
           platform: string | null
           revoked_at: string | null
           user: string
@@ -1423,8 +1482,8 @@ export type Database = {
       }
       webpush_prune_subscriptions: {
         Args: {
-          p_failures?: number
           p_inactive_days?: number
+          p_failures?: number
           p_revoked_days?: number
         }
         Returns: number
@@ -1619,77 +1678,6 @@ export type Database = {
             columns: ["challenge_stat"]
             isOneToOne: true
             referencedRelation: "challenge_stats"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      content_reports: {
-        Row: {
-          comment_id: string | null
-          comment_text: string | null
-          created_at: string
-          details: string | null
-          handled_at: string | null
-          handled_by: string | null
-          id: string
-          reason: string
-          reported_user: string | null
-          reporter: string
-          status: string
-        }
-        Insert: {
-          comment_id?: string | null
-          comment_text?: string | null
-          created_at?: string
-          details?: string | null
-          handled_at?: string | null
-          handled_by?: string | null
-          id?: string
-          reason: string
-          reported_user?: string | null
-          reporter: string
-          status?: string
-        }
-        Update: {
-          comment_id?: string | null
-          comment_text?: string | null
-          created_at?: string
-          details?: string | null
-          handled_at?: string | null
-          handled_by?: string | null
-          id?: string
-          reason?: string
-          reported_user?: string | null
-          reporter?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "content_reports_comment_id_fkey"
-            columns: ["comment_id"]
-            isOneToOne: false
-            referencedRelation: "event_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_reports_handled_by_fkey"
-            columns: ["handled_by"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_reports_reported_user_fkey"
-            columns: ["reported_user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "content_reports_reporter_fkey"
-            columns: ["reporter"]
-            isOneToOne: false
-            referencedRelation: "user"
             referencedColumns: ["id"]
           },
         ]
@@ -2097,7 +2085,6 @@ export type Database = {
           key: string
           max_attendees: number | null
           max_trial_attendees: number | null
-          trials_open: boolean
           meeting_offset: unknown | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
@@ -2106,6 +2093,7 @@ export type Database = {
           rrule: string
           timezone: string
           title: string
+          trials_open: boolean
           until: string | null
         }
         Insert: {
@@ -2125,7 +2113,6 @@ export type Database = {
           key?: string
           max_attendees?: number | null
           max_trial_attendees?: number | null
-          trials_open?: boolean
           meeting_offset?: unknown | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -2134,6 +2121,7 @@ export type Database = {
           rrule: string
           timezone?: string
           title?: string
+          trials_open?: boolean
           until?: string | null
         }
         Update: {
@@ -2153,7 +2141,6 @@ export type Database = {
           key?: string
           max_attendees?: number | null
           max_trial_attendees?: number | null
-          trials_open?: boolean
           meeting_offset?: unknown | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -2162,6 +2149,7 @@ export type Database = {
           rrule?: string
           timezone?: string
           title?: string
+          trials_open?: boolean
           until?: string | null
         }
         Relationships: [
@@ -2304,7 +2292,6 @@ export type Database = {
           items_enabled: boolean
           key: string
           max_trial_attendees: number | null
-          trials_open: boolean
           maxAttendees: number | null
           meetingDateTime: string | null
           occurrence_date: string | null
@@ -2317,6 +2304,7 @@ export type Database = {
           series_id: string | null
           startingDateTime: string
           title: string
+          trials_open: boolean
         }
         Insert: {
           answerDeadline?: string | null
@@ -2332,7 +2320,6 @@ export type Database = {
           items_enabled?: boolean
           key?: string
           max_trial_attendees?: number | null
-          trials_open?: boolean
           maxAttendees?: number | null
           meetingDateTime?: string | null
           occurrence_date?: string | null
@@ -2345,6 +2332,7 @@ export type Database = {
           series_id?: string | null
           startingDateTime: string
           title?: string
+          trials_open?: boolean
         }
         Update: {
           answerDeadline?: string | null
@@ -2360,7 +2348,6 @@ export type Database = {
           items_enabled?: boolean
           key?: string
           max_trial_attendees?: number | null
-          trials_open?: boolean
           maxAttendees?: number | null
           meetingDateTime?: string | null
           occurrence_date?: string | null
@@ -2373,6 +2360,7 @@ export type Database = {
           series_id?: string | null
           startingDateTime?: string
           title?: string
+          trials_open?: boolean
         }
         Relationships: [
           {
@@ -2756,6 +2744,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_costs: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          tournament: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          tournament: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          tournament?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trial_invites: {
         Row: {
           active: boolean
@@ -2793,40 +2814,22 @@ export type Database = {
           token?: string
           uses?: number
         }
-        Relationships: []
-      }
-      tournament_costs: {
-        Row: {
-          amount: number
-          category: string
-          created_at: string
-          date: string
-          description: string | null
-          id: string
-          tournament: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          category: string
-          created_at?: string
-          date?: string
-          description?: string | null
-          id?: string
-          tournament: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          category?: string
-          created_at?: string
-          date?: string
-          description?: string | null
-          id?: string
-          tournament?: string
-          user_id?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "trial_invites_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trial_invites_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user: {
         Row: {
@@ -2840,8 +2843,6 @@ export type Database = {
           last_seen_at: string | null
           name: string
           role: Database["public"]["Enums"]["UserRole"]
-          terms_accepted_at: string | null
-          terms_version: string | null
           verified: boolean
         }
         Insert: {
@@ -2855,8 +2856,6 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
-          terms_accepted_at?: string | null
-          terms_version?: string | null
           verified?: boolean
         }
         Update: {
@@ -2870,44 +2869,9 @@ export type Database = {
           last_seen_at?: string | null
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
-          terms_accepted_at?: string | null
-          terms_version?: string | null
           verified?: boolean
         }
         Relationships: []
-      }
-      user_blocks: {
-        Row: {
-          blocked: string
-          blocker: string
-          created_at: string
-        }
-        Insert: {
-          blocked: string
-          blocker: string
-          created_at?: string
-        }
-        Update: {
-          blocked?: string
-          blocker?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_blocks_blocked_fkey"
-            columns: ["blocked"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_blocks_blocker_fkey"
-            columns: ["blocker"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_direct_grants: {
         Row: {
@@ -3206,7 +3170,6 @@ export type Database = {
           isCancelled: boolean | null
           key: string | null
           max_trial_attendees: number | null
-          trials_open: boolean | null
           maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
@@ -3215,6 +3178,7 @@ export type Database = {
           required_item: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string | null
           title: string | null
+          trials_open: boolean | null
           user_group_role: Database["public"]["Enums"]["GroupRole"] | null
           user_state: Database["public"]["Enums"]["EventAttendance"] | null
         }
@@ -3257,39 +3221,55 @@ export type Database = {
     }
     Functions: {
       _expand_series_sql: {
-        Args: { p_from?: string; p_horizon_days?: number; p_series_id: string }
+        Args: {
+          p_horizon_days?: number
+          p_from?: string
+          p_series_id: string
+        }
         Returns: Json
       }
       _sum_challenge_points_for_self: {
         Args: {
-          challenge_id: string
-          from_ts: string
           to_ts: string
+          from_ts: string
+          challenge_id: string
           uid: string
         }
         Returns: number
       }
       add_drinks_history: {
-        Args: { items: Json }
+        Args: {
+          items: Json
+        }
         Returns: undefined
       }
       admin_analytics_attendance_ranking: {
-        Args: { p_end: string; p_start: string }
+        Args: {
+          p_start: string
+          p_end: string
+        }
         Returns: {
-          attendance_count: number
           user_name: string
+          attendance_count: number
         }[]
       }
       admin_analytics_drinks_ranking: {
-        Args: { p_end: string; p_start: string }
+        Args: {
+          p_start: string
+          p_end: string
+        }
         Returns: {
+          user_name: string
           drinks_count: number
           total_spend: number
-          user_name: string
         }[]
       }
       admin_challenge_zero_points_candidates: {
-        Args: { p_challenge_id: string; p_end: string; p_start: string }
+        Args: {
+          p_challenge_id: string
+          p_start: string
+          p_end: string
+        }
         Returns: {
           attendance_count: number
           user_name: string
@@ -3299,53 +3279,37 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      redeem_trial_invite: {
-        Args: { p_name?: string; p_token: string }
-        Returns: string
-      }
-      trial_invite_info: {
-        Args: { p_token: string }
-        Returns: {
-          event_limit: number
-          expires_at: string | null
-          group_id: string
-          group_name: string
-          valid: boolean
-        }[]
-      }
-      trial_status: {
-        Args: { p_group: string; p_user?: string }
-        Returns: {
-          event_limit: number | null
-          events_used: number
-          is_guest: boolean
-          trial_started_at: string | null
-        }[]
-      }
       admin_user_effective_grants: {
-        Args: { p_user: string }
+        Args: {
+          p_user: string
+        }
         Returns: {
-          group_id: string
-          group_name: string
           key: string
           kind: Database["public"]["Enums"]["grant_kind"]
           source: string
+          group_id: string
+          group_name: string
         }[]
       }
-      anonymize_user: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
       apply_series_occurrences: {
-        Args: { p_mode?: string; p_series_id: string; p_slots: Json }
+        Args: {
+          p_series_id: string
+          p_slots: Json
+          p_mode?: string
+        }
         Returns: Json
       }
       apply_transformation_to_event: {
-        Args: { p_event_id: string; p_transformation_id: string }
+        Args: {
+          p_event_id: string
+          p_transformation_id: string
+        }
         Returns: undefined
       }
       authorize: {
-        Args: { requested_permission: string }
+        Args: {
+          requested_permission: string
+        }
         Returns: boolean
       }
       bundesliga_cache_boundary: {
@@ -3353,17 +3317,19 @@ export type Database = {
         Returns: string
       }
       check_reply_to: {
-        Args: { value: string }
+        Args: {
+          value: string
+        }
         Returns: boolean
       }
       create_event_transformation_by_key: {
         Args: {
-          p_event_key: string
-          p_lead_time: unknown
-          p_next: Json
           p_one_time?: boolean
-          p_reason?: string
           p_trigger: Json
+          p_lead_time: unknown
+          p_event_key: string
+          p_reason?: string
+          p_next: Json
         }
         Returns: {
           active: boolean
@@ -3380,14 +3346,14 @@ export type Database = {
       }
       create_group_with_user: {
         Args: {
-          group_color: string
           group_description: string
-          group_name: string
+          group_color: string
           is_public: boolean
+          group_name: string
           need_request: boolean
-          parent?: string
-          role: Database["public"]["Enums"]["GroupRole"]
           user_id: string
+          role: Database["public"]["Enums"]["GroupRole"]
+          parent?: string
         }
         Returns: {
           color: string
@@ -3402,9 +3368,13 @@ export type Database = {
         }
       }
       create_next_occurrences: {
-        Args: { p_horizon: unknown; p_run_at: string }
+        Args: {
+          p_horizon: unknown
+          p_run_at: string
+        }
         Returns: {
           answerDeadline: string | null
+          answerStart: string | null
           constellations_enabled: boolean
           created_at: string
           description: string
@@ -3428,71 +3398,84 @@ export type Database = {
           series_id: string | null
           startingDateTime: string
           title: string
+          trials_open: boolean
         }[]
       }
       create_next_occurrences_candidates: {
-        Args: { p_horizon: unknown; p_run_at: string }
+        Args: {
+          p_horizon: unknown
+          p_run_at: string
+        }
         Returns: {
-          answerDeadline: string
-          constellations_enabled: boolean
-          description: string
-          endDateTime: string
-          group_id: string
-          items_enabled: boolean
-          key: string
-          maxAttendees: number
-          place: string
-          recurrence: Database["public"]["Enums"]["EventRecurrence"]
-          recurrenceEnd: string
           required_item: Database["public"]["Enums"]["ItemType"]
+          constellations_enabled: boolean
+          items_enabled: boolean
+          recurrenceEnd: string
+          maxAttendees: number
+          answerDeadline: string
+          place: string
+          endDateTime: string
           startingDateTime: string
+          recurrence: Database["public"]["Enums"]["EventRecurrence"]
+          description: string
           title: string
+          group_id: string
+          key: string
         }[]
       }
       custom_access_token_hook: {
-        Args: { event: Json }
+        Args: {
+          event: Json
+        }
         Returns: Json
       }
       delete_event: {
-        Args: { p_event_id: string }
+        Args: {
+          p_event_id: string
+        }
         Returns: {
-          deleted_attendance: number
-          deleted_bring_items: number
           deleted_bring_pledges: number
-          deleted_comments: number
+          deleted_bring_items: number
+          deleted_attendance: number
           deleted_event: number
+          deleted_comments: number
         }[]
       }
       delete_event_and_children: {
-        Args: { p_event_id: string }
+        Args: {
+          p_event_id: string
+        }
         Returns: {
-          deleted_attendance: number
           deleted_bring_items: number
-          deleted_bring_pledges: number
-          deleted_comments: number
+          deleted_attendance: number
           deleted_event: number
+          deleted_comments: number
+          deleted_bring_pledges: number
         }[]
       }
       delete_recurring_events: {
-        Args: { p_key: string; p_start_time: string }
+        Args: {
+          p_key: string
+          p_start_time: string
+        }
         Returns: {
-          deleted_attendance: number
           deleted_bring_items: number
-          deleted_bring_pledges: number
-          deleted_comments: number
-          deleted_event: number
           event_id: string
-          recurrence_event_id: string
+          deleted_event: number
+          deleted_comments: number
+          deleted_bring_pledges: number
+          deleted_attendance: number
           recurrence_updated: boolean
+          recurrence_event_id: string
         }[]
       }
       edit_item: {
         Args: {
-          p_color?: string
           p_group?: string
+          p_set_group?: boolean
           p_id: number
           p_name?: string
-          p_set_group?: boolean
+          p_color?: string
           p_type?: Database["public"]["Enums"]["ItemType"]
         }
         Returns: {
@@ -3507,12 +3490,25 @@ export type Database = {
           type: Database["public"]["Enums"]["ItemType"]
         }
       }
+      end_trial: {
+        Args: {
+          p_user: string
+          p_group: string
+        }
+        Returns: boolean
+      }
       expand_all_due_series: {
-        Args: { p_horizon_days?: number }
+        Args: {
+          p_horizon_days?: number
+        }
         Returns: Json
       }
       expand_series: {
-        Args: { p_mode?: string; p_series_id: string; p_slots: Json }
+        Args: {
+          p_series_id: string
+          p_slots: Json
+          p_mode?: string
+        }
         Returns: Json
       }
       expire_trial_memberships: {
@@ -3520,56 +3516,68 @@ export type Database = {
         Returns: number
       }
       get_bundesliga_cache: {
-        Args: { p_keys: string[] }
+        Args: {
+          p_keys: string[]
+        }
         Returns: {
-          cache_key: string
-          fetched_at: string
           is_fresh: boolean
+          fetched_at: string
           payload: Json
+          cache_key: string
         }[]
       }
       get_or_create_payment_for_user: {
-        Args: { user_id: string }
+        Args: {
+          user_id: string
+        }
         Returns: number
       }
       gettingjsonarray: {
-        Args: { items: Json }
+        Args: {
+          items: Json
+        }
         Returns: undefined
       }
       grant_group_grants: {
-        Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
+        Args: {
+          p_perms?: string[]
+          p_group: string
+          p_feats?: string[]
+        }
         Returns: undefined
       }
       grant_user_grants: {
         Args: {
-          p_feats?: string[]
-          p_perms?: string[]
-          p_tenant?: string
           p_user: string
+          p_tenant?: string
+          p_perms?: string[]
+          p_feats?: string[]
         }
         Returns: undefined
       }
       group_has_no_members: {
-        Args: { p_group: string }
+        Args: {
+          p_group: string
+        }
         Returns: boolean
       }
       inc_target_attempt: {
         Args: {
-          p_error: string
-          p_outbox_id: number
           p_status: number
+          p_outbox_id: number
           p_subscription_id: string
+          p_error: string
         }
         Returns: undefined
       }
       increase_challenge_stats_count: {
         Args: {
-          amount: number
-          category?: string
-          challenge_id: string
           comment?: string
-          image_url?: string
           to_create_at: string
+          category?: string
+          image_url?: string
+          challenge_id: string
+          amount: number
         }
         Returns: {
           challenge: string
@@ -3581,73 +3589,110 @@ export type Database = {
         }
       }
       insert_event_with_bring_items: {
-        Args: { p_event: Json; p_items: Json }
+        Args: {
+          p_event: Json
+          p_items: Json
+        }
         Returns: {
-          event_id: string
           inserted_item_ids: string[]
+          event_id: string
         }[]
       }
       invoke_edge_function: {
-        Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
+        Args: {
+          p_function_name: string
+          p_timeout_ms?: number
+          p_body?: Json
+        }
         Returns: number
       }
       is_full_member_of_event: {
-        Args: { p_event: string }
+        Args: {
+          p_event: string
+        }
         Returns: boolean
       }
       is_full_member_of_group: {
-        Args: { p_group: string }
+        Args: {
+          p_group: string
+        }
         Returns: boolean
       }
       is_group_public_joinable: {
-        Args: { p_group: string }
+        Args: {
+          p_group: string
+        }
+        Returns: boolean
+      }
+      is_guest: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_member_of_event: {
-        Args: { p_event: string }
+        Args: {
+          p_event: string
+        }
         Returns: boolean
       }
       is_user_admin_in_group: {
-        Args: { group_id: string }
+        Args: {
+          group_id: string
+        }
         Returns: boolean
       }
       is_user_in_group: {
-        Args: { group_id: string }
+        Args: {
+          group_id: string
+        }
         Returns: boolean
       }
       key_handover: {
-        Args: { p_key_id: number; p_new_holder: string }
+        Args: {
+          p_new_holder: string
+          p_key_id: number
+        }
         Returns: {
-          holder: string
           key_id: number
+          holder: string
         }[]
-      }
-      moderate_report: {
-        Args: { p_action: string; p_report: string }
-        Returns: undefined
       }
       purge_bundesliga_cache: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      redeem_trial_invite: {
+        Args: {
+          p_token: string
+          p_name?: string
+        }
+        Returns: string
+      }
       repair_recurrence_local_time: {
-        Args: { p_tz?: string }
+        Args: {
+          p_tz?: string
+        }
         Returns: number
       }
       revert_transformation_application: {
-        Args: { p_application_id: string }
+        Args: {
+          p_application_id: string
+        }
         Returns: undefined
       }
       revoke_group_grants: {
-        Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
+        Args: {
+          p_feats?: string[]
+          p_perms?: string[]
+          p_group: string
+        }
         Returns: undefined
       }
       revoke_user_grants: {
         Args: {
+          p_user: string
           p_feats?: string[]
           p_perms?: string[]
           p_tenant?: string
-          p_user: string
         }
         Returns: undefined
       }
@@ -3672,24 +3717,58 @@ export type Database = {
         Returns: number
       }
       series_for_expansion: {
-        Args: { p_series_id?: string }
+        Args: {
+          p_series_id?: string
+        }
         Returns: {
-          answer_offset_s: number
-          answer_start_offset_s: number
-          dtstart: string
-          duration_s: number
-          id: string
-          meeting_offset_s: number
-          rrule: string
           timezone: string
+          dtstart: string
+          rrule: string
+          id: string
+          answer_start_offset_s: number
+          answer_offset_s: number
+          meeting_offset_s: number
+          duration_s: number
           until: string
+        }[]
+      }
+      trial_events_used: {
+        Args: {
+          p_except_event?: string
+          p_group: string
+          p_user: string
+        }
+        Returns: number
+      }
+      trial_invite_info: {
+        Args: {
+          p_token: string
+        }
+        Returns: {
+          expires_at: string
+          group_id: string
+          group_name: string
+          event_limit: number
+          valid: boolean
+        }[]
+      }
+      trial_status: {
+        Args: {
+          p_user?: string
+          p_group: string
+        }
+        Returns: {
+          trial_started_at: string
+          events_used: number
+          event_limit: number
+          is_guest: boolean
         }[]
       }
       update_attendance: {
         Args: {
-          p_event: string
           p_state: Database["public"]["Enums"]["EventAttendance"]
           p_user: string
+          p_event: string
         }
         Returns: {
           event: string
@@ -3772,29 +3851,37 @@ export type Database = {
     }
     Functions: {
       custom_access_token_hook: {
-        Args: { event: Json }
+        Args: {
+          event: Json
+        }
         Returns: Json
       }
       get_column_info: {
-        Args: { schema_name: string; selected_table: string }
+        Args: {
+          selected_table: string
+          schema_name: string
+        }
         Returns: {
-          column_name: string
+          is_nullable: boolean
           data_type: string
           foreign_key_column_name: string
-          foreign_key_schema_name: string
+          column_name: string
           foreign_key_table_name: string
-          is_nullable: boolean
+          foreign_key_schema_name: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_name: string
           enum_values: string[]
+          enum_name: string
         }[]
       }
       get_primary_keys: {
-        Args: { schema_name: string; table_name: string }
+        Args: {
+          schema_name: string
+          table_name: string
+        }
         Returns: {
           column_name: string
         }[]
@@ -3802,12 +3889,14 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_name: string
           table_schema: string
+          table_name: string
         }[]
       }
       get_table_metadata: {
-        Args: { target_schemas?: string[] }
+        Args: {
+          target_schemas?: string[]
+        }
         Returns: Json
       }
       jwt_claims: {
@@ -3815,11 +3904,15 @@ export type Database = {
         Returns: Json
       }
       jwt_has_permission: {
-        Args: { p_perm: string }
+        Args: {
+          p_perm: string
+        }
         Returns: boolean
       }
       sqlstate_label: {
-        Args: { p_state: string }
+        Args: {
+          p_state: string
+        }
         Returns: string
       }
     }
@@ -3832,25 +3925,21 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -3868,16 +3957,14 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -3893,16 +3980,14 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -3918,16 +4003,14 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -3935,16 +4018,14 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+    | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof Database
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
