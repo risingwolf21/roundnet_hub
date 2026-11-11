@@ -879,7 +879,7 @@
     "query": "Failed to load data. Please refresh the page.",
     "route": {
       "title": "Something went wrong",
-      "description": "Our emergency crew is on its way: we've been notified automatically. Try again or head back to the home page.",
+      "description": "We've been notified automatically. Try again or head back to the home page.",
       "backHome": "Go to home page",
       "retry": "Try again",
       "details": "Technical details",
