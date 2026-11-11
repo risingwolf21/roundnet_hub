@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
 import { useApplication } from './features/auth/ApplicationContext';
 
@@ -7,12 +7,17 @@ import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
 import { GrantsProvider } from './features/auth/GrantsContext';
+import { checkForAppUpdate } from './features/pwa/checkForUpdate';
 import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
   const { user } = useApplication();
 
   const router = useMemo(() => createRouter(user), [user]);
+  // Every navigation checks for a new app version.
+  useEffect(() => router.subscribe((state) => {
+    if (state.navigation.state === 'idle') checkForAppUpdate();
+  }), [router]);
 
   return <RouterProvider router={router} />;
 };

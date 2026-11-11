@@ -1,25 +1,30 @@
-
-import { TENANT_LOGO } from '@/utils';
+import { useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from './ui/empty';
-import { Spinner } from './ui/spinner';
+import { holdSplash, releaseSplash } from './splash';
 
+// Same markup and styles as the start-up splash in index.html. While the splash is still up it
+// covers this screen; later loading phases (e.g. a lazy route) show this copy instead.
 export const LoadingScreen = () => {
   const { t } = useTranslation();
-  return <div
-    className="w-[100dvw] h-[100dvh] justify-center align-center flex flex-col p-4"
-  >
-    <Empty className="border border-dashed flex-0">
-      <EmptyHeader>
-        <EmptyMedia variant="default">
-          <img src={TENANT_LOGO} alt={t('common.logo')} style={{ height: 125, objectFit: 'contain' }} />
-        </EmptyMedia>
-        <EmptyTitle>{t('common.loadingData')}</EmptyTitle>
-      </EmptyHeader>
-      <EmptyContent>
-        <Spinner className='size-8' />
-      </EmptyContent>
-    </Empty>
+  useLayoutEffect(() => {
+    holdSplash();
+    return releaseSplash;
+  }, []);
 
-  </div>
+  return (
+    <div className="app-splash" role="status" aria-label={t('common.loadingData')}>
+      <div className="app-splash__stage">
+        <div className="app-splash__icon">
+          <span className="app-splash__ring" />
+          <span className="app-splash__ring" />
+          <img className="app-splash__logo" src={`/${import.meta.env.VITE_ICON_PREFIX}/android-chrome-512x512.png`} alt="" />
+          <svg className="app-splash__progress" viewBox="0 0 136 136" aria-hidden>
+            <rect className="app-splash__track" x="2" y="2" width="132" height="132" rx="38" pathLength="100" />
+            <rect className="app-splash__arc" x="2" y="2" width="132" height="132" rx="38" pathLength="100" />
+          </svg>
+        </div>
+      </div>
+      <p className="app-splash__name">{import.meta.env.VITE_WEBSITE_NAME}</p>
+    </div>
+  );
 };

@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/react';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { t } from 'i18next';
 import ReactDOM from 'react-dom/client';
 import './apocalypseHandler';
 import { App } from './App';
 import { LoadingScreen } from './components/LoadingScreen';
+import { releaseSplash } from './components/splash';
 import { Button } from './components/ui/button';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { FeatureToggleProvider } from './contexts/FeatureToggleContext';
@@ -57,7 +58,15 @@ const Fallback = (e: { error: unknown; componentStack: string; eventId: string; 
   </div>
 );
 
+// Ends the app start's hold on the splash; outside the error boundary so its fallback is never hidden.
+const SplashReady = () => {
+  useEffect(releaseSplash, []);
+  return null;
+};
+
 root.render(
+  <>
+  <SplashReady />
   <Sentry.ErrorBoundary fallback={Fallback}>
     <div aria-hidden className="top-edge bg-background" />
     <Suspense fallback={<LoadingScreen />}>
@@ -68,4 +77,5 @@ root.render(
       </ThemeProvider>
     </Suspense>
   </Sentry.ErrorBoundary>
+  </>
 );
