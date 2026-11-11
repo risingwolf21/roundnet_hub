@@ -1,13 +1,15 @@
 <br/>
 <p align="center">
   <a>
-    <img src="src/images/Karlsruher_Kojoten_Logo.svg" alt="Logo" width="200" height="200">
+    <img src="src/images/Karlsruher_Kojoten_Logo.svg" alt="Roundnet Karlsruhe" height="120">
+    &nbsp;&nbsp;
+    <img src="src/images/Roundnet_Munich_Logo.png" alt="Munich Roundnet Community" height="120">
   </a>
 
-  <h2 align="center">Roundnet Karlsruhe Web App</h2>
+  <h2 align="center">Roundnet Hub</h2>
 
   <p align="center">
-    Multi-tenant Progressive Web Application for managing Roundnet community events, drinks, and games
+    The app for Roundnet communities: trainings, groups, games, challenges and more. One codebase, one app per community.
     <br/>
     <br/>
     <br/>
@@ -18,26 +20,27 @@
       ·
       <a href="https://staging-roundnet-karlsruhe.web.app">🧪 Staging</a>
       ·
-      <a href="https://github.com/risingwolf21/roundnet_karlsruhe_app/issues">🐛 Report Bug</a>
+      <a href="https://github.com/risingwolf21/roundnet_hub/issues">🐛 Report Bug</a>
     </p>
   </p>
 </p>
 
-[![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml) [![Staging](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml) [![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml)
+[![Production](https://github.com/risingwolf21/roundnet_hub/actions/workflows/production.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_hub/actions/workflows/production.yml) [![Master](https://github.com/risingwolf21/roundnet_hub/actions/workflows/master.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_hub/actions/workflows/master.yml) [![Backup](https://github.com/risingwolf21/roundnet_hub/actions/workflows/backup.yml/badge.svg)](https://github.com/risingwolf21/roundnet_hub/actions/workflows/backup.yml)
 
 ## 📋 Table of Contents
 
 - [Teststatus](#-teststatus)
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Environment Configuration](#environment-configuration)
-- [Available Scripts](#available-scripts)
-- [Development Workflow](#development-workflow)
-- [Deployment](#deployment)
-- [Database Management](#database-management)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
+- [Overview](#-overview)
+- [Communities](#-communities)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Environment Configuration](#-environment-configuration)
+- [Available Scripts](#-available-scripts)
+- [Development Workflow](#-development-workflow)
+- [Deployment](#-deployment)
+- [Database Management](#-database-management)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
 
 ## 🧪 Teststatus
 
@@ -265,29 +268,42 @@ Lokal ausführen: `yarn test:e2e:ci` (lokaler Supabase-Stack muss laufen), danac
 
 ## 🎯 Overview
 
-This is a modern Progressive Web Application (PWA) designed for managing Roundnet communities. It supports multiple tenants (Karlsruhe and Munich) with dedicated databases and configurations. The application enables community management, event organization, game tracking, drink/payment tracking, and user administration.
+Roundnet Hub is a Progressive Web App (and Capacitor store app) for Roundnet communities. Every community gets its own app: its own name, logo, colours, domain and Supabase database, all built from this one codebase. Within a community, groups (e.g. a club, a training group, a team) decide which features they use.
 
 ### Key Features
 
-- **Multi-tenant architecture** - Separate deployments for Karlsruhe and Munich
-- **Progressive Web App** - Installable, offline-capable, mobile-first design
-- **Event Management** - Create, manage, and track community events
-- **Game Tracking** - Record and analyze game statistics
-- **Payment System** - Track drinks and payments within the community
-- **User Management** - Role-based access control and user profiles
-- **Internationalization** - Multi-language support (i18next)
-- **Real-time Updates** - Powered by Supabase realtime subscriptions
-- **Error Tracking** - Integrated Sentry monitoring
+- **Trainings & events** – single events and recurring series, sign-ups, waiting lists, answer deadlines, bring lists and comments
+- **Groups** – public or invite-only groups, join requests, roles and per-group features
+- **Trial trainings & guests** – newcomers try out a group, also as guests via an invite link without an account
+- **Games & rankings** – match results, ELO leaderboard and player history
+- **Challenges** – community challenges with points and leaderboards
+- **Club tools** – drinks and payments, tournament costs, keys and material, Bundesliga line-up planner
+- **Grants manager** – features and permissions per group and per user
+- **Notifications** – in-app and web push, calendar subscription
+- **German and English**, mobile first, installable and offline-capable
+
+## 🏘 Communities
+
+| Community | App | Tenant id |
+|---|---|---|
+| Roundnet Karlsruhe | [roundnet-karlsruhe.web.app](https://roundnet-karlsruhe.web.app) | `roundnet-karlsruhe` |
+| Munich Roundnet Community | [munich-roundnet.web.app](https://munich-roundnet.web.app) | `munich-roundnet` |
+
+A community is a tenant: an environment file (`environments/.env.<tenant>`) with its own Supabase project, Firebase Hosting target, name and icon prefix. Its look comes from:
+
+- icons and favicons in `public/<tenant>/`,
+- the primary colour in `src/styles/global.css` (`:root[data-tenant="<tenant>"]`),
+- the logo in `src/utils/index.tsx`.
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- **React 19.0** - UI framework
+- **React 19** - UI framework
 - **TypeScript 5.9** - Type-safe development
-- **Material-UI v7** - Component library (@mui/material, @mui/icons-material, @toolpad/core)
-- **Vite 7.1** - Build tool and dev server
-- **React Router 7.9** - Client-side routing
-- **TanStack Query 5.90** - Data fetching and state management
+- **Tailwind CSS 4 + shadcn/ui** - Styling and components (`src/components/ui`), icons from lucide-react
+- **Vite 7** - Build tool and dev server
+- **React Router 7** - Client-side routing
+- **TanStack Query 5** - Data fetching and state management
 - **i18next** - Internationalization
 - **Leaflet** - Interactive maps
 - **date-fns** - Date manipulation
@@ -320,8 +336,8 @@ This is a modern Progressive Web Application (PWA) designed for managing Roundne
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/risingwolf21/roundnet_karlsruhe_app.git
-   cd roundnet_karlsruhe_app
+   git clone https://github.com/risingwolf21/roundnet_hub.git
+   cd roundnet_hub
    ```
 
 2. **Install dependencies**
@@ -537,7 +553,7 @@ The application has three deployment targets:
 
 1. **Create a Pull Request from `master` to `production`**
    
-   [Create PR](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
+   [Create PR](https://github.com/risingwolf21/roundnet_hub/compare/production...master)
 
 2. **Review and merge the PR**
    
@@ -549,7 +565,7 @@ The application has three deployment targets:
 
 3. **Monitor deployment**
    
-   Check the [Actions tab](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions) for deployment status.
+   Check the [Actions tab](https://github.com/risingwolf21/roundnet_hub/actions) for deployment status.
 
 ### Manual Deployment
 
@@ -645,7 +661,7 @@ npx supabase db dump --local --data-only -f seed_$(date +%Y%m%d).sql
 ## 📁 Project Structure
 
 ```
-roundnet_karlsruhe_app/
+roundnet_hub/
 ├── .github/              # GitHub Actions workflows
 ├── environments/         # Environment-specific configs (.env files)
 ├── public/              # Static assets
@@ -657,7 +673,7 @@ roundnet_karlsruhe_app/
 │   ├── lib/             # Third-party library configs
 │   ├── repository/      # Data access layer
 │   ├── tanstack/        # TanStack Query setup
-│   ├── themes/          # MUI theme configurations
+│   ├── styles/          # Tailwind styles and tenant colours
 │   ├── translation/     # i18next translations
 │   ├── types/           # TypeScript type definitions
 │   ├── utils/           # Utility functions
@@ -720,17 +736,16 @@ roundnet_karlsruhe_app/
 
 - [Supabase Documentation](https://supabase.com/docs)
 - [React Documentation](https://react.dev)
-- [Material-UI Documentation](https://mui.com)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [shadcn/ui Documentation](https://ui.shadcn.com)
 - [Vite Documentation](https://vite.dev)
 - [TanStack Query Documentation](https://tanstack.com/query)
 - [Firebase Hosting Documentation](https://firebase.google.com/docs/hosting)
 
 ## 📄 License
 
-Private project for Roundnet Karlsruhe and Munich communities.
+Private project for the Roundnet communities using Roundnet Hub.
 
 ---
 
-**Current Version:** 1.6.0
-
-For issues and feature requests, please use the [GitHub Issues](https://github.com/risingwolf21/roundnet_karlsruhe_app/issues) page.
+For issues and feature requests, please use the [GitHub Issues](https://github.com/risingwolf21/roundnet_hub/issues) page.
