@@ -878,11 +878,13 @@
     "mutation": "An error occurred. Please try again.",
     "query": "Failed to load data. Please refresh the page.",
     "route": {
-      "whoops": "Whoops!",
       "title": "Something went wrong",
-      "description": "The page you're looking for isn't found, we suggest you back to home.",
-      "backHome": "Back to home page",
-      "illustrationAlt": "404 illustration"
+      "description": "We've been notified automatically. Try again or head back to the home page.",
+      "backHome": "Go to home page",
+      "retry": "Try again",
+      "details": "Technical details",
+      "message": "Message",
+      "eventId": "Error ID"
     },
     "featureLocked": {
       "title": "Too bad!",
