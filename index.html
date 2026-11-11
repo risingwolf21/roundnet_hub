@@ -43,19 +43,20 @@
     }
     .app-splash--done { opacity: 0; transform: scale(1.04); pointer-events: none; }
 
-    /* Stage = the icon's footprint; the rings pulse out of it in the icon's shape. */
+    /* Stage = the icon's footprint. */
     .app-splash__stage {
       position: relative; width: 112px; height: 112px; margin: 24px 0;
       animation: splash-pop .6s cubic-bezier(.34,1.56,.64,1) both;
     }
     .app-splash__ring {
-      position: absolute; inset: 0; border-radius: 28px;
+      position: absolute; inset: -12px; border-radius: 40px;
       border: 2px solid var(--splash-accent); opacity: 0;
       animation: splash-ring 2.4s ease-out infinite;
     }
     .app-splash__ring:nth-child(2) { animation-delay: 1.2s; }
 
-    /* The icon breathes (shrinks and expands); the progress arc around it breathes along. */
+    /* The icon breathes (shrinks and expands); the progress arc around it and the rings, which start
+       at the progress arc in the icon's shape, breathe along. */
     .app-splash__icon { position: absolute; inset: 0; animation: splash-breathe 1.6s ease-in-out infinite; }
     .app-splash__logo {
       width: 100%; height: 100%; border-radius: 28px; object-fit: cover; background: #fff; display: block;
@@ -75,7 +76,7 @@
     }
 
     @keyframes splash-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
-    @keyframes splash-ring { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.7); } }
+    @keyframes splash-ring { 0% { opacity: .55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
     @keyframes splash-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(.86); } }
     @keyframes splash-around { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -100; } }
     @keyframes splash-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -93,9 +94,9 @@
   <!-- Outside #root: the stale service worker check below looks for an empty #root. -->
   <div id="splash" class="app-splash" role="status" aria-label="%VITE_WEBSITE_NAME%">
     <div class="app-splash__stage">
-      <span class="app-splash__ring"></span>
-      <span class="app-splash__ring"></span>
       <div class="app-splash__icon">
+        <span class="app-splash__ring"></span>
+        <span class="app-splash__ring"></span>
         <img class="app-splash__logo" src="/%VITE_ICON_PREFIX%/android-chrome-512x512.png" alt="" />
         <svg class="app-splash__progress" viewBox="0 0 136 136" aria-hidden="true">
           <rect class="app-splash__track" x="2" y="2" width="132" height="132" rx="38" pathLength="100" />
