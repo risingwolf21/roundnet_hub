@@ -16,15 +16,15 @@ export const LoadingScreen = () => {
       <div className="app-splash__stage">
         <span className="app-splash__ring" />
         <span className="app-splash__ring" />
-        <img className="app-splash__logo" src={`/${import.meta.env.VITE_ICON_PREFIX}/android-chrome-512x512.png`} alt="" />
-      </div>
-      <div className="app-splash__court" aria-hidden>
-        <span className="app-splash__net" />
-        <span className="app-splash__shadow" />
-        <span className="app-splash__ball" />
+        <div className="app-splash__icon">
+          <img className="app-splash__logo" src={`/${import.meta.env.VITE_ICON_PREFIX}/android-chrome-512x512.png`} alt="" />
+          <svg className="app-splash__progress" viewBox="0 0 136 136" aria-hidden>
+            <rect className="app-splash__track" x="2" y="2" width="132" height="132" rx="38" pathLength="100" />
+            <rect className="app-splash__arc" x="2" y="2" width="132" height="132" rx="38" pathLength="100" />
+          </svg>
+        </div>
       </div>
       <p className="app-splash__name">{import.meta.env.VITE_WEBSITE_NAME}</p>
-      <span className="app-splash__bar" aria-hidden />
     </div>
   );
 };
