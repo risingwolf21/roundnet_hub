@@ -879,7 +879,7 @@
     "query": "Daten konnten nicht geladen werden. Bitte lade die Seite neu.",
     "route": {
       "title": "Etwas ist schiefgelaufen",
-      "description": "Unser Notdienst ist schon unterwegs: Wir wurden automatisch benachrichtigt. Versuch es noch einmal oder geh zurück zur Startseite.",
+      "description": "Wir wurden automatisch benachrichtigt. Versuch es noch einmal oder geh zurück zur Startseite.",
       "backHome": "Zur Startseite",
       "retry": "Erneut versuchen",
       "details": "Technische Details",
