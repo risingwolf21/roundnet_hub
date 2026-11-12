@@ -685,7 +685,10 @@
       "selected": "Selected",
       "others": "Other groups",
       "othersHint": "You are not a member of these groups.",
-      "emptyDescription": "Try a different search term."
+      "emptyDescription": "Try a different search term.",
+      "memberOnlyHint": "You can only create events in groups you are a member of.",
+      "noMemberGroups": "No group you are a member of",
+      "noMemberGroupsDescription": "Join a group first. While your request is pending or you are on a trial, you can't create events there yet."
     }
   },
   "costs": {

@@ -685,7 +685,10 @@
       "selected": "Ausgewählt",
       "others": "Weitere Gruppen",
       "othersHint": "Du bist kein Mitglied dieser Gruppen.",
-      "emptyDescription": "Versuche es mit einem anderen Suchbegriff."
+      "emptyDescription": "Versuche es mit einem anderen Suchbegriff.",
+      "memberOnlyHint": "Events kannst du nur in Gruppen anlegen, in denen du Mitglied bist.",
+      "noMemberGroups": "Keine Gruppe, in der du Mitglied bist",
+      "noMemberGroupsDescription": "Tritt zuerst einer Gruppe bei. Solange deine Anfrage offen ist oder du im Probetraining bist, kannst du dort noch keine Events anlegen."
     }
   },
   "costs": {

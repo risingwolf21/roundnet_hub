@@ -414,7 +414,7 @@ export const CreateOrUpdateEventDialog = ({
                   groupError && 'border-destructive'
                 )}
                 onClick={async () => {
-                  const result = await dialogs.selectGroup([], selectedGroup?.id);
+                  const result = await dialogs.selectGroup([], selectedGroup?.id, { fullMemberOnly: true });
                   if (result) {
                     setSelectedGroup(result);
                     patch({ group: result.id });
