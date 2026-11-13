@@ -7,12 +7,12 @@ import { useDialogs } from '@/contexts/DialogsProvider';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
-import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
+import { useEvents, useOtherEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, EventsUserView } from '@/types/supabaseTypes';
 import { withProfiler } from '@sentry/react';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import groupBy from 'lodash.groupby';
-import { CalendarCheck, CalendarSync, CalendarX, Plus } from 'lucide-react';
+import { CalendarCheck, CalendarSearch, CalendarSync, CalendarX, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -20,7 +20,7 @@ import { useGrants } from '../auth/GrantsContext';
 import { EventItem } from './components/EventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
-type EventView = 'upcoming' | 'open' | 'past';
+type EventView = 'upcoming' | 'open' | 'past' | 'other';
 
 const needsAnswer = (x: EventsUserView) =>
   x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x);
@@ -32,17 +32,22 @@ const EventScreen = () => {
   const navigate = useNavigate();
   const [fetchMode, setFetchMode] = useFetchMode();
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [showOther, setShowOther] = useState(false);
   // eslint-disable-next-line @eslint-react/naming-convention/use-state
   const [today] = useState(() => new Date());
 
-  const { data: events = [], isLoading, error, refetch } = useEvents(fetchMode);
+  const myEvents = useEvents(fetchMode);
+  const otherEvents = useOtherEvents(showOther);
+  const { data: events = [], isLoading, error, refetch } = showOther ? otherEvents : myEvents;
   const updateAttendance = useUpdateAttendanceMutation();
 
-  const view: EventView = fetchMode === 'past' ? 'past' : onlyOpen ? 'open' : 'upcoming';
-  const openCount = fetchMode === 'upcoming' ? events.filter(needsAnswer).length : 0;
+  const view: EventView = showOther ? 'other' : fetchMode === 'past' ? 'past' : onlyOpen ? 'open' : 'upcoming';
+  const openCount = fetchMode === 'upcoming' ? (myEvents.data ?? []).filter(needsAnswer).length : 0;
   const visibleEvents = view === 'open' ? events.filter(needsAnswer) : events;
 
   const changeView = (next: EventView) => {
+    setShowOther(next === 'other');
+    if (next === 'other') return;
     setOnlyOpen(next === 'open');
     setFetchMode(next === 'past' ? 'past' : 'upcoming');
   };
@@ -93,6 +98,7 @@ const EventScreen = () => {
               { value: 'upcoming', label: t('events.list.tabUpcoming') },
               { value: 'open', label: t('events.list.tabOpen'), count: openCount },
               { value: 'past', label: t('events.list.tabPast') },
+              { value: 'other', label: t('events.list.tabOther') },
             ]}
           />
         </div>
@@ -112,14 +118,20 @@ const EventScreen = () => {
             {!isLoading && !error && visibleEvents.length === 0 && (
               <Empty className="mt-12">
                 <EmptyHeader>
-                  <EmptyMedia variant="icon">{view === 'open' ? <CalendarCheck /> : <CalendarX />}</EmptyMedia>
-                  <EmptyTitle>{view === 'open' ? t('events.list.allAnswered') : t('events.list.empty')}</EmptyTitle>
+                  <EmptyMedia variant="icon">
+                    {view === 'open' ? <CalendarCheck /> : view === 'other' ? <CalendarSearch /> : <CalendarX />}
+                  </EmptyMedia>
+                  <EmptyTitle>
+                    {view === 'open' ? t('events.list.allAnswered') : view === 'other' ? t('events.list.emptyOther') : t('events.list.empty')}
+                  </EmptyTitle>
                   <EmptyDescription>
                     {view === 'open'
                       ? t('events.list.allAnsweredDescription')
                       : view === 'past'
                         ? t('events.list.emptyPast')
-                        : t('events.list.emptyDescription')}
+                        : view === 'other'
+                          ? t('events.list.emptyOtherDescription')
+                          : t('events.list.emptyDescription')}
                   </EmptyDescription>
                   {view === 'upcoming' && <EmptyDescription>{t('events.list.joinGroupHint')}</EmptyDescription>}
                 </EmptyHeader>
@@ -136,6 +148,7 @@ const EventScreen = () => {
                   <EventItem
                     key={event.id}
                     event={event}
+                    readOnly={view === 'other'}
                     attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
                     attendEvent={() => {
                       updateAttendance.mutate({ event, user, newState: 'Attending' });

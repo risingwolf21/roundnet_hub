@@ -20,6 +20,7 @@ import { Duration, format, isBefore } from 'date-fns';
 export const eventKeys = {
   all: ['events'] as const,
   list: (fetchMode: 'past' | 'upcoming') => [...eventKeys.all, fetchMode] as const,
+  other: () => [...eventKeys.all, 'other'] as const,
   event: (id?: string) => [...eventKeys.all, id] as const,
   eventComments: (id?: string) => [...eventKeys.event(id), 'comments'] as const,
   eventBringOverview: (id?: string) => [...eventKeys.event(id), 'bringOverview'] as const,
@@ -94,6 +95,14 @@ export const useEvents = (filter: 'past' | 'upcoming', limit?: number) => {
     queryFn: () => EventRepository.fetchUserEvents(filter),
   });
 };
+
+/** Events of visible subgroups of the user's groups, view only. */
+export const useOtherEvents = (enabled: boolean) =>
+  useQuery<EventsUserView[]>({
+    queryKey: eventKeys.other(),
+    enabled,
+    queryFn: () => EventRepository.fetchOtherEvents(),
+  });
 
 export const useEvent = (eventId?: string) =>
   useQuery<EventsUserView | null>({
