@@ -196,6 +196,8 @@ SELECT set_eq(
     'public.is_full_member_of_group',
     'public.is_member_of_event',
     'public.is_full_member_of_event',
+    'public.is_parent_member_of_group',
+    'public.is_parent_member_of_event',
     'public.group_has_no_members',
     'games.is_match_public_or_match_member',
     'public.grant_group_grants',

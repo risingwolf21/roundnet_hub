@@ -328,7 +328,10 @@
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Antwort bis {{date}}",
       "leaveWaitingList": "Warteliste verlassen",
-      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}"
+      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}",
+      "viewOnlyTitle": "Du bist kein Mitglied von {{group}}",
+      "viewOnlyDescription": "Du kannst das Event, die Teilnahmen und Kommentare ansehen. Zum Anmelden und Kommentieren tritt der Gruppe bei.",
+      "viewOnlyGroup": "Zur Gruppe"
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -365,7 +368,10 @@
       "loadError": "Events konnten nicht geladen werden",
       "allAnswered": "Alles beantwortet",
       "allAnsweredDescription": "Du hast alle kommenden Events beantwortet.",
-      "emptyPast": "Keine Events in den letzten 8 Wochen."
+      "emptyPast": "Keine Events in den letzten 8 Wochen.",
+      "tabOther": "Andere",
+      "emptyOther": "Keine anderen Events",
+      "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist."
     },
     "item": {
       "noLocation": "Kein Ort angegeben",

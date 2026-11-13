@@ -328,7 +328,10 @@
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Answer by {{date}}",
       "leaveWaitingList": "Leave waiting list",
-      "answerNotOpenYet": "Registration opens on {{date}}"
+      "answerNotOpenYet": "Registration opens on {{date}}",
+      "viewOnlyTitle": "You are not a member of {{group}}",
+      "viewOnlyDescription": "You can view the event, its attendance and comments. Join the group to sign up and comment.",
+      "viewOnlyGroup": "Go to group"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -365,7 +368,10 @@
       "loadError": "Events could not be loaded",
       "allAnswered": "All caught up",
       "allAnsweredDescription": "You have answered all upcoming events.",
-      "emptyPast": "No events in the last 8 weeks."
+      "emptyPast": "No events in the last 8 weeks.",
+      "tabOther": "Other",
+      "emptyOther": "No other events",
+      "emptyOtherDescription": "Events of subgroups of your groups that you are not a member of show up here."
     },
     "item": {
       "noLocation": "No location specified",

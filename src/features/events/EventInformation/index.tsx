@@ -24,7 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
-import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
+import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, isMemberOfEventGroup, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase } from "@/utils";
 import { captureException } from "@sentry/react";
 import { isBefore, isSameDay } from 'date-fns';
@@ -268,6 +268,8 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
   const sameDay = end ? isSameDay(start, end) : true;
   const attendingCount = attendance.filter((x) => x.state === 'Attending').length;
   const isFull = maxAttendeesExceeded(event, attendance);
+  // Event of a subgroup the user is no member of: view only (RLS enforces it too).
+  const readOnly = !isMemberOfEventGroup(event);
 
   return (
     <div>
@@ -278,7 +280,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
         navigateBackPath="/training"
         user={user}
         actions={
-          <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
+          !readOnly && <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="ghost" size={"icon-lg"}>
                 <EllipsisVertical />
@@ -456,9 +458,24 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                     })}</AlertTitle>
                   </Alert>
                 )}
-                <EventInformationAttendanceState event={event} />
+                {readOnly ? (
+                  <Alert variant="info">
+                    <InfoIcon />
+                    <AlertTitle>{t('events.information.viewOnlyTitle', { group: event.group?.name ?? '' })}</AlertTitle>
+                    <AlertDescription>{t('events.information.viewOnlyDescription')}</AlertDescription>
+                    {event.group && (
+                      <AlertAction>
+                        <Button variant="outline" onClick={() => navigate(`/groups/${event.group!.id}`)}>
+                          {t('events.information.viewOnlyGroup')}
+                        </Button>
+                      </AlertAction>
+                    )}
+                  </Alert>
+                ) : (
+                  <EventInformationAttendanceState event={event} />
+                )}
 
-                {event.constellations_enabled && (
+                {!readOnly && event.constellations_enabled && (
                   <Has perm={"event.create.constellations"}>
                     <Button className={"w-full"} onClick={async () => {
                       dialogs.open(ConstellationCreationDialog, {
@@ -518,9 +535,9 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
               </TabsList>
               <div className="pt-4">
                 <EventDetailsTab event={event} selectedEventPlace={selectedEventPlace} />
-                <AttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} />
-                <CommentsTab event={event} user={user} comments={comments} />
-                <MatchesTab matches={matches} event={event} />
+                <AttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} readOnly={readOnly} />
+                <CommentsTab event={event} user={user} comments={comments} readOnly={readOnly} />
+                <MatchesTab matches={matches} event={event} readOnly={readOnly} />
                 {allItems.length > 0 && <BringItemsTab eventId={event.id} />}
               </div>
             </Tabs>
