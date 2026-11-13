@@ -44,6 +44,7 @@ import type { UserWithGroups } from '@/types/supabaseTypes';
 const user = { id: 'user-1', name: 'Test User', groups: [] } as unknown as UserWithGroups;
 
 const renderWithPerms = async (perms: string[]) => {
+  supabaseMock.authUserId = user.id;
   supabaseMock.respond = (q) =>
     q.table === 'user_grants_view'
       ? { data: perms.map((key) => ({ kind: 'perm', key })), error: null }
