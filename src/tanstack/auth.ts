@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import { GrantsRepository } from '@/repository/GrantsRepository';
 import { UserRepository } from '@/repository/UserRepository';
 import { UserWithGroups } from '@/types/supabaseTypes';
@@ -43,6 +44,10 @@ export const useCurrentUserGrants = (userId?: string | null) =>
     enabled: !!userId,
     queryFn: async () => {
       if (!userId) return { perm: [], feat: [] };
+      // After a sign-out the query can still refetch for the old user; without a session the
+      // request runs as anon, which may not read group memberships.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user.id !== userId) return { perm: [], feat: [] };
 
       const data = await GrantsRepository.fetchUserGrants(userId);
 

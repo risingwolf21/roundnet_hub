@@ -39,6 +39,7 @@ beforeEach(() => {
 
 describe('useUserGrantsQuery', () => {
   test('loading is only true for the initial load, not during background refetches', async () => {
+    supabaseMock.authUserId = 'user-1';
     let pending = deferred<MockResponse>();
     supabaseMock.respond = () => pending.promise;
 
@@ -86,6 +87,16 @@ describe('useUserGrantsQuery', () => {
     const { result } = renderHook(() => useUserGrantsQuery(null), { wrapper });
     expect(result.current.loading).toBe(false);
     expect(result.current.grants).toEqual({ perm: [], feat: [] });
+  });
+
+  test('does not query grants without a session for that user (e.g. right after sign-out)', async () => {
+    supabaseMock.respond = () => ({ data: [{ kind: 'perm', key: 'drinks.edit' }], error: null });
+
+    const { result } = renderHook(() => useUserGrantsQuery('user-1'), { wrapper });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.grants).toEqual({ perm: [], feat: [] });
+    expect(supabaseMock.queries.filter((q) => q.table === 'user_grants_view')).toHaveLength(0);
   });
 
   test('subscribes to realtime grant changes and removes the channels on unmount', async () => {

@@ -44,6 +44,10 @@ export type EventWithGroup = EventTable & {
   fullGroup: Group;
 };
 
+/** Members (incl. trials) of the event's group; anyone else only views it (event of a subgroup of their group). */
+export const isMemberOfEventGroup = (x: Pick<EventsUserView, 'user_group_role'>) =>
+  x.user_group_role === 'user' || x.user_group_role === 'admin' || x.user_group_role === 'trial';
+
 export function answerDeadlineExpired(x: EventsUserView) {
   if (!x.answerDeadline) return false;
   return isBefore(x.answerDeadline, Date.now());

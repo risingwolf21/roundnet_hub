@@ -45,10 +45,12 @@ const AttendanceTab = ({
   event,
   attendance,
   changeAttendance,
+  readOnly = false,
 }: {
   event: EventsUserView;
   attendance: FullAttendance[];
   changeAttendance: ({ user, event, newState }: { user: User; event: EventsUserView; newState: EventAttendance }) => void;
+  readOnly?: boolean;
 }) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
@@ -64,7 +66,7 @@ const AttendanceTab = ({
     [attendance]
   );
 
-  const acceptButton = (x: FullAttendance) => (
+  const acceptButton = (x: FullAttendance) => !readOnly && (
     <Has perm={'event.manage.attendees'}>
       <Button
         variant="outline"

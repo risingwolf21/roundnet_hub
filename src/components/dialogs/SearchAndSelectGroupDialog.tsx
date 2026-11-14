@@ -16,11 +16,13 @@ import { useTranslation } from 'react-i18next';
 type BasePayload = {
   groupsToFilter: string[];
   selectedGroupId?: string | null;
+  /** Only offer groups the user is a full member or admin of (e.g. creating events, which the database allows only there). */
+  fullMemberOnly?: boolean;
 };
 
 const MEMBER_ROLES = ['admin', 'user', 'trial'];
 
-const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, selectedGroupId } }: DialogProps<BasePayload, Group | null>) => {
+const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, selectedGroupId, fullMemberOnly } }: DialogProps<BasePayload, Group | null>) => {
   const { t } = useTranslation();
   const { data: groups = [], isLoading, error, refetch } = useGroups();
   const [search, setSearch] = useState('');
@@ -28,6 +30,7 @@ const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, 
   const query = search.trim().toLowerCase();
   const matching = groups
     .filter((g) => !groupsToFilter.includes(g.id))
+    .filter((g) => !fullMemberOnly || g.user_group_role === 'admin' || g.user_group_role === 'user')
     .filter((g) => !query || g.name.toLowerCase().includes(query) || g.description?.toLowerCase().includes(query))
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -133,8 +136,10 @@ const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, 
             <Empty className="mt-12">
               <EmptyHeader>
                 <EmptyMedia variant="icon"><SearchX /></EmptyMedia>
-                <EmptyTitle>{t('search.noGroups')}</EmptyTitle>
-                <EmptyDescription>{t('groups.picker.emptyDescription')}</EmptyDescription>
+                <EmptyTitle>{fullMemberOnly && !query ? t('groups.picker.noMemberGroups') : t('search.noGroups')}</EmptyTitle>
+                <EmptyDescription>
+                  {fullMemberOnly && !query ? t('groups.picker.noMemberGroupsDescription') : t('groups.picker.emptyDescription')}
+                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}
@@ -142,6 +147,7 @@ const SearchAndSelectGroupDialog = ({ open, onClose, payload: { groupsToFilter, 
           {!isLoading && !error && mine.length > 0 && (
             <section className="flex flex-col gap-2">
               <ListSectionHeader title={t('groups.myGroups')} count={mine.length} />
+              {fullMemberOnly && <p className="px-2 text-xs text-muted-foreground">{t('groups.picker.memberOnlyHint')}</p>}
               {mine.map(renderGroup)}
             </section>
           )}

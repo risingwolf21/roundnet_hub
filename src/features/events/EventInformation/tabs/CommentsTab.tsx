@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
-const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: User; comments: FullComment[] }) => {
+const CommentsTab = ({ event, user, comments, readOnly = false }: { event: EventsUserView; user: User; comments: FullComment[]; readOnly?: boolean }) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
   const addCommentMutation = useAddCommentMutation(user);
@@ -74,7 +74,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
                       <p className="text-sm text-foreground/90 ">{comment.comment}</p>
 
                       {/* Reply button */}
-                      {!eventInThePast(event) && hasPerm('event.comment') && (
+                      {!readOnly && !eventInThePast(event) && hasPerm('event.comment') && (
                         <Button
                           type="button"
                           variant={"outline"}
@@ -129,7 +129,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
         </CardContent>
 
         {/* Comment Input */}
-        <form onSubmit={submit}>
+        {!readOnly && <form onSubmit={submit}>
           {replyingTo && (
             <div className="px-3 py-2 border-t  justify-between w-full flex items-center gap-1 text-xs text-muted-foreground">
               <span>{t('events.replyTo', { name: replyingTo.user?.displayName || replyingTo.user?.name })}</span>
@@ -159,7 +159,7 @@ const CommentsTab = ({ event, user, comments }: { event: EventsUserView; user: U
               className="shrink-0"
               disabled={eventInThePast(event) || !hasPerm('event.comment')}>{t('admin.notify.send')}</Button>
           </div>
-        </form>
+        </form>}
       </Card>
     </TabsContent>
   );

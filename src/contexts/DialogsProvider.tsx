@@ -54,7 +54,7 @@ interface DialogsContextType {
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
   selectSingleUser: (usersToFilter?: string[], onlyUsers?: string[]) => Promise<User | null>;
   selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
-  selectGroup: (groupsToFilter?: string[], selectedGroupId?: string | null) => Promise<Group | null>;
+  selectGroup: (groupsToFilter?: string[], selectedGroupId?: string | null, options?: { fullMemberOnly?: boolean }) => Promise<Group | null>;
   selectSingleOption: <T>(options: { value: T, label: string, icon?: React.ReactNode }[], selectedOption?: T) => Promise<T | null>;
   userProfile: (userId: string) => Promise<void>;
 }
@@ -118,8 +118,8 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return result as User[] | null;
   }, [open]);
 
-  const selectGroup = useCallback(async (groupsToFilter?: string[], selectedGroupId?: string | null) => {
-    const result = await open(SearchAndSelectGroupDialog, { groupsToFilter: groupsToFilter ?? [], selectedGroupId });
+  const selectGroup = useCallback(async (groupsToFilter?: string[], selectedGroupId?: string | null, options?: { fullMemberOnly?: boolean }) => {
+    const result = await open(SearchAndSelectGroupDialog, { groupsToFilter: groupsToFilter ?? [], selectedGroupId, fullMemberOnly: options?.fullMemberOnly });
 
     return result as Group | null;
   }, [open]);

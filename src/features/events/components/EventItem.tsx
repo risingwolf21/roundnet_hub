@@ -6,7 +6,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { format, isBefore, isSameDay } from 'date-fns';
-import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, UserX, X } from 'lucide-react';
+import { Ban, Check, Clock, Hourglass, MapPin, Megaphone, UserCheck, Users, UserX, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../types';
@@ -17,6 +17,8 @@ type EventItemProps = {
   onClick: () => void;
   attendEvent: () => void;
   declineEvent: () => void;
+  /** Event of a group the user is no member of: no answer, sign-up or hints, shows the group instead. */
+  readOnly?: boolean;
 };
 
 const parsePlace = (place: string | null): PlaceType => {
@@ -165,7 +167,7 @@ const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
   return null;
 };
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }: EventItemProps) => {
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false }: EventItemProps) => {
   const { t, i18n } = useTranslation();
 
   const place = parsePlace(event.place);
@@ -173,7 +175,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
   const end = new Date(event.endDateTime);
   const past = eventInThePast(event);
   const closed = event.isCancelled || past;
-  const unanswered = event.user_state === null || event.user_state === 'Unanswered';
+  const unanswered = !readOnly && (event.user_state === null || event.user_state === 'Unanswered');
   const opensLater = unanswered && !closed && answerNotOpenYet(event);
   const needsAnswer = unanswered && !closed && !opensLater && !answerDeadlineExpired(event) && !eventHasStarted(event);
   const deadlinePassed = unanswered && !closed && answerDeadlineExpired(event) && !eventHasStarted(event);
@@ -233,6 +235,12 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
           <Clock className="size-3.5 shrink-0" />
           <span className={cn(isSameDay(start, end) && 'whitespace-nowrap')}>{formatTimeRange(start, end, dateFormat)}</span>
         </span>
+        {readOnly && event.group?.name && (
+          <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <Users className="size-3.5 shrink-0" />
+            <span className="truncate">{event.group.name}</span>
+          </span>
+        )}
         {locationName && (
           <span className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="size-3.5 shrink-0" />
@@ -250,7 +258,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             <Ban />
             {t('events.item.cancelled')}
           </Badge>
-        ) : past ? (
+        ) : readOnly ? null : past ? (
           <PastAnswer state={event.user_state} />
         ) : unanswered ? (
           <AttendanceButtons event={event} attendEvent={attendEvent} declineEvent={declineEvent} attendanceUpdating={attendanceUpdating} />

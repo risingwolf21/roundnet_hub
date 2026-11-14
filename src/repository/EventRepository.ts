@@ -227,7 +227,12 @@ export const EventRepository = {
   },
 
   async fetchUserEvents(fetchMode: 'past' | 'upcoming', limit?: number): Promise<EventsUserView[]> {
-    let query = supabase.schema('public').from('events_user_view').select('*, group: event_group(*)').throwOnError();
+    let query = supabase
+      .schema('public')
+      .from('events_user_view')
+      .select('*, group: event_group(*)')
+      .in('user_group_role', ['user', 'admin', 'trial'])
+      .throwOnError();
 
     if (fetchMode === 'past') {
       query = query
@@ -254,6 +259,21 @@ export const EventRepository = {
       } as unknown as EventsUserView));
     }
     return [];
+  },
+
+  /** Upcoming events (next 8 weeks) of visible subgroups of the user's groups that the user is no member of. */
+  async fetchOtherEvents(): Promise<EventsUserView[]> {
+    const result = await supabase
+      .schema('public')
+      .from('events_user_view')
+      .select('*, group: event_group(*)')
+      .or('user_group_role.is.null,user_group_role.eq.joinRequested')
+      .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
+      .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 8 })))
+      .order('startingDateTime', { ascending: true })
+      .throwOnError();
+
+    return (result.data ?? []) as unknown as EventsUserView[];
   },
 
   /** Active series with their group and their occurrences in [from, to). */

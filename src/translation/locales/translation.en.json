@@ -328,7 +328,10 @@
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Answer by {{date}}",
       "leaveWaitingList": "Leave waiting list",
-      "answerNotOpenYet": "Registration opens on {{date}}"
+      "answerNotOpenYet": "Registration opens on {{date}}",
+      "viewOnlyTitle": "You are not a member of {{group}}",
+      "viewOnlyDescription": "You can view the event, its attendance and comments. Join the group to sign up and comment.",
+      "viewOnlyGroup": "Go to group"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -365,7 +368,10 @@
       "loadError": "Events could not be loaded",
       "allAnswered": "All caught up",
       "allAnsweredDescription": "You have answered all upcoming events.",
-      "emptyPast": "No events in the last 8 weeks."
+      "emptyPast": "No events in the last 8 weeks.",
+      "tabOther": "Other",
+      "emptyOther": "No other events",
+      "emptyOtherDescription": "Events of subgroups of your groups that you are not a member of show up here."
     },
     "item": {
       "noLocation": "No location specified",
@@ -685,7 +691,10 @@
       "selected": "Selected",
       "others": "Other groups",
       "othersHint": "You are not a member of these groups.",
-      "emptyDescription": "Try a different search term."
+      "emptyDescription": "Try a different search term.",
+      "memberOnlyHint": "You can only create events in groups you are a member of.",
+      "noMemberGroups": "No group you are a member of",
+      "noMemberGroupsDescription": "Join a group first. While your request is pending or you are on a trial, you can't create events there yet."
     }
   },
   "costs": {
@@ -1313,7 +1322,11 @@
       "submit": "Sign up",
       "submitting": "Creating account...",
       "terms": "I accept the <terms>terms of use</terms> and have read the <privacy>privacy policy</privacy>.",
-      "termsRequired": "Please accept the terms of use and the privacy policy."
+      "termsRequired": "Please accept the terms of use and the privacy policy.",
+      "alreadyRegistered": "This e-mail is already registered",
+      "alreadyRegisteredDescription": "Sign in with your password. If you forgot it, reset it.",
+      "toLogin": "Go to login",
+      "toResetPassword": "Reset password"
     },
     "forgot": {
       "failed": "Password reset failed. Try again!",

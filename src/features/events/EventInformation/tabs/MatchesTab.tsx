@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import ReportScore from '../../../games/ReportScore';
 
-const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMatch[] }) => {
+const MatchesTab = ({ event, matches, readOnly = false }: { event: EventsUserView; matches: FullMatch[]; readOnly?: boolean }) => {
   const { t } = useTranslation();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMa
         <CardHeader className="border-b !py-2">
           <div className="flex items-center justify-between !p-0">
             <CardTitle className="text-lg">{t('navigation.matches')}</CardTitle>
-            {matches.length > 0 && (
+            {!readOnly && matches.length > 0 && (
               <Button size="sm" variant="outline" onClick={addMatch}>
                 <Plus />
                 {t('events.matchesTab.addMatch')}
@@ -83,10 +83,12 @@ const MatchesTab = ({ event, matches }: { event: EventsUserView; matches: FullMa
                 <EmptyTitle>{t('events.matchesTab.emptyTitle')}</EmptyTitle>
                 <EmptyDescription>{t('events.matchesTab.emptyDescription')}</EmptyDescription>
               </EmptyHeader>
-              <Button onClick={addMatch}>
-                <Plus />
-                {t('events.matchesTab.addMatch')}
-              </Button>
+              {!readOnly && (
+                <Button onClick={addMatch}>
+                  <Plus />
+                  {t('events.matchesTab.addMatch')}
+                </Button>
+              )}
             </Empty>
           )}
         </CardContent>

@@ -113,6 +113,11 @@ export const supabaseClientMock = {
         data: { user: supabaseMock.authUserId ? { id: supabaseMock.authUserId } : null },
         error: null,
       }),
+    getSession: () =>
+      Promise.resolve({
+        data: { session: supabaseMock.authUserId ? { user: { id: supabaseMock.authUserId } } : null },
+        error: null,
+      }),
   },
 };
 

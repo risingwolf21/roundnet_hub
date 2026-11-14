@@ -328,7 +328,10 @@
       "capacity": "{{count}} / {{max}}",
       "answerBy": "Antwort bis {{date}}",
       "leaveWaitingList": "Warteliste verlassen",
-      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}"
+      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}",
+      "viewOnlyTitle": "Du bist kein Mitglied von {{group}}",
+      "viewOnlyDescription": "Du kannst das Event, die Teilnahmen und Kommentare ansehen. Zum Anmelden und Kommentieren tritt der Gruppe bei.",
+      "viewOnlyGroup": "Zur Gruppe"
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -365,7 +368,10 @@
       "loadError": "Events konnten nicht geladen werden",
       "allAnswered": "Alles beantwortet",
       "allAnsweredDescription": "Du hast alle kommenden Events beantwortet.",
-      "emptyPast": "Keine Events in den letzten 8 Wochen."
+      "emptyPast": "Keine Events in den letzten 8 Wochen.",
+      "tabOther": "Andere",
+      "emptyOther": "Keine anderen Events",
+      "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist."
     },
     "item": {
       "noLocation": "Kein Ort angegeben",
@@ -685,7 +691,10 @@
       "selected": "Ausgewählt",
       "others": "Weitere Gruppen",
       "othersHint": "Du bist kein Mitglied dieser Gruppen.",
-      "emptyDescription": "Versuche es mit einem anderen Suchbegriff."
+      "emptyDescription": "Versuche es mit einem anderen Suchbegriff.",
+      "memberOnlyHint": "Events kannst du nur in Gruppen anlegen, in denen du Mitglied bist.",
+      "noMemberGroups": "Keine Gruppe, in der du Mitglied bist",
+      "noMemberGroupsDescription": "Tritt zuerst einer Gruppe bei. Solange deine Anfrage offen ist oder du im Probetraining bist, kannst du dort noch keine Events anlegen."
     }
   },
   "costs": {
@@ -1313,7 +1322,11 @@
       "submit": "Registrieren",
       "submitting": "Account wird erstellt...",
       "terms": "Ich akzeptiere die <terms>Nutzungsbedingungen</terms> und habe die <privacy>Datenschutzerklärung</privacy> gelesen.",
-      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung."
+      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
+      "alreadyRegistered": "Diese E-Mail ist bereits registriert",
+      "alreadyRegisteredDescription": "Melde dich mit deinem Passwort an. Wenn du es vergessen hast, setze es zurück.",
+      "toLogin": "Zum Login",
+      "toResetPassword": "Passwort zurücksetzen"
     },
     "forgot": {
       "failed": "Zurücksetzen des Passworts fehlgeschlagen. Versuche es erneut!",
