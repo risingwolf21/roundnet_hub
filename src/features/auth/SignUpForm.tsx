@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { useState } from 'react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
 import i18n from 'i18next';
+import { InfoIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
@@ -21,6 +23,7 @@ const SignUpForm = () => {
   const [name, setName] = useState('')
   const [surname, setSurname] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const { version } = useApplication();
@@ -30,6 +33,7 @@ const SignUpForm = () => {
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setAlreadyRegistered(false);
 
     if (password !== repeatPassword) {
       setError(t('profile.password.mismatch'));
@@ -70,10 +74,15 @@ const SignUpForm = () => {
         },
       },
     });
+    // With e-mail confirmation on, Supabase answers an existing address with a user without
+    // identities instead of an error (so addresses can't be probed); nothing is created then.
+    if (error?.code === 'user_already_exists' || (!error && data.user && data.user.identities?.length === 0)) {
+      setAlreadyRegistered(true);
+      setIsLoading(false);
+      return;
+    }
     if (error || !data || !data.user) {
-      // An existing account is a user mistake, not an app error.
-      if (error?.code !== 'user_already_exists')
-        captureException(new Error('Could not sign up user.'), (scope) => {
+      captureException(new Error('Could not sign up user.'), (scope) => {
           scope.clear();
           scope.setTag('error_code', error?.code ?? 'no_user');
           scope.setExtra('displayName', name);
@@ -82,6 +91,8 @@ const SignUpForm = () => {
           return scope;
         });
       setError(t('auth.signup.failed', { message: error?.message }));
+      setIsLoading(false);
+      return;
     }
     setIsLoading(false);
     if (data.session) {
@@ -165,6 +176,23 @@ const SignUpForm = () => {
             />
           </div>
 
+          {alreadyRegistered && (
+            <Alert variant="warning">
+              <InfoIcon />
+              <AlertTitle>{t('auth.signup.alreadyRegistered')}</AlertTitle>
+              <AlertDescription>
+                <p>{t('auth.signup.alreadyRegisteredDescription')}</p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button type="button" variant="outline" size="sm" onClick={() => navigate('/auth/login')}>
+                    {t('auth.signup.toLogin')}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => navigate('/auth/forgot-password')}>
+                    {t('auth.signup.toResetPassword')}
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? t('auth.signup.submitting') : t('auth.signup.submit')}
