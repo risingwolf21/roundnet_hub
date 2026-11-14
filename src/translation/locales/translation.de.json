@@ -1322,7 +1322,11 @@
       "submit": "Registrieren",
       "submitting": "Account wird erstellt...",
       "terms": "Ich akzeptiere die <terms>Nutzungsbedingungen</terms> und habe die <privacy>Datenschutzerklärung</privacy> gelesen.",
-      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung."
+      "termsRequired": "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
+      "alreadyRegistered": "Diese E-Mail ist bereits registriert",
+      "alreadyRegisteredDescription": "Melde dich mit deinem Passwort an. Wenn du es vergessen hast, setze es zurück.",
+      "toLogin": "Zum Login",
+      "toResetPassword": "Passwort zurücksetzen"
     },
     "forgot": {
       "failed": "Zurücksetzen des Passworts fehlgeschlagen. Versuche es erneut!",

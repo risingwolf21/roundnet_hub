@@ -1322,7 +1322,11 @@
       "submit": "Sign up",
       "submitting": "Creating account...",
       "terms": "I accept the <terms>terms of use</terms> and have read the <privacy>privacy policy</privacy>.",
-      "termsRequired": "Please accept the terms of use and the privacy policy."
+      "termsRequired": "Please accept the terms of use and the privacy policy.",
+      "alreadyRegistered": "This e-mail is already registered",
+      "alreadyRegisteredDescription": "Sign in with your password. If you forgot it, reset it.",
+      "toLogin": "Go to login",
+      "toResetPassword": "Reset password"
     },
     "forgot": {
       "failed": "Password reset failed. Try again!",
