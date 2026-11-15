@@ -16,7 +16,8 @@ import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useGroups, useJoinGroup, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
-import { AlertCircle, CalendarCheck, CheckCircle2, CircleFadingArrowUp, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
+import { differenceInDays } from "date-fns";
+import { AlertCircle, CalendarCheck, CheckCircle2, CircleFadingArrowUp, Clock, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
@@ -285,10 +286,21 @@ const PublicGroupInformation = () => {
             {self && <Badge variant="secondary">{t("groups.you")}</Badge>}
           </ItemTitle>
           {canManage && (
-            <ItemDescription className="truncate">
-              {x.user.email}
-              {x.user.last_seen_at && <span className="text-xs"> · {t("user.lastActive", { date: new Date(x.user.last_seen_at) })}</span>}
-            </ItemDescription>
+            <>
+              <ItemDescription className="truncate">{x.user.email}</ItemDescription>
+              {x.user.last_seen_at && (
+                // Own line so a long e-mail can't push it out; orange after 30 days without activity.
+                <span
+                  className={cn(
+                    "flex items-center gap-1 text-xs",
+                    differenceInDays(new Date(), new Date(x.user.last_seen_at)) > 30 ? "text-warning" : "text-muted-foreground"
+                  )}
+                >
+                  <Clock className="size-3 shrink-0" />
+                  {t("user.lastActive", { date: new Date(x.user.last_seen_at) })}
+                </span>
+              )}
+            </>
           )}
           {(role === "admin" || role === "trial") && (
             <div className="mt-1 flex flex-wrap gap-1.5">
