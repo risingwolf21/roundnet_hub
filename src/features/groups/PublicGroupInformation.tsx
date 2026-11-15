@@ -281,9 +281,16 @@ const PublicGroupInformation = () => {
           </Avatar>
         </ItemMedia>
         <ItemContent>
-          <ItemTitle className="min-w-0">
-            <span className="truncate">{x.user.name}</span>
+          {/* Badges sit next to the name and wrap to the next line when they don't fit. */}
+          <ItemTitle className="min-w-0 max-w-full flex-wrap gap-x-2 gap-y-1 line-clamp-none">
+            <span className="min-w-0 max-w-full truncate">{x.user.name}</span>
             {self && <Badge variant="secondary">{t("groups.you")}</Badge>}
+            {role === "admin" && (
+              <Badge variant="info">
+                <ShieldCheck />
+                {t("groups.admin")}
+              </Badge>
+            )}
           </ItemTitle>
           {canManage && (
             <>
@@ -302,14 +309,8 @@ const PublicGroupInformation = () => {
               )}
             </>
           )}
-          {(role === "admin" || role === "trial") && (
+          {role === "trial" && (
             <div className="mt-1 flex flex-wrap gap-1.5">
-              {role === "admin" && (
-                <Badge variant="info">
-                  <ShieldCheck />
-                  {t("groups.admin")}
-                </Badge>
-              )}
               {role === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
               {role === "trial" && canManage && <TrialMemberBadges groupId={group.id} userId={x.user.id} />}
               {daysLeft !== null && (
