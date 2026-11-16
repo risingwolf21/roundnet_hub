@@ -7,6 +7,7 @@
 // its cached row is missing/stale (older than the most recent 02:00 Europe/Berlin) or when
 // an admin forces a reload (`force: true`, gated by the `bundesliga.admin` permission).
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { localized } from '../_shared/lang.ts';
 import {
@@ -105,7 +106,7 @@ async function assertCanForce(authHeader: string): Promise<boolean> {
   return a.data === true || b.data === true;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   let payload: Record<string, unknown> = {};
@@ -183,4 +184,4 @@ Deno.serve(async (req) => {
     Sentry.captureException(error);
     return json({ error: localized(req, 'Interner Serverfehler', 'Internal server error'), details: String(error) }, 500);
   }
-});
+}));

@@ -1,4 +1,5 @@
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -18,7 +19,7 @@ Sentry.init({
 Sentry.setTag('region', Deno.env.get('SB_REGION'));
 Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'));
 
-Deno.serve(async () => {
+Deno.serve(withSentry(Sentry, async () => {
   try {
     const { data, error } = await supabase.rpc('send_answer_deadline_reminders');
     if (error) throw error;
@@ -31,4 +32,4 @@ Deno.serve(async () => {
     await Sentry.flush(2000);
     return new Response(String(error), { status: 500 });
   }
-});
+}));

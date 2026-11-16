@@ -2,6 +2,7 @@
 
 import { createClient } from 'supabase';
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -37,7 +38,7 @@ type EventTransformationTrigger = {
   force_key_change?: boolean;
 };
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   let appliedCount = 0;
   try {
     const { data: transformations, error: trError } = await supabase
@@ -122,7 +123,7 @@ Deno.serve(async (req) => {
     Sentry.captureException(error);
     return new Response('Error processing transformations', { status: 500 });
   }
-});
+}));
 
 /* To invoke locally:
 

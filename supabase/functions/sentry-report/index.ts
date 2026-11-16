@@ -5,6 +5,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { Json } from "../_shared/supabase-generated.types.ts";
 
 Sentry.init({
@@ -34,7 +35,7 @@ function asIso(s: string) {
   try { return new Date(s).toISOString(); } catch { return new Date().toISOString(); }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   if (req.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
@@ -75,7 +76,7 @@ Deno.serve(async (req) => {
     await Sentry.flush(2000);
     return new Response(`handler error: ${e}`, { status: 500 });
   }
-})
+}));
 
 /* To invoke locally:
 

@@ -1,4 +1,5 @@
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
@@ -71,7 +72,7 @@ function icsLocationLines(loc: any): string[] {
   return lines;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   const url = new URL(req.url);
 
   const pathParts = url.pathname.split("/");
@@ -96,7 +97,10 @@ Deno.serve(async (req) => {
     .eq("user", userId)
     .eq("state", "Attending");
 
-  if (error) return new Response("DB error", { status: 500 });
+  if (error) {
+    Sentry.captureException(error);
+    return new Response("DB error", { status: 500 });
+  }
 
   const now = new Date();
   const dtstamp = formatDateUTC(now);
@@ -147,7 +151,7 @@ Deno.serve(async (req) => {
       "Cache-Control": "public, max-age=600",
     }
   });
-});
+}));
 
 /* To invoke locally:
 
