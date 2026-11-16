@@ -4,10 +4,12 @@ import { FormEvent, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
@@ -18,6 +20,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [hidePassword, setHidePassword] = useState(true)
 
   const { version } = useApplication();
   const { t } = useTranslation();
@@ -88,14 +91,21 @@ const LoginForm = () => {
                 {t('auth.login.forgotPassword')}
               </a>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder='******'
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <InputGroup>
+              <InputGroupInput
+                id="password"
+                type={hidePassword ? 'password' : 'text'}
+                placeholder='******'
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <InputGroupAddon align="inline-end">
+                <Button variant="ghost" size="icon" onClick={() => setHidePassword(!hidePassword)}>
+                  {hidePassword ? <EyeOffIcon /> : <EyeIcon />}
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>

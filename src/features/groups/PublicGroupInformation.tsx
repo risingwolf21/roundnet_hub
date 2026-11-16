@@ -1,7 +1,6 @@
 import { DangerZone } from "@/components/DangerZone";
 import { groupSideBar, ListError, ListSkeleton, SegmentedControl } from "@/components/list/ListParts";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Alert, AlertAction, AlertDescription } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialogs } from "@/contexts/DialogsProvider";
@@ -23,13 +23,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
+import { GuestInvitesCard } from "../trials/GuestInvitesCard";
+import { TrialLimitDialog, TrialMemberBadges } from "../trials/TrialMemberParts";
+import { trialDaysLeft } from "../trials/trialPeriod";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
-import { trialDaysLeft } from "../trials/trialPeriod";
-import { GuestInvitesCard } from "../trials/GuestInvitesCard";
-import { TrialLimitDialog, TrialMemberBadges } from "../trials/TrialMemberParts";
 
 type MemberView = "all" | "admin" | "user" | "trial" | "joinRequested";
 
@@ -282,7 +282,7 @@ const PublicGroupInformation = () => {
         </ItemMedia>
         <ItemContent>
           {/* Badges sit next to the name and wrap to the next line when they don't fit. */}
-          <ItemTitle className="min-w-0 max-w-full flex-wrap gap-x-2 gap-y-1 line-clamp-none">
+          <ItemTitle className="min-w-0 max-w-full flex-wrap flex gap-x-2 gap-y-1">
             <span className="min-w-0 max-w-full truncate">{x.user.name}</span>
             {self && <Badge variant="secondary">{t("groups.you")}</Badge>}
             {role === "admin" && (

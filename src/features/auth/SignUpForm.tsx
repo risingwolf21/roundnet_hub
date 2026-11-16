@@ -5,12 +5,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
 import { BRANDING, TENANT_LOGO } from '@/utils';
 import { Separator } from '@base-ui/react';
 import { captureException } from '@sentry/react';
 import i18n from 'i18next';
-import { InfoIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, InfoIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
@@ -25,6 +26,7 @@ const SignUpForm = () => {
   const [error, setError] = useState<string | null>(null)
   const [alreadyRegistered, setAlreadyRegistered] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [hidePassword, setHidePassword] = useState(true)
 
   const { version } = useApplication();
   const { t } = useTranslation();
@@ -83,13 +85,13 @@ const SignUpForm = () => {
     }
     if (error || !data || !data.user) {
       captureException(new Error('Could not sign up user.'), (scope) => {
-          scope.clear();
-          scope.setTag('error_code', error?.code ?? 'no_user');
-          scope.setExtra('displayName', name);
-          scope.setExtra('email', email);
-          scope.setExtra('error', error && { code: error.code, status: error.status, message: error.message });
-          return scope;
-        });
+        scope.clear();
+        scope.setTag('error_code', error?.code ?? 'no_user');
+        scope.setExtra('displayName', name);
+        scope.setExtra('email', email);
+        scope.setExtra('error', error && { code: error.code, status: error.status, message: error.message });
+        return scope;
+      });
       setError(t('auth.signup.failed', { message: error?.message }));
       setIsLoading(false);
       return;
@@ -155,25 +157,39 @@ const SignUpForm = () => {
             <div className="flex items-center">
               <Label htmlFor="password">{t('auth.password')}</Label>
             </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <InputGroup>
+              <InputGroupInput
+                type={hidePassword ? 'password' : 'text'}
+                id="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <InputGroupAddon align="inline-end">
+                <Button variant="ghost" size="icon" onClick={() => setHidePassword(!hidePassword)}>
+                  {hidePassword ? <EyeOffIcon /> : <EyeIcon />}
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
               <Label htmlFor="repeat-password">{t('auth.repeatPassword')}</Label>
             </div>
-            <Input
-              id="repeat-password"
-              type="password"
-              required
-              value={repeatPassword}
-              onChange={(e) => setRepeatPassword(e.target.value)}
-            />
+            <InputGroup>
+              <InputGroupInput
+                type={hidePassword ? 'password' : 'text'}
+                id="repeat-password"
+                required
+                value={repeatPassword}
+                onChange={(e) => setRepeatPassword(e.target.value)}
+              />
+              <InputGroupAddon align="inline-end">
+                <Button variant="ghost" size="icon" onClick={() => setHidePassword(!hidePassword)}>
+                  {hidePassword ? <EyeOffIcon /> : <EyeIcon />}
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
 
           {alreadyRegistered && (
