@@ -60,3 +60,5 @@ supabase/backup/
 **/node_modules/*
 # e2e code coverage (Istanbul dumps)
 /.nyc_output
+
+seed.local.sql
