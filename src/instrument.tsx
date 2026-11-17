@@ -19,7 +19,11 @@ export const sendMetricsToSentry = (name: string, value: number) => {
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
   sendDefaultPii: true,
-  enabled: import.meta.env.VITE_ENV !== 'development',
+  // Off in development and for any build opened on this machine (e.g. `vite preview` of a tenant build): those are
+  // test errors, and Sentry would reject them anyway because localhost is not an allowed origin.
+  enabled:
+    import.meta.env.VITE_ENV !== 'development' &&
+    !['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname),
   environment: import.meta.env.VITE_WEBSITE_NAME + '-' + import.meta.env.VITE_ENV,
   release: import.meta.env.VITE_APP_VERSION,
   // The release is only the npm version, shared by every deploy: the commit tells which build produced an event.
