@@ -25,6 +25,18 @@ export const NotificationsRepository = {
     return result;
   },
 
+  /** Marks every unread notification of the user as read. */
+  async markAllNotificationsRead(userId: string) {
+    const result = await supabase
+      .schema('notifications')
+      .from('notifications')
+      .update({ dismissed_at: formatDateToDatabase(new Date()) })
+      .eq('user', userId)
+      .is('dismissed_at', null)
+      .throwOnError();
+    return result;
+  },
+
   async clearAllNotifications(userId: string) {
     const result = await supabase
       .schema('notifications')
