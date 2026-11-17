@@ -1,4 +1,5 @@
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { localized } from '../_shared/lang.ts';
 import { Database } from '../_shared/supabase-generated.types.ts';
@@ -37,7 +38,7 @@ class UnauthorizedError extends Error {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   // 1) Preflight beantworten
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -104,10 +105,10 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (e) {
-    Sentry.captureException(new UnauthorizedError(JSON.stringify(e)))
+    Sentry.captureException(e);
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}));

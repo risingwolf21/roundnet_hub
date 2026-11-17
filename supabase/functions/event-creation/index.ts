@@ -3,6 +3,7 @@
 // This enables autocomplete, go to definition, etc.
 import { format } from 'date-fns';
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
@@ -24,7 +25,7 @@ Sentry.init({
 Sentry.setTag('region', Deno.env.get('SB_REGION'))
 Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
-Deno.serve(async (_req: Request) => {
+Deno.serve(withSentry(Sentry, async (_req: Request) => {
   try {
 
     const { error } = await supabase
@@ -48,7 +49,7 @@ Deno.serve(async (_req: Request) => {
     Sentry.captureException(error);
     return new Response(JSON.stringify(error), { status: 500 });
   }
-});
+}));
 
 // To invoke:
 // curl -i --location --request POST 'http://localhost:54321/functions/v1/' \

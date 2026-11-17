@@ -1,4 +1,5 @@
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import webpush from "web-push";
 import { Database } from '../_shared/supabase-generated.types.ts';
@@ -410,7 +411,7 @@ async function handleRun(): Promise<Response> {
   });
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   try {
     // einfache health-check route
     const url = new URL(req.url);
@@ -427,6 +428,7 @@ Deno.serve(async (req) => {
 
     return await handleRun();
   } catch (e: any) {
+    Sentry.captureException(e);
     return new Response(JSON.stringify({ ok: false, error: e?.message ?? String(e) }), { status: 500 });
   }
-});
+}));

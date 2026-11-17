@@ -1,5 +1,6 @@
 import { load } from 'cheerio';
 import * as Sentry from 'sentry';
+import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
@@ -48,7 +49,7 @@ class RgUrlFetchError extends Error {
 }
 
 
-Deno.serve(async (req) => {
+Deno.serve(withSentry(Sentry, async (req) => {
   const payload = await req.json();
   try {
     const { rg_link, player } = payload;
@@ -115,7 +116,7 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     });
   }
-});
+}));
 /* To invoke locally:
 
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)

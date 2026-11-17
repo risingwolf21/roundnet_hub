@@ -68,7 +68,9 @@ export default defineConfig(async ({ mode }) => {
         // Upload the source maps (readable stack traces in Sentry), then delete them so they are not deployed.
         sourcemaps: { filesToDeleteAfterUpload: ['build/**/*.map'] },
         // By default a failed upload (e.g. a revoked token) stops the build and with it the deploy.
-        errorHandler: (err) => console.warn('[sentry] source map upload failed:', err.message),
+        // On GitHub Actions the "::warning" line becomes an annotation on the run's summary, so a failing upload is seen.
+        errorHandler: (err) =>
+          console.warn(`::warning title=Sentry source maps not uploaded::${err.message.replace(/\r?\n/g, '%0A')}`),
       }),
       VitePWA({
         strategies: 'injectManifest',
