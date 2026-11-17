@@ -5,10 +5,11 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import { AuthGate } from './features/auth/AuthGate';
 import { UpdatePage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { checkForAppUpdate, setUpdateRegistration } from './features/pwa/checkForUpdate';
+import { UpdateDownload, UpdateDownloadContext } from './features/pwa/updateDownload';
 
 export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
-  // undefined = no download running, null = running but progress not known yet, else 0..1
-  const [downloadProgress, setDownloadProgress] = useState<number | null | undefined>(undefined);
+  // Shown in the sidebar while it runs; the app stays usable until the new version is installed.
+  const [downloadProgress, setDownloadProgress] = useState<UpdateDownload>(undefined);
   const activationStarted = useRef(false);
 
   useEffect(() => {
@@ -86,21 +87,14 @@ export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     else window.location.reload();
   }, [activate]);
 
-  // Block the whole app while a new version downloads or activates.
-  if (needRefresh || downloadProgress !== undefined) {
-    return (
-      <UpdatePage
-        progress={needRefresh ? 1 : (downloadProgress ?? null)}
-        onUpdate={needRefresh ? updateNow : undefined}
-      />
-    );
-  }
+  // Block the whole app once the new version is installed and activates.
+  if (needRefresh) return <UpdatePage progress={1} onUpdate={updateNow} />;
 
   return (
-    <>
+    <UpdateDownloadContext value={downloadProgress}>
       {children}
       <UpdateSuccess />
-    </>
+    </UpdateDownloadContext>
   );
 };
 

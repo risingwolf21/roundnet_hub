@@ -2,21 +2,26 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { updateServiceWorker } = vi.hoisted(() => ({ updateServiceWorker: vi.fn(() => Promise.resolve()) }));
+const { updateServiceWorker, sw } = vi.hoisted(() => ({
+  updateServiceWorker: vi.fn(() => Promise.resolve()),
+  sw: { needRefresh: true },
+}));
 vi.mock('virtual:pwa-register/react', () => ({
-  // A new version is installed: the update page shows the "Jetzt aktualisieren" button.
-  useRegisterSW: () => ({ needRefresh: [true, vi.fn()], offlineReady: [false, vi.fn()], updateServiceWorker }),
+  // needRefresh: a new version is installed, the update page shows the "Jetzt aktualisieren" button.
+  useRegisterSW: () => ({ needRefresh: [sw.needRefresh, vi.fn()], offlineReady: [false, vi.fn()], updateServiceWorker }),
 }));
 vi.mock('@/lib/supabase', () => ({ supabase: {} }));
 vi.mock('@/features/auth/AuthGate', () => ({ AuthGate: () => null }));
 
 import { ServiceWorkerGate } from '@/App';
+import { SidebarUpdateDownload } from '@/features/pwa/AppUpdate';
 
 const reload = vi.fn();
 const controllerChange = new EventTarget();
 let waiting: object | null;
 
 beforeEach(() => {
+  sw.needRefresh = true;
   updateServiceWorker.mockClear();
   reload.mockClear();
   Object.defineProperty(window, 'location', { configurable: true, value: { ...window.location, reload } });
@@ -64,5 +69,24 @@ describe('ServiceWorkerGate', () => {
     });
 
     expect(reload).toHaveBeenCalled();
+  });
+
+  it('keeps the app usable while a new version downloads and shows the progress in the sidebar', () => {
+    sw.needRefresh = false;
+    render(
+      <ServiceWorkerGate>
+        <p>App</p>
+        <SidebarUpdateDownload />
+      </ServiceWorkerGate>
+    );
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+
+    act(() => {
+      controllerChange.dispatchEvent(new MessageEvent('message', { data: { type: 'PRECACHE_PROGRESS', done: 1, total: 4 } }));
+    });
+
+    expect(screen.getByText('App')).toBeInTheDocument();
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '25');
   });
 });

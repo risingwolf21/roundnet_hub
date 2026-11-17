@@ -1,20 +1,21 @@
 import { Button } from '@/components/ui/button';
+import { SidebarFooter } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { Rocket } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUpdateDownload } from './updateDownload';
 
 // Set by "Jetzt aktualisieren", read once after the reload to show the success animation.
 const UPDATED_FLAG = 'pwa-update-applied';
 const SUCCESS_VISIBLE_MS = 3200; // keep in sync with the update-badge keyframes
 
-// Full-screen, blocking page while a new version downloads and activates. The old app must not
-// keep running against an already migrated database. `progress` is 0..1, or null while the number
-// of files is not known yet. `onUpdate` is set once the new version is installed: activation runs
-// automatically, the button is a manual fallback.
+// Full-screen, blocking page once a new version is installed and activates: the old app must not keep
+// running against an already migrated database. The download itself runs in the background (SidebarUpdateDownload).
+// `progress` is 0..1, or null while the number of files is not known yet. `onUpdate` is set once the new version is
+// installed: activation runs automatically, the button is a manual fallback.
 export const UpdatePage = ({ progress, onUpdate }: { progress: number | null; onUpdate?: () => void }) => {
   const { t } = useTranslation();
-  const percent = progress === null ? null : Math.round(progress * 100);
 
   return (
     <div
@@ -46,27 +47,8 @@ export const UpdatePage = ({ progress, onUpdate }: { progress: number | null; on
         </p>
       </div>
 
-      <div className='w-full max-w-xs space-y-2'>
-        <div className='flex items-center justify-between gap-3 text-sm font-medium'>
-          <span className='flex items-center gap-2'>
-            <Spinner />
-            {t('pwa.downloading')}
-          </span>
-          {percent !== null && <span className='text-muted-foreground tabular-nums'>{percent} %</span>}
-        </div>
-        <div
-          role='progressbar'
-          aria-label={t('pwa.downloading')}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={percent ?? undefined}
-          className='bg-muted h-1.5 overflow-hidden rounded-full'
-        >
-          <div
-            className={`bg-primary h-full rounded-full ${percent === null ? 'w-1/3 animate-pulse' : 'transition-[width] duration-300'}`}
-            style={percent === null ? undefined : { width: `${percent}%` }}
-          />
-        </div>
+      <div className='w-full max-w-xs'>
+        <DownloadProgress progress={progress} />
       </div>
 
       {onUpdate && (
@@ -75,6 +57,53 @@ export const UpdatePage = ({ progress, onUpdate }: { progress: number | null; on
         </Button>
       )}
     </div>
+  );
+};
+
+// Label, percentage and bar of a running download. `progress` is 0..1, or null while the number of files is not known yet.
+export const DownloadProgress = ({ progress }: { progress: number | null }) => {
+  const { t } = useTranslation();
+  const percent = progress === null ? null : Math.round(progress * 100);
+
+  return (
+    <div className='w-full space-y-2'>
+      <div className='flex items-center justify-between gap-3 text-sm font-medium'>
+        <span className='flex items-center gap-2'>
+          <Spinner />
+          {t('pwa.downloading')}
+        </span>
+        {percent !== null && <span className='text-muted-foreground tabular-nums'>{percent} %</span>}
+      </div>
+      <div
+        role='progressbar'
+        aria-label={t('pwa.downloading')}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent ?? undefined}
+        className='bg-muted h-1.5 overflow-hidden rounded-full'
+      >
+        <div
+          className={`bg-primary h-full rounded-full ${percent === null ? 'w-1/3 animate-pulse' : 'transition-[width] duration-300'}`}
+          style={percent === null ? undefined : { width: `${percent}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// In the sidebar while a new version downloads in the background; the app stays usable until it is installed.
+export const SidebarUpdateDownload = () => {
+  const { t } = useTranslation();
+  const progress = useUpdateDownload();
+  if (progress === undefined) return null;
+
+  return (
+    <SidebarFooter className='border-t pb-safe-bottom'>
+      <div className='space-y-1.5 p-2'>
+        <DownloadProgress progress={progress} />
+        <p className='text-muted-foreground text-xs'>{t('pwa.downloadingHint')}</p>
+      </div>
+    </SidebarFooter>
   );
 };
 

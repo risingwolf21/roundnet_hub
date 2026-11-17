@@ -1466,7 +1466,8 @@
       "title": "App updated",
       "description": "You are on the latest version."
     },
-    "downloading": "Downloading the new version…"
+    "downloading": "Downloading the new version…",
+    "downloadingHint": "You can keep using the app. It restarts briefly afterwards."
   },
   "cropImage": {
     "title": "Crop image",
