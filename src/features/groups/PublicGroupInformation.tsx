@@ -397,7 +397,6 @@ const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" |
       <AppBar
         className="!border-b !shadow-sm"
         primaryAction="back"
-        navigateBackPath={isMembersScreen ? `/groups/${group.id}` : undefined}
         user={user}
         title={isMembersScreen ? t("groups.membersTitle", { group: group.name }) : group.name}
         actions={

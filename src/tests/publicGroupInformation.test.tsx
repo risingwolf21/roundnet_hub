@@ -19,7 +19,21 @@ vi.mock('@/hooks/useGrants', () => ({ Has: ({ children }: { children: React.Reac
 vi.mock('@/features/auth/GrantsContext', () => ({
   useGrants: () => ({ user: { id: 'me', name: 'Ich' }, hasPerm: () => false, refetchUserGrants: vi.fn() }),
 }));
-vi.mock('@/components/ui/appbar', () => ({ AppBar: ({ title }: { title?: string }) => <header>{title}</header> }));
+// Back button mirrors the real AppBar: a fixed path when given, otherwise one step back in history.
+vi.mock('@/components/ui/appbar', async () => {
+  const { useNavigate } = await import('react-router');
+  return {
+    AppBar: ({ title, navigateBackPath }: { title?: string; navigateBackPath?: string }) => {
+      const navigate = useNavigate();
+      return (
+        <header>
+          <button onClick={() => (navigateBackPath ? navigate(navigateBackPath) : navigate(-1))}>back</button>
+          {title}
+        </header>
+      );
+    },
+  };
+});
 vi.mock('@/components/PullToRefresh', () => ({
   PullToRefresh: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -41,13 +55,14 @@ import PublicGroupInformation from '@/features/groups/PublicGroupInformation';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 // Same two routes as in AppRoutes.
-const renderAt = (path: string) => {
+const renderAt = (...entries: string[]) => {
   const router = createMemoryRouter(
     [
+      { path: '/groups/list', element: <p>Gruppenliste</p> },
       { path: '/groups/:groupId', element: <PublicGroupInformation /> },
       { path: '/groups/:groupId/members', element: <PublicGroupInformation key="members" screen="members" /> },
     ],
-    { initialEntries: [path] }
+    { initialEntries: entries, initialIndex: entries.length - 1 }
   );
   render(<RouterProvider router={router} />);
   return router;
@@ -77,6 +92,18 @@ describe('PublicGroupInformation overview', () => {
     await userEvent.click(screen.getByRole('button', { name: /Alle 20 Mitglieder anzeigen/ }));
     expect(router.state.location.pathname).toBe('/groups/g1/members');
     expect(memberRows()).toHaveLength(20);
+  });
+
+  test('back from the members screen and back again returns to the group list', async () => {
+    setMembers(20);
+    const router = renderAt('/groups/list', '/groups/g1');
+
+    await userEvent.click(screen.getByRole('button', { name: /Alle 20 Mitglieder anzeigen/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'back' }));
+    expect(router.state.location.pathname).toBe('/groups/g1');
+
+    await userEvent.click(screen.getByRole('button', { name: 'back' }));
+    expect(router.state.location.pathname).toBe('/groups/list');
   });
 
   test('a small group shows every member and no link for normal members', () => {
