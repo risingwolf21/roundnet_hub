@@ -1290,12 +1290,15 @@
     "screen": {
       "title": "Benachrichtigungen",
       "empty": "Du hast keine neuen Benachrichtigungen.",
-      "clear": "Alle Benachrichtigungen löschen",
       "clearTitle": "Alle Benachrichtigungen löschen?",
       "clearDescription": "Alle deine Benachrichtigungen werden entfernt. Das kann nicht rückgängig gemacht werden.",
       "clearConfirm": "Alle löschen",
       "loadError": "Benachrichtigungen konnten nicht geladen werden",
-      "emptyDescription": "Neue Benachrichtigungen zu Terminen, Spielen und Gruppen erscheinen hier."
+      "emptyDescription": "Neue Benachrichtigungen zu Terminen, Spielen und Gruppen erscheinen hier.",
+      "unreadCount_one": "{{count}} ungelesen",
+      "unreadCount_other": "{{count}} ungelesen",
+      "readAll": "Alle gelesen",
+      "clearShort": "Alle löschen"
     }
   },
   "auth": {

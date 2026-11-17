@@ -1,6 +1,6 @@
 import { ListError, ListSectionHeader, ListSkeleton, sideBar } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
-import { useAllNotifications, useDismissNotification, useMarkNotificationsAsRead } from '@/tanstack/notifications';
+import { useAllNotifications, useDismissNotification, useMarkAllNotificationsRead, useMarkNotificationsAsRead } from '@/tanstack/notifications';
 import { useGrants } from '../auth/GrantsContext';
 
 import { AppBar } from '@/components/ui/appbar';
@@ -10,7 +10,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { Json } from '@/types/supabase-generated.types';
-import { Bell, BellOff, ChevronRight, Trash2 } from 'lucide-react';
+import { Bell, BellOff, CheckCheck, ChevronRight, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -33,6 +33,7 @@ const NotificationScreen = () => {
 
   const dismissNotification = useDismissNotification();
   const clearAll = useMarkNotificationsAsRead(user);
+  const readAll = useMarkAllNotificationsRead(user);
 
   const days = useMemo(() => {
     const groups = new Map<string, typeof notifications>();
@@ -80,18 +81,28 @@ const NotificationScreen = () => {
         className='!border-b !shadow-sm'
         title={t('notifications.screen.title')}
         user={user}
-        actions={
+      />
+      {notifications.length > 0 && (
+        <div className='mx-auto flex max-w-5xl flex-wrap items-center gap-2 border-b px-4 py-2'>
+          <span className='text-muted-foreground flex-1 text-sm'>
+            {t('notifications.screen.unreadCount', { count: unread })}
+          </span>
+          <Button variant='outline' size='lg' disabled={unread === 0 || readAll.isPending} onClick={() => readAll.mutate()}>
+            <CheckCheck />
+            {t('notifications.screen.readAll')}
+          </Button>
           <Button
-            disabled={notifications.length === 0 || clearAll.isPending}
-            variant="ghost"
-            size="icon-lg"
-            aria-label={t('notifications.screen.clear')}
+            variant='ghost'
+            size='lg'
+            className='text-destructive hover:text-destructive'
+            disabled={clearAll.isPending}
             onClick={confirmClearAll}
           >
             <Trash2 />
+            {t('notifications.screen.clearShort')}
           </Button>
-        }
-      />
+        </div>
+      )}
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
           <div className='flex flex-col gap-2 p-4'>

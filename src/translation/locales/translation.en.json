@@ -1290,12 +1290,15 @@
     "screen": {
       "title": "Notifications",
       "empty": "You have no new notifications.",
-      "clear": "Delete all notifications",
       "clearTitle": "Delete all notifications?",
       "clearDescription": "All your notifications are removed. This cannot be undone.",
       "clearConfirm": "Delete all",
       "loadError": "Notifications could not be loaded",
-      "emptyDescription": "New notifications about events, matches and groups show up here."
+      "emptyDescription": "New notifications about events, matches and groups show up here.",
+      "unreadCount_one": "{{count}} unread",
+      "unreadCount_other": "{{count}} unread",
+      "readAll": "Mark all read",
+      "clearShort": "Clear all"
     }
   },
   "auth": {

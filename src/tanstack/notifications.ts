@@ -62,6 +62,29 @@ export const useDismissNotification = () =>
     },
   });
 
+export const useMarkAllNotificationsRead = (user: User) =>
+  useMutation({
+    mutationFn: () => NotificationsRepository.markAllNotificationsRead(user.id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: notificationKeys.all });
+      const previousNotifications = queryClient.getQueryData<Notification[]>(notificationKeys.all);
+      const now = formatDateToDatabase(new Date());
+      queryClient.setQueriesData<Notification[]>({ queryKey: notificationKeys.all }, (old) =>
+        old?.map((x) => (x.dismissed_at ? x : { ...x, dismissed_at: now }))
+      );
+      return { previousNotifications };
+    },
+    onError: (error, _vars, context) => {
+      captureException(error, { tags: { type: 'MarkAllNotificationsRead', scope: 'notifications' } });
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(notificationKeys.all, context.previousNotifications);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+    },
+  });
+
 export const useMarkNotificationsAsRead = (user: User) =>
   useMutation({
     mutationFn: async () => {
