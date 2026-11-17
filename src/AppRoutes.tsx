@@ -204,7 +204,8 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: ':groupId/members',
-                  element: <Pages.PublicGroupInformation screen="members" />,
+                  // Own key: both routes render the same component, and without it React would keep the overview's state.
+                  element: <Pages.PublicGroupInformation key="members" screen="members" />,
                 },
               ],
             },
