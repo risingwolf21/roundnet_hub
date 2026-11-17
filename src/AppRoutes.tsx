@@ -202,6 +202,10 @@ const createRouter = (user: UserWithGroups | null) =>
                   path: ':groupId',
                   element: <Pages.PublicGroupInformation />,
                 },
+                {
+                  path: ':groupId/members',
+                  element: <Pages.PublicGroupInformation screen="members" />,
+                },
               ],
             },
             {
