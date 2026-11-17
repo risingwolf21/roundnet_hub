@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useUpdateDownload } from "@/features/pwa/updateDownload";
 import { useIsOffline } from "@/hooks/useIsOffline";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/utils";
@@ -39,6 +40,10 @@ export function AppBar({
 }: AppBarProps) {
   const { t } = useTranslation();
   const isOffline = useIsOffline();
+  // A new app version downloading in the background: on phones the sidebar (with its progress) is closed,
+  // so the menu button gets a dot and the bar's bottom edge shows the progress.
+  const download = useUpdateDownload();
+  const downloadPercent = typeof download === "number" ? Math.round(download * 100) : null;
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -61,11 +66,16 @@ export function AppBar({
       )}
       {...props}
     >
-      <div className="flex h-14 w-full items-center gap-4 px-4 md:px-4">
+      <div className="relative flex h-14 w-full items-center gap-4 px-4 md:px-4">
         <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
           {primaryAction === "default" && (
             // GEFIXT: bg-foreground/50 entfernt. Der Trigger hat meist ein eigenes sauberes Hover-Styling
-            <SidebarTrigger className="-ml-1 md:hidden" />
+            <div className="relative -ml-1 md:hidden">
+              <SidebarTrigger />
+              {download !== undefined && (
+                <span aria-hidden className="bg-primary ring-header pointer-events-none absolute top-0.5 right-0.5 size-2 rounded-full ring-2" />
+              )}
+            </div>
           )}
           {primaryAction === "back" && (
             <Button
@@ -122,6 +132,22 @@ export function AppBar({
             </Button>
           )}
         </div>
+
+        {download !== undefined && (
+          <div
+            role="progressbar"
+            aria-label={t("pwa.downloading")}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={downloadPercent ?? undefined}
+            className="bg-muted absolute inset-x-0 bottom-0 h-0.5 overflow-hidden md:hidden"
+          >
+            <div
+              className={cn("bg-primary h-full", downloadPercent === null ? "w-1/3 animate-pulse" : "transition-[width] duration-300")}
+              style={downloadPercent === null ? undefined : { width: `${downloadPercent}%` }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Offline Banner nutzt exakt deine --warning und --warning-foreground Variablen */}

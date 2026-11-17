@@ -1,4 +1,5 @@
 import { useGrants } from '@/features/auth/GrantsContext';
+import { SidebarUpdateDownload } from '@/features/pwa/AppUpdate';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
@@ -345,6 +346,7 @@ export function AppSidebar() {
           )
         })}
       </SidebarContent>
+      <SidebarUpdateDownload />
     </Sidebar>
   )
 }

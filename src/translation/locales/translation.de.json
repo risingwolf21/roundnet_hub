@@ -1466,7 +1466,8 @@
       "title": "App aktualisiert",
       "description": "Du nutzt die neueste Version."
     },
-    "downloading": "Neue Version wird geladen…"
+    "downloading": "Neue Version wird geladen…",
+    "downloadingHint": "Du kannst die App weiter nutzen. Danach startet sie kurz neu."
   },
   "cropImage": {
     "title": "Bild zuschneiden",
