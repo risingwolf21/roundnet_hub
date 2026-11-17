@@ -97,7 +97,7 @@ test.describe('Gruppenverwaltung', () => {
       { user: ids.DECLINED, group: groupId, role: 'joinRequested' },
     ]).throwOnError();
     await signIn(page, OWNER.email);
-    await page.goto(`/groups/${groupId}`);
+    await page.goto(`/groups/${groupId}/members`);
     // Join requests are listed under their own filter.
     await page.getByRole('radio', { name: /^Anfragen/ }).click();
 
@@ -114,7 +114,7 @@ test.describe('Gruppenverwaltung', () => {
 
   test('the admin removes a member', { annotation: flow('groups.remove') }, async ({ page }) => {
     await signIn(page, OWNER.email);
-    await page.goto(`/groups/${groupId}`);
+    await page.goto(`/groups/${groupId}/members`);
     // "Auswählen" starts the selection; a removal bar appears for the selected rows.
     await page.getByRole('button', { name: 'Auswählen' }).click();
     await memberRow(page, ASKER.name).click();

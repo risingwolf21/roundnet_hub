@@ -17,12 +17,13 @@ import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useGroups, useJoinGroup, useLeaveGroupMutation } from "@/tanstack/groups";
 import { captureException } from "@sentry/react";
 import { differenceInDays } from "date-fns";
-import { AlertCircle, CalendarCheck, CheckCircle2, CircleFadingArrowUp, Clock, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
+import { AlertCircle, CalendarCheck, CheckCircle2, ChevronRight, CircleFadingArrowUp, Clock, EyeOff, Lock, LogOut, MoreVertical, Pencil, Plus, Search, ShieldCheck, ShieldOff, UserMinus, UserPlus, Users, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
+import { FormSection } from "../events/dialogs/EventFormParts";
 import { GuestInvitesCard } from "../trials/GuestInvitesCard";
 import { TrialLimitDialog, TrialMemberBadges } from "../trials/TrialMemberParts";
 import { trialDaysLeft } from "../trials/trialPeriod";
@@ -34,6 +35,8 @@ import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 type MemberView = "all" | "admin" | "user" | "trial" | "joinRequested";
 
 const SEARCH_THRESHOLD = 8;
+// Larger groups show only this many members on the overview; the rest live on the members screen.
+const PREVIEW_COUNT = 5;
 
 const JoinButton = ({ group, user }: { group: Group; user: User }) => {
   const { t } = useTranslation();
@@ -60,14 +63,17 @@ const JoinButton = ({ group, user }: { group: Group; user: User }) => {
   );
 };
 
-const PublicGroupInformation = () => {
+/** The group overview, or with `screen="members"` the full member list with filter, search and selection. */
+const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" | "members" }) => {
   const { t } = useTranslation();
   const { groupId } = useParams();
+  const [searchParams] = useSearchParams();
+  const isMembersScreen = screen === "members";
   const { user, hasPerm, refetchUserGrants } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
 
-  const [view, setView] = useState<MemberView>("all");
+  const [view, setView] = useState<MemberView>(() => (searchParams.get("view") === "joinRequested" ? "joinRequested" : "all"));
   const [selecting, setSelecting] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -246,6 +252,11 @@ const PublicGroupInformation = () => {
   }
 
   const onlyAdmin = isGroupAdmin && byRole.admin.length <= 1;
+  const membersPath = `/groups/${group.id}/members`;
+  const sortedMembers = (["admin", "user", "trial"] as const).flatMap((role) =>
+    [...byRole[role]].sort((a, b) => a.user.name.localeCompare(b.user.name)).map((x) => ({ x, role }))
+  );
+  const previewMembers = sortedMembers.length <= SEARCH_THRESHOLD ? sortedMembers : sortedMembers.slice(0, PREVIEW_COUNT);
 
   const renderMember = (x: (typeof group_users)[number], role: Exclude<MemberView, "all">) => {
     const self = x.user.id === user.id;
@@ -386,10 +397,11 @@ const PublicGroupInformation = () => {
       <AppBar
         className="!border-b !shadow-sm"
         primaryAction="back"
+        navigateBackPath={isMembersScreen ? `/groups/${group.id}` : undefined}
         user={user}
-        title={group.name}
+        title={isMembersScreen ? t("groups.membersTitle", { group: group.name }) : group.name}
         actions={
-          canManage && (
+          canManage && !isMembersScreen && (
             <Button variant="ghost" size="icon-lg" aria-label={t("groups.edit")} onClick={editGroup}>
               <Pencil />
             </Button>
@@ -404,65 +416,67 @@ const PublicGroupInformation = () => {
           }}
         >
           <div className="flex flex-col gap-3 p-4" style={{ paddingBottom: selecting ? "calc(6rem + env(safe-area-inset-bottom))" : undefined }}>
-            <section className={cn("flex flex-col gap-3 rounded-xl border bg-card p-4", groupSideBar(group.color).className)} style={groupSideBar(group.color).style}>
-              <div className="flex items-start gap-3">
-                <Avatar className="size-12 shrink-0 items-center justify-center bg-[color:var(--group-color)]" style={{ "--group-color": group.color } as React.CSSProperties}>
-                  <Users className="size-6" style={{ color: "color-mix(in srgb, var(--group-color), white 70%)" }} />
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-lg font-semibold">{group.name}</h1>
-                  <p className="text-sm text-muted-foreground">{group.description || t("groups.noDescription")}</p>
+            {!isMembersScreen && (
+              <section className={cn("flex flex-col gap-3 rounded-xl border bg-card p-4", groupSideBar(group.color).className)} style={groupSideBar(group.color).style}>
+                <div className="flex items-start gap-3">
+                  <Avatar className="size-12 shrink-0 items-center justify-center bg-[color:var(--group-color)]" style={{ "--group-color": group.color } as React.CSSProperties}>
+                    <Users className="size-6" style={{ color: "color-mix(in srgb, var(--group-color), white 70%)" }} />
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <h1 className="truncate text-lg font-semibold">{group.name}</h1>
+                    <p className="text-sm text-muted-foreground">{group.description || t("groups.noDescription")}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {isGroupAdmin && (
-                  <Badge variant="info">
-                    <ShieldCheck />
-                    {t("groups.admin")}
-                  </Badge>
-                )}
-                {myRole === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
-                {myRole === "joinRequested" && <Badge variant="warning">{t("groups.requested")}</Badge>}
-                {parentName && <Badge variant="outline">{t("groups.subgroupOf", { group: parentName })}</Badge>}
-                {group.need_request_to_join && (
-                  <Badge variant="secondary">
-                    <Lock />
-                    {t("groups.approvalRequired")}
-                  </Badge>
-                )}
-                {canManage && !group.visible && (
-                  <Badge variant="outline">
-                    <EyeOff />
-                    {t("groups.hidden")}
-                  </Badge>
-                )}
-                {canManage && !group.is_public && (
-                  <Badge variant="outline">
-                    <Lock />
-                    {t("groups.private")}
-                  </Badge>
-                )}
-                {canSeeMembers && (
-                  <span className="text-xs text-muted-foreground">{t("groups.memberCount", { count: byRole.all.length })}</span>
-                )}
-              </div>
-              {!myRole && <JoinButton group={group} user={user} />}
-              {myRole === "joinRequested" && <p className="text-sm text-muted-foreground">{t("groups.requestedHint")}</p>}
-            </section>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {isGroupAdmin && (
+                    <Badge variant="info">
+                      <ShieldCheck />
+                      {t("groups.admin")}
+                    </Badge>
+                  )}
+                  {myRole === "trial" && <Badge variant="secondary">{t("groups.trial")}</Badge>}
+                  {myRole === "joinRequested" && <Badge variant="warning">{t("groups.requested")}</Badge>}
+                  {parentName && <Badge variant="outline">{t("groups.subgroupOf", { group: parentName })}</Badge>}
+                  {group.need_request_to_join && (
+                    <Badge variant="secondary">
+                      <Lock />
+                      {t("groups.approvalRequired")}
+                    </Badge>
+                  )}
+                  {canManage && !group.visible && (
+                    <Badge variant="outline">
+                      <EyeOff />
+                      {t("groups.hidden")}
+                    </Badge>
+                  )}
+                  {canManage && !group.is_public && (
+                    <Badge variant="outline">
+                      <Lock />
+                      {t("groups.private")}
+                    </Badge>
+                  )}
+                  {canSeeMembers && (
+                    <span className="text-xs text-muted-foreground">{t("groups.memberCount", { count: byRole.all.length })}</span>
+                  )}
+                </div>
+                {!myRole && <JoinButton group={group} user={user} />}
+                {myRole === "joinRequested" && <p className="text-sm text-muted-foreground">{t("groups.requestedHint")}</p>}
+              </section>
+            )}
 
             {canManage && byRole.joinRequested.length > 0 && view !== "joinRequested" && (
               <Alert variant="warning">
                 <AlertCircle />
                 <AlertDescription>{t("groups.openRequestsAlert", { count: byRole.joinRequested.length })}</AlertDescription>
                 <AlertAction>
-                  <Button variant="outline" size="sm" onClick={() => setView("joinRequested")}>
+                  <Button variant="outline" size="sm" onClick={() => (isMembersScreen ? setView("joinRequested") : navigate(`${membersPath}?view=joinRequested`))}>
                     {t("groups.reviewRequests")}
                   </Button>
                 </AlertAction>
               </Alert>
             )}
 
-            {canSeeMembers && !usersLoading && !usersError && (
+            {isMembersScreen && canSeeMembers && !usersLoading && !usersError && (
               <div className="flex flex-col gap-2">
                 <SegmentedControl
                   ariaLabel={t("groups.members")}
@@ -516,7 +530,8 @@ const PublicGroupInformation = () => {
               />
             )}
 
-            {canSeeMembers &&
+            {isMembersScreen &&
+              canSeeMembers &&
               !usersLoading &&
               !usersError &&
               visibleSections.map(({ role, title }) => {
@@ -533,24 +548,42 @@ const PublicGroupInformation = () => {
                 );
               })}
 
-            {canSeeMembers && !usersLoading && !usersError && query && visibleSections.every(({ role }) => byRole[role].filter(matches).length === 0) && (
+            {isMembersScreen && canSeeMembers && !usersLoading && !usersError && query && visibleSections.every(({ role }) => byRole[role].filter(matches).length === 0) && (
               <p className="py-6 text-center text-sm text-muted-foreground">{t("groups.noMembersFound")}</p>
             )}
 
-            {isGroupAdmin && (
+            {!isMembersScreen && canSeeMembers && !usersLoading && !usersError && (
+              <FormSection icon={Users} title={t("groups.members")}>
+                {(byRole.admin.length > 0 || byRole.trial.length > 0) && (
+                  <div className="-mt-2 flex flex-wrap gap-1.5">
+                    {byRole.admin.length > 0 && <Badge variant="secondary">{t("groups.adminCount", { count: byRole.admin.length })}</Badge>}
+                    {byRole.trial.length > 0 && <Badge variant="secondary">{t("groups.trialCount", { count: byRole.trial.length })}</Badge>}
+                  </div>
+                )}
+                {previewMembers.length > 0 && <div className="flex flex-col gap-2">{previewMembers.map(({ x, role }) => renderMember(x, role))}</div>}
+                {(canManage || previewMembers.length < sortedMembers.length) && (
+                  <Button variant="outline" className="w-full" onClick={() => navigate(membersPath)}>
+                    {previewMembers.length < sortedMembers.length ? t("groups.showAllMembers", { count: sortedMembers.length }) : t("groups.manageMembers")}
+                    <ChevronRight />
+                  </Button>
+                )}
+              </FormSection>
+            )}
+
+            {!isMembersScreen && isGroupAdmin && (
               <Has feat="events.trials.guests">
                 <GuestInvitesCard group={group} />
               </Has>
             )}
 
-            {isMember && onlyAdmin && (
+            {!isMembersScreen && isMember && onlyAdmin && (
               <Alert variant="info">
                 <ShieldCheck />
                 <AlertDescription>{t("groups.lastAdminHint")}</AlertDescription>
               </Alert>
             )}
 
-            {isMember && !onlyAdmin && (
+            {!isMembersScreen && isMember && !onlyAdmin && (
               <DangerZone
                 description={t("groups.leaveDescription")}
                 actionLabel={t("groups.leave")}
