@@ -67,7 +67,12 @@ export const useGroupUsers = (role: GroupRole, groupId?: string) =>
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') =>
   useMutation({
     mutationFn: async () => {
-      const result = await GroupsRepository.addUserToGroup(groupId, user.id, role);
+      const result = await GroupsRepository.addUserToGroup(groupId, user.id, role).catch((error) => {
+        // 23505 = unique_violation: the user already has a mapping for this group (e.g. the page showed stale data).
+        // Joining is then a no-op; onSuccess refetches the real membership.
+        if (error?.code === '23505') return { error: null, data: null };
+        throw error;
+      });
 
       if (result.error) {
         throw result.error;
