@@ -30,7 +30,10 @@ export const ChangePasswordTab = () => {
     }
 
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
+    if (error?.code === 'same_password') {
+      // A user input mistake, not a bug: tell them and don't report it.
+      toast.error(t('profile.password.samePassword'));
+    } else if (error) {
       captureException(error);
       toast.error(error.message);
     }
