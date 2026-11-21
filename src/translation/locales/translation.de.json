@@ -111,6 +111,7 @@
   },
   "attendees": "Teilnehmer",
   "browse": {
+    "playerzone": "Playerzone-Daten",
     "account": "Konto",
     "analytics": "Analysen",
     "analyzeDrinkStocks": "Getränkenutzung analysieren",
@@ -1178,6 +1179,41 @@
     "unknownPlayer": "Unbekannter Spieler"
   },
   "admin": {
+    "playerzone": {
+      "title": "Playerzone-Daten",
+      "linked_one": "{{count}} Spieler mit RG-ID",
+      "linked_other": "{{count}} Spieler mit RG-ID",
+      "withoutIndex_one": "{{count}} ohne RG-Index",
+      "withoutIndex_other": "{{count}} ohne RG-Index",
+      "description": "RG-Index, Profilbild und Pro-Status kommen von Playerzone. Sie werden geladen, wenn ein Spieler seine RG-ID speichert.",
+      "reloadAll": "Alle neu laden",
+      "reloadAllHint": "Lädt die Daten aller Spieler mit RG-ID neu, einen nach dem anderen. Das dauert etwa {{minutes}} Min.",
+      "start": "Jetzt neu laden",
+      "confirm_one": "Daten von {{count}} Spieler neu von Playerzone laden? Das dauert etwa {{minutes}} Min.",
+      "confirm_other": "Daten von {{count}} Spielern neu von Playerzone laden? Das dauert etwa {{minutes}} Min.",
+      "progressLabel": "Fortschritt",
+      "progress": "{{processed}} von {{total}} Spielern",
+      "keepOpen": "Lass die Seite offen, bis alle geladen sind.",
+      "stop": "Anhalten",
+      "done_one": "{{count}} Spieler aktualisiert",
+      "done_other": "{{count}} Spieler aktualisiert",
+      "error": "Das Neuladen wurde unterbrochen.",
+      "resultDone": "Alle Spieler wurden neu geladen.",
+      "resultStopped": "Angehalten nach {{processed}} von {{total}} Spielern.",
+      "resultError": "Fehler nach {{processed}} von {{total}} Spielern. Du kannst es erneut starten.",
+      "updated": "aktualisiert",
+      "unrated": "ohne Rating",
+      "failed": "fehlgeschlagen",
+      "statsErrorTitle": "Stand konnte nicht geladen werden",
+      "statsErrorDescription": "Die Zahlen zu den Playerzone-Daten sind gerade nicht abrufbar.",
+      "reasons": {
+        "invalid_rg_id": "Keine gültige RG-ID",
+        "not_found": "Auf Playerzone nicht gefunden",
+        "fetch_failed": "Playerzone nicht erreichbar",
+        "unreadable": "Profilseite nicht lesbar",
+        "internal": "Interner Fehler"
+      }
+    },
     "dashboard": {
       "title": "Admin Übersicht",
       "pendingPayments": "Offene Zahlungen",
@@ -1200,6 +1236,7 @@
         "access": "Zugriff & Auswertung"
       },
       "tools": {
+        "playerzone": "RG-Index, Profilbilder und Pro-Status neu laden",
         "users": "Konten, E-Mails und Passwörter bearbeiten",
         "mergeAccounts": "Spieler mit Benutzerkonten verknüpfen",
         "notify": "Push-Nachricht an Mitglieder senden",

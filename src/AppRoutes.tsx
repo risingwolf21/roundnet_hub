@@ -311,6 +311,14 @@ const createRouter = (user: UserWithGroups | null) =>
                   </Has>
                 },
                 {
+                  path: 'playerzone',
+                  element: (
+                    <Has perm={'playerzone.refresh'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.PlayerzoneRefreshScreen />
+                    </Has>
+                  ),
+                },
+                {
                   path: 'notify_users',
                   element: (
                     <Has perm={'admin.notify_users'} fallback={<Pages.UnauthorizedRouteElement />}>

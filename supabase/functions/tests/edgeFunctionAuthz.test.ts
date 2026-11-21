@@ -128,6 +128,20 @@ Deno.test({
         await res.body?.cancel();
         assert(await signIn(target.email, 'reset-by-admin-1'));
       });
+
+      await t.step('fetch-player-info: normal users cannot reload all players', async () => {
+        const res = await callFunction('fetch-player-info', { token: normal.token, body: { all: true, offset: 0 } });
+        assertEquals(res.status, 403);
+        await res.body?.cancel();
+      });
+
+      await t.step('fetch-player-info: supabase.admin gets a batch result', async () => {
+        // An offset past the end gives an empty batch, so nothing reaches the live playerzone.
+        const res = await callFunction('fetch-player-info', { token: admin.token, body: { all: true, offset: 1_000_000 } });
+        assertEquals(res.status, 200);
+        const batch = await res.json();
+        assertEquals([batch.updated, batch.failed, batch.next], [0, [], null]);
+      });
     } finally {
       for (const user of created) {
         // public.user / games.players reference auth.users without ON DELETE CASCADE

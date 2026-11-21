@@ -64,6 +64,7 @@ const PERSONAS: Persona[] = [
       'drinks.history.admin',
       'drinks.confirm.payments',
       'games.admin.merge_accounts',
+      'playerzone.refresh',
     ],
     directFeats: ALL_FEATURES,
   },

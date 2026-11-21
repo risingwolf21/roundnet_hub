@@ -7,11 +7,17 @@ import { parseProfile, playerIdFromRgId } from '../fetch-player-info/parse.ts';
 const here = new URL('.', import.meta.url);
 const profileHtml = Deno.readTextFileSync(new URL('fixtures/player-info/profile.html', here));
 
-Deno.test('parseProfile: reads RG-Index and avatar from the profile block only', () => {
+Deno.test('parseProfile: reads RG-Index, avatar and Pro status from the profile block only', () => {
   assertEquals(parseProfile(profileHtml), {
     rgIndex: 1532,
     avatarUrl: 'https://pstaassets.blob.core.windows.net/assets/players/profile_MAX1234-2024-03-01-10-00-00.jpg',
+    pro: false,
   });
+});
+
+Deno.test('parseProfile: a bare `pro` attribute on the badge marks an RGX Pro player', () => {
+  const pro = profileHtml.replace('<rg-score-badge score="1532"', '<rg-score-badge score="1532" pro');
+  assertEquals(parseProfile(pro)?.pro, true);
 });
 
 Deno.test('parseProfile: a page without the profile block (layout changed) returns null, not zeros', () => {

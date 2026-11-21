@@ -111,6 +111,7 @@
   },
   "attendees": "Attendees",
   "browse": {
+    "playerzone": "Playerzone data",
     "account": "Account",
     "analytics": "Analytics",
     "analyzeDrinkStocks": "Analyse drink history",
@@ -1178,6 +1179,41 @@
     "unknownPlayer": "Unknown player"
   },
   "admin": {
+    "playerzone": {
+      "title": "Playerzone data",
+      "linked_one": "{{count}} player with an RG ID",
+      "linked_other": "{{count}} players with an RG ID",
+      "withoutIndex_one": "{{count}} without RG-Index",
+      "withoutIndex_other": "{{count}} without RG-Index",
+      "description": "RG-Index, profile picture and Pro status come from Playerzone. They are loaded when a player saves their RG ID.",
+      "reloadAll": "Reload everyone",
+      "reloadAllHint": "Reloads the data of every player with an RG ID, one after the other. This takes about {{minutes}} min.",
+      "start": "Reload now",
+      "confirm_one": "Reload the data of {{count}} player from Playerzone? This takes about {{minutes}} min.",
+      "confirm_other": "Reload the data of {{count}} players from Playerzone? This takes about {{minutes}} min.",
+      "progressLabel": "Progress",
+      "progress": "{{processed}} of {{total}} players",
+      "keepOpen": "Keep this page open until everyone is loaded.",
+      "stop": "Stop",
+      "done_one": "{{count}} player updated",
+      "done_other": "{{count}} players updated",
+      "error": "The reload was interrupted.",
+      "resultDone": "All players were reloaded.",
+      "resultStopped": "Stopped after {{processed}} of {{total}} players.",
+      "resultError": "Failed after {{processed}} of {{total}} players. You can start it again.",
+      "updated": "updated",
+      "unrated": "without rating",
+      "failed": "failed",
+      "statsErrorTitle": "Could not load the overview",
+      "statsErrorDescription": "The Playerzone numbers are not available right now.",
+      "reasons": {
+        "invalid_rg_id": "Not a valid RG ID",
+        "not_found": "Not found on Playerzone",
+        "fetch_failed": "Playerzone not reachable",
+        "unreadable": "Profile page not readable",
+        "internal": "Internal error"
+      }
+    },
     "dashboard": {
       "title": "Admin Overview",
       "pendingPayments": "Pending Payments",
@@ -1200,6 +1236,7 @@
         "access": "Access & insights"
       },
       "tools": {
+        "playerzone": "Reload RG-Index, profile pictures and Pro status",
         "users": "Edit accounts, emails and passwords",
         "mergeAccounts": "Link players to user accounts",
         "notify": "Send a push message to members",
