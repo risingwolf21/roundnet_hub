@@ -1,3 +1,4 @@
+import { NETWORK_FAILURES } from '@/lib/sentryEvent';
 import { supabase } from '@/lib/supabase';
 import { FormEvent, useState } from 'react';
 
@@ -39,7 +40,8 @@ const LoginForm = () => {
       if (result.error || !result.data.session) {
         setError(t('auth.login.failed'))
         const authError = result.error;
-        if (authError && authError.code !== 'invalid_credentials')
+        const isNetworkFailure = !!authError && NETWORK_FAILURES.some((failure) => failure.test(authError.message));
+        if (authError && authError.code !== 'invalid_credentials' && !isNetworkFailure)
           captureException(new Error('Could not sign in user.'), (scope) => {
             scope.clear();
             scope.setTag('error_code', authError.code ?? 'unknown');

@@ -41,3 +41,12 @@ Deno.test('rgIdFor: letters from the input, else from the first name on the page
   assertEquals(rgIdFor({ id: '7', letters: null }, { ...profile, name: 'Jörg Müller' }), 'JOR7');
   assertEquals(rgIdFor({ id: '7', letters: null }, { ...profile, name: null }), null);
 });
+
+Deno.test('links with and without a name (Sentry ROUNDNET-KARLSRUHE-RG): no crash, the id comes from the page', () => {
+  const profile = parseProfile(profileHtml)!;
+  const withName = parsePlayerRef('https://playerzone.roundnetgermany.de/players/7072-max-mustermann')!;
+  assertEquals(rgIdFor(withName, profile), 'MAX7072');
+  const numberOnly = parsePlayerRef('https://playerzone.roundnetgermany.de/players/7072')!;
+  assertEquals(numberOnly, { id: '7072', letters: null });
+  assertEquals(rgIdFor(numberOnly, profile), 'MAX7072');
+});

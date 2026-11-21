@@ -103,11 +103,13 @@ Deno.serve(withSentry(Sentry, async (req) => {
       Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${ref.id}`, 'warning');
     }
 
+    const rgId = rgIdFor(ref, profile);
     const { error } = await supabase
       .schema('games')
       .from('players')
       .update({
-        rg_id: rgIdFor(ref, profile),
+        // No RG ID can be built (no letters in the link, no name on the page): keep the stored one.
+        ...(rgId && { rg_id: rgId }),
         rg_index: profile.rgIndex,
         rg_avatar_url: profile.avatarUrl,
       })
