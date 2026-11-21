@@ -18,6 +18,17 @@ import { toast } from "sonner";
 
 type PlayerPublic = NonNullable<ReturnType<typeof usePlayer>['data']>;
 
+/**
+ * An RG ID ("SAR221") becomes its profile link (playerzone ignores the part after the number, the
+ * fetch-player-info function takes the RG ID letters from it); a profile link stays; anything else is invalid.
+ */
+const toPlayerzoneLink = (input: string): string | null => {
+  const value = input.trim();
+  const rgId = /^([A-Za-z]{3})(\d+)$/.exec(value);
+  if (rgId) return `https://playerzone.roundnetgermany.de/players/${rgId[2]}-${rgId[1].toLowerCase()}`;
+  return /^https:\/\/playerzone\.roundnetgermany\.de\/players\/\d+/.test(value) ? value : null;
+};
+
 export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; player_data: PlayerPublic | null }) => {
   const { t } = useTranslation();
   const { data: elo_history } = useEloHistory(user);
@@ -37,7 +48,8 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
   }, [elo_history]);
 
   const onSafeRgLinkClick = async () => {
-    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
+    const link = rgLink.trim() === '' ? '' : toPlayerzoneLink(rgLink);
+    if (link === null) {
       toast.warning(t('profile.playerzone.invalidUrl'));
       return;
     }
@@ -47,14 +59,18 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
     }
     // rg_index / rg_avatar_url are reset server-side when rg_link changes
     const updates: GamesTableUpdate<'players'> = {
-      rg_link: rgLink ?? null,
+      rg_link: link,
       gender: gender,
     };
     updatePlayer.mutate(
       { updates },
       {
         onError: (error) => toast.error(t('profile.playerzone.updateError', { error: error.message })),
-        onSuccess: () => toast.success(t('profile.playerzone.updateSuccess')),
+        onSuccess: () => {
+          // Show what was stored, so an entered RG ID turns into its link and Save disables again.
+          setRgLink(link);
+          toast.success(t('profile.playerzone.updateSuccess'));
+        },
       }
     );
   };
@@ -108,8 +124,10 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
                     placeholder={t('profile.playerzone.urlPlaceholder')}
                     value={rgLink}
                     onChange={(e) => setRgLink(e.target.value)}
+                    aria-describedby='pzUrl-hint'
                   />
                 </div>
+                <p id='pzUrl-hint' className='text-xs text-muted-foreground'>{t('profile.playerzone.urlHint')}</p>
               </div>
               <div className='w-full space-y-1'>
                 <Label className='leading-5' htmlFor='gender'>

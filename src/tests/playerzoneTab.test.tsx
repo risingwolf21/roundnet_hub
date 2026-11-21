@@ -61,4 +61,25 @@ describe('PlayerzoneTab', () => {
 
     expect(updatePlayer.mutate).not.toHaveBeenCalled();
   });
+
+  test('an RG ID is saved as its playerzone link', () => {
+    render(<PlayerzoneTab user={user} player_data={playerData} />);
+
+    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), { target: { value: ' SAR221 ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
+
+    const [vars] = updatePlayer.mutate.mock.calls[0];
+    expect(vars.updates.rg_link).toBe('https://playerzone.roundnetgermany.de/players/221-sar');
+  });
+
+  test('a playerzone link without a player number is not saved', () => {
+    render(<PlayerzoneTab user={user} player_data={playerData} />);
+
+    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), {
+      target: { value: 'https://playerzone.roundnetgermany.de/players/' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
+
+    expect(updatePlayer.mutate).not.toHaveBeenCalled();
+  });
 });

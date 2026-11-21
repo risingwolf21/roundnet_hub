@@ -1,5 +1,5 @@
-import { load } from 'cheerio';
 import * as Sentry from 'sentry';
+import { parsePlayerRef, parseProfile, PLAYERZONE, rgIdFor } from './parse.ts';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
@@ -23,6 +23,14 @@ Sentry.setTag('region', Deno.env.get('SB_REGION'))
 Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 class UpdatePlayerError extends Error {
+  constructor(msg: string) {
+    super(msg);
+
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+class ProfileParseError extends Error {
   constructor(msg: string) {
     super(msg);
 
@@ -60,8 +68,16 @@ Deno.serve(withSentry(Sentry, async (req) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    // HTML von der angegebenen URL abrufen
-    const response = await fetch(rg_link);
+    // RG ID or profile link → numeric player id. The URL is always built here, never taken from the input.
+    const ref = parsePlayerRef(rg_link);
+    if (!ref) {
+      Sentry.captureMessage(`fetch-player-info: not a playerzone link or RG ID: ${rg_link}`, 'warning');
+      return new Response(JSON.stringify({ error: 'Kein gültiger Playerzone-Link oder RG-ID' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    const response = await fetch(`${PLAYERZONE}/players/${ref.id}`);
     if (!response.ok) {
       const body = await response.text();
       const error = new RgUrlFetchError("Could not fetch playerzone profile", body, response.status, response.statusText);
@@ -74,31 +90,32 @@ Deno.serve(withSentry(Sentry, async (req) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const html = await response.text();
-
-    // HTML mit Cheerio analysieren
-    const $ = load(html);
-
-    const avatar_url = $(".player-card").find('.player-img').attr('src');
-
-    // Element mit der Klasse "rgx-value" abrufen
-    const rgxValue = $('.player-card').find('.rgx-value').text();
-    const idParts = rg_link.split("/").slice(-1)[0].split("-");
-    const rgId = idParts[1].slice(0, 3).toUpperCase() + idParts[0];
+    const profile = parseProfile(await response.text());
+    if (!profile) {
+      // Playerzone changed its layout: keep what is stored instead of writing blanks or 0.
+      Sentry.captureException(new ProfileParseError(`No player profile found on ${PLAYERZONE}/players/${ref.id}`));
+      return new Response(JSON.stringify({ error: 'Playerzone-Profil konnte nicht gelesen werden' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (profile.rgIndex === null) {
+      Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${ref.id}`, 'warning');
+    }
 
     const { error } = await supabase
       .schema('games')
       .from('players')
       .update({
-        rg_id: rgId,
-        rg_index: Number(rgxValue),
-        rg_avatar_url: avatar_url
+        rg_id: rgIdFor(ref, profile),
+        rg_index: profile.rgIndex,
+        rg_avatar_url: profile.avatarUrl,
       })
       .eq('player', player);
 
     if (error) throw error;
 
-    return new Response('Successfully updated user with index ' + rgxValue, {
+    return new Response('Successfully updated user with index ' + profile.rgIndex, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

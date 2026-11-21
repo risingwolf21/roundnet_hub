@@ -73,15 +73,16 @@ test.describe('Profil', () => {
   test('a user links their Playerzone profile', { annotation: flow('profile.playerzone') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openTab(page, 'Playerzone Profil');
-    const url = page.getByPlaceholder('https://playerzone.de/user/123');
+    const url = page.getByLabel('RG-ID oder Playerzone-Link');
 
     // A foreign URL is rejected.
     await url.fill('https://example.com/me');
     await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
-    await expect(page.getByText(/Bitte vergewissere dich, dass die URL stimmt/)).toBeVisible();
+    await expect(page.getByText(/Gib deine RG-ID \(z\. B\. SAR221\) oder den Link/)).toBeVisible();
 
-    const link = `https://playerzone.roundnetgermany.de/players/e2e-${stamp}`;
-    await url.fill(link);
+    // An RG ID is stored as its profile link.
+    const link = `https://playerzone.roundnetgermany.de/players/${stamp}-eee`;
+    await url.fill(`EEE${stamp}`);
     await page.getByRole('combobox').filter({ hasText: /Geschlecht auswählen|Open|Women/ }).click();
     await page.getByRole('option', { name: 'Open' }).click();
     await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
