@@ -3,6 +3,7 @@ import * as Sentry from 'sentry';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
+import { rgIdFromLink } from './parse.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -83,14 +84,14 @@ Deno.serve(withSentry(Sentry, async (req) => {
 
     // Element mit der Klasse "rgx-value" abrufen
     const rgxValue = $('.player-card').find('.rgx-value').text();
-    const idParts = rg_link.split("/").slice(-1)[0].split("-");
-    const rgId = idParts[1].slice(0, 3).toUpperCase() + idParts[0];
+    const rgId = rgIdFromLink(rg_link);
 
     const { error } = await supabase
       .schema('games')
       .from('players')
       .update({
-        rg_id: rgId,
+        // Links without a name give no id; keep the stored one instead of failing the whole update.
+        ...(rgId && { rg_id: rgId }),
         rg_index: Number(rgxValue),
         rg_avatar_url: avatar_url
       })
