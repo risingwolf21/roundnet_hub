@@ -23,10 +23,9 @@ const user = { id: 'user-1', name: 'Test User', groups: [] } as unknown as UserW
 
 const playerData = {
   player: 'user-1',
-  rg_link: 'https://playerzone.roundnetgermany.de/players/1',
   rg_avatar_url: 'https://example.com/avatar.png',
   rg_index: 1234,
-  rg_id: 'rg-1',
+  rg_id: 'TES1',
   gender: 'm',
   hide_rating: false,
   effective_rating_cached: 1000,
@@ -37,49 +36,43 @@ beforeEach(() => {
 });
 
 describe('PlayerzoneTab', () => {
-  test('only sends rg_link and gender; rg_index / rg_avatar_url are left to the server', () => {
+  const save = () => fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
+  const typeRgId = (value: string) =>
+    fireEvent.change(screen.getByLabelText('profile.playerzone.rgIdLabel'), { target: { value } });
+
+  test('only sends rg_id and gender; rg_index / rg_avatar_url are left to the server', () => {
     render(<PlayerzoneTab user={user} player_data={playerData} />);
 
-    const newLink = 'https://playerzone.roundnetgermany.de/players/2';
-    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), { target: { value: newLink } });
-    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
+    typeRgId(' sar221 ');
+    save();
 
     expect(updatePlayer.mutate).toHaveBeenCalledTimes(1);
     const [vars] = updatePlayer.mutate.mock.calls[0];
-    expect(vars).toEqual({ updates: { rg_link: newLink, gender: 'm' } });
+    expect(vars).toEqual({ updates: { rg_id: 'SAR221', gender: 'm' } });
+    expect(vars.updates).not.toHaveProperty('rg_link');
     expect(vars.updates).not.toHaveProperty('rg_avatar_url');
     expect(vars.updates).not.toHaveProperty('rg_index');
   });
 
-  test('does not save an invalid playerzone url', () => {
+  test.each(['221', 'SA221', 'https://playerzone.roundnetgermany.de/players/221-sarah-kiel'])(
+    'does not save %s, which is not an RG ID',
+    (value) => {
+      render(<PlayerzoneTab user={user} player_data={playerData} />);
+
+      typeRgId(value);
+      save();
+
+      expect(updatePlayer.mutate).not.toHaveBeenCalled();
+    }
+  );
+
+  test('an empty field unlinks the playerzone profile', () => {
     render(<PlayerzoneTab user={user} player_data={playerData} />);
 
-    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), {
-      target: { value: 'https://evil.example.com/players/2' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
-
-    expect(updatePlayer.mutate).not.toHaveBeenCalled();
-  });
-
-  test('an RG ID is saved as its playerzone link', () => {
-    render(<PlayerzoneTab user={user} player_data={playerData} />);
-
-    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), { target: { value: ' SAR221 ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
+    typeRgId('');
+    save();
 
     const [vars] = updatePlayer.mutate.mock.calls[0];
-    expect(vars.updates.rg_link).toBe('https://playerzone.roundnetgermany.de/players/221-sar');
-  });
-
-  test('a playerzone link without a player number is not saved', () => {
-    render(<PlayerzoneTab user={user} player_data={playerData} />);
-
-    fireEvent.change(screen.getByLabelText('profile.playerzone.urlLabel'), {
-      target: { value: 'https://playerzone.roundnetgermany.de/players/' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'profile.playerzone.saveChanges' }));
-
-    expect(updatePlayer.mutate).not.toHaveBeenCalled();
+    expect(vars.updates.rg_id).toBeNull();
   });
 });

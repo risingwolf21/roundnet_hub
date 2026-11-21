@@ -1,5 +1,5 @@
 import * as Sentry from 'sentry';
-import { parsePlayerRef, parseProfile, PLAYERZONE, rgIdFor } from './parse.ts';
+import { parseProfile, playerIdFromRgId, PLAYERZONE } from './parse.ts';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
@@ -60,24 +60,24 @@ class RgUrlFetchError extends Error {
 Deno.serve(withSentry(Sentry, async (req) => {
   const payload = await req.json();
   try {
-    const { rg_link, player } = payload;
+    const { rg_id, player } = payload;
 
-    if (!rg_link) {
-      return new Response(JSON.stringify({ error: 'rg_link ist erforderlich' }), {
+    if (!rg_id) {
+      return new Response(JSON.stringify({ error: 'rg_id ist erforderlich' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    // RG ID or profile link → numeric player id. The URL is always built here, never taken from the input.
-    const ref = parsePlayerRef(rg_link);
-    if (!ref) {
-      Sentry.captureMessage(`fetch-player-info: not a playerzone link or RG ID: ${rg_link}`, 'warning');
-      return new Response(JSON.stringify({ error: 'Kein gültiger Playerzone-Link oder RG-ID' }), {
+    // RG ID → numeric player id. The URL is always built here, never taken from the input.
+    const playerId = playerIdFromRgId(rg_id);
+    if (!playerId) {
+      Sentry.captureMessage(`fetch-player-info: not an RG ID: ${rg_id}`, 'warning');
+      return new Response(JSON.stringify({ error: 'Keine gültige RG-ID' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const response = await fetch(`${PLAYERZONE}/players/${ref.id}`);
+    const response = await fetch(`${PLAYERZONE}/players/${playerId}`);
     if (!response.ok) {
       const body = await response.text();
       const error = new RgUrlFetchError("Could not fetch playerzone profile", body, response.status, response.statusText);
@@ -93,23 +93,21 @@ Deno.serve(withSentry(Sentry, async (req) => {
     const profile = parseProfile(await response.text());
     if (!profile) {
       // Playerzone changed its layout: keep what is stored instead of writing blanks or 0.
-      Sentry.captureException(new ProfileParseError(`No player profile found on ${PLAYERZONE}/players/${ref.id}`));
+      Sentry.captureException(new ProfileParseError(`No player profile found on ${PLAYERZONE}/players/${playerId}`));
       return new Response(JSON.stringify({ error: 'Playerzone-Profil konnte nicht gelesen werden' }), {
         status: 502,
         headers: { 'Content-Type': 'application/json' },
       });
     }
     if (profile.rgIndex === null) {
-      Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${ref.id}`, 'warning');
+      Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${playerId}`, 'warning');
     }
 
-    const rgId = rgIdFor(ref, profile);
+    // rg_id is the user's input and is not written here, so this update does not fire the rg_id trigger again.
     const { error } = await supabase
       .schema('games')
       .from('players')
       .update({
-        // No RG ID can be built (no letters in the link, no name on the page): keep the stored one.
-        ...(rgId && { rg_id: rgId }),
         rg_index: profile.rgIndex,
         rg_avatar_url: profile.avatarUrl,
       })

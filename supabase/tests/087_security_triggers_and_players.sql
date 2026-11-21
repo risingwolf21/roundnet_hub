@@ -4,7 +4,7 @@
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 
-SELECT plan(67);
+SELECT plan(68);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (postgres, no JWT)
@@ -66,13 +66,13 @@ INSERT INTO public.payments(id, "user", "amountToPay", "paymentState") VALUES
 INSERT INTO public.vouchers(id, "user", total_drinks, title)
 VALUES ('ee000000-0000-0000-0000-000000000001', pg_temp.u('sm_user'), 10, 'SM voucher');
 
-UPDATE games.players SET rg_link = 'https://old', rg_index = 1500, rg_avatar_url = 'avatar', rg_id = 'rg1'
+UPDATE games.players SET rg_link = 'https://old', rg_index = 1500, rg_avatar_url = 'avatar', rg_id = 'OLD1'
 WHERE linked_user_id = pg_temp.u('sm_user');
 
 -- legacy player: player id = user id, linked_user_id NULL
 DELETE FROM games.players WHERE linked_user_id = pg_temp.u('sm_legacy');
 INSERT INTO games.players(player, linked_user_id, rg_link, rg_index, rg_avatar_url, rg_id)
-VALUES (pg_temp.u('sm_legacy'), NULL, 'https://legacy', 1400, 'avatar', 'rgL');
+VALUES (pg_temp.u('sm_legacy'), NULL, 'https://legacy', 1400, 'avatar', 'LEG1');
 
 -- ===========================================================================
 -- 1. trg_history_enforce_amount (16)
@@ -210,28 +210,30 @@ SELECT tests.clear_authentication();
 SELECT throws_ok($$ SELECT count(*) FROM public."user" $$, '42501', NULL, 'user: anon has no access');
 
 -- ===========================================================================
--- 5. games.players: trg_players_reset_rg_data + column privileges (23)
+-- 5. games.players: trg_players_reset_rg_data + column privileges (24)
 -- ===========================================================================
 SELECT tests.authenticate_as('sm_user');
-WITH u AS (UPDATE games.players SET rg_link = 'https://new' WHERE linked_user_id = auth.uid()
+WITH u AS (UPDATE games.players SET rg_id = ' new42 ' WHERE linked_user_id = auth.uid()
            RETURNING rg_index::text, rg_avatar_url, rg_id)
-SELECT is(ARRAY[rg_index, rg_avatar_url, rg_id], ARRAY[NULL, NULL, NULL]::text[],
-  'players: changing rg_link clears rg_index/rg_avatar_url/rg_id') FROM u;
+SELECT is(ARRAY[rg_index, rg_avatar_url, rg_id], ARRAY[NULL, NULL, 'NEW42']::text[],
+  'players: changing rg_id normalises it and clears rg_index/rg_avatar_url') FROM u;
 
 RESET ROLE;
-UPDATE games.players SET rg_index = 1500, rg_avatar_url = 'avatar', rg_id = 'rg1' WHERE linked_user_id = pg_temp.u('sm_user');
+UPDATE games.players SET rg_index = 1500, rg_avatar_url = 'avatar' WHERE linked_user_id = pg_temp.u('sm_user');
 
 SELECT tests.authenticate_as('sm_user');
 WITH u AS (UPDATE games.players SET hide_rating = true WHERE linked_user_id = auth.uid() RETURNING rg_index)
 SELECT is(rg_index, 1500::numeric, 'players: other updates keep the rg data') FROM u;
-WITH u AS (UPDATE games.players SET rg_link = 'https://new' WHERE linked_user_id = auth.uid() RETURNING rg_index)
-SELECT is(rg_index, 1500::numeric, 'players: re-saving the same rg_link keeps the rg data') FROM u;
+WITH u AS (UPDATE games.players SET rg_id = 'new42' WHERE linked_user_id = auth.uid() RETURNING rg_index)
+SELECT is(rg_index, 1500::numeric, 'players: re-saving the same rg_id (any case) keeps the rg data') FROM u;
+SELECT throws_ok($$ UPDATE games.players SET rg_id = 'https://playerzone.roundnetgermany.de/players/1' WHERE linked_user_id = auth.uid() $$,
+  '22023', NULL, 'players: rg_id must be three letters and a number');
 SELECT is(pg_temp.rows($$ UPDATE games.players SET gender = 'f' WHERE linked_user_id = auth.uid() $$),
   1, 'players: user can change own gender');
 
 SELECT throws_ok($$ UPDATE games.players SET rg_index = 9999 WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set rg_index');
 SELECT throws_ok($$ UPDATE games.players SET rg_avatar_url = 'x' WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set rg_avatar_url');
-SELECT throws_ok($$ UPDATE games.players SET rg_id = 'x' WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set rg_id');
+SELECT throws_ok($$ UPDATE games.players SET rg_link = 'x' WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set rg_link any more');
 SELECT throws_ok($$ UPDATE games.players SET effective_rating_cached = 3000 WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set effective_rating_cached');
 SELECT throws_ok($$ UPDATE games.players SET pro_status = true WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set pro_status');
 SELECT throws_ok($$ UPDATE games.players SET matches_played = 999 WHERE linked_user_id = auth.uid() $$, '42501', NULL, 'players: cannot set matches_played');
@@ -252,14 +254,14 @@ SELECT is(
 SELECT tests.authenticate_as('sm_legacy');
 SELECT is(pg_temp.rows($$ UPDATE games.players SET hide_rating = true WHERE player = auth.uid() $$),
   1, 'players: legacy player (player = uid, linked_user_id NULL) can self-update');
-WITH u AS (UPDATE games.players SET rg_link = 'https://legacy-new' WHERE player = auth.uid() RETURNING rg_index)
-SELECT is(rg_index, NULL, 'players: legacy player rg_link change clears rg data') FROM u;
+WITH u AS (UPDATE games.players SET rg_id = 'LEG2' WHERE player = auth.uid() RETURNING rg_index)
+SELECT is(rg_index, NULL, 'players: legacy player rg_id change clears rg data') FROM u;
 
 RESET ROLE;
 UPDATE games.players SET rg_index = 1500 WHERE linked_user_id = pg_temp.u('sm_user');
 SELECT tests.authenticate_as_service_role();
-WITH u AS (UPDATE games.players SET rg_link = 'https://service' WHERE linked_user_id = pg_temp.u('sm_user') RETURNING rg_index)
-SELECT is(rg_index, 1500::numeric, 'players: service_role rg_link change keeps rg data') FROM u;
+WITH u AS (UPDATE games.players SET rg_id = 'SRV1' WHERE linked_user_id = pg_temp.u('sm_user') RETURNING rg_index)
+SELECT is(rg_index, 1500::numeric, 'players: service_role rg_id change keeps rg data') FROM u;
 
 SELECT tests.clear_authentication();
 SELECT throws_ok($$ UPDATE games.players SET hide_rating = true $$, '42501', NULL, 'players: anon cannot update');
@@ -280,8 +282,8 @@ SELECT set_eq(
   $$ SELECT attname::text FROM pg_attribute
       WHERE attrelid = 'games.players'::regclass AND attnum > 0 AND NOT attisdropped
         AND has_column_privilege('authenticated', 'games.players', attname, 'UPDATE') $$,
-  ARRAY['hide_rating', 'rg_link', 'gender'],
-  'players: authenticated may only update hide_rating, rg_link, gender');
+  ARRAY['hide_rating', 'rg_id', 'gender'],
+  'players: authenticated may only update hide_rating, rg_id, gender');
 SELECT is(
   (SELECT count(*)::int FROM pg_attribute
     WHERE attrelid = 'games.players'::regclass AND attnum > 0 AND NOT attisdropped
