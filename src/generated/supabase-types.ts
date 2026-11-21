@@ -44,7 +44,8 @@ export type Permission =
   | 'games.create.guest-player'
   | 'games.create.guest-player.with_index'
   | 'testlab'
-  | 'games.admin.merge_accounts';
+  | 'games.admin.merge_accounts'
+  | 'playerzone.refresh';
 
 export type Feature =
   | 'bundesliga'

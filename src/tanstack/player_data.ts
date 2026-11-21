@@ -8,6 +8,7 @@ export const playerDataKeys = {
   all: ['player_data'] as const,
   player: (playerId: string) => [...playerDataKeys.all, playerId] as const,
   eloHistory: (playerId: string) => [...playerDataKeys.player(playerId), 'elo_history'] as const,
+  playerzoneStats: () => [...playerDataKeys.all, 'playerzone_stats'] as const,
 };
 
 export const useEloHistory = (user: User) =>
@@ -106,4 +107,16 @@ export const useUpdateIndexHidden = (user: User) =>
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: playerDataKeys.player(user.id) });
     },
+  });
+
+export const usePlayerzoneStats = () =>
+  useQuery({
+    queryKey: playerDataKeys.playerzoneStats(),
+    queryFn: () => PlayerDataRepository.fetchPlayerzoneStats(),
+  });
+
+export const useRefreshPlayerzoneBatch = () =>
+  useMutation({
+    meta: { suppressErrorToast: true },
+    mutationFn: (offset: number) => PlayerDataRepository.refreshPlayerzoneBatch(offset),
   });

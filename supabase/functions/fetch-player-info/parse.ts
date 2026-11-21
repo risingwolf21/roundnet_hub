@@ -6,6 +6,7 @@ export const PLAYERZONE = 'https://playerzone.roundnetgermany.de';
 export interface ScrapedProfile {
   rgIndex: number | null;
   avatarUrl: string | null;
+  pro: boolean; // the badge carries a bare `pro` attribute for RGX Pro players
 }
 
 /**
@@ -15,7 +16,7 @@ export interface ScrapedProfile {
 export const playerIdFromRgId = (rgId: string): string | null => /^[A-Za-z]{3}(\d+)$/.exec(rgId.trim())?.[1] ?? null;
 
 /**
- * Reads RG-Index and avatar from a profile page. Returns null when the profile block is missing,
+ * Reads RG-Index, avatar and Pro status from a profile page. Returns null when the profile block is missing,
  * i.e. playerzone changed its layout; the caller must then keep the stored values instead of writing blanks.
  */
 export const parseProfile = (html: string): ScrapedProfile | null => {
@@ -24,10 +25,12 @@ export const parseProfile = (html: string): ScrapedProfile | null => {
   const profile = $('.rg-player-profile').first();
   if (profile.length === 0) return null;
 
-  const score = profile.find('.rg-player-profile--rgx rg-score-badge').first().attr('score')?.trim();
+  const badge = profile.find('.rg-player-profile--rgx rg-score-badge').first();
+  const score = badge.attr('score')?.trim();
   return {
     // No badge (unrated player) or no digits → unknown, never 0.
     rgIndex: score && /^\d+$/.test(score) ? Number(score) : null,
     avatarUrl: profile.find('img.rg-player-profile--image').first().attr('src')?.trim() || null,
+    pro: badge.attr('pro') !== undefined,
   };
 };

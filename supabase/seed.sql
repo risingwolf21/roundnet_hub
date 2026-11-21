@@ -392,8 +392,9 @@ VALUES
 --
 -- Name: log_id_seq; Type: SEQUENCE SET; Schema: audit; Owner: postgres
 --
+-- Never behind the rows migrations already logged (a migration that writes an audited table adds one).
 SELECT
-  pg_catalog.setval ('"audit"."log_id_seq"', 10, true);
+  pg_catalog.setval ('"audit"."log_id_seq"', GREATEST(10, (SELECT COALESCE(MAX(id), 0) FROM "audit"."log")), true);
 
 --
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin

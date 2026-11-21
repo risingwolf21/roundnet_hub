@@ -16,6 +16,7 @@ export const DialogsProvider = lazyWithRetry(() => import('@/contexts/DialogsPro
 export const AdminAnalytics = lazyWithRetry(() => import('@/features/admin/AdminAnalytics'));
 export const AdminDashboard = lazyWithRetry(() => import('@/features/admin/AdminDashboard'));
 export const AdminUserList = lazyWithRetry(() => import('@/features/admin/AdminUserList'));
+export const PlayerzoneRefreshScreen = lazyWithRetry(() => import('@/features/admin/PlayerzoneRefreshScreen'));
 export const AuthLayout = lazyWithRetry(() => import('@/features/auth/AuthLayout'));
 export const ForgotPassword = lazyWithRetry(() => import('@/features/auth/ForgotPassword'));
 export const ResetPassword = lazyWithRetry(() => import('@/features/auth/ResetPassword'));
