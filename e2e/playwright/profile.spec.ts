@@ -73,27 +73,28 @@ test.describe('Profil', () => {
   test('a user links their Playerzone profile', { annotation: flow('profile.playerzone') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openTab(page, 'Playerzone Profil');
-    const url = page.getByPlaceholder('https://playerzone.de/user/123');
+    const rgIdField = page.getByLabel('RG-ID', { exact: true });
 
-    // A foreign URL is rejected.
-    await url.fill('https://example.com/me');
+    // A link is no longer accepted, only the RG ID.
+    await rgIdField.fill('https://playerzone.roundnetgermany.de/players/221-sarah-kiel');
     await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
-    await expect(page.getByText(/Bitte vergewissere dich, dass die URL stimmt/)).toBeVisible();
+    await expect(page.getByText(/Gib deine RG-ID ein: drei Buchstaben und eine Zahl/)).toBeVisible();
 
-    const link = `https://playerzone.roundnetgermany.de/players/e2e-${stamp}`;
-    await url.fill(link);
+    // The RG ID is stored in upper case.
+    const rgId = `EEE${stamp}`;
+    await rgIdField.fill(rgId.toLowerCase());
     await page.getByRole('combobox').filter({ hasText: /Geschlecht auswählen|Open|Women/ }).click();
     await page.getByRole('option', { name: 'Open' }).click();
     await page.getByRole('button', { name: 'Änderungen Speichern' }).click();
     await expect(page.getByText('Profil erfolgreich aktualisiert')).toBeVisible();
     await expect.poll(async () => {
-      // Same "own player" filter as the app (PlayerDataRepository). The rg_link trigger would call
+      // Same "own player" filter as the app (PlayerDataRepository). The rg_id trigger would call
       // the fetch-player-info edge function, but the e2e stack has no EDGE_* Vault secrets, so
       // nothing ever reaches the live Playerzone.
-      const { data } = await admin.schema('games').from('players').select('rg_link')
+      const { data } = await admin.schema('games').from('players').select('rg_id')
         .or(`linked_user_id.eq.${userId},and(player.eq.${userId},linked_user_id.is.null)`).maybeSingle();
-      return (data as { rg_link: string | null } | null)?.rg_link;
-    }).toBe(link);
+      return (data as { rg_id: string | null } | null)?.rg_id;
+    }).toBe(rgId);
   });
 
   test('the calendar button opens the personal calendar feed', { annotation: flow('profile.calendar') }, async ({ page }) => {

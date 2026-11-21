@@ -1,9 +1,8 @@
-import { load } from 'cheerio';
 import * as Sentry from 'sentry';
+import { parseProfile, playerIdFromRgId, PLAYERZONE } from './parse.ts';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { Database } from '../_shared/supabase-generated.types.ts';
-import { rgIdFromLink } from './parse.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -24,6 +23,14 @@ Sentry.setTag('region', Deno.env.get('SB_REGION'))
 Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 class UpdatePlayerError extends Error {
+  constructor(msg: string) {
+    super(msg);
+
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+class ProfileParseError extends Error {
   constructor(msg: string) {
     super(msg);
 
@@ -53,16 +60,24 @@ class RgUrlFetchError extends Error {
 Deno.serve(withSentry(Sentry, async (req) => {
   const payload = await req.json();
   try {
-    const { rg_link, player } = payload;
+    const { rg_id, player } = payload;
 
-    if (!rg_link) {
-      return new Response(JSON.stringify({ error: 'rg_link ist erforderlich' }), {
+    if (!rg_id) {
+      return new Response(JSON.stringify({ error: 'rg_id ist erforderlich' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    // HTML von der angegebenen URL abrufen
-    const response = await fetch(rg_link);
+    // RG ID → numeric player id. The URL is always built here, never taken from the input.
+    const playerId = playerIdFromRgId(rg_id);
+    if (!playerId) {
+      Sentry.captureMessage(`fetch-player-info: not an RG ID: ${rg_id}`, 'warning');
+      return new Response(JSON.stringify({ error: 'Keine gültige RG-ID' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    const response = await fetch(`${PLAYERZONE}/players/${playerId}`);
     if (!response.ok) {
       const body = await response.text();
       const error = new RgUrlFetchError("Could not fetch playerzone profile", body, response.status, response.statusText);
@@ -75,31 +90,32 @@ Deno.serve(withSentry(Sentry, async (req) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const html = await response.text();
+    const profile = parseProfile(await response.text());
+    if (!profile) {
+      // Playerzone changed its layout: keep what is stored instead of writing blanks or 0.
+      Sentry.captureException(new ProfileParseError(`No player profile found on ${PLAYERZONE}/players/${playerId}`));
+      return new Response(JSON.stringify({ error: 'Playerzone-Profil konnte nicht gelesen werden' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (profile.rgIndex === null) {
+      Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${playerId}`, 'warning');
+    }
 
-    // HTML mit Cheerio analysieren
-    const $ = load(html);
-
-    const avatar_url = $(".player-card").find('.player-img').attr('src');
-
-    // Element mit der Klasse "rgx-value" abrufen
-    const rgxValue = $('.player-card').find('.rgx-value').text();
-    const rgId = rgIdFromLink(rg_link);
-
+    // rg_id is the user's input and is not written here, so this update does not fire the rg_id trigger again.
     const { error } = await supabase
       .schema('games')
       .from('players')
       .update({
-        // Links without a name give no id; keep the stored one instead of failing the whole update.
-        ...(rgId && { rg_id: rgId }),
-        rg_index: Number(rgxValue),
-        rg_avatar_url: avatar_url
+        rg_index: profile.rgIndex,
+        rg_avatar_url: profile.avatarUrl,
       })
       .eq('player', player);
 
     if (error) throw error;
 
-    return new Response('Successfully updated user with index ' + rgxValue, {
+    return new Response('Successfully updated user with index ' + profile.rgIndex, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

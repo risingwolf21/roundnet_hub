@@ -18,11 +18,14 @@ import { toast } from "sonner";
 
 type PlayerPublic = NonNullable<ReturnType<typeof usePlayer>['data']>;
 
+/** RG ID = three letters of the first name + playerzone player number, e.g. SAR221. */
+const RG_ID = /^[A-Z]{3}[0-9]+$/;
+
 export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; player_data: PlayerPublic | null }) => {
   const { t } = useTranslation();
   const { data: elo_history } = useEloHistory(user);
 
-  const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
+  const [rgId, setRgId] = useState(player_data?.rg_id ?? '');
   const [gender, setGender] = useState(player_data?.gender ?? '');
   const [loading, setLoading] = useState(false);
 
@@ -36,25 +39,31 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
     );
   }, [elo_history]);
 
-  const onSafeRgLinkClick = async () => {
-    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
-      toast.warning(t('profile.playerzone.invalidUrl'));
+  const normalizedRgId = rgId.trim().toUpperCase();
+
+  const onSaveRgIdClick = async () => {
+    if (normalizedRgId !== '' && !RG_ID.test(normalizedRgId)) {
+      toast.warning(t('profile.playerzone.invalidRgId'));
       return;
     }
     if (gender === "") {
       toast.error(t('profile.playerzone.noGender'));
       return;
     }
-    // rg_index / rg_avatar_url are reset server-side when rg_link changes
+    // rg_index / rg_avatar_url are reset server-side when rg_id changes, then refilled from playerzone
     const updates: GamesTableUpdate<'players'> = {
-      rg_link: rgLink ?? null,
+      rg_id: normalizedRgId === '' ? null : normalizedRgId,
       gender: gender,
     };
     updatePlayer.mutate(
       { updates },
       {
         onError: (error) => toast.error(t('profile.playerzone.updateError', { error: error.message })),
-        onSuccess: () => toast.success(t('profile.playerzone.updateSuccess')),
+        onSuccess: () => {
+          // Show what was stored (upper case, trimmed), so Save disables again.
+          setRgId(normalizedRgId);
+          toast.success(t('profile.playerzone.updateSuccess'));
+        },
       }
     );
   };
@@ -98,18 +107,22 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             </div>
             <div className='w-full space-y-4'>
               <div className='w-full space-y-1'>
-                <Label className='leading-5' htmlFor='pzUrl'>
-                  {t('profile.playerzone.urlLabel')}
+                <Label className='leading-5' htmlFor='rgId'>
+                  {t('profile.playerzone.rgIdLabel')}
                 </Label>
                 <div className='relative'>
                   <Input
-                    id='pzUrl'
+                    id='rgId'
                     type='text'
-                    placeholder={t('profile.playerzone.urlPlaceholder')}
-                    value={rgLink}
-                    onChange={(e) => setRgLink(e.target.value)}
+                    autoCapitalize='characters'
+                    autoComplete='off'
+                    placeholder={t('profile.playerzone.rgIdPlaceholder')}
+                    value={rgId}
+                    onChange={(e) => setRgId(e.target.value)}
+                    aria-describedby='rgId-hint'
                   />
                 </div>
+                <p id='rgId-hint' className='text-xs text-muted-foreground'>{t('profile.playerzone.rgIdHint')}</p>
               </div>
               <div className='w-full space-y-1'>
                 <Label className='leading-5' htmlFor='gender'>
@@ -138,8 +151,8 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
             <Button
               type='submit'
               className='max-sm:w-full'
-              disabled={loading || (rgLink === player_data?.rg_link && gender === player_data?.gender)}
-              onClick={onSafeRgLinkClick}
+              disabled={loading || (normalizedRgId === (player_data?.rg_id ?? '') && gender === player_data?.gender)}
+              onClick={onSaveRgIdClick}
             >
               {loading && <Spinner />}
               {t('profile.playerzone.saveChanges')}
@@ -150,14 +163,6 @@ export const PlayerzoneTab = ({ user, player_data }: { user: UserWithGroups; pla
         {
           player_data !== null && (
             <div className="space-y-6">
-              {player_data.rg_id !== null && (
-                <Field orientation="horizontal" className="max-w-sm">
-                  <FieldContent>
-                    <FieldLabel htmlFor="rg-id">{player_data.rg_id}</FieldLabel>
-                    <FieldDescription>{t('profile.playerzone.rgId')}</FieldDescription>
-                  </FieldContent>
-                </Field>
-              )}
               {
                 (player_data.rg_index !== null && player_data.rg_index > 0) && (
                   <Field orientation="horizontal">
