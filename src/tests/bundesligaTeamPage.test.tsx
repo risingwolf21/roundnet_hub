@@ -78,13 +78,14 @@ describe('BundesligaTeamPage', () => {
     expect(screen.getByText('+24')).toBeInTheDocument();
   });
 
-  test('a player in no roster gets an explanation and the team picker', () => {
+  test('a player in no roster gets an explanation, the team picker and the planner', () => {
     state.teamsOfPlayer = [];
     render(<BundesligaTeamPage />);
 
     expect(screen.getByText('bundesliga.team.notFoundTitle')).toBeInTheDocument();
     expect(screen.getByText(/bundesliga\.team\.notFoundWithId .*KAR7/)).toBeInTheDocument();
     expect(screen.getByText('bundesliga.team.pickTitle')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'bundesliga.team.planLineup' })).toBeInTheDocument();
   });
 
   test('before any league is loaded it says so', () => {

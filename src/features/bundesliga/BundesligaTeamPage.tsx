@@ -181,6 +181,10 @@ const BundesligaTeamPage = () => {
                   ? t('bundesliga.team.notFoundWithId', { rgId: profile?.player?.rg_id })
                   : t('bundesliga.team.notFoundNoId')}
               </p>
+              <Button variant="outline" className="mt-2 w-full" onClick={() => navigate('/bundesliga/planner')}>
+                <ClipboardList />
+                {t('bundesliga.team.planLineup')}
+              </Button>
             </section>
             {picker}
           </>
