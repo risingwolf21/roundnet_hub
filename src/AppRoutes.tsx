@@ -120,9 +120,13 @@ const createRouter = (user: UserWithGroups | null) =>
               path: '/bundesliga',
               element: (
                 <Has feat={'bundesliga'} fallback={<Pages.FeatureLockedRouteElement />}>
-                  <Pages.BundesligaPlannerPage />
+                  <Outlet />
                 </Has>
               ),
+              children: [
+                { index: true, element: <Pages.BundesligaTeamPage /> },
+                { path: 'planner', element: <Pages.BundesligaPlannerPage /> },
+              ],
             },
             {
               path: '/user',
@@ -309,6 +313,14 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Has perm={'games.admin.merge_accounts'} fallback={<Pages.UnauthorizedRouteElement />}>
                     <Pages.UserPlayerMapping />
                   </Has>
+                },
+                {
+                  path: 'bundesliga',
+                  element: (
+                    <Has perm={'bundesliga.admin'} fallback={<Pages.UnauthorizedRouteElement />}>
+                      <Pages.BundesligaAdminScreen />
+                    </Has>
+                  ),
                 },
                 {
                   path: 'playerzone',

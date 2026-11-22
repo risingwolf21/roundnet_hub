@@ -1,34 +1,87 @@
-// Talks to the `fetch-bundesliga` edge function (scrapes the Roundnet Germany playerzone)
-// but serves from the `public.bundesliga_cache` table whenever the cached data is still
-// fresh (fetched after the most recent 02:00 Europe/Berlin). The edge function is only
-// invoked when the cache is missing/stale, or when an admin forces a hard reload — so we
-// neither re-run the function nor re-scrape playerzone on every view.
+// Reads the Bundesliga data the fetch-bundesliga edge function stores in the bundesliga_* tables,
+// and calls that function for the admin's season and refresh actions.
 import { supabase } from '@/lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import i18n from 'i18next';
 
-export interface ScrapedTeam {
-  teamId: string;
-  teamVersionId: string;
+// The bundesliga_* tables are not in the generated types yet.
+const db = supabase as unknown as SupabaseClient;
+
+export interface BundesligaLeague {
+  id: number;
   name: string;
-  logoUrl: string | null;
-  rgxTotal: number | null;
-  firstNames: string[];
+  sort: number;
+  /** Playerzone's teams page id; the planner's league id. */
+  teams_page_id: string;
+  refreshed_at: string | null;
+  refresh_error: string | null;
 }
 
-export interface ScrapedMatchDay {
-  id: string;
-  md: string | null;
+export interface BundesligaSeason {
+  id: number;
+  tournament_slug: string;
+  name: string | null;
+  leagues: BundesligaLeague[];
+}
+
+export interface BundesligaTeam {
+  pz_team_id: string;
+  pz_team_version_id: string;
   name: string;
-  date: string | null;
+  logo_url: string | null;
+  rgx_total: number | null;
+}
+
+export interface BundesligaStanding {
+  pz_team_id: string;
+  position: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  sets_for: number;
+  sets_against: number;
+  points_for: number;
+  points_against: number;
+}
+
+export interface BundesligaMatchday {
+  pz_matchday_id: string;
+  number: number;
+}
+
+export interface BundesligaGroup {
+  pz_group_id: string;
+  pz_matchday_id: string;
+  name: string | null;
+  play_date: string | null;
   city: string | null;
-  teams: { teamId: string; teamVersionId: string; name: string }[];
+}
+
+export interface BundesligaEncounter {
+  pz_game_id: string;
+  pz_group_id: string;
+  team1_id: string;
+  team2_id: string;
+  boards1: number | null;
+  boards2: number | null;
+  sets1: number | null;
+  sets2: number | null;
+  winner: 1 | 2 | null;
+}
+
+/** Everything of one league the app shows. */
+export interface LeagueView {
+  teams: BundesligaTeam[];
+  standings: BundesligaStanding[];
+  matchdays: BundesligaMatchday[];
+  groups: BundesligaGroup[];
+  encounters: BundesligaEncounter[];
 }
 
 export type ScrapedGender = 'male' | 'female' | 'unknown';
 
 export interface ScrapedPlayer {
   id: string;
-  slug: string;
   name: string;
   gender: ScrapedGender;
   rgIndex: number | null;
@@ -36,99 +89,106 @@ export interface ScrapedPlayer {
   pro: boolean;
 }
 
-export interface LeagueOption {
-  id: string;
-  name: string;
-}
-
-export interface LeagueResponse {
-  league: LeagueOption;
-  leagues: LeagueOption[];
-  teams: ScrapedTeam[];
-  matchDays: ScrapedMatchDay[];
-}
-
-export interface RostersResponse {
-  rosters: Record<string, ScrapedPlayer[]>;
-}
-
-const FN_BASE = import.meta.env.DEV
-  ? 'http://127.0.0.1:54321/functions/v1'
-  : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
-
-const leagueKey = (leagueId: string) => `league:${leagueId}`;
-const rosterKey = (teamVersionId: string) => `roster:${teamVersionId}`;
-
-interface CacheRow {
-  cache_key: string;
-  payload: unknown;
-  fetched_at: string;
-  is_fresh: boolean;
-}
-
-/** Read fresh cache rows for the given keys (missing/stale keys are simply absent). */
-async function readFreshCache(keys: string[]): Promise<Map<string, unknown>> {
-  if (keys.length === 0) return new Map();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_bundesliga_cache', { p_keys: keys });
-  if (error) return new Map(); // cache is an optimization; fall back to the edge function
-  const rows = (data ?? []) as CacheRow[];
-  return new Map(rows.filter((r) => r.is_fresh).map((r) => [r.cache_key, r.payload]));
+export interface RefreshLeagueResult {
+  league: { id: number; name: string };
+  teams: number;
+  players: number | null;
+  matchdays: number;
+  encounters: number;
+  played: number;
 }
 
 async function invokeEdge<T>(body: Record<string, unknown>): Promise<T> {
-  const { data: session } = await supabase.auth.getSession();
-  const accessToken = session?.session?.access_token;
-  if (!accessToken) throw new Error(i18n.t('bundesliga.notAuthenticated'));
-
-  const resp = await fetch(`${FN_BASE}/fetch-bundesliga`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-      'Accept-Language': i18n.resolvedLanguage ?? 'de', // the function answers errors in this language
-    },
-    body: JSON.stringify(body),
+  const { data, error } = await supabase.functions.invoke<T>('fetch-bundesliga', {
+    body,
+    headers: { 'Accept-Language': i18n.resolvedLanguage ?? 'de' }, // the function answers errors in this language
   });
-  if (!resp.ok) throw new Error(await resp.text());
-  const json = await resp.json();
-  if (json?.error) throw new Error(json.details ? `${json.error}: ${json.details}` : json.error);
-  return json as T;
+  if (error) {
+    // Show the function's own message ("Keine Berechtigung …") instead of "non-2xx status code".
+    const context = (error as { context?: Response }).context;
+    const message = await context?.json?.().then((b: { error?: string }) => b?.error).catch(() => undefined);
+    throw new Error(message ?? error.message);
+  }
+  return data as T;
 }
 
 export const BundesligaRepository = {
-  async fetchLeague(leagueId: string, opts: { force?: boolean } = {}): Promise<LeagueResponse> {
-    if (!opts.force) {
-      const cache = await readFreshCache([leagueKey(leagueId)]);
-      const hit = cache.get(leagueKey(leagueId));
-      if (hit) return hit as LeagueResponse;
-    }
-    return invokeEdge<LeagueResponse>({ action: 'league', leagueId, force: opts.force ?? false });
+  /** The active season with its leagues, or null before an admin set one. */
+  async fetchSeason(): Promise<BundesligaSeason | null> {
+    const { data, error } = await db
+      .from('bundesliga_seasons')
+      .select('id, tournament_slug, name, leagues:bundesliga_leagues(id, name, sort, teams_page_id, refreshed_at, refresh_error)')
+      .eq('active', true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const season = data as BundesligaSeason;
+    return { ...season, leagues: [...season.leagues].sort((a, b) => a.sort - b.sort) };
   },
 
-  async fetchRosters(
-    teams: { teamId: string; teamVersionId: string }[],
-    opts: { force?: boolean } = {}
-  ): Promise<RostersResponse> {
+  /** The teams (league + team id) whose roster lists this playerzone player. */
+  async fetchTeamsOfPlayer(pzPlayerId: string, leagueIds: number[]): Promise<{ league_id: number; pz_team_id: string }[]> {
+    if (leagueIds.length === 0) return [];
+    const { data, error } = await db
+      .from('bundesliga_team_players')
+      .select('league_id, pz_team_id')
+      .eq('pz_player_id', pzPlayerId)
+      .in('league_id', leagueIds);
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async fetchLeagueView(leagueId: number): Promise<LeagueView> {
+    const rows = async <T>(table: string, columns: string): Promise<T[]> => {
+      const { data, error } = await db.from(table).select(columns).eq('league_id', leagueId);
+      if (error) throw error;
+      return (data ?? []) as T[];
+    };
+    const [teams, standings, matchdays, groups, encounters] = await Promise.all([
+      rows<BundesligaTeam>('bundesliga_teams', 'pz_team_id, pz_team_version_id, name, logo_url, rgx_total'),
+      rows<BundesligaStanding>('bundesliga_standings', 'pz_team_id, position, wins, draws, losses, sets_for, sets_against, points_for, points_against'),
+      rows<BundesligaMatchday>('bundesliga_matchdays', 'pz_matchday_id, number'),
+      rows<BundesligaGroup>('bundesliga_md_groups', 'pz_group_id, pz_matchday_id, name, play_date, city'),
+      rows<BundesligaEncounter>('bundesliga_encounters', 'pz_game_id, pz_group_id, team1_id, team2_id, boards1, boards2, sets1, sets2, winner'),
+    ]);
+    return { teams, standings, matchdays, groups, encounters };
+  },
+
+  /** Rosters of the given teams, keyed by playerzone team id. */
+  async fetchRosters(leagueId: number, teamIds: string[]): Promise<Record<string, ScrapedPlayer[]>> {
+    if (teamIds.length === 0) return {};
+    const { data, error } = await db
+      .from('bundesliga_team_players')
+      .select('pz_team_id, pz_player_id, name, gender, rg_index, avatar_url, pro')
+      .eq('league_id', leagueId)
+      .in('pz_team_id', teamIds);
+    if (error) throw error;
     const rosters: Record<string, ScrapedPlayer[]> = {};
-    let missing = teams;
-
-    if (!opts.force) {
-      const cache = await readFreshCache(teams.map((t) => rosterKey(t.teamVersionId)));
-      missing = [];
-      for (const t of teams) {
-        const hit = cache.get(rosterKey(t.teamVersionId));
-        if (hit) rosters[t.teamId] = hit as ScrapedPlayer[];
-        else missing.push(t);
-      }
-      if (missing.length === 0) return { rosters };
+    for (const p of data ?? []) {
+      (rosters[p.pz_team_id] ??= []).push({
+        id: p.pz_player_id,
+        name: p.name,
+        gender: p.gender,
+        rgIndex: p.rg_index,
+        avatarUrl: p.avatar_url,
+        pro: p.pro,
+      });
     }
+    return rosters;
+  },
 
-    const fresh = await invokeEdge<RostersResponse>({
-      action: 'rosters',
-      teams: missing,
-      force: opts.force ?? false,
-    });
-    return { rosters: { ...rosters, ...fresh.rosters } };
+  /** Admin: make a playerzone tournament the active season (its leagues are found automatically). */
+  setSeason(link: string) {
+    return invokeEdge<{ season: { id: number; name: string | null }; leagues: { id: number; name: string }[] }>({ action: 'season', link });
+  },
+
+  /** Admin: the active season's leagues (found from playerzone the first time). */
+  discoverLeagues() {
+    return invokeEdge<{ leagues: { id: number; name: string }[] }>({ action: 'discover' });
+  },
+
+  /** Admin: reload one league completely, rosters included. */
+  refreshLeague(leagueId: number) {
+    return invokeEdge<RefreshLeagueResult>({ action: 'refreshLeague', leagueId });
   },
 };

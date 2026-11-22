@@ -40,3 +40,5 @@ export const FeatureLockedRouteElement = lazyWithRetry(() => import('@/component
 export const UnauthorizedRouteElement = lazyWithRetry(() => import('@/components/UnauthorizedRouteElement'));
 export const TournamentCostsPage = lazyWithRetry(() => import('@/features/costs/TournamentCostsPage'));
 export const BundesligaPlannerPage = lazyWithRetry(() => import('@/features/bundesliga/BundesligaPlannerPage'));
+export const BundesligaTeamPage = lazyWithRetry(() => import('@/features/bundesliga/BundesligaTeamPage'));
+export const BundesligaAdminScreen = lazyWithRetry(() => import('@/features/admin/BundesligaAdminScreen'));

@@ -9,7 +9,7 @@ import { useEvents } from '@/tanstack/events';
 import { format, startOfMonth, subDays } from 'date-fns';
 import {
   AlertCircle, CalendarClock, ChartArea, ChevronRight, CircleCheck, Euro, GitMerge,
-  History, KeyRound, RefreshCw, Send, Users, Volleyball
+  History, KeyRound, RefreshCw, Send, Trophy, Users, Volleyball
 } from 'lucide-react';
 import { ElementType, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -190,6 +190,7 @@ const AdminDashboard = () => {
         { title: t('browse.manageUsers'), description: t('admin.dashboard.tools.users'), icon: Users, path: '/admin/users', perm: 'users.manage' },
         { title: t('browse.merge_accounts'), description: t('admin.dashboard.tools.mergeAccounts'), icon: GitMerge, path: '/admin/merge_accounts', perm: 'games.admin.merge_accounts' },
         { title: t('browse.playerzone'), description: t('admin.dashboard.tools.playerzone'), icon: RefreshCw, path: '/admin/playerzone', perm: 'playerzone.refresh' },
+        { title: t('browse.bundesliga'), description: t('admin.dashboard.tools.bundesliga'), icon: Trophy, path: '/admin/bundesliga', perm: 'bundesliga.admin' },
         { title: t('browse.notifyUsers'), description: t('admin.dashboard.tools.notify'), icon: Send, path: '/admin/notify_users', perm: 'admin.notify_users' },
       ],
     },

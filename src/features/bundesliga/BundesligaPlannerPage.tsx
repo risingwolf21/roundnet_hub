@@ -15,9 +15,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGrants } from '@/features/auth/GrantsContext';
-import { Has } from '@/hooks/useGrants';
 import { useProfile } from '@/tanstack/user';
-import { AlertTriangle, ChevronDown, RefreshCw, RotateCcw, Trophy } from 'lucide-react';
+import { AlertTriangle, ChevronDown, RotateCcw, Trophy } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EncounterEditor } from './components/EncounterEditor';
@@ -31,8 +30,8 @@ import {
 } from './types';
 import { gameCountsForDay, hasErrors, toPlayerMap, validateEncounter } from './lineup';
 import { lineupKey, usePlannerState } from './store';
-import type { ScrapedPlayer, ScrapedTeam } from './repository';
-import { useLeagueData, useRefreshBundesliga, useRosters } from './useBundesliga';
+import type { ScrapedPlayer } from './repository';
+import { type PlannerTeam, useLeagueData, useRosters } from './useBundesliga';
 
 const GENDERS: { value: Gender; label: string }[] = [
   { value: 'male', label: 'bundesliga.gender.male' },
@@ -53,7 +52,7 @@ const BundesligaPlannerPage = () => {
   const myPlayerId = useMemo(() => profile?.player?.rg_id?.match(/\d+/)?.[0] ?? null, [profile]);
 
   const { data: leagueData, isLoading, isError, error } = useLeagueData(state.leagueId);
-  const teams = useMemo<ScrapedTeam[]>(() => leagueData?.teams ?? [], [leagueData]);
+  const teams = useMemo<PlannerTeam[]>(() => leagueData?.teams ?? [], [leagueData]);
   const leagues = leagueData?.leagues ?? [];
   const matchDays = useMemo(() => leagueData?.matchDays ?? [], [leagueData]);
 
@@ -69,10 +68,11 @@ const BundesligaPlannerPage = () => {
     return [...map.values()];
   }, [teams, matchDays, state.ownTeamId, state.opponentIds]);
 
-  const { data: rostersData, isLoading: rostersLoading } = useRosters(teamsNeedingRosters);
-  const rosters = useMemo(() => rostersData?.rosters ?? {}, [rostersData]);
-
-  const refresh = useRefreshBundesliga();
+  const { data: rostersData, isLoading: rostersLoading } = useRosters(
+    leagueData?.leagueDbId,
+    teamsNeedingRosters.map((t) => t.teamId)
+  );
+  const rosters = useMemo<Record<string, ScrapedPlayer[]>>(() => rostersData ?? {}, [rostersData]);
 
   // Best-effort: if my RG-iD turns up in a rendered match day, pick my team + opponents for me.
   useEffect(() => {
@@ -229,24 +229,9 @@ const BundesligaPlannerPage = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <AppBar
-        title={t('bundesliga.title')}
+        title={t('bundesliga.plannerTitle')}
         user={user}
         primaryAction="back"
-        actions={
-          <Has perm={'bundesliga.admin'} fallback={<></>}>
-            <Button
-              variant="ghost"
-              size="icon-lg"
-              title={t('bundesliga.reloadData')}
-              disabled={refresh.isPending}
-              onClick={() =>
-                refresh.mutate({ leagueId: state.leagueId, teams: teamsNeedingRosters })
-              }
-            >
-              {refresh.isPending ? <Spinner /> : <RefreshCw />}
-            </Button>
-          </Has>
-        }
       />
 
       <main className="flex-1 pb-safe-bottom px-4 pt-3 flex flex-col gap-4 max-w-2xl w-full mx-auto">

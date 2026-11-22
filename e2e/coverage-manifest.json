@@ -429,15 +429,19 @@
     },
     {
       "id": "bundesliga",
-      "title": "Bundesliga-Planer",
+      "title": "Bundesliga",
       "flows": [
         {
+          "id": "bundesliga.myteam",
+          "title": "Mein Team über die RG-ID, Spieltage mit Ergebnissen, Tabelle"
+        },
+        {
           "id": "bundesliga.team",
-          "title": "Team wählen, Kader aus Cache, Gegner erkannt"
+          "title": "Planer: Team wählen, Kader aus der Datenbank, Gegner erkannt"
         },
         {
           "id": "bundesliga.admin",
-          "title": "Admin-Neuladen nur mit bundesliga.admin"
+          "title": "Saison und Neuladen nur mit bundesliga.admin"
         },
         {
           "id": "bundesliga.lineup",
@@ -445,7 +449,7 @@
         },
         {
           "id": "bundesliga.scrape",
-          "title": "Live-Daten laden",
+          "title": "Alle Ligen von Playerzone neu laden",
           "boundary": true
         }
       ]
