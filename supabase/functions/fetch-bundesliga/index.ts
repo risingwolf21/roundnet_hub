@@ -1,29 +1,26 @@
-// Scrapes the Roundnet Germany playerzone for Bundesliga match-day planning:
-//   - the teams of a league (1./2./3. Bundesliga, Regionalliga),
-//   - the rendered match-day groups (opponents + date/city),
-//   - and a team's roster (name, RGX, gender, avatar).
+// Loads the Deutsche Roundnet Liga from the Roundnet Germany playerzone into the bundesliga_*
+// tables: the season's leagues, their teams and rosters, every match day with its groups and
+// encounter results, and the league table. The app only reads those tables.
 //
-// Results are cached in public.bundesliga_cache; the function only re-scrapes a key when
-// its cached row is missing/stale (older than the most recent 02:00 Europe/Berlin) or when
-// an admin forces a reload (`force: true`, gated by the `bundesliga.admin` permission).
+// Actions (POST JSON):
+//   season        { link }      admin: set the season from a playerzone tournament link, find its leagues
+//   discover      {}            admin: the active season's leagues (found on first use)
+//   refreshLeague { leagueId }  admin: reload one league completely, rosters included
+//   nightly       {}            cron: reload schedules, results and standings of all leagues in the
+//                               background (rosters stay); skipped if everything is fresh
+// "admin" = permission `bundesliga.admin` (or `supabase.admin`), checked with the caller's JWT.
 import * as Sentry from 'sentry';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { localized } from '../_shared/lang.ts';
-import {
-  parseMatchDays,
-  parseRoster,
-  parseTeams,
-  rosterHtmlFromResponse,
-  type ScrapedMatchDay,
-  type ScrapedPlayer,
-} from './parse.ts';
+import { tournamentSlug } from './parse.ts';
+import { findLeagues, livePlayerzone, scrapeLeague } from './scrape.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-// Service-role client: bypasses RLS to read/write the cache.
+// Service-role client: the only writer of the bundesliga_* tables.
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
@@ -37,23 +34,16 @@ Sentry.init({
 Sentry.setTag('region', Deno.env.get('SB_REGION'));
 Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'));
 
-const PZ = 'https://playerzone.roundnetgermany.de';
+// Supabase's edge runtime keeps a request's background work running after the response.
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | undefined;
 
-// Current-season defaults; overridable per request so the function survives a season change.
-const DEFAULT_TOURNAMENT = '793-2027-04-11-deutsche-roundnet-liga-2026-2027';
-const DEFAULT_SCHEDULE_DIVISION = 'mixed-14358-gruppenphase';
-
-// League dropdown ids on the teams page.
-const LEAGUES: { id: string; name: string }[] = [
-  { id: '2613', name: '1. Bundesliga' },
-  { id: '2614', name: '2. Bundesliga' },
-  { id: '2615', name: '3. Liga' },
-  { id: '2616', name: 'Regionalliga' },
-];
+const get = livePlayerzone(250);
+// The nightly run does nothing when every league was refreshed this recently.
+const NIGHTLY_MIN_AGE_MS = 6 * 60 * 60 * 1000;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept-language',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
@@ -63,38 +53,8 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' },
   });
 
-const leagueKey = (leagueId: string) => `league:${leagueId}`;
-const rosterKey = (teamVersionId: string) => `roster:${teamVersionId}`;
-
-async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { 'Accept': 'text/html,application/json' } });
-  if (!res.ok) throw new Error(`Fetch ${url} failed: ${res.status} ${res.statusText}`);
-  return await res.text();
-}
-
-/** Cached payloads that are still fresh, keyed by cache_key. */
-async function readFresh(keys: string[]): Promise<Map<string, unknown>> {
-  if (keys.length === 0) return new Map();
-  const { data, error } = await admin.rpc('get_bundesliga_cache', { p_keys: keys });
-  if (error) return new Map();
-  const rows = (data ?? []) as { cache_key: string; payload: unknown; is_fresh: boolean }[];
-  return new Map(rows.filter((r) => r.is_fresh).map((r) => [r.cache_key, r.payload]));
-}
-
-async function writeCache(cache_key: string, payload: unknown): Promise<void> {
-  const { error } = await admin
-    .from('bundesliga_cache')
-    .upsert({ cache_key, payload, fetched_at: new Date().toISOString() }, { onConflict: 'cache_key' });
-  if (error) Sentry.captureException(error);
-}
-
-async function scrapeRoster(teamVersionId: string): Promise<ScrapedPlayer[]> {
-  const body = await fetchText(`${PZ}/tournament/get-team-info?id=${encodeURIComponent(teamVersionId)}`);
-  return parseRoster(rosterHtmlFromResponse(body));
-}
-
-/** For force=true, require the admin permission (via the caller's own JWT). */
-async function assertCanForce(authHeader: string): Promise<boolean> {
+async function isAdmin(authHeader: string): Promise<boolean> {
+  if (!authHeader) return false;
   const caller = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false },
     global: { headers: { Authorization: authHeader } },
@@ -106,6 +66,82 @@ async function assertCanForce(authHeader: string): Promise<boolean> {
   return a.data === true || b.data === true;
 }
 
+type Season = { id: number; tournament_slug: string; name: string | null };
+type League = { id: number; name: string; teams_page_id: string; schedule_slug: string | null; refreshed_at: string | null };
+
+async function leaguesOf(seasonId: number): Promise<League[]> {
+  const { data, error } = await admin
+    .from('bundesliga_leagues')
+    .select('id, name, teams_page_id, schedule_slug, refreshed_at')
+    .eq('season_id', seasonId)
+    .order('sort');
+  if (error) throw error;
+  return (data ?? []) as League[];
+}
+
+/** Makes the tournament the active season and stores its leagues. */
+async function activateSeason(slug: string): Promise<{ season: Season; leagues: League[] }> {
+  const { name, leagues } = await findLeagues(get, slug);
+  const { data, error } = await admin.rpc('bundesliga_activate_season', {
+    p_slug: slug,
+    p_name: name,
+    p_leagues: leagues.map((l, i) => ({ name: l.name, sort: i + 1, teams_page_id: l.teamsPageId, schedule_slug: l.scheduleSlug })),
+  });
+  if (error) throw error;
+  const id = data as number;
+  return { season: { id, tournament_slug: slug, name }, leagues: await leaguesOf(id) };
+}
+
+/** The active season and its leagues; the leagues are found from playerzone the first time. */
+async function activeLeagues(): Promise<{ season: Season; leagues: League[] } | null> {
+  const { data: season, error } = await admin
+    .from('bundesliga_seasons')
+    .select('id, tournament_slug, name')
+    .eq('active', true)
+    .maybeSingle();
+  if (error) throw error;
+  if (!season) return null;
+  const leagues = await leaguesOf(season.id);
+  return leagues.length ? { season, leagues } : await activateSeason(season.tournament_slug);
+}
+
+/** Scrapes one league and replaces its rows; returns counts for the admin screen. */
+async function refreshLeague(season: Season, league: League, withRosters: boolean) {
+  try {
+    const rows = await scrapeLeague(get, season.tournament_slug, league, withRosters);
+    const { error } = await admin.rpc('bundesliga_replace_league', { p_league_id: league.id, p_data: rows });
+    if (error) throw error;
+    return {
+      league: { id: league.id, name: league.name },
+      teams: rows.teams.length,
+      players: rows.players?.length ?? null,
+      matchdays: rows.matchdays.length,
+      encounters: rows.encounters.length,
+      played: rows.encounters.filter((e) => e.winner !== null).length,
+    };
+  } catch (error) {
+    await admin.from('bundesliga_leagues').update({ refresh_error: String(error).slice(0, 500) }).eq('id', league.id);
+    throw error;
+  }
+}
+
+/** Results and standings of every league; rosters stay. Skipped while everything is fresh. */
+async function nightly() {
+  const active = await activeLeagues();
+  if (!active) return;
+  const stale = active.leagues.some(
+    (l) => !l.refreshed_at || Date.now() - new Date(l.refreshed_at).getTime() > NIGHTLY_MIN_AGE_MS
+  );
+  if (!stale) return;
+  for (const league of active.leagues) {
+    try {
+      await refreshLeague(active.season, league, false);
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  }
+}
+
 Deno.serve(withSentry(Sentry, async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -115,68 +151,42 @@ Deno.serve(withSentry(Sentry, async (req) => {
   } catch {
     return json({ error: 'JSON-Body erforderlich' }, 400);
   }
-
-  const action = String(payload.action ?? 'league');
-  const tournament = String(payload.tournament ?? DEFAULT_TOURNAMENT);
-  const scheduleDivision = String(payload.scheduleDivision ?? DEFAULT_SCHEDULE_DIVISION);
-  const force = payload.force === true;
+  const action = String(payload.action ?? '');
 
   try {
-    if (force && !(await assertCanForce(req.headers.get('Authorization') || ''))) {
-      return json({ error: localized(req, 'Keine Berechtigung zum harten Neuladen (bundesliga.admin).', 'You are not allowed to force a reload (bundesliga.admin).') }, 403);
+    if (action === 'nightly') {
+      const work = nightly().catch((error) => Sentry.captureException(error));
+      if (typeof EdgeRuntime !== 'undefined') {
+        EdgeRuntime.waitUntil(work);
+        return json({ started: true }, 202);
+      }
+      await work;
+      return json({ done: true });
     }
 
-    if (action === 'league') {
-      const leagueId = String(payload.leagueId ?? LEAGUES[0].id);
-      const league = LEAGUES.find((l) => l.id === leagueId) ?? { id: leagueId, name: leagueId };
-      const key = leagueKey(leagueId);
-
-      if (!force) {
-        const hit = (await readFresh([key])).get(key);
-        if (hit) return json(hit);
-      }
-
-      const teamsHtml = await fetchText(`${PZ}/tournaments/${tournament}/teams/${leagueId}`);
-      const teams = parseTeams(teamsHtml);
-
-      let matchDays: ScrapedMatchDay[] = [];
-      try {
-        const schedHtml = await fetchText(`${PZ}/tournaments/${tournament}/schedule/${scheduleDivision}`);
-        matchDays = parseMatchDays(schedHtml);
-      } catch (e) {
-        // Schedule is best-effort; the planner falls back to manual opponent choice.
-        Sentry.captureException(e);
-      }
-
-      const result = { league, leagues: LEAGUES, teams, matchDays };
-      await writeCache(key, result);
-      return json(result);
+    if (!(await isAdmin(req.headers.get('Authorization') ?? ''))) {
+      return json({ error: localized(req, 'Keine Berechtigung (bundesliga.admin).', 'Not allowed (bundesliga.admin).') }, 403);
     }
 
-    if (action === 'rosters') {
-      const teams = (payload.teams ?? []) as { teamId?: string; teamVersionId: string }[];
-      if (!Array.isArray(teams) || teams.length === 0) {
-        return json({ error: 'teams[] mit teamVersionId erforderlich' }, 400);
+    if (action === 'season') {
+      const slug = tournamentSlug(String(payload.link ?? ''));
+      if (!slug) {
+        return json({ error: localized(req, 'Das ist kein Playerzone-Turnierlink.', 'That is not a playerzone tournament link.') }, 400);
       }
+      return json(await activateSeason(slug));
+    }
 
-      const fresh = force
-        ? new Map<string, unknown>()
-        : await readFresh(teams.map((t) => rosterKey(t.teamVersionId)));
+    if (action === 'discover') {
+      const active = await activeLeagues();
+      if (!active) return json({ error: localized(req, 'Keine aktive Saison.', 'No active season.') }, 404);
+      return json(active);
+    }
 
-      const rosters: Record<string, ScrapedPlayer[]> = {};
-      // Sequential to be gentle on playerzone (match days have ~3 teams).
-      for (const t of teams) {
-        if (!t?.teamVersionId) continue;
-        const cached = fresh.get(rosterKey(t.teamVersionId));
-        if (cached) {
-          rosters[t.teamId ?? t.teamVersionId] = cached as ScrapedPlayer[];
-          continue;
-        }
-        const players = await scrapeRoster(t.teamVersionId);
-        rosters[t.teamId ?? t.teamVersionId] = players;
-        await writeCache(rosterKey(t.teamVersionId), players);
-      }
-      return json({ rosters });
+    if (action === 'refreshLeague') {
+      const active = await activeLeagues();
+      const league = active?.leagues.find((l) => l.id === Number(payload.leagueId));
+      if (!active || !league) return json({ error: localized(req, 'Liga nicht gefunden.', 'League not found.') }, 404);
+      return json(await refreshLeague(active.season, league, true));
     }
 
     return json({ error: `Unbekannte action: ${action}` }, 400);

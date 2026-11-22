@@ -3,8 +3,13 @@
 //   deno test --config supabase/functions/tests/deno.json supabase/functions/tests/fetchBundesliga.test.ts
 import { assert, assertEquals } from '@std/assert';
 import {
-  parseMatchDays,
+  isoDate,
+  parseLeagueNav,
+  parseMdGroup,
+  parseMdGroupIds,
   parseRoster,
+  parseScheduleNav,
+  parseStandings,
   parseTeams,
   rosterHtmlFromResponse,
 } from '../fetch-bundesliga/parse.ts';
@@ -31,22 +36,78 @@ Deno.test('parseTeams: reads team id, version, name, logo, total and first names
   }
 });
 
-Deno.test('parseMatchDays: finds the rendered group with its teams and date', () => {
-  const mds = parseMatchDays(read('schedule.html'));
-  assert(mds.length > 0, 'expected at least one rendered match day');
+const SLUG = '793-2027-04-11-deutsche-roundnet-liga-2026-2027';
 
-  const gruppeE = mds.find((m) => m.id === '660');
-  assert(gruppeE, 'group 660 present');
-  assertEquals(gruppeE!.name, 'Gruppe E');
-  assertEquals(gruppeE!.date, '07.11.2026');
-  assertEquals(gruppeE!.city, 'Bonn');
-  assertEquals(gruppeE!.md, '111');
-  assertEquals(gruppeE!.teams.length, 3);
-  const names = gruppeE!.teams.map((t) => t.name).sort();
-  assertEquals(names, ['Heidelberg', 'Roundnet Club Bonn I', 'Würzburg']);
-  for (const t of gruppeE!.teams) {
-    assert(/^\d+$/.test(t.teamVersionId), 'match-day team has a version id for roster fetch');
-  }
+Deno.test('parseLeagueNav: joins the teams and schedule dropdowns by league name', () => {
+  const leagues = parseLeagueNav(read('teams.html') + read('schedule_results.html'), SLUG);
+  assertEquals(leagues, [
+    { name: '1. Bundesliga', teamsPageId: '2613', scheduleSlug: 'mixed-14358-gruppenphase' },
+    { name: '2. Bundesliga', teamsPageId: '2614', scheduleSlug: 'mixed-14363-hauptrunde-2-bl' },
+    { name: '3. Liga', teamsPageId: '2615', scheduleSlug: 'mixed-14531-hauptrunde' },
+    { name: 'Regionalliga', teamsPageId: '2616', scheduleSlug: 'mixed-14631-hauptrunde' },
+  ]);
+  // Links of other tournaments are ignored.
+  assertEquals(parseLeagueNav(read('teams.html'), '1-another-tournament'), []);
+});
+
+Deno.test('parseScheduleNav: finds the schedule group and all match days', () => {
+  assertEquals(parseScheduleNav(read('schedule_results.html')), {
+    groupId: '76368',
+    matchDays: [
+      { id: '110', number: 1 },
+      { id: '111', number: 2 },
+      { id: '112', number: 3 },
+      { id: '113', number: 4 },
+      { id: '114', number: 5 },
+    ],
+  });
+});
+
+Deno.test('parseMdGroup: a played group with teams, scores and winner', () => {
+  const html = read('schedule_results.html');
+  assertEquals(parseMdGroupIds(html), ['656', '657', '658', '659']);
+
+  const group = parseMdGroup(html, '656')!;
+  assertEquals([group.name, group.date, group.city], ['Gruppe A', '2026-10-17', 'Heidelberg']);
+  assertEquals(group.encounters.length, 6); // 4 teams, everyone plays everyone
+  const first = group.encounters[0];
+  assertEquals(first.gameId, '419767');
+  assertEquals([first.team1.name, first.team1.teamId, first.team1.teamVersionId], ['MRC I', '40794', '59944']);
+  assertEquals([first.team2.name, first.team2.teamId], ['Heidelberg', '45613']);
+  assertEquals([first.boards, first.sets, first.winner], [[4, 1], [8, 3], 1]);
+
+  // The other groups' containers are empty on this page and need their own request.
+  assertEquals(parseMdGroup(html, '657'), null);
+});
+
+Deno.test('parseMdGroup: a future group lists its encounters without scores', () => {
+  const group = parseMdGroup(read('schedule_future.html'), '672')!;
+  assertEquals([group.name, group.date], ['Gruppe Q', '2027-02-20']);
+  assertEquals(group.encounters.length, 6);
+  assert(group.encounters.every((e) => e.boards === null && e.sets === null && e.winner === null));
+});
+
+Deno.test('parseStandings: rank, record, sets and points per team', () => {
+  const rows = parseStandings(read('standings.html'));
+  assertEquals(rows.length, 15);
+  assertEquals(rows[0], {
+    position: 1,
+    team: {
+      teamId: '45617',
+      teamVersionId: '59549',
+      name: 'KA-Boom',
+      logoUrl: 'https://pstaassets.blob.core.windows.net/assets/clubs/logos/Karlsruhe_Kojoten_Logo.png',
+    },
+    wins: 6, draws: 0, losses: 0, setsFor: 47, setsAgainst: 23, pointsFor: 1056, pointsAgainst: 876,
+  });
+  assertEquals(rows.map((r) => r.position), [...rows.keys()].map((i) => i + 1));
+});
+
+Deno.test('isoDate: dd.mm.yyyy only', () => {
+  assertEquals(isoDate('07.11.2026'), '2026-11-07');
+  assertEquals(isoDate(' 20.02.2027 '), '2027-02-20');
+  assertEquals(isoDate('Sa., 20.02.'), null);
+  assertEquals(isoDate(null), null);
 });
 
 Deno.test('parseRoster: reads name, rgx, gender and avatar; gender from show_history arg', () => {
