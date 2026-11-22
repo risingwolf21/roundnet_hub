@@ -43,7 +43,7 @@ const NIGHTLY_MIN_AGE_MS = 6 * 60 * 60 * 1000;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept-language',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept-language, app_version', // app_version: sent by the app's supabase client
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 

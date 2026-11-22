@@ -65,7 +65,7 @@ const PAUSE_MS = 250;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, app_version', // app_version: sent by the app's supabase client
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
