@@ -136,6 +136,9 @@ BEGIN
     EXECUTE format('REVOKE ALL ON public.%I FROM anon, authenticated', t);
     EXECUTE format('GRANT SELECT ON public.%I TO authenticated', t);
     EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (true)', t || ' read', t);
+    -- Guest accounts (trial links) see nothing of it, like every other table (see 20261109150000_guest_trials).
+    EXECUTE format('CREATE POLICY guests_blocked ON public.%I AS RESTRICTIVE FOR ALL TO authenticated '
+                   'USING (NOT (SELECT public.is_guest())) WITH CHECK (NOT (SELECT public.is_guest()))', t);
   END LOOP;
 END $$;
 
