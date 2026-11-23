@@ -100,5 +100,9 @@ export const useDiscoverBundesligaLeagues = () =>
 export const useRefreshBundesligaLeague = () =>
   useMutation({ meta: { suppressErrorToast: true }, mutationFn: (leagueId: number) => BundesligaRepository.refreshLeague(leagueId) });
 
+/** Admin: one call of the games refresh of a league; repeat while `pending` > 0. */
+export const useRefreshBundesligaGames = () =>
+  useMutation({ meta: { suppressErrorToast: true }, mutationFn: (leagueId: number) => BundesligaRepository.refreshGames(leagueId) });
+
 /** After a refresh run: show the new data everywhere. */
 export const invalidateBundesliga = () => queryClient.invalidateQueries({ queryKey: bundesligaKeys.all });

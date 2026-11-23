@@ -3,6 +3,20 @@ import type { BundesligaGroup, BundesligaStanding, BundesligaTeam, LeagueView } 
 
 export type EncounterResult = 'win' | 'loss' | 'draw' | 'open';
 
+/** One game of an encounter from the team's side. */
+export interface TeamGame {
+  id: string;
+  discipline: string | null;
+  /** "Wimmer/Wolf" */
+  ours: string | null;
+  theirs: string | null;
+  /** Points per set, ours first. */
+  sets: [number, number][];
+  result: 'win' | 'loss' | 'open';
+  /** The player we show the page for played it. */
+  mine: boolean;
+}
+
 export interface TeamEncounter {
   gameId: string;
   opponent: BundesligaTeam;
@@ -10,6 +24,8 @@ export interface TeamEncounter {
   boards: [number, number] | null;
   sets: [number, number] | null;
   result: EncounterResult;
+  /** Its single games; empty until they are loaded (or while not played). */
+  games: TeamGame[];
 }
 
 export interface TeamMatchday {
@@ -39,8 +55,11 @@ const unknownTeam = (id: string): BundesligaTeam => ({
   rgx_total: null,
 });
 
-/** One team's season: its encounters per match day (from its side), its table row and the next match day. */
-export function teamOverview(view: LeagueView, teamId: string): TeamOverview | null {
+/**
+ * One team's season: its encounters per match day (from its side) with their games, its table row and
+ * the next match day. `playerId` (a playerzone player id) marks that player's games.
+ */
+export function teamOverview(view: LeagueView, teamId: string, playerId: string | null = null): TeamOverview | null {
   const team = view.teams.find((t) => t.pz_team_id === teamId);
   if (!team) return null;
   const teamById = new Map(view.teams.map((t) => [t.pz_team_id, t]));
@@ -64,7 +83,19 @@ export function teamOverview(view: LeagueView, teamId: string): TeamOverview | n
             : (e.winner === 1) === home
               ? 'win'
               : 'loss';
-        return { gameId: e.pz_game_id, opponent: teamById.get(opponentId) ?? unknownTeam(opponentId), boards, sets, result };
+        const games: TeamGame[] = view.games
+          .filter((g) => g.pz_encounter_id === e.pz_game_id)
+          .sort((a, b) => a.sort - b.sort)
+          .map((g) => ({
+            id: g.pz_game_id,
+            discipline: g.discipline,
+            ours: home ? g.pair1_name : g.pair2_name,
+            theirs: home ? g.pair2_name : g.pair1_name,
+            sets: g.sets.map(([a, b]) => flip(a, b)),
+            result: g.winner === null ? 'open' : (g.winner === 1) === home ? 'win' : 'loss',
+            mine: !!playerId && (home ? g.pair1_players : g.pair2_players).includes(playerId),
+          }));
+        return { gameId: e.pz_game_id, opponent: teamById.get(opponentId) ?? unknownTeam(opponentId), boards, sets, result, games };
       });
     if (encounters.length === 0) continue;
     matchdays.push({

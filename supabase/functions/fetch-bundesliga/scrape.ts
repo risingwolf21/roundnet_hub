@@ -4,6 +4,7 @@ import {
   type EncounterTeam,
   type LeagueNav,
   parseLeagueNav,
+  parseGames,
   parseMdGroup,
   parseMdGroupIds,
   parseRoster,
@@ -164,4 +165,79 @@ export async function scrapeLeague(get: GetPage, slug: string, league: LeagueRef
     }
   }
   return rows;
+}
+
+/** A played encounter whose games are not stored yet. */
+export interface EncounterRef {
+  game_id: string;
+  team1_id: string;
+  team2_id: string;
+}
+
+/** The rows of bundesliga_store_games. */
+export interface GameRow {
+  game_id: string;
+  encounter_id: string;
+  sort: number;
+  discipline: string | null;
+  pair1_name: string | null;
+  pair2_name: string | null;
+  /** Playerzone player ids of each side's pair. */
+  pair1_players: string[];
+  pair2_players: string[];
+  sets: [number, number][];
+  winner: 1 | 2 | null;
+}
+
+/**
+ * The players of a pair named "Wimmer/Wolf": each surname that fits exactly one player of the team's
+ * roster ("Karl Wolf"), else null (then the pair's own roster on playerzone decides).
+ */
+export function pairFromRoster(pairName: string, roster: { id: string; name: string }[]): string[] | null {
+  const ids: string[] = [];
+  for (const surname of pairName.split('/').map((s) => s.trim().toLowerCase())) {
+    const hits = roster.filter((p) => p.name.toLowerCase() === surname || p.name.toLowerCase().endsWith(` ${surname}`));
+    if (!surname || hits.length !== 1 || ids.includes(hits[0].id)) return null;
+    ids.push(hits[0].id);
+  }
+  return ids.length ? ids : null;
+}
+
+/**
+ * The games of the given encounters, one request each (plus one per pair the rosters can't tell),
+ * until `deadline` (ms since epoch): an encounter is only returned complete, the rest stay pending.
+ */
+export async function scrapeGames(
+  get: GetPage,
+  encounters: EncounterRef[],
+  rosters: Map<string, { id: string; name: string }[]>,
+  deadline: number,
+): Promise<{ games: GameRow[]; done: number; pending: number }> {
+  const games: GameRow[] = [];
+  let done = 0;
+  for (const e of encounters) {
+    if (Date.now() >= deadline) break;
+    const playersOf = async (pair: { id: string; name: string } | null, teamId: string) => {
+      if (!pair) return [];
+      return pairFromRoster(pair.name, rosters.get(teamId) ?? []) ??
+        parseRoster(rosterHtmlFromResponse(await get(`/tournament/get-team-info?id=${encodeURIComponent(pair.id)}`)))
+          .map((p) => p.id);
+    };
+    for (const [i, g] of parseGames(rosterHtmlFromResponse(await get(`/ajax/get-subgames/${e.game_id}`))).entries()) {
+      games.push({
+        game_id: g.gameId,
+        encounter_id: e.game_id,
+        sort: i + 1,
+        discipline: g.discipline,
+        pair1_name: g.pair1?.name ?? null,
+        pair2_name: g.pair2?.name ?? null,
+        pair1_players: await playersOf(g.pair1, e.team1_id),
+        pair2_players: await playersOf(g.pair2, e.team2_id),
+        sets: g.sets,
+        winner: g.winner,
+      });
+    }
+    done++;
+  }
+  return { games, done, pending: encounters.length - done };
 }

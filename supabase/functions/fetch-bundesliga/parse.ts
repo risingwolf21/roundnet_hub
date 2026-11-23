@@ -129,7 +129,7 @@ export function parseRoster(rosterHtml: string): ScrapedPlayer[] {
     if (!hm) return;
     const id = hm[1];
     const slug = hm[2] ?? '';
-    const name = card.find('.player-name').first().text().trim() || slug.replace(/-/g, ' ');
+    const name = card.find('.rg-team-popup--name, .player-name').first().text().trim() || slug.replace(/-/g, ' ');
     const avatarUrl = card.find('.player-img img').first().attr('src') ?? null;
     const badge = card.find('rg-score-badge').first();
     const rgIndex = badge.length ? num(badge.attr('score')) : null;
@@ -270,6 +270,49 @@ export function parseMdGroup(html: string, groupId: string): ScrapedMdGroup | nu
     city: group.find('.md-group-city').first().text().trim().split('\n')[0].trim() || null,
     encounters,
   };
+}
+
+export interface ScrapedGame {
+  gameId: string;
+  /** "Open 1", "Women", "Mixed 2" … */
+  discipline: string | null;
+  /** Each side's pair: its playerzone team version id (get-team-info gives its players) and "Name/Name". */
+  pair1: { id: string; name: string } | null;
+  pair2: { id: string; name: string } | null;
+  /** Points per set from side 1's view, e.g. [[17, 13], [17, 15]]; empty while not played. */
+  sets: [number, number][];
+  winner: 1 | 2 | null;
+}
+
+/** The single games of one encounter, from the html of `/ajax/get-subgames/<id>`. */
+export function parseGames(html: string): ScrapedGame[] {
+  const $ = load(html);
+  const games: ScrapedGame[] = [];
+  $('rg-game-card[variant="subgame"][data-game-id]').each((_i, el) => {
+    const card = $(el);
+    const sides = card.children('.teams').children('.team');
+    const pairOf = (i: number) => {
+      const a = sides.eq(i).find('a.details').first();
+      const m = (a.attr('onclick') ?? '').match(TEAM_INFO);
+      return m ? { id: m[2], name: a.find('.name').first().text().trim() } : null;
+    };
+    const sets: [number, number][] = [];
+    card.children('.scores').children('.set').each((_j, s) => {
+      const scores = $(s).find('.score');
+      const a = num(scores.eq(0).text());
+      const b = num(scores.eq(1).text());
+      if (a !== null && b !== null) sets.push([a, b]);
+    });
+    games.push({
+      gameId: card.attr('data-game-id')!,
+      discipline: card.children('[slot="tags"]').text().trim() || null,
+      pair1: pairOf(0),
+      pair2: pairOf(1),
+      sets,
+      winner: sides.eq(0).hasClass('winner') ? 1 : sides.eq(1).hasClass('winner') ? 2 : null,
+    });
+  });
+  return games;
 }
 
 /** The league table of a schedule's `?type=ranking` page. */
