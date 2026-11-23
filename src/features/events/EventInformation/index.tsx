@@ -27,13 +27,13 @@ import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, u
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, isMemberOfEventGroup, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase } from "@/utils";
 import { captureException } from "@sentry/react";
-import { isBefore, isSameDay } from 'date-fns';
+import { differenceInMinutes, isBefore, isSameDay } from 'date-fns';
 import {
   Ban,
+  CalendarDays,
   CheckCircle2,
   CircleAlert,
   CircleCheck,
-  Clock,
   EllipsisVertical,
   Hourglass,
   InfoIcon,
@@ -43,7 +43,6 @@ import {
   ShoppingBag,
   SquareArrowRightExit,
   Trash2,
-  Users,
   Volleyball,
   XCircle
 } from "lucide-react";
@@ -57,11 +56,16 @@ import { CreateOrUpdateEventDialog } from "../dialogs/CreateOrUpdateEventDialog"
 import { DeleteEventDialog } from "../dialogs/DeleteEventDialog";
 import { EditEventOptionsDialog } from "../dialogs/EditEventOptionsDialog";
 import { PlaceType } from '../types';
+import { AttendanceSummary } from "./AttendanceSummary";
+import { InfoRow } from "./InfoRow";
 import AttendanceTab from "./tabs/AttendanceTab";
 import BringItemsTab from "./tabs/BringItemsTab";
 import CommentsTab from "./tabs/CommentsTab";
 import EventDetailsTab, { EventWeatherData } from "./tabs/EventDetailsTab";
 import MatchesTab from "./tabs/MatchesTab";
+
+const routeUrl = (place: string, parsed: PlaceType | null) =>
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(parsed ? `${parsed.lat},${parsed.lon}` : place)}`;
 
 type EventInformationProps = {
   event: EventsUserView;
@@ -127,94 +131,100 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
   const attendingNow = event.user_state === 'Attending' || event.user_state === 'AttendingAsTrial';
 
   return (
-    <section className="flex flex-col gap-3 rounded-xl border bg-muted/30 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{t('events.information.yourAttendance')}</p>
-        <Badge variant={status.variant}>{t(`events.information.${status.key}`)}</Badge>
-      </div>
+    <Card>
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold">{t('events.information.yourAttendance')}</p>
+          <Badge variant={status.variant}>{t(`events.information.${status.key}`)}</Badge>
+        </div>
 
-      {waitingState && (
-        <Alert variant="info">
-          <InfoIcon />
-          <AlertTitle>{t('events.information.waitingList')}</AlertTitle>
-          <AlertDescription>
-            {t('events.information.waitingListAccepted', {
-              place: waitingList.findIndex((x) => x.user.id === user.id) + 1,
-              waitingListLength: waitingList.length,
-            })}
-          </AlertDescription>
-          <AlertAction>
-            <Button
-              variant="outline"
-              aria-label={t('events.information.leaveWaitingList')}
-              disabled={busy}
-              onClick={() => changeAttendance('Declined')}
-            >
-              {pendingState === 'Declined' ? <Spinner /> : <SquareArrowRightExit />}
-            </Button>
-          </AlertAction>
-        </Alert>
-      )}
-
-      {!isOver && (
-        <Has perm={'event.signup'}>
-          <div className="flex gap-2">
-            {full && !deadlinePassed && !attendingNow
-              ? <Button
-                onClick={() => changeAttendance('Waiting')}
-                variant={event.user_state === 'Waiting' ? 'info' : 'outline'}
-                className="flex-1"
-                disabled={busy || locked || event.user_state === 'Waiting'}
+        {waitingState && (
+          <Alert variant="info">
+            <InfoIcon />
+            <AlertTitle>{t('events.information.waitingList')}</AlertTitle>
+            <AlertDescription>
+              {t('events.information.waitingListAccepted', {
+                place: waitingList.findIndex((x) => x.user.id === user.id) + 1,
+                waitingListLength: waitingList.length,
+              })}
+            </AlertDescription>
+            <AlertAction>
+              <Button
+                variant="outline"
+                aria-label={t('events.information.leaveWaitingList')}
+                disabled={busy}
+                onClick={() => changeAttendance('Declined')}
               >
-                {pendingState === 'Waiting' ? <Spinner /> : <Hourglass className="size-4" />}
-                {t('events.information.waitingList')}
+                {pendingState === 'Declined' ? <Spinner /> : <SquareArrowRightExit />}
               </Button>
-              : deadlinePassed && !attendingNow
+            </AlertAction>
+          </Alert>
+        )}
+
+        {!isOver && (
+          <Has perm={'event.signup'}>
+            <div className="flex gap-2">
+              {full && !deadlinePassed && !attendingNow
                 ? <Button
-                  onClick={() => changeAttendance('RequestedAttendance')}
-                  variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}
+                  onClick={() => changeAttendance('Waiting')}
+                  variant={event.user_state === 'Waiting' ? 'info' : 'outline'}
                   className="flex-1"
-                  disabled={busy || locked}
+                  disabled={busy || locked || event.user_state === 'Waiting'}
                 >
-                  {pendingState === 'RequestedAttendance' ? <Spinner /> : <CheckCircle2 className="size-4" />}
-                  {t('events.information.requestAttendance')}
+                  {pendingState === 'Waiting' ? <Spinner /> : <Hourglass className="size-4" />}
+                  {t('events.information.waitingList')}
                 </Button>
-                : <Button
-                  onClick={() => changeAttendance('Attending')}
-                  variant={attendingNow ? 'success' : 'outline'}
-                  className="flex-1"
-                  disabled={busy || locked}
-                >
-                  {pendingState === 'Attending' ? <Spinner /> : <CheckCircle2 className="size-4" />}
-                  {t('events.information.attend')}
-                </Button>
-            }
+                : deadlinePassed && !attendingNow
+                  ? <Button
+                    onClick={() => changeAttendance('RequestedAttendance')}
+                    variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}
+                    className="flex-1"
+                    disabled={busy || locked}
+                  >
+                    {pendingState === 'RequestedAttendance' ? <Spinner /> : <CheckCircle2 className="size-4" />}
+                    {t('events.information.requestAttendance')}
+                  </Button>
+                  : <Button
+                    onClick={() => changeAttendance('Attending')}
+                    variant={attendingNow ? 'success' : 'outline'}
+                    className="flex-1"
+                    disabled={busy || locked}
+                  >
+                    {pendingState === 'Attending' ? <Spinner /> : <CheckCircle2 className="size-4" />}
+                    {t('events.information.attend')}
+                  </Button>
+              }
+              <Button
+                onClick={() => changeAttendance('Declined')}
+                variant={event.user_state === 'Declined' ? 'error' : 'outline'}
+                className="flex-1"
+                disabled={busy || locked}
+              >
+                {pendingState === 'Declined' && !waitingState ? <Spinner /> : <XCircle className="size-4" />}
+                {t('events.information.decline')}
+              </Button>
+            </div>
+          </Has>
+        )}
+
+        {!isOver && (
+          <Has perm={'event.signup.trainer'}>
             <Button
-              onClick={() => changeAttendance('Declined')}
-              variant={event.user_state === 'Declined' ? 'error' : 'outline'}
-              className="flex-1"
+              onClick={() => changeAttendance('AttendingAsTrainer')}
+              variant={event.user_state === 'AttendingAsTrainer' ? 'success' : 'outline'}
               disabled={busy || locked}
             >
-              {pendingState === 'Declined' && !waitingState ? <Spinner /> : <XCircle className="size-4" />}
-              {t('events.information.decline')}
+              {pendingState === 'AttendingAsTrainer' ? <Spinner /> : <Megaphone className="size-4" />}
+              {t('events.information.attendAsTrainer')}
             </Button>
-          </div>
-        </Has>
-      )}
+          </Has>
+        )}
 
-      {!isOver && (
-        <Has perm={'event.signup.trainer'}>
-          <Button
-            onClick={() => changeAttendance('AttendingAsTrainer')}
-            variant={event.user_state === 'AttendingAsTrainer' ? 'success' : 'outline'}
-            disabled={busy || locked}
-          >
-            {pendingState === 'AttendingAsTrainer' ? <Spinner /> : <Megaphone className="size-4" />}
-            {t('events.information.attendAsTrainer')}
-          </Button>
-        </Has>
-      )}
-    </section>
+        <div className="border-t pt-3">
+          <AttendanceSummary event={event} attendance={attendance} showAnswerWindow={!isOver} />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -266,7 +276,12 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
   const dayFormat = new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'long' });
   const dateTimeFormat = new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const sameDay = end ? isSameDay(start, end) : true;
-  const attendingCount = attendance.filter((x) => x.state === 'Attending').length;
+  const duration = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return t('events.information.durationMinutes', { m });
+    return m === 0 ? t('events.information.durationHours', { h }) : t('events.information.durationHoursMinutes', { h, m });
+  };
   const isFull = maxAttendeesExceeded(event, attendance);
   // Event of a subgroup the user is no member of: view only (RLS enforces it too).
   const readOnly = !isMemberOfEventGroup(event);
@@ -369,70 +384,51 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
           <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
             <Card className="border-t-4 border-t-[color:var(--group-color)]"
               style={{ "--group-color": event.group?.color ?? 'var(--primary)' } as React.CSSProperties}>
-              <CardHeader className="pb-0">
-                <div className="flex items-start gap-4">
-                  <div
-                    className="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl bg-[color:var(--group-color)]/10 text-[color:var(--group-color)]"
-                    aria-hidden="true"
-                  >
-                    <span className="text-xs font-semibold uppercase">{new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(start)}</span>
-                    <span className="text-2xl font-bold leading-none">{start.getDate()}</span>
-                    <span className="text-xs uppercase">{new Intl.DateTimeFormat(lang, { month: 'short' }).format(start)}</span>
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <Badge variant="outline" className="w-fit font-medium border-[color:var(--group-color)] bg-[color:var(--group-color)]/5 text-[color:var(--group-color)]">
+              <CardContent className="flex flex-col gap-4">
+                <div className="flex flex-col items-start gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="outline" className="font-medium border-[color:var(--group-color)] bg-[color:var(--group-color)]/5 text-[color:var(--group-color)]">
                       {event.group?.name || t('events.information.general')}
                     </Badge>
-                    <CardTitle className="text-xl sm:text-2xl font-semibold leading-tight break-words">
-                      {event.title}
-                    </CardTitle>
+                    {event.isCancelled && <Badge variant="error"><Ban />{t('events.information.cancelledBadge')}</Badge>}
+                    {isFull && !event.isCancelled && <Badge variant="warning">{t('events.information.full')}</Badge>}
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {event.isCancelled && <Badge variant="error"><Ban />{t('events.information.cancelledBadge')}</Badge>}
-                  {isFull && !event.isCancelled && <Badge variant="warning">{t('events.information.full')}</Badge>}
-                  {!!event.maxAttendees && event.maxAttendees > 0 && (
-                    <Badge variant="outline"><Users />{t('events.information.capacity', { count: attendingCount, max: event.maxAttendees })}</Badge>
-                  )}
-                  {event.answerDeadline && !answerDeadlineExpired(event) && !event.isCancelled && (
-                    <Badge variant="outline"><Clock />{t('events.information.answerBy', { date: dateTimeFormat.format(new Date(event.answerDeadline)) })}</Badge>
-                  )}
+                  <CardTitle className="text-xl sm:text-2xl font-semibold leading-tight break-words">
+                    {event.title}
+                  </CardTitle>
                 </div>
 
-                <div className="grid grid-cols-2 max-[375px]:grid-cols-1 gap-4">
-                  <div className="flex items-start gap-3 text-sm text-foreground">
-                    <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">{dayFormat.format(start)}</p>
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        {sameDay
-                          ? end ? `${timeFormat.format(start)} – ${timeFormat.format(end)}` : timeFormat.format(start)
-                          : `${timeFormat.format(start)} · ${t('events.information.until', { end: dateTimeFormat.format(end!) })}`}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedEventPlace && (
-                    <EventWeatherData place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
-                  )}
+                <div className="flex flex-col gap-3">
+                  <InfoRow
+                    tinted
+                    icon={CalendarDays}
+                    title={dayFormat.format(start)}
+                    subtitle={sameDay
+                      ? end ? `${timeFormat.format(start)} – ${timeFormat.format(end)} · ${duration(differenceInMinutes(end, start))}` : timeFormat.format(start)
+                      : `${timeFormat.format(start)} · ${t('events.information.until', { end: dateTimeFormat.format(end!) })}`}
+                  />
 
                   {event.place && (
-                    <div className="flex items-start gap-3 text-sm text-foreground">
-                      <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">{selectedEventPlace?.name || event.place}</p>
+                    <InfoRow
+                      tinted
+                      icon={MapPin}
+                      title={selectedEventPlace?.name || event.place}
+                      subtitle={selectedEventPlace?.description}
+                      action={
                         <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.place)}`}
+                          href={routeUrl(event.place, selectedEventPlace)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary text-xs hover:underline mt-0.5 inline-block"
+                          className="inline-flex min-h-10 shrink-0 items-center px-2 text-xs font-semibold text-primary hover:underline"
                         >
                           {t('events.information.planRoute')}
                         </a>
-                      </div>
-                    </div>
+                      }
+                    />
+                  )}
+
+                  {selectedEventPlace && (
+                    <EventWeatherData place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
                   )}
                 </div>
 
@@ -442,23 +438,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                     <AlertTitle><Trans i18nKey="events.information.eventCancelled" components={{ strong: <strong /> }} /></AlertTitle>
                   </Alert>
                 )}
-                {answerNotOpenYet(event) && event.answerStart && !event.isCancelled && (
-                  <Alert variant={"info"}>
-                    <InfoIcon />
-                    <AlertTitle>{t('events.information.answerNotOpenYet', {
-                      date: dateTimeFormat.format(new Date(event.answerStart)),
-                    })}</AlertTitle>
-                  </Alert>
-                )}
-                {answerDeadlineExpired(event) && event.answerDeadline && !event.isCancelled && (
-                  <Alert variant={"info"}>
-                    <InfoIcon />
-                    <AlertTitle>{t('events.information.answerDeadlineExceeded', {
-                      answerDeadline: new Date(event.answerDeadline),
-                    })}</AlertTitle>
-                  </Alert>
-                )}
-                {readOnly ? (
+                {readOnly && (
                   <Alert variant="info">
                     <InfoIcon />
                     <AlertTitle>{t('events.information.viewOnlyTitle', { group: event.group?.name ?? '' })}</AlertTitle>
@@ -471,25 +451,33 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                       </AlertAction>
                     )}
                   </Alert>
-                ) : (
-                  <EventInformationAttendanceState event={event} />
-                )}
-
-                {!readOnly && event.constellations_enabled && (
-                  <Has perm={"event.create.constellations"}>
-                    <Button className={"w-full"} onClick={async () => {
-                      dialogs.open(ConstellationCreationDialog, {
-                        users: attendance.filter(x => x.state === "Attending").map(x => x.user),
-                        event
-                      });
-                    }}>
-                      <Volleyball />
-                      {t('events.information.createConstellations')}
-                    </Button>
-                  </Has>
                 )}
               </CardContent>
             </Card>
+
+            {readOnly ? (
+              <Card>
+                <CardContent>
+                  <AttendanceSummary event={event} attendance={attendance} showAnswerWindow={false} />
+                </CardContent>
+              </Card>
+            ) : (
+              <EventInformationAttendanceState event={event} />
+            )}
+
+            {!readOnly && event.constellations_enabled && (
+              <Has perm={"event.create.constellations"}>
+                <Button className={"w-full"} onClick={async () => {
+                  dialogs.open(ConstellationCreationDialog, {
+                    users: attendance.filter(x => x.state === "Attending").map(x => x.user),
+                    event
+                  });
+                }}>
+                  <Volleyball />
+                  {t('events.information.createConstellations')}
+                </Button>
+              </Has>
+            )}
 
             <Tabs defaultValue={"information"} className="w-full mt-6">
               <TabsList className="flex w-full justify-start overscroll-y-none overflow-x-auto bg-card border !h-12 shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

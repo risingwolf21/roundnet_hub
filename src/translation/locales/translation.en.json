@@ -271,7 +271,6 @@
       "maxTrialAttendeesHint": "Without a limit there are unlimited trial seats."
     },
     "information": {
-      "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
       "answerDeadlineExceededTitle": "Registration period expired",
       "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
       "eventTrialSpotsTaken": "{{ taken }} of {{waitingListLength}} trial spots taken",
@@ -328,12 +327,24 @@
       "cancelledBadge": "Cancelled",
       "full": "Full",
       "capacity": "{{count}} / {{max}}",
-      "answerBy": "Answer by {{date}}",
       "leaveWaitingList": "Leave waiting list",
-      "answerNotOpenYet": "Registration opens on {{date}}",
       "viewOnlyTitle": "You are not a member of {{group}}",
       "viewOnlyDescription": "You can view the event, its attendance and comments. Join the group to sign up and comment.",
-      "viewOnlyGroup": "Go to group"
+      "viewOnlyGroup": "Go to group",
+      "spotsTaken": "{{count}} of {{max}} spots taken",
+      "spotsLeft_one": "{{count}} spot left",
+      "spotsLeft_other": "{{count}} spots left",
+      "andMore_one": "{{count}} more",
+      "andMore_other": "{{count}} more",
+      "noOneAttending": "Nobody is in yet",
+      "answerWindowFrom": "You can answer from {{from}}",
+      "answerWindowFromUntil": "You can answer from {{from}} until {{until}}",
+      "answerWindowUntil": "You can change your answer until {{date}}",
+      "answerWindowUntilStart": "You can change your answer until the start ({{date}})",
+      "answerWindowClosed": "Answers closed on {{date}}",
+      "durationHours": "{{h}} h",
+      "durationMinutes": "{{m}} min",
+      "durationHoursMinutes": "{{h}} h {{m}} min"
     },
     "bringItems": {
       "tab": "Bring Items",
@@ -462,13 +473,12 @@
       "placeholder": "Write a comment..."
     },
     "detailsTab": {
-      "title": "Information",
-      "description": "Description",
       "noDescription": "No description provided.",
       "meetingPoint": "Meeting point",
       "recurrence": "Recurrence",
-      "location": "Location",
-      "planRouteHere": "Plan route here"
+      "minutesBefore_one": "{{count}} min before",
+      "minutesBefore_other": "{{count}} min before",
+      "planRouteTo": "Plan route to {{place}}"
     },
     "matchesTab": {
       "empty": "No matches yet.<br />Be the first!",

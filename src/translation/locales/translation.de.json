@@ -271,7 +271,6 @@
       "maxTrialAttendeesHint": "Ohne Begrenzung gibt es beliebig viele Probeplätze."
     },
     "information": {
-      "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
       "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
       "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
       "eventTrialSpotsTaken": "{{ taken }} von {{waitingListLength}} Probetraining-Plätzen vergeben",
@@ -328,12 +327,24 @@
       "cancelledBadge": "Abgesagt",
       "full": "Voll",
       "capacity": "{{count}} / {{max}}",
-      "answerBy": "Antwort bis {{date}}",
       "leaveWaitingList": "Warteliste verlassen",
-      "answerNotOpenYet": "Die Anmeldung öffnet am {{date}}",
       "viewOnlyTitle": "Du bist kein Mitglied von {{group}}",
       "viewOnlyDescription": "Du kannst das Event, die Teilnahmen und Kommentare ansehen. Zum Anmelden und Kommentieren tritt der Gruppe bei.",
-      "viewOnlyGroup": "Zur Gruppe"
+      "viewOnlyGroup": "Zur Gruppe",
+      "spotsTaken": "{{count}} von {{max}} Plätzen belegt",
+      "spotsLeft_one": "{{count}} Platz frei",
+      "spotsLeft_other": "{{count}} Plätze frei",
+      "andMore_one": "{{count}} weitere Person",
+      "andMore_other": "{{count}} weitere",
+      "noOneAttending": "Noch niemand dabei",
+      "answerWindowFrom": "Antworten ab {{from}} möglich",
+      "answerWindowFromUntil": "Antworten von {{from}} bis {{until}} möglich",
+      "answerWindowUntil": "Du kannst deine Antwort bis {{date}} ändern",
+      "answerWindowUntilStart": "Du kannst deine Antwort bis zum Beginn ({{date}}) ändern",
+      "answerWindowClosed": "Antwortfrist am {{date}} abgelaufen",
+      "durationHours": "{{h}} Std.",
+      "durationMinutes": "{{m}} Min.",
+      "durationHoursMinutes": "{{h}} Std. {{m}} Min."
     },
     "bringItems": {
       "tab": "Mitbringen",
@@ -462,13 +473,12 @@
       "placeholder": "Kommentar schreiben..."
     },
     "detailsTab": {
-      "title": "Information",
-      "description": "Beschreibung",
       "noDescription": "Keine Beschreibung angegeben.",
       "meetingPoint": "Treffpunkt",
       "recurrence": "Wiederholung",
-      "location": "Standort",
-      "planRouteHere": "Route hierher planen"
+      "minutesBefore_one": "{{count}} Min. vorher",
+      "minutesBefore_other": "{{count}} Min. vorher",
+      "planRouteTo": "Route zu {{place}} planen"
     },
     "matchesTab": {
       "empty": "Noch keine Spiele.<br />Sei der Erste!",
