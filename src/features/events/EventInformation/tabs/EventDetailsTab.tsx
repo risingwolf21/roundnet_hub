@@ -1,13 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { nameOfRecurrence } from '@/utils';
-import { Separator } from '@base-ui/react/separator';
-import { add, closestTo, differenceInCalendarDays, format, isAfter } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { add, closestTo, differenceInCalendarDays, differenceInMinutes, isAfter, isSameDay } from 'date-fns';
 import { toNumber } from 'lodash';
 import {
-  Activity,
-  Clock,
   Cloud,
   CloudFog,
   CloudLightning,
@@ -23,6 +21,7 @@ import {
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlaceType } from '../../types';
+import { InfoRow } from '../InfoRow';
 
 const EventLocationMap = lazy(() => import('./EventLocationMap'));
 
@@ -90,92 +89,72 @@ export const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date
   if (!weatherData) return null;
 
   return (
-    <div className="flex items-start gap-3 text-sm text-foreground truncate">
-      {iconMap[weatherData.icon] && (() => {
-        const IconComponent = iconMap[weatherData.icon];
-        return <IconComponent className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />;
-      })()}
-      <div>
-        <p className="font-medium truncate">{`${weatherData.temperature}°C · ${weatherData.wind_speed}km/h`}</p>
-        <p className="text-muted-foreground text-xs mt-0.5 truncate">{weatherData.description}</p>
-      </div>
-    </div>
+    <InfoRow
+      icon={iconMap[weatherData.icon] ?? Cloud}
+      title={`${weatherData.temperature}°C · ${weatherData.wind_speed} km/h`}
+      subtitle={weatherData.description}
+    />
   );
 };
 
 const EventDetailsTab = ({ event, selectedEventPlace }: { event: EventsUserView; selectedEventPlace: PlaceType | null }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage;
+  const start = new Date(event.startingDateTime);
+  const meeting = event.meetingDateTime ? new Date(event.meetingDateTime) : null;
+  const minutesBefore = meeting ? differenceInMinutes(start, meeting) : 0;
+  const hasRecurrence = event.recurrence !== "None";
+
   return (
-    <TabsContent value="information" className="space-y-4 m-0">
-      <Card className="pt-0">
-        <CardHeader className="border-b !py-2">
-          <div className="flex justify-between items-center !p-0">
-            <CardTitle className="text-lg flex items-center">
-              {t('events.detailsTab.title')}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="text-sm space-y-4 text-foreground/90">
-          <div>
-            <h4 className="font-semibold mb-1 text-foreground">{t('events.detailsTab.description')}</h4>
-            <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-              {event.description || t('events.detailsTab.noDescription')}
-            </p>
-          </div>
+    <TabsContent value="information" className="m-0">
+      <Card>
+        <CardContent className="flex flex-col gap-4">
+          <p className={cn("whitespace-pre-wrap leading-relaxed", event.description ? "text-foreground/90" : "text-muted-foreground")}>
+            {event.description || t('events.detailsTab.noDescription')}
+          </p>
 
-          <Separator />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {event.meetingDateTime && (
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-primary" />
-                <div>
-                  <span className="text-muted-foreground text-xs block">{t('events.detailsTab.meetingPoint')}</span>
-                  <span className="font-medium">{format(event.meetingDateTime, "dd.MM.yyyy HH:mm")}</span>
+          {(meeting || hasRecurrence) && (
+            <div className="grid grid-cols-2 gap-3 border-t pt-4">
+              {meeting && (
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{t('events.detailsTab.meetingPoint')}</p>
+                  <p className="font-semibold tabular-nums">
+                    {isSameDay(meeting, start)
+                      ? new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit' }).format(meeting)
+                      : new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(meeting)}
+                    {minutesBefore > 0 && ` · ${t('events.detailsTab.minutesBefore', { count: minutesBefore })}`}
+                  </p>
                 </div>
-              </div>
-            )}
-
-            {event.recurrence !== "None" && (
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                <div>
-                  <span className="text-muted-foreground text-xs block">{t('events.detailsTab.recurrence')}</span>
-                  <span className="font-medium">{nameOfRecurrence(event.recurrence)}</span>
+              )}
+              {hasRecurrence && (
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">{t('events.detailsTab.recurrence')}</p>
+                  <p className="font-semibold">{nameOfRecurrence(event.recurrence)}</p>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {selectedEventPlace && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-foreground">{t('events.detailsTab.location')}</h4>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(JSON.stringify(selectedEventPlace))}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative h-48 w-full overflow-hidden rounded-lg border bg-muted group cursor-pointer"
-                >
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-10 flex items-center justify-center">
-                    <div className="bg-background/90 backdrop-blur-sm text-foreground px-4 py-2 rounded-full text-sm font-medium shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2 transform translate-y-2 group-hover:translate-y-0 duration-200">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      {t('events.detailsTab.planRouteHere')}
-                    </div>
-                  </div>
-                  <Suspense fallback={<div className="h-full w-full bg-muted animate-pulse rounded-2xl" />}>
-                    <EventLocationMap
-                      lat={selectedEventPlace.lat}
-                      lon={selectedEventPlace.lon}
-                      style={{ width: '100%', height: '100%', borderRadius: '16px', zIndex: 10 }}
-                    />
-                  </Suspense>
-                </a>
-              </div>
-            </>
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedEventPlace.lat},${selectedEventPlace.lon}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t('events.detailsTab.planRouteTo', { place: selectedEventPlace.name })}
+              className="relative block h-40 w-full overflow-hidden rounded-lg border bg-muted"
+            >
+              <Suspense fallback={<div className="h-full w-full bg-muted animate-pulse" />}>
+                <EventLocationMap
+                  lat={selectedEventPlace.lat}
+                  lon={selectedEventPlace.lon}
+                  style={{ width: '100%', height: '100%', zIndex: 10 }}
+                />
+              </Suspense>
+              <span className="absolute right-2.5 bottom-2.5 z-20 flex items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm">
+                <MapPin className="size-4 text-primary" aria-hidden="true" />
+                {t('events.information.planRoute')}
+              </span>
+            </a>
           )}
         </CardContent>
       </Card>
