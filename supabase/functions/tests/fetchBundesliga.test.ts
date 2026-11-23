@@ -5,6 +5,7 @@ import { assert, assertEquals } from '@std/assert';
 import {
   isoDate,
   parseLeagueNav,
+  parseGames,
   parseMdGroup,
   parseMdGroupIds,
   parseRoster,
@@ -13,6 +14,7 @@ import {
   parseTeams,
   rosterHtmlFromResponse,
 } from '../fetch-bundesliga/parse.ts';
+import { pairFromRoster } from '../fetch-bundesliga/scrape.ts';
 
 const here = new URL('.', import.meta.url);
 const read = (p: string) => Deno.readTextFileSync(new URL(`fixtures/bundesliga/${p}`, here));
@@ -103,6 +105,22 @@ Deno.test('parseStandings: rank, record, sets and points per team', () => {
   assertEquals(rows.map((r) => r.position), [...rows.keys()].map((i) => i + 1));
 });
 
+Deno.test('parseGames: the five games of an encounter with pairs, sets and winner', () => {
+  const games = parseGames(rosterHtmlFromResponse(read('games.json')));
+  assertEquals(games.map((g) => g.discipline), ['Open 1', 'Open 2', 'Women', 'Mixed 1', 'Mixed 2']);
+  assertEquals(games[0], {
+    gameId: '419768',
+    discipline: 'Open 1',
+    pair1: { id: '68785', name: 'Anderle/Mareschal' },
+    pair2: { id: '68833', name: 'Härtling/Hansen' },
+    sets: [[15, 17], [14, 17]],
+    winner: 2,
+  });
+  assertEquals([games[1].pair1?.name, games[1].sets, games[1].winner], ['Wimmer/Wolf', [[17, 13], [17, 15]], 1]);
+  // 4:1 for side 1, as the encounter says.
+  assertEquals(games.filter((g) => g.winner === 1).length, 4);
+});
+
 Deno.test('isoDate: dd.mm.yyyy only', () => {
   assertEquals(isoDate('07.11.2026'), '2026-11-07');
   assertEquals(isoDate(' 20.02.2027 '), '2027-02-20');
@@ -138,4 +156,27 @@ Deno.test('parseRoster: reads name, rgx, gender and avatar; gender from show_his
 Deno.test('rosterHtmlFromResponse: unwraps {html} JSON and passes raw HTML through', () => {
   assertEquals(rosterHtmlFromResponse('{"html":"<div>x</div>"}'), '<div>x</div>');
   assertEquals(rosterHtmlFromResponse('<div>y</div>'), '<div>y</div>');
+});
+
+Deno.test('pairFromRoster: surnames that fit exactly one player of the team, else null', () => {
+  const roster = [
+    { id: '1979', name: 'Simon Wimmer' },
+    { id: '2225', name: 'Karl Wolf' },
+    { id: '18900', name: 'Lena von Wulffen' },
+    { id: '7', name: 'Anna Braun' },
+    { id: '8', name: 'Ben Braun' },
+  ];
+  assertEquals(pairFromRoster('Wimmer/Wolf', roster), ['1979', '2225']);
+  assertEquals(pairFromRoster('von Wulffen/Wolf', roster), ['18900', '2225']);
+  assertEquals(pairFromRoster('Braun/Wolf', roster), null); // two Brauns: playerzone must tell
+  assertEquals(pairFromRoster('Wolf/Unbekannt', roster), null); // not in the roster (yet)
+  assertEquals(pairFromRoster('Wolf/Wolf', roster), null);
+});
+
+Deno.test('parseRoster: the full name in the current popup layout', () => {
+  const html = `<div class="player-team-card rg-team-popup--player"><a href="/players/42-max-abc" class="rg-team-popup--avatar-link"></a>
+    <div class="rg-team-popup--info"><a href="/players/42-max-abc"><div class="rg-team-popup--name">Max Mustermann</div></a>
+    <a onclick="show_history(42, 1)"><rg-score-badge score="1500"></rg-score-badge></a></div></div>`;
+  const [p] = parseRoster(html);
+  assertEquals([p.id, p.name, p.rgIndex, p.gender], ['42', 'Max Mustermann', 1500, 'male']);
 });

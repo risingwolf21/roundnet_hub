@@ -12,6 +12,7 @@ import {
   invalidateBundesliga,
   useBundesligaSeason,
   useDiscoverBundesligaLeagues,
+  useRefreshBundesligaGames,
   useRefreshBundesligaLeague,
   useSetBundesligaSeason,
 } from '@/features/bundesliga/useBundesliga';
@@ -22,11 +23,14 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 
-// Roughly what one league takes with rosters (~40 playerzone requests).
-const SECONDS_PER_LEAGUE = 30;
+// Roughly what one league takes with rosters and, the first time, all its games (~100 playerzone requests).
+const SECONDS_PER_LEAGUE = 60;
 const TOURNAMENT_LINK = /(^|\/tournaments\/)\d+-[a-z0-9-]+/i;
 
-type LeagueOutcome = { id: number; name: string } & ({ ok: true; result: RefreshLeagueResult } | { ok: false; error: string });
+type LeagueOutcome = { id: number; name: string } & (
+  | { ok: true; result: RefreshLeagueResult; games: number }
+  | { ok: false; error: string }
+);
 
 type Run = { running: boolean; total: number; current: string | null; done: LeagueOutcome[]; stopped: boolean };
 
@@ -39,6 +43,7 @@ const BundesligaAdminScreen = () => {
   const setSeason = useSetBundesligaSeason();
   const discover = useDiscoverBundesligaLeagues();
   const refreshLeague = useRefreshBundesligaLeague();
+  const refreshGames = useRefreshBundesligaGames();
 
   const [link, setLink] = useState('');
   const [linkTouched, setLinkTouched] = useState(false);
@@ -82,7 +87,17 @@ const BundesligaAdminScreen = () => {
         setRun(current);
         let outcome: LeagueOutcome;
         try {
-          outcome = { ...league, ok: true, result: await refreshLeague.mutateAsync(league.id) };
+          const result = await refreshLeague.mutateAsync(league.id);
+          // The games come in calls of ~100 s each; repeat until none are pending.
+          let games = 0;
+          for (let pending = Infinity; pending > 0 && !stopRequested.current; ) {
+            const step = await refreshGames.mutateAsync(league.id);
+            games += step.fetched;
+            pending = step.pending;
+            if (pending > 0) setRun((current = { ...current, current: t('admin.bundesliga.gamesPending', { name: league.name, count: pending }) }));
+            if (step.fetched === 0) break; // nothing moved: don't loop forever
+          }
+          outcome = { ...league, ok: true, result, games };
         } catch (error) {
           captureException(error, { tags: { type: 'BundesligaRefresh', scope: 'bundesliga' } });
           outcome = { ...league, ok: false, error: (error as Error).message };
@@ -240,6 +255,7 @@ const BundesligaAdminScreen = () => {
                               players: d.result.players ?? 0,
                               played: d.result.played,
                               encounters: d.result.encounters,
+                              games: d.games,
                             })
                           : d.error}
                       </ItemDescription>

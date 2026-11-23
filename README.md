@@ -277,7 +277,7 @@ Roundnet Hub is a Progressive Web App (and Capacitor store app) for Roundnet com
 - **Trial trainings & guests** – newcomers try out a group, also as guests via an invite link without an account
 - **Games & rankings** – match results, ELO leaderboard and player history
 - **Challenges** – community challenges with points and leaderboards
-- **Club tools** – drinks and payments, tournament costs, keys and material, Bundesliga team view with match days, results and table, plus a line-up planner
+- **Club tools** – drinks and payments, tournament costs, keys and material, Bundesliga team view with match days, results down to every single game (your own marked) and the table, plus a line-up planner
 - **Grants manager** – features and permissions per group and per user
 - **Notifications** – in-app and web push, calendar subscription
 - **German and English**, mobile first, installable and offline-capable

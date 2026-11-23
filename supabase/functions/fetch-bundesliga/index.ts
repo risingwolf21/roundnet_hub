@@ -6,15 +6,17 @@
 //   season        { link }      admin: set the season from a playerzone tournament link, find its leagues
 //   discover      {}            admin: the active season's leagues (found on first use)
 //   refreshLeague { leagueId }  admin: reload one league completely, rosters included
+//   refreshGames  { leagueId }  admin: the single games of played encounters not stored yet, for
+//                               about 100 s; answers how many encounters are still pending
 //   nightly       {}            cron: reload schedules, results and standings of all leagues in the
-//                               background (rosters stay); skipped if everything is fresh
+//                               background (rosters stay), then new games; skipped if everything is fresh
 // "admin" = permission `bundesliga.admin` (or `supabase.admin`), checked with the caller's JWT.
 import * as Sentry from 'sentry';
 import { withSentry } from '../_shared/sentry.ts';
 import { createClient } from 'supabase';
 import { localized } from '../_shared/lang.ts';
 import { tournamentSlug } from './parse.ts';
-import { findLeagues, livePlayerzone, scrapeLeague } from './scrape.ts';
+import { type EncounterRef, findLeagues, livePlayerzone, scrapeGames, scrapeLeague } from './scrape.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -40,6 +42,8 @@ declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void } | unde
 const get = livePlayerzone(250);
 // The nightly run does nothing when every league was refreshed this recently.
 const NIGHTLY_MIN_AGE_MS = 6 * 60 * 60 * 1000;
+// Edge functions are stopped after 150 s: games are fetched for at most this long per call.
+const GAMES_BUDGET_MS = 100_000;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -125,8 +129,35 @@ async function refreshLeague(season: Season, league: League, withRosters: boolea
   }
 }
 
+/** Fetches the games of the league's played encounters that have none stored yet, until the deadline. */
+async function refreshGames(league: League, deadline: number) {
+  const [encounters, stored, players] = await Promise.all([
+    admin.from('bundesliga_encounters').select('pz_game_id, team1_id, team2_id').eq('league_id', league.id).not('boards1', 'is', null),
+    admin.from('bundesliga_games').select('pz_encounter_id').eq('league_id', league.id),
+    admin.from('bundesliga_team_players').select('pz_team_id, pz_player_id, name').eq('league_id', league.id),
+  ]);
+  const failed = encounters.error ?? stored.error ?? players.error;
+  if (failed) throw failed;
+  const have = new Set((stored.data ?? []).map((g) => g.pz_encounter_id as string));
+  const todo: EncounterRef[] = (encounters.data ?? [])
+    .filter((e) => !have.has(e.pz_game_id))
+    .map((e) => ({ game_id: e.pz_game_id, team1_id: e.team1_id, team2_id: e.team2_id }));
+  // The team rosters tell most pairs' players without asking playerzone.
+  const rosters = new Map<string, { id: string; name: string }[]>();
+  for (const p of players.data ?? []) {
+    rosters.set(p.pz_team_id, [...(rosters.get(p.pz_team_id) ?? []), { id: p.pz_player_id, name: p.name }]);
+  }
+  const result = await scrapeGames(get, todo, rosters, deadline);
+  if (result.games.length) {
+    const { error } = await admin.rpc('bundesliga_store_games', { p_league_id: league.id, p_games: result.games });
+    if (error) throw error;
+  }
+  return { league: { id: league.id, name: league.name }, fetched: result.done, pending: result.pending };
+}
+
 /** Results and standings of every league; rosters stay. Skipped while everything is fresh. */
 async function nightly() {
+  const deadline = Date.now() + GAMES_BUDGET_MS + 20_000;
   const active = await activeLeagues();
   if (!active) return;
   const stale = active.leagues.some(
@@ -136,6 +167,14 @@ async function nightly() {
   for (const league of active.leagues) {
     try {
       await refreshLeague(active.season, league, false);
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  }
+  // The new games of the match days just played; what doesn't fit follows the next night.
+  for (const league of active.leagues) {
+    try {
+      await refreshGames(league, deadline);
     } catch (error) {
       Sentry.captureException(error);
     }
@@ -187,6 +226,13 @@ Deno.serve(withSentry(Sentry, async (req) => {
       const league = active?.leagues.find((l) => l.id === Number(payload.leagueId));
       if (!active || !league) return json({ error: localized(req, 'Liga nicht gefunden.', 'League not found.') }, 404);
       return json(await refreshLeague(active.season, league, true));
+    }
+
+    if (action === 'refreshGames') {
+      const active = await activeLeagues();
+      const league = active?.leagues.find((l) => l.id === Number(payload.leagueId));
+      if (!active || !league) return json({ error: localized(req, 'Liga nicht gefunden.', 'League not found.') }, 404);
+      return json(await refreshGames(league, Date.now() + GAMES_BUDGET_MS));
     }
 
     return json({ error: `Unbekannte action: ${action}` }, 400);

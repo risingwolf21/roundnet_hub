@@ -3,17 +3,18 @@ import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { cn } from '@/lib/utils';
 import { useProfile } from '@/tanstack/user';
-import { CalendarDays, ClipboardList, MapPin, Shield, Trophy } from 'lucide-react';
+import { CalendarDays, ChevronDown, ClipboardList, MapPin, Shield, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import type { BundesligaTeam, LeagueView } from './repository';
-import { teamOverview, type TeamEncounter, type TeamMatchday } from './teamView';
+import { teamOverview, type TeamEncounter, type TeamGame, type TeamMatchday } from './teamView';
 import { useBundesligaSeason, useLeagueView, useTeamsOfPlayer } from './useBundesliga';
 
 const CHOICE_KEY = 'bundesliga-team-v1';
@@ -77,7 +78,10 @@ const BundesligaTeamPage = () => {
   const pickLeagueId = pickerLeague ?? viewLeagueId ?? leagues[0]?.id ?? null;
   const view = useLeagueView(viewLeagueId);
   const pickView = useLeagueView(pickLeagueId);
-  const overview = useMemo(() => (view.data && shown ? teamOverview(view.data, shown.teamId) : null), [view.data, shown]);
+  const overview = useMemo(
+    () => (view.data && shown ? teamOverview(view.data, shown.teamId, myPlayerId) : null),
+    [view.data, shown, myPlayerId]
+  );
   const league = leagues.find((l) => l.id === viewLeagueId) ?? null;
 
   const choose = (next: TeamChoice | null) => {
@@ -256,7 +260,8 @@ const BundesligaTeamPage = () => {
 
 const EncounterRow = ({ encounter }: { encounter: TeamEncounter }) => {
   const { t } = useTranslation();
-  return (
+  const mine = encounter.games.filter((g) => g.mine).length;
+  const summary = (
     <div className="flex min-h-11 items-center gap-3">
       <TeamLogo team={encounter.opponent} className="size-7" />
       <div className="min-w-0 flex-1">
@@ -266,10 +271,69 @@ const EncounterRow = ({ encounter }: { encounter: TeamEncounter }) => {
             {t('bundesliga.team.sets', { ours: encounter.sets[0], theirs: encounter.sets[1] })}
           </div>
         )}
+        {mine > 0 && <div className="text-xs text-primary">{t('bundesliga.team.myGames', { count: mine })}</div>}
       </div>
       {encounter.boards && <span className="text-sm font-semibold tabular-nums">{encounter.boards[0]}:{encounter.boards[1]}</span>}
       <Badge variant={RESULT_BADGE[encounter.result]} className="shrink-0">{t(`bundesliga.team.result.${encounter.result}`)}</Badge>
+      {encounter.games.length > 0 && (
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180" />
+      )}
     </div>
+  );
+  if (encounter.games.length === 0) return summary;
+  return (
+    <Collapsible>
+      <CollapsibleTrigger
+        className="group w-full rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={t('bundesliga.team.showGames', { opponent: encounter.opponent.name })}
+      >
+        {summary}
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ul className="flex flex-col gap-1 pb-2">
+          {encounter.games.map((g) => (
+            <GameRow key={g.id} game={g} />
+          ))}
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
+/** One game as a small scoreboard: our pair over theirs, with the points of each set. */
+const GameRow = ({ game }: { game: TeamGame }) => {
+  const { t } = useTranslation();
+  // `us`: 0 for our pair, 1 for theirs; a set's higher score is bold.
+  const side = (name: string | null, won: boolean, us: 0 | 1) => (
+    <div className="flex items-center gap-2 text-sm">
+      <span className={cn('min-w-0 flex-1 truncate', won && 'font-semibold')}>{name}</span>
+      {game.sets.map((set, i) => (
+        // A set's number is its identity (two sets can both end 17:15).
+        // eslint-disable-next-line @eslint-react/no-array-index-key
+        <span key={i} className={cn('w-6 text-right tabular-nums', set[us] > set[1 - us] ? 'font-semibold' : 'text-muted-foreground')}>
+          {set[us]}
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <li
+      className={cn('flex flex-col gap-0.5 rounded-md px-2 py-1.5', game.mine ? 'bg-primary/10' : 'bg-muted/40')}
+      aria-label={t('bundesliga.team.gameLabel', {
+        discipline: game.discipline ?? '',
+        ours: game.ours ?? '',
+        theirs: game.theirs ?? '',
+        sets: game.sets.map(([a, b]) => `${a}:${b}`).join(', '),
+      })}
+    >
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="flex-1">{game.discipline}</span>
+        {game.mine && <Badge variant="info">{t('bundesliga.team.myGame')}</Badge>}
+        <Badge variant={RESULT_BADGE[game.result]}>{t(`bundesliga.team.result.${game.result}`)}</Badge>
+      </div>
+      {side(game.ours, game.result === 'win', 0)}
+      {side(game.theirs, game.result === 'loss', 1)}
+    </li>
   );
 };
 

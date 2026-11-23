@@ -1,4 +1,4 @@
--- Tests for the Bundesliga tables (20261122120000_bundesliga_tables).
+-- Tests for the Bundesliga tables (20261122120000_bundesliga_tables, 20261123120000_bundesliga_games).
 --
 -- Signed-in users may read every bundesliga_* table but never write it; only the service role
 -- (the fetch-bundesliga edge function) writes, through bundesliga_activate_season and
@@ -6,7 +6,7 @@
 
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(10);
+SELECT plan(14);
 
 RESET ROLE;
 SELECT set_config('request.jwt.claims', NULL, true);
@@ -30,6 +30,11 @@ SELECT public.bundesliga_replace_league(pg_temp.league(), '{
   "encounters": [{"game_id":"419767","group_id":"656","team1_id":"2","team2_id":"1","boards1":0,"boards2":5,"sets1":0,"sets2":10,"winner":2}],
   "standings": [{"team_id":"1","position":1,"wins":1,"draws":0,"losses":0,"sets_for":10,"sets_against":0,"points_for":210,"points_against":120}]
 }'::jsonb);
+
+-- The games of the played encounter (fetched separately).
+SELECT public.bundesliga_store_games(pg_temp.league(), '[
+  {"game_id":"419768","encounter_id":"419767","sort":1,"discipline":"Open 1","pair1_name":"Huber/Graf","pair2_name":"Senger/Wolf",
+   "pair1_players":["5","6"],"pair2_players":["221","7"],"sets":[[13,17],[15,17]],"winner":2}]'::jsonb);
 
 SELECT is(
   (SELECT count(*)::int FROM public.bundesliga_seasons WHERE active),
@@ -60,7 +65,27 @@ SELECT throws_ok(
 SELECT throws_ok(
   $$ SELECT public.bundesliga_replace_league(pg_temp.league(), '{}'::jsonb) $$,
   '42501', NULL, 'authenticated users cannot call replace_league');
+SELECT is(
+  (SELECT sets FROM public.bundesliga_games WHERE league_id = pg_temp.league() AND '221' = ANY (pair2_players)),
+  '[[13, 17], [15, 17]]'::jsonb, 'authenticated users can read the games with their players');
+SELECT throws_ok(
+  $$ SELECT public.bundesliga_store_games(pg_temp.league(), '[]'::jsonb) $$,
+  '42501', NULL, 'authenticated users cannot call store_games');
 RESET ROLE;
+
+-- Replacing the league again keeps the games of encounters that are still played.
+SELECT public.bundesliga_replace_league(pg_temp.league(), '{
+  "teams": [
+    {"team_id":"1","team_version_id":"11","name":"KA-Boom","logo_url":null,"rgx_total":11640},
+    {"team_id":"2","team_version_id":"22","name":"Heidelberg","logo_url":null,"rgx_total":10000}],
+  "matchdays": [{"matchday_id":"110","number":1}],
+  "groups": [{"group_id":"656","matchday_id":"110","name":"Gruppe A","play_date":"2026-10-17","city":"Karlsruhe"}],
+  "encounters": [{"game_id":"419767","group_id":"656","team1_id":"2","team2_id":"1","boards1":0,"boards2":5,"sets1":0,"sets2":10,"winner":2}],
+  "standings": []
+}'::jsonb);
+SELECT is(
+  (SELECT count(*)::int FROM public.bundesliga_games WHERE league_id = pg_temp.league()),
+  1, 'replace_league keeps the games of encounters that are still there');
 
 -- The nightly run sends no "players": rosters stay; a team that is gone is removed.
 SELECT public.bundesliga_replace_league(pg_temp.league(), '{
@@ -74,6 +99,9 @@ SELECT is(
                 (SELECT count(*) FROM public.bundesliga_matchdays WHERE league_id = pg_temp.league()),
                 (SELECT count(*) FROM public.bundesliga_encounters WHERE league_id = pg_temp.league())]::int[]),
   ARRAY[1, 1, 2, 0], 'without "players" the rosters stay; vanished teams and old results go');
+SELECT is(
+  (SELECT count(*)::int FROM public.bundesliga_games WHERE league_id = pg_temp.league()),
+  0, 'the games of an encounter that is gone go with it');
 
 -- A new season becomes the only active one.
 SELECT public.bundesliga_activate_season('2-test-liga', 'Nächste Saison', '[]'::jsonb);

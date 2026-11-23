@@ -76,6 +76,15 @@ test.describe('Bundesliga', () => {
         ],
       },
     }).throwOnError();
+    // One game of match day 1, played by me for TEAM_A (side 2).
+    await admin.rpc('bundesliga_store_games', {
+      p_league_id: leagueId,
+      p_games: [{
+        game_id: `x1${stamp}`, encounter_id: `e1${stamp}`, sort: 1, discipline: 'Mixed 1',
+        pair1_name: 'Gegner/Gegnerin', pair2_name: 'Eins/Zwei', pair1_players: [`${PZ_ME}3`], pair2_players: [PZ_ME, `${PZ_ME}2`],
+        sets: [[10, 17], [12, 17]], winner: 2,
+      }],
+    }).throwOnError();
   });
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
@@ -90,6 +99,12 @@ test.describe('Bundesliga', () => {
     // Match day 1 away: shown from our side as a 5:0 win.
     await expect(page.getByText('5:0')).toBeVisible();
     await expect(page.getByText('Sieg', { exact: true })).toBeVisible();
+    // The encounter opens to its games; mine is marked, sets from our side.
+    await expect(page.getByText('1 Spiel von dir')).toBeVisible();
+    await page.getByRole('button', { name: `Spiele gegen ${TEAM_B.name} anzeigen` }).click();
+    await expect(page.getByText('Eins/Zwei')).toBeVisible();
+    await expect(page.getByRole('listitem', { name: 'Mixed 1: Eins/Zwei gegen Gegner/Gegnerin, 17:10, 17:12' })).toBeVisible();
+    await expect(page.getByText('Dein Spiel')).toBeVisible();
     // Match day 2 is the next one.
     await expect(page.getByText('Nächster Spieltag · 2. Spieltag')).toBeVisible();
     await expect(page.getByRole('table')).toContainText(TEAM_B.name);
@@ -152,6 +167,13 @@ test.describe('Bundesliga', () => {
       if (body.action === 'discover') {
         return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ leagues: [{ id: leagueId, name: LEAGUE_NAME }] }) });
       }
+      if (body.action === 'refreshGames') {
+        // Two calls: the first one runs out of time with one encounter left.
+        const pending = calls.filter((c) => c.startsWith('refreshGames')).length === 1 ? 1 : 0;
+        return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+          league: { id: leagueId, name: LEAGUE_NAME }, fetched: 1, pending,
+        }) });
+      }
       return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
         league: { id: leagueId, name: LEAGUE_NAME }, teams: 2, players: 3, matchdays: 2, encounters: 2, played: 1,
       }) });
@@ -162,8 +184,8 @@ test.describe('Bundesliga', () => {
     await page.getByRole('button', { name: 'Jetzt neu laden' }).click();
     await page.getByRole('button', { name: 'Jetzt neu laden' }).last().click(); // the confirmation
 
-    await expect(page.getByText('2 Teams · 3 Spieler · 1 von 2 Begegnungen gespielt')).toBeVisible();
-    expect(calls).toEqual(['discover', `refreshLeague:${leagueId}`]);
+    await expect(page.getByText('2 Teams · 3 Spieler · 1 von 2 Begegnungen gespielt · 2 Begegnungen mit Einzelspielen neu')).toBeVisible();
+    expect(calls).toEqual(['discover', `refreshLeague:${leagueId}`, `refreshGames:${leagueId}`, `refreshGames:${leagueId}`]);
   });
 
   test.afterAll(async () => {

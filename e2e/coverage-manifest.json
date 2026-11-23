@@ -433,7 +433,7 @@
       "flows": [
         {
           "id": "bundesliga.myteam",
-          "title": "Mein Team über die RG-ID, Spieltage mit Ergebnissen, Tabelle"
+          "title": "Mein Team über die RG-ID, Spieltage mit Ergebnissen und Einzelspielen (eigene markiert), Tabelle"
         },
         {
           "id": "bundesliga.team",

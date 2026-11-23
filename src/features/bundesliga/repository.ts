@@ -69,6 +69,22 @@ export interface BundesligaEncounter {
   winner: 1 | 2 | null;
 }
 
+/** One game (Open 1, Women …) of a played encounter; side 1 is the encounter's team1. */
+export interface BundesligaGame {
+  pz_game_id: string;
+  pz_encounter_id: string;
+  sort: number;
+  discipline: string | null;
+  pair1_name: string | null;
+  pair2_name: string | null;
+  /** Playerzone player ids (bundesliga_team_players.pz_player_id). */
+  pair1_players: string[];
+  pair2_players: string[];
+  /** Points per set from side 1's view. */
+  sets: [number, number][];
+  winner: 1 | 2 | null;
+}
+
 /** Everything of one league the app shows. */
 export interface LeagueView {
   teams: BundesligaTeam[];
@@ -76,6 +92,7 @@ export interface LeagueView {
   matchdays: BundesligaMatchday[];
   groups: BundesligaGroup[];
   encounters: BundesligaEncounter[];
+  games: BundesligaGame[];
 }
 
 export type ScrapedGender = 'male' | 'female' | 'unknown';
@@ -87,6 +104,14 @@ export interface ScrapedPlayer {
   rgIndex: number | null;
   avatarUrl: string | null;
   pro: boolean;
+}
+
+export interface RefreshGamesResult {
+  league: { id: number; name: string };
+  /** Encounters whose games were fetched by this call. */
+  fetched: number;
+  /** Played encounters still without games: call again. */
+  pending: number;
 }
 
 export interface RefreshLeagueResult {
@@ -144,14 +169,18 @@ export const BundesligaRepository = {
       if (error) throw error;
       return (data ?? []) as T[];
     };
-    const [teams, standings, matchdays, groups, encounters] = await Promise.all([
+    const [teams, standings, matchdays, groups, encounters, games] = await Promise.all([
       rows<BundesligaTeam>('bundesliga_teams', 'pz_team_id, pz_team_version_id, name, logo_url, rgx_total'),
       rows<BundesligaStanding>('bundesliga_standings', 'pz_team_id, position, wins, draws, losses, sets_for, sets_against, points_for, points_against'),
       rows<BundesligaMatchday>('bundesliga_matchdays', 'pz_matchday_id, number'),
       rows<BundesligaGroup>('bundesliga_md_groups', 'pz_group_id, pz_matchday_id, name, play_date, city'),
       rows<BundesligaEncounter>('bundesliga_encounters', 'pz_game_id, pz_group_id, team1_id, team2_id, boards1, boards2, sets1, sets2, winner'),
+      rows<BundesligaGame>(
+        'bundesliga_games',
+        'pz_game_id, pz_encounter_id, sort, discipline, pair1_name, pair2_name, pair1_players, pair2_players, sets, winner'
+      ),
     ]);
-    return { teams, standings, matchdays, groups, encounters };
+    return { teams, standings, matchdays, groups, encounters, games };
   },
 
   /** Rosters of the given teams, keyed by playerzone team id. */
@@ -190,5 +219,10 @@ export const BundesligaRepository = {
   /** Admin: reload one league completely, rosters included. */
   refreshLeague(leagueId: number) {
     return invokeEdge<RefreshLeagueResult>({ action: 'refreshLeague', leagueId });
+  },
+
+  /** Admin: fetch the games of played encounters not stored yet (about 100 s per call). */
+  refreshGames(leagueId: number) {
+    return invokeEdge<RefreshGamesResult>({ action: 'refreshGames', leagueId });
   },
 };

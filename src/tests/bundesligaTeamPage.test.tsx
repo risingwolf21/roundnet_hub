@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { LeagueView } from '@/features/bundesliga/repository';
 
@@ -41,6 +42,10 @@ const view: LeagueView = {
     { pz_game_id: 'e1', pz_group_id: 'g1', team1_id: '2', team2_id: '1', boards1: 0, boards2: 5, sets1: 0, sets2: 10, winner: 2 },
     { pz_game_id: 'e3', pz_group_id: 'g3', team1_id: '3', team2_id: '1', boards1: null, boards2: null, sets1: null, sets2: null, winner: null },
   ],
+  games: [
+    { pz_game_id: 'x1', pz_encounter_id: 'e1', sort: 1, discipline: 'Mixed 1', pair1_name: 'Huber/Graf', pair2_name: 'Senger/Wolf',
+      pair1_players: ['5', '6'], pair2_players: ['7', '8'], sets: [[13, 17], [15, 17]], winner: 2 },
+  ],
 };
 
 vi.mock('@/features/bundesliga/useBundesliga', () => ({
@@ -76,6 +81,21 @@ describe('BundesligaTeamPage', () => {
     // Table with our row and its set difference.
     expect(screen.getByRole('table')).toBeInTheDocument();
     expect(screen.getByText('+24')).toBeInTheDocument();
+  });
+
+  test('an encounter opens to its games, with the player’s own game marked', async () => {
+    render(<BundesligaTeamPage />);
+    expect(screen.getByText(/bundesliga\.team\.myGames/)).toBeInTheDocument();
+    expect(screen.queryByText('Senger/Wolf')).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /bundesliga\.team\.showGames/ }));
+    expect(screen.getByText('Senger/Wolf')).toBeInTheDocument();
+    expect(screen.getByText('Huber/Graf')).toBeInTheDocument();
+    // Our points per set first (we are side 2 of e1), theirs below.
+    expect(screen.getAllByText('17')).toHaveLength(2);
+    expect(screen.getByText('13')).toBeInTheDocument();
+    expect(screen.getByText('15')).toBeInTheDocument();
+    expect(screen.getByText('bundesliga.team.myGame')).toBeInTheDocument();
   });
 
   test('a player in no roster gets an explanation, the team picker and the planner', () => {

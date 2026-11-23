@@ -26,9 +26,27 @@ const view: LeagueView = {
     { pz_game_id: 'e3', pz_group_id: 'g3', team1_id: '4', team2_id: '2', boards1: 3, boards2: 2, sets1: 7, sets2: 5, winner: 1 },
     { pz_game_id: 'e4', pz_group_id: 'g2', team1_id: '1', team2_id: '4', boards1: null, boards2: null, sets1: null, sets2: null, winner: null },
   ],
+  // Two of e1's games; KA-Boom is side 2 there. Player 221 plays Mixed 1 for KA-Boom.
+  games: [
+    { pz_game_id: 'x2', pz_encounter_id: 'e1', sort: 2, discipline: 'Mixed 1', pair1_name: 'Huber/Graf', pair2_name: 'Senger/Wolf',
+      pair1_players: ['5', '6'], pair2_players: ['221', '7'], sets: [[13, 17], [15, 17]], winner: 2 },
+    { pz_game_id: 'x1', pz_encounter_id: 'e1', sort: 1, discipline: 'Open 1', pair1_name: 'Huber/Maier', pair2_name: 'Lang/Kurz',
+      pair1_players: ['5', '8'], pair2_players: ['9', '10'], sets: [[17, 12], [12, 17], [10, 15]], winner: 2 },
+  ],
 };
 
 describe('teamOverview', () => {
+  test('gives each encounter its games from the team’s side and marks the player’s games', () => {
+    const [e1] = teamOverview(view, '1', '221')!.matchdays[0].encounters;
+    expect(e1.games.map((g) => [g.discipline, g.ours, g.theirs, g.sets, g.result, g.mine])).toEqual([
+      ['Open 1', 'Lang/Kurz', 'Huber/Maier', [[12, 17], [17, 12], [15, 10]], 'win', false],
+      ['Mixed 1', 'Senger/Wolf', 'Huber/Graf', [[17, 13], [17, 15]], 'win', true],
+    ]);
+    // Without a player nothing is "mine"; open encounters have no games.
+    expect(teamOverview(view, '1')!.matchdays[0].encounters[0].games.some((g) => g.mine)).toBe(false);
+    expect(teamOverview(view, '1')!.matchdays[1].encounters[0].games).toEqual([]);
+  });
+
   test('lists only the team’s encounters, from its own side, ordered by match day', () => {
     const o = teamOverview(view, '1')!;
     expect(o.team.name).toBe('KA-Boom');
