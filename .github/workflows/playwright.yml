@@ -2,6 +2,9 @@ name: Playwright tests
 
 on:
   workflow_call:
+  # TEMPORARY: run the suite on the fix branch while the specs are being updated. Remove before merging.
+  push:
+    branches: [claude/project-thread-zjxdjj]
 
 jobs:
   playwright-tests:
