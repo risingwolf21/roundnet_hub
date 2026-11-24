@@ -891,42 +891,211 @@
     "mtvStorage": "MTV Storage"
   },
   "help": {
-    "titles": {
-      "installation": "📲 Installing the Application",
-      "refresh": "🔄 Refresh data",
-      "groups": "🫂 Groups",
-      "events": "🤾 Events",
-      "faq": "⁉️ FAQ / Frequently Asked Questions"
+    "title": "Help and information",
+    "intro": "This is how {{app}} works. Tap a topic to jump straight to it.",
+    "version": "Version {{version}}",
+    "noGroup": {
+      "title": "You are not in a group yet",
+      "description": "Join a group to see its trainings and events.",
+      "action": "Browse groups"
+    },
+    "topics": {
+      "start": "Getting started",
+      "install": "Install the app",
+      "push": "Notifications",
+      "groups": "Groups",
+      "events": "Trainings and events",
+      "more": "More areas",
+      "tips": "App tips",
+      "faq": "Frequently asked questions"
+    },
+    "start": {
+      "done": "Done",
+      "groups": {
+        "title": "Join a group",
+        "description": "Without a group you won't see any trainings. Some groups let you in right away, in others a group admin confirms your request."
+      },
+      "install": {
+        "title": "Install the app",
+        "description": "Then you start it right from your home screen. On an iPhone this is the only way to get push notifications."
+      },
+      "push": {
+        "title": "Allow notifications",
+        "description": "So you hear right away about new events, cancellations and chat messages."
+      },
+      "events": {
+        "title": "Answer trainings",
+        "description": "Say yes or no to every training so everyone knows who is coming."
+      }
+    },
+    "install": {
+      "installed": "The app is installed on this device.",
+      "ios": {
+        "step1": "Open the app in Safari.",
+        "step2": "Tap “Share” at the bottom (the square with the arrow pointing up).",
+        "step3": "Choose “Add to Home Screen” and tap “Add”.",
+        "step4": "From now on, open the app with the new icon on your home screen.",
+        "pushNote": "On iPhone and iPad you only get push notifications in the installed app."
+      },
+      "other": {
+        "step1": "Open your browser's menu, usually the three dots at the top right.",
+        "step2": "Tap “Install app” or “Add to Home screen”.",
+        "step3": "Confirm with “Install”. The app appears on your home screen."
+      },
+      "promptHint": "Your browser can install the app directly."
+    },
+    "push": {
+      "status": {
+        "granted": "Allowed",
+        "denied": "Blocked",
+        "default": "Not allowed yet",
+        "off": "Turned off",
+        "unsupported": "Not available"
+      },
+      "statusLabel": "On this device",
+      "deniedHint": "Notifications are blocked for the app. Allow them in your device or browser settings.",
+      "unsupportedHint": "This browser does not support push notifications. On an iPhone, install the app first.",
+      "enable": {
+        "title": "Turn on and off",
+        "description": "Under Account → Notifications you turn push on for this device and choose what you want to hear about."
+      },
+      "ios": {
+        "title": "iPhone and iPad",
+        "description": "Push only works when the app is installed on the home screen. Open it with the icon, not in Safari."
+      },
+      "off": {
+        "title": "Off stays off",
+        "description": "If you turn push off, it stays off on this device until you turn it on again yourself."
+      },
+      "inbox": {
+        "title": "Miss nothing",
+        "description": "All notifications are also in the menu under “Notifications”. On many devices the app icon shows how many are still unread."
+      },
+      "action": "Open settings"
+    },
+    "groups": {
+      "join": {
+        "title": "Join",
+        "description": "Under Groups you see all groups. Some you join directly, in others a group admin confirms your request."
+      },
+      "content": {
+        "title": "What you see",
+        "description": "As a member you see the trainings and events of your groups and can sign up for them."
+      },
+      "otherGroup": {
+        "title": "Events of other groups",
+        "description": "Some events belong to a group you are not in. You can view them, but you can only answer and write after joining."
+      },
+      "requests": {
+        "title": "For group admins",
+        "description": "Open join requests show as a number next to “Groups” in the menu."
+      },
+      "action": "Go to groups"
+    },
+    "events": {
+      "answer": {
+        "title": "Attend or decline",
+        "description": "Tap “Attend” or “Decline” in the list or on the event page. The list then shows your answer, you change it on the event page."
+      },
+      "trainer": {
+        "title": "As a coach",
+        "description": "With “Attend as trainer” you sign up as a coach."
+      },
+      "window": {
+        "title": "Answer window",
+        "description": "For some events you can only answer from a certain time on or until a deadline. The event page shows until when you can change your answer."
+      },
+      "request": {
+        "title": "Missed the deadline",
+        "description": "After the deadline you can still request to attend. The organisers then decide."
+      },
+      "waitingList": {
+        "title": "Full? Waiting list",
+        "description": "When all spots are taken, join the waiting list and see your place. If someone declines, you move up automatically."
+      },
+      "cancelled": {
+        "title": "Cancelled events",
+        "description": "Cancelled events are marked red. You can no longer answer them."
+      },
+      "calendar": {
+        "title": "In your own calendar",
+        "description": "Under Account → Calendar you bring every event you attend into your calendar."
+      },
+      "pageTitle": "On the event page",
+      "tabs": {
+        "details": "Description, meeting point, location with route and weather.",
+        "people": "Who attends, declined or is on the waiting list.",
+        "bring": "Only for events with a bring list: add what you bring.",
+        "chat": "Questions and arrangements for the event.",
+        "matches": "The matches played at this event."
+      },
+      "share": {
+        "title": "Share",
+        "description": "With the share icon at the top right you send the link to an event or match, for example by messenger."
+      },
+      "action": "Go to trainings"
+    },
+    "more": {
+      "matches": "Enter results and see your matches.",
+      "leaderboard": "The ranking from all entered matches.",
+      "challenges": "Competitions within your groups.",
+      "drinks": "Log drinks and see your balance.",
+      "keys": "Who has which key right now.",
+      "costs": "Track your costs for tournaments.",
+      "bundesliga": "Your team, the match days and planning the line-up."
+    },
+    "tips": {
+      "pull": {
+        "title": "Pull down",
+        "description": "On most pages you reload the data by pulling the page down."
+      },
+      "reload": {
+        "title": "Reload everything",
+        "description": "At the bottom of the menu, “Refresh” reloads the whole app with all data."
+      },
+      "updates": {
+        "title": "Updates",
+        "description": "The app downloads new versions in the background, you see the progress in the menu. It then restarts once, briefly."
+      },
+      "shortcuts": {
+        "title": "Shortcuts on the app icon",
+        "description": "Press and hold the icon of the installed app to jump straight to notifications or groups. This works on Android and on a computer."
+      },
+      "language": {
+        "title": "Language",
+        "description": "Under Account you choose German or English."
+      }
     },
     "faq": {
       "push": {
-        "title": "Why aren't push notifications working?",
-        "answer": "Make sure you've allowed push notifications and that the app is installed (PWA). Sometimes your browser blocks notifications — check your browser settings. Under Account > Notifications you can view the current status. If there's an error shown, reconnect using the available button."
+        "title": "Why don't I get push notifications?",
+        "answer": "Check under Account → Notifications that push is on for this device. On an iPhone the app must be installed. If you blocked notifications, allow them in your device settings. If the page shows an error, tap “Re-bind”."
+      },
+      "missingEvent": {
+        "title": "I can't see a training.",
+        "answer": "You only see events of your groups. Check under Groups whether you are a member or your request is still open. Then pull the list down to reload it."
+      },
+      "cantAnswer": {
+        "title": "Why can't I attend?",
+        "answer": "Answering only works within the answer window and until the start. After the deadline you can request to attend. For events of another group you have to join first. If the buttons are missing entirely, signing up is not enabled for you. Ask your admins."
+      },
+      "missingFeature": {
+        "title": "I'm missing an area others have.",
+        "answer": "Your club and your admins decide which areas you see. Not every feature is enabled for everyone. If you're missing something, ask your admins."
+      },
+      "staleData": {
+        "title": "The app shows old data.",
+        "answer": "Pull the page down or tap “Refresh” in the menu. If that doesn't help, close the app completely and open it again."
+      },
+      "password": {
+        "title": "I forgot my password.",
+        "answer": "Log out and tap “Forgot password?” when signing in. While signed in, you change it under Account → Change password."
+      },
+      "deleteAccount": {
+        "title": "How do I delete my account?",
+        "answer": "Under Account you find “Delete account” in the danger zone. Your account is then anonymised, which cannot be undone."
       }
-    },
-    "updateAvailable": "💭 As soon as an update is available, it will be automatically downloaded and applied in the background. The app page will reload once to apply it, and required data will be reloaded.",
-    "openShareMenuIOS": "Open the share menu, which is available at the top or bottom of your browser.",
-    "clickAddToHomeScreen": "Tap 'Add to Home Screen'.",
-    "clickInstallApp": "Tap 'Install App'.",
-    "confirmInstallation": "A dialog will open — confirm it by tapping 'Install'.",
-    "confirmName": "Confirm the app name. You can edit it if you want.",
-    "clickAdd": "Tap 'Add'. On iOS and iPadOS, bookmarks and home screen apps look the same.",
-    "openMenuAndroid": "Open your browser's menu — usually shown as three dots at the top.",
-    "navigateToGroups": "In the left-side menu (☰), navigate to 'Groups'.",
-    "listAllGroups": "All available groups will be listed.",
-    "joinGroup": "Some groups can be joined directly, while others require approval from a group administrator.",
-    "eventsFromGroupInfo": "💭 As a member of a group, you'll see all events created for that group.",
-    "challengesFromGroupInfo": "💭 As a member of a group, you'll see all challenges created for that group.",
-    "navigateToEvents": "In the menu on the left side (☰), navigate to the events.",
-    "listAllEvents": "All events from your groups are displayed. You can join or decline them using the thumbs up and thumbs down buttons.",
-    "eventInformation": "By clicking on an event, you can see all information about it.",
-    "eventComments": "✉️ Comments for the respective event can be viewed and created at the bottom.",
-    "eventAttendance": "🟢🔴 Attendance responses (yes/no) for the event can be viewed in detail by clicking on the respective row.",
-    "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it.",
-    "pullToRefresh": "Most pages offer a pull-to-refresh feature. Simply pull the page down to refresh the data.",
-    "refreshApplication": "To refresh all application data, click 'App refresh' in the page navigation at the bottom.",
-    "title": "Information",
-    "toGroups": "Go to groups"
+    }
   },
   "errors": {
     "mutation": "An error occurred. Please try again.",

@@ -891,42 +891,211 @@
     "mtvStorage": "MTV Keller"
   },
   "help": {
-    "titles": {
-      "installation": "📲 Installieren der Anwendung",
-      "refresh": "🔄 Aktualisieren der Daten",
-      "groups": "🫂 Gruppen",
-      "events": "🤾 Events",
-      "faq": "⁉️ FAQ / Häufige Fragen"
+    "title": "Hilfe und Information",
+    "intro": "So funktioniert {{app}}. Tippe auf ein Thema, um direkt dorthin zu springen.",
+    "version": "Version {{version}}",
+    "noGroup": {
+      "title": "Du bist noch in keiner Gruppe",
+      "description": "Tritt einer Gruppe bei, dann siehst du ihre Trainings und Events.",
+      "action": "Gruppen ansehen"
+    },
+    "topics": {
+      "start": "Erste Schritte",
+      "install": "App installieren",
+      "push": "Benachrichtigungen",
+      "groups": "Gruppen",
+      "events": "Trainings und Events",
+      "more": "Weitere Bereiche",
+      "tips": "Tipps zur App",
+      "faq": "Häufige Fragen"
+    },
+    "start": {
+      "done": "Erledigt",
+      "groups": {
+        "title": "Einer Gruppe beitreten",
+        "description": "Ohne Gruppe siehst du keine Trainings. Bei manchen Gruppen bist du sofort dabei, bei anderen bestätigt ein Gruppen-Admin deine Anfrage."
+      },
+      "install": {
+        "title": "App installieren",
+        "description": "Dann startest du direkt vom Startbildschirm. Auf dem iPhone bekommst du nur so Push-Benachrichtigungen."
+      },
+      "push": {
+        "title": "Benachrichtigungen erlauben",
+        "description": "So erfährst du sofort von neuen Events, Absagen und Nachrichten im Chat."
+      },
+      "events": {
+        "title": "Zu Trainings antworten",
+        "description": "Sag bei jedem Training zu oder ab, damit alle wissen, wer kommt."
+      }
+    },
+    "install": {
+      "installed": "Die App ist auf diesem Gerät installiert.",
+      "ios": {
+        "step1": "Öffne die App in Safari.",
+        "step2": "Tippe unten auf „Teilen“ (das Quadrat mit dem Pfeil nach oben).",
+        "step3": "Wähle „Zum Home-Bildschirm“ und tippe auf „Hinzufügen“.",
+        "step4": "Öffne die App ab jetzt über das neue Icon auf deinem Home-Bildschirm.",
+        "pushNote": "Auf iPhone und iPad bekommst du Push-Benachrichtigungen nur in der installierten App."
+      },
+      "other": {
+        "step1": "Öffne das Menü deines Browsers, meist die drei Punkte oben rechts.",
+        "step2": "Tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.",
+        "step3": "Bestätige mit „Installieren“. Die App erscheint auf deinem Startbildschirm."
+      },
+      "promptHint": "Dein Browser kann die App direkt installieren."
+    },
+    "push": {
+      "status": {
+        "granted": "Erlaubt",
+        "denied": "Blockiert",
+        "default": "Noch nicht erlaubt",
+        "off": "Ausgeschaltet",
+        "unsupported": "Nicht verfügbar"
+      },
+      "statusLabel": "Auf diesem Gerät",
+      "deniedHint": "Mitteilungen sind für die App blockiert. Erlaube sie in den Einstellungen deines Geräts oder Browsers.",
+      "unsupportedHint": "Dieser Browser unterstützt keine Push-Benachrichtigungen. Auf dem iPhone installiere zuerst die App.",
+      "enable": {
+        "title": "Ein- und ausschalten",
+        "description": "Unter Account → Benachrichtigungen schaltest du Push für dieses Gerät ein und wählst, worüber du informiert wirst."
+      },
+      "ios": {
+        "title": "iPhone und iPad",
+        "description": "Push geht nur, wenn die App auf dem Home-Bildschirm installiert ist. Öffne sie dafür über das Icon, nicht in Safari."
+      },
+      "off": {
+        "title": "Aus bleibt aus",
+        "description": "Schaltest du Push aus, bleibt es auf diesem Gerät aus, bis du es selbst wieder einschaltest."
+      },
+      "inbox": {
+        "title": "Nichts verpassen",
+        "description": "Alle Benachrichtigungen findest du auch im Menü unter „Benachrichtigungen“. Auf vielen Geräten zeigt das App-Icon, wie viele noch ungelesen sind."
+      },
+      "action": "Zu den Einstellungen"
+    },
+    "groups": {
+      "join": {
+        "title": "Beitreten",
+        "description": "Unter Gruppen siehst du alle Gruppen. Bei manchen trittst du direkt bei, bei anderen bestätigt ein Gruppen-Admin deine Anfrage."
+      },
+      "content": {
+        "title": "Was du siehst",
+        "description": "Als Mitglied siehst du die Trainings und Events deiner Gruppen und kannst dich dort anmelden."
+      },
+      "otherGroup": {
+        "title": "Events anderer Gruppen",
+        "description": "Manche Events gehören zu einer Gruppe, in der du nicht bist. Die kannst du ansehen, zusagen und schreiben geht erst nach dem Beitritt."
+      },
+      "requests": {
+        "title": "Für Gruppen-Admins",
+        "description": "Offene Beitrittsanfragen stehen als Zahl neben „Gruppen“ im Menü."
+      },
+      "action": "Zu den Gruppen"
+    },
+    "events": {
+      "answer": {
+        "title": "Zu- und absagen",
+        "description": "Tippe in der Liste oder auf der Eventseite auf „Teilnehmen“ oder „Absagen“. Danach zeigt die Liste deine Antwort, ändern kannst du sie auf der Eventseite."
+      },
+      "trainer": {
+        "title": "Als Trainer:in",
+        "description": "Mit „Als Trainer teilnehmen“ sagst du als Trainer:in zu."
+      },
+      "window": {
+        "title": "Antwortzeitraum",
+        "description": "Bei manchen Events kannst du erst ab einem bestimmten Zeitpunkt oder nur bis zu einer Frist antworten. Die Eventseite zeigt dir, bis wann deine Antwort geändert werden kann."
+      },
+      "request": {
+        "title": "Frist verpasst",
+        "description": "Nach der Frist kannst du die Teilnahme noch anfragen. Die Organisator:innen entscheiden dann."
+      },
+      "waitingList": {
+        "title": "Voll? Warteliste",
+        "description": "Sind alle Plätze belegt, trägst du dich auf die Warteliste ein und siehst deinen Platz. Sagt jemand ab, rückst du automatisch nach."
+      },
+      "cancelled": {
+        "title": "Abgesagte Events",
+        "description": "Abgesagte Events sind rot markiert. Antworten ist dann nicht mehr möglich."
+      },
+      "calendar": {
+        "title": "Im eigenen Kalender",
+        "description": "Unter Account → Kalender holst du alle Events, zu denen du zugesagt hast, in deinen Kalender."
+      },
+      "pageTitle": "Auf der Eventseite",
+      "tabs": {
+        "details": "Beschreibung, Treffpunkt, Ort mit Route und Wetter.",
+        "people": "Wer zugesagt, abgesagt oder auf der Warteliste ist.",
+        "bring": "Nur bei Events mit Mitbringliste: Trag ein, was du mitbringst.",
+        "chat": "Fragen und Absprachen zum Event.",
+        "matches": "Die Spiele, die bei diesem Event gespielt wurden."
+      },
+      "share": {
+        "title": "Teilen",
+        "description": "Mit dem Teilen-Symbol oben rechts schickst du den Link zu einem Event oder Spiel weiter, zum Beispiel per Messenger."
+      },
+      "action": "Zu den Trainings"
+    },
+    "more": {
+      "matches": "Ergebnisse eintragen und deine Spiele ansehen.",
+      "leaderboard": "Die Rangliste aus allen eingetragenen Spielen.",
+      "challenges": "Wettbewerbe innerhalb deiner Gruppen.",
+      "drinks": "Getränke eintragen und deinen Stand sehen.",
+      "keys": "Wer gerade welchen Schlüssel hat.",
+      "costs": "Deine Kosten für Turniere erfassen.",
+      "bundesliga": "Dein Team, die Spieltage und die Aufstellung planen."
+    },
+    "tips": {
+      "pull": {
+        "title": "Nach unten ziehen",
+        "description": "Auf den meisten Seiten lädst du die Daten neu, indem du die Seite nach unten ziehst."
+      },
+      "reload": {
+        "title": "Alles neu laden",
+        "description": "Im Menü ganz unten lädt „Aktualisieren“ die ganze App mit allen Daten neu."
+      },
+      "updates": {
+        "title": "Updates",
+        "description": "Neue Versionen lädt die App im Hintergrund, den Fortschritt siehst du im Menü. Danach startet sie einmal kurz neu."
+      },
+      "shortcuts": {
+        "title": "Schnellzugriff am App-Icon",
+        "description": "Halte das Icon der installierten App gedrückt, um direkt zu Benachrichtigungen oder Gruppen zu springen. Das geht auf Android und am Computer."
+      },
+      "language": {
+        "title": "Sprache",
+        "description": "Unter Account stellst du Deutsch oder Englisch ein."
+      }
     },
     "faq": {
       "push": {
-        "title": "Warum funktionieren Push-Benachrichtigungen nicht?",
-        "answer": "Stelle sicher, dass du Push zugelassen hast und die App installiert ist (PWA). Manchmal blockiert der Browser Benachrichtigungen — überprüfe Browser-Einstellungen. Unter Account > Benachrichtigungen kannst du den aktuellen Status einsehen. Sollte dort ein Fehler sein, kopple dich erneut mit dem vorhandenen Button."
+        "title": "Warum bekomme ich keine Push-Benachrichtigungen?",
+        "answer": "Schau unter Account → Benachrichtigungen, ob Push für dieses Gerät eingeschaltet ist. Auf dem iPhone muss die App installiert sein. Hast du Mitteilungen blockiert, erlaube sie in den Einstellungen deines Geräts. Zeigt die Seite einen Fehler, tippe auf „Neu koppeln“."
+      },
+      "missingEvent": {
+        "title": "Ich sehe ein Training nicht.",
+        "answer": "Du siehst nur Events deiner Gruppen. Prüfe unter Gruppen, ob du Mitglied bist oder deine Anfrage noch offen ist. Zieh danach die Liste nach unten, um sie neu zu laden."
+      },
+      "cantAnswer": {
+        "title": "Warum kann ich nicht zusagen?",
+        "answer": "Antworten geht nur im Antwortzeitraum und bis zum Beginn. Nach der Frist kannst du die Teilnahme anfragen. Bei Events einer anderen Gruppe musst du erst beitreten. Fehlen die Buttons ganz, ist Anmelden für dich nicht freigeschaltet. Frag dann deine Admins."
+      },
+      "missingFeature": {
+        "title": "Mir fehlt ein Bereich, den andere haben.",
+        "answer": "Welche Bereiche du siehst, legen dein Verein und deine Admins fest. Nicht jede Funktion ist für alle freigeschaltet. Wenn dir etwas fehlt, frag deine Admins."
+      },
+      "staleData": {
+        "title": "Die App zeigt alte Daten.",
+        "answer": "Zieh die Seite nach unten oder tippe im Menü auf „Aktualisieren“. Hilft das nicht, schließe die App ganz und öffne sie neu."
+      },
+      "password": {
+        "title": "Ich habe mein Passwort vergessen.",
+        "answer": "Melde dich ab und tippe beim Anmelden auf „Passwort vergessen?“. Angemeldet änderst du es unter Account → Passwort ändern."
+      },
+      "deleteAccount": {
+        "title": "Wie lösche ich mein Konto?",
+        "answer": "Unter Account findest du im Gefahrenbereich „Konto löschen“. Dein Konto wird dann anonymisiert, das lässt sich nicht rückgängig machen."
       }
-    },
-    "updateAvailable": "💭 Sobald ein Update verfügbar ist wird dieses automatisch im Hintergrund heruntergeladen und angewand. Dabei aktualisiert sich die Seite der App einmal neu und es werden die erforderlichen Daten geladen",
-    "openShareMenuIOS": "Öffne das Teilen Menü, welches oben oder unten in deinem Browser verfügbar ist",
-    "clickAddToHomeScreen": "Klicke auf 'Zum Home-Bildschirm' hinzufügen",
-    "clickInstallApp": "Klicke auf 'App installieren'",
-    "confirmInstallation": "Es öffnet sich ein Dialog. Dieser muss mit 'Installieren' bestätigt werden.",
-    "confirmName": "Bestätige den Namen der App. Dieser ist editierbar.",
-    "clickAdd": "Klicke auf Hinzufügen. Auf iOS und iPadOS sehen Lesezeichen und Apps auf dem Homebildschirm gleich aus",
-    "openMenuAndroid": "Öffne das Menü in deinem Browser. Meistens drei Punkte auf der oberen Seite des Browsers",
-    "navigateToGroups": "Im Menü auf der linken Seite (☰) zu den Gruppen navigieren",
-    "listAllGroups": "Es werden alle verfügbaren Gruppen aufgelistet",
-    "joinGroup": "Bei manchen Gruppen kann man direkt beitreten, bei anderen muss ein Administrator der Gruppe die Anfrage bestätigen",
-    "eventsFromGroupInfo": "💭 Als Teilnehmer eine Gruppe sieht man die für diese Gruppe erstellen Events",
-    "challengesFromGroupInfo": "💭 Als Teilnehmer eine Gruppe sieht man die für diese Gruppe erstellen Challenges",
-    "navigateToEvents": "Im Menü auf der linken Seite (☰) zu den Events navigieren",
-    "listAllEvents": "Es werden alle Events aus deinen Gruppen angezeigt. Diesen kannst du über die Daumen hoch und runter Buttons beitreten oder absagen.",
-    "eventInformation": "Mit einem Klick auf ein Event siehst du alle Informationen zu diesem.",
-    "eventComments": "✉️ Kommentare lassen sich unten für das jeweilige Event einsehen und erstellen.",
-    "eventAttendance": "🟢🔴 Die Zu-und Absagen zu dem Event können detailliert durch einen Klick auf die jeweilige Zeile angezeigt werden.",
-    "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten",
-    "pullToRefresh": "Auf den meisten Seiten gibt es eine Pull-to-Refresh Funktionalität. Ziehe die Seite einfach nach unten um die Daten zu aktualisieren.",
-    "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten",
-    "title": "Informationen",
-    "toGroups": "Zu den Gruppen"
+    }
   },
   "errors": {
     "mutation": "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
