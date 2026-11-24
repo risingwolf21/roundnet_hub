@@ -1,6 +1,7 @@
 import { groupSideBar, ListSkeleton } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { TrialHomeSection } from '@/features/trials/TrialHomeSection';
+import { InstallAppCard } from '@/features/pwa/InstallAppCard';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -397,6 +398,8 @@ const HomePage = () => {
             </header>
 
             <TrialHomeSection />
+
+            <InstallAppCard />
 
             {(unanswered > 0 || unreadNotifications > 0) && (
               <div className="flex flex-col gap-2">
