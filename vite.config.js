@@ -96,6 +96,8 @@ export default defineConfig(async ({ mode }) => {
           id: START_URL,
           name: APP_NAME,
           short_name: SHORT_NAME,
+          // Shown with the screenshots in Android's install dialog.
+          description: 'Trainings, Gruppen und Benachrichtigungen deines Roundnet-Vereins an einem Ort.',
           start_url: START_URL,
           scope: SCOPE,
           display: 'standalone',
@@ -119,11 +121,19 @@ export default defineConfig(async ({ mode }) => {
               purpose: 'any maskable',
             },
           ],
+          // Android's install dialog shows these (scripts/manifest-screenshots.mjs takes them with demo data).
+          screenshots: [
+            { name: 'home', label: 'Startseite mit dem nächsten Training', form_factor: 'narrow', sizes: '824x1830' },
+            { name: 'events', label: 'Alle kommenden Trainings und Events', form_factor: 'narrow', sizes: '824x1830' },
+            { name: 'notifications', label: 'Benachrichtigungen', form_factor: 'narrow', sizes: '824x1830' },
+            { name: 'events-wide', label: 'Trainings und Events am Computer', form_factor: 'wide', sizes: '1280x800' },
+          ].map(({ name, ...screenshot }) => ({ src: `${ICON_PREFIX}/screenshots/${name}.jpg`, type: 'image/jpeg', ...screenshot })),
           ...(env.VITE_MANIFEST_CANONICAL_URL
             ? { related_applications: [{ platform: 'webapp', url: env.VITE_MANIFEST_CANONICAL_URL }] }
             : {}),
         },
-        includeAssets: ['**/*'],
+        // Only the install dialog needs the manifest screenshots; don't download them with every app update.
+        includeAssets: ['**/*', '!**/screenshots/**'],
       }),
       IS_ANALYZE && visualizer({ open: true, gzipSize: true }),
     ].filter(Boolean),
