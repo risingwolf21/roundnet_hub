@@ -3,7 +3,7 @@ import { getDeviceId } from '@/hooks/useDeviceId';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
 import { type Session } from '@supabase/supabase-js';
-import { PropsWithChildren, useEffect, useRef } from 'react';
+import { PropsWithChildren, useEffect } from 'react';
 
 type Props = PropsWithChildren & {
   session: Session | null; // reingegeben aus deinem Auth-Context
@@ -27,7 +27,6 @@ function arrayBufferToBase64(buf: ArrayBuffer) {
 
 export default function WebPushKeeper({ children, session, vapidPublicKey }: Props) {
   const deviceId = getDeviceId();
-  const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
     (async () => {
@@ -62,15 +61,8 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
           throw new Error('missing_keys');
         }
 
-        const sig = `${endpoint}|${deviceId}`;
-        if (lastSigRef.current === sig) return; // in-memory Dedupe
-        lastSigRef.current = sig;
-
-        // optional: persistentes Dedupe über Reloads
-        const persisted = localStorage.getItem('push:lastSig');
-        if (persisted === sig) return;
-        localStorage.setItem('push:lastSig', sig);
-
+        // Saved on every app start (not just once): this restores a device the server revoked and moves it to
+        // whoever is logged in now, e.g. after an account switch on a shared phone.
         await upsertToDb(endpoint, p256dh, auth);
       } catch (e) {
         captureException(e, {
