@@ -30,6 +30,18 @@ const withViewTransitions = (router: ReturnType<typeof createRouter>) => {
   return router;
 };
 
+// A navigation while a cross-fade still runs (a redirect like /training → /training/list, a fast second tap) makes
+// React Router skip the running one. Skipping rejects that transition's `ready` promise, which React Router never
+// handles, so it surfaced as an unhandled AbortError. The page itself navigates fine; only that fade is dropped.
+if ('startViewTransition' in document) {
+  const startViewTransition = document.startViewTransition.bind(document);
+  document.startViewTransition = ((update) => {
+    const transition = startViewTransition(update);
+    transition.ready.catch(() => undefined);
+    return transition;
+  }) as typeof document.startViewTransition;
+}
+
 const PrivateRoute = () => {
   const { user } = useApplication();
   const location = useLocation();
