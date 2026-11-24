@@ -45,7 +45,7 @@ test.describe('Allgemein', () => {
   test('the help page explains the app', { annotation: flow('misc.help') }, async ({ page }) => {
     await signIn(page, ME.email);
     await page.goto('/help');
-    await expect(page.getByText(/Pull-to-Refresh/).first()).toBeVisible();
+    await expect(page.getByText('Nach unten ziehen')).toBeVisible();
   });
 
   test('on a phone the menu opens as a drawer and navigates @mobile', { annotation: flow('misc.nav.mobile') }, async ({ page }, testInfo) => {
