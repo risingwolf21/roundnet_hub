@@ -44,13 +44,12 @@ export default defineConfig(async ({ mode }) => {
   const ICON_PREFIX = env.VITE_ICON_PREFIX ?? '/icons'; // z.B. /icons/roundnet-karlsruhe oder /icons/munich-roundnet
   const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true'; // SW im Dev aktiv? meist false
   const IS_ANALYZE = mode === 'analyze';
-  // Long-press menu on the app icon. Munich has no games or drinks, so it lists only events (.env.munich).
-  const SHORTCUTS = {
-    events: { name: 'Training', url: 'training/list' },
-    games: { name: 'Spiele', url: 'matches/list' },
-    drinks: { name: 'Getränke', url: 'drinks/list' },
-  };
-  const SHORTCUT_KEYS = (env.VITE_MANIFEST_SHORTCUTS ?? 'events,games,drinks').split(',');
+  // Long-press menu on the app icon. The manifest is the same for every player, so it only links pages that no
+  // feature or permission can lock.
+  const SHORTCUTS = [
+    { name: 'Benachrichtigungen', url: 'notifications' },
+    { name: 'Gruppen', url: 'groups/list' },
+  ];
 
   return {
     base: BASE_PATH,
@@ -104,7 +103,7 @@ export default defineConfig(async ({ mode }) => {
           theme_color: THEME_COLOR,
           // Links and push clicks open in the already running app instead of a second window.
           launch_handler: { client_mode: ['navigate-existing', 'auto'] },
-          shortcuts: SHORTCUT_KEYS.map((key) => ({ ...SHORTCUTS[key], url: `${BASE_PATH}${SHORTCUTS[key].url}` })),
+          shortcuts: SHORTCUTS.map((shortcut) => ({ ...shortcut, url: `${BASE_PATH}${shortcut.url}` })),
           icons: [
             { src: `${ICON_PREFIX}/favicon.ico`, sizes: '48x48', type: 'image/x-icon' },
             {
