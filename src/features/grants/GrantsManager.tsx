@@ -98,7 +98,7 @@ const GroupTab = ({ search }: { search: string }) => {
           {groups
             .filter((g) => matches(search, g.name, g.description))
             .map((group) => {
-              const c = counts?.get(group.id) ?? { perms: 0, feats: 0 };
+              const c = counts?.[group.id] ?? { perms: 0, feats: 0 };
               return (
                 <Item variant="outline" key={group.id} onClick={() => edit(group)}>
                   <ItemMedia variant="icon">
