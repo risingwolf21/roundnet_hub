@@ -107,9 +107,7 @@ async function refreshPlayer(player: string, rgId: string): Promise<RefreshResul
     Sentry.captureException(new ProfileParseError(`No player profile found on ${PLAYERZONE}/players/${playerId}`));
     return { ok: false, status: 502, reason: 'Playerzone-Profil konnte nicht gelesen werden', code: 'unreadable' };
   }
-  if (profile.rgIndex === null) {
-    Sentry.captureMessage(`fetch-player-info: no RG-Index on player ${playerId}`, 'warning');
-  }
+  // An unrated player (no RG-Index) is a normal result: stored as null and counted as `unrated` in refresh-all.
 
   // rg_id is the user's input and is not written here, so this update does not fire the rg_id trigger again.
   const { error } = await supabase
