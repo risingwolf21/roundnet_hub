@@ -1,3 +1,4 @@
+import { AppBadge } from "@/features/pwa/AppBadge";
 import React from "react";
 import { SidebarProvider } from "../ui/sidebar";
 import { Toaster } from "../ui/sonner";
@@ -8,6 +9,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <AppSidebar />
       <Toaster />
+      <AppBadge />
       <div className='flex flex-1 flex-col size-full'>
         {children}
       </div>

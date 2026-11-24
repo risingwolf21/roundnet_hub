@@ -31,7 +31,7 @@ function loadedOnStartup(id, getModuleInfo, seen = new Set()) {
 }
 
 export default defineConfig(async ({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, './environments', ''); // same folder as envDir below
 
   const APP_NAME = env.VITE_WEBSITE_NAME ?? 'App';
   const SHORT_NAME = env.VITE_SHORT_NAME ?? APP_NAME;
@@ -44,6 +44,12 @@ export default defineConfig(async ({ mode }) => {
   const ICON_PREFIX = env.VITE_ICON_PREFIX ?? '/icons'; // z.B. /icons/roundnet-karlsruhe oder /icons/munich-roundnet
   const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true'; // SW im Dev aktiv? meist false
   const IS_ANALYZE = mode === 'analyze';
+  // Long-press menu on the app icon. The manifest is the same for every player, so it only links pages that no
+  // feature or permission can lock.
+  const SHORTCUTS = [
+    { name: 'Benachrichtigungen', url: 'notifications' },
+    { name: 'Gruppen', url: 'groups/list' },
+  ];
 
   return {
     base: BASE_PATH,
@@ -86,6 +92,8 @@ export default defineConfig(async ({ mode }) => {
           type: 'module',
         },
         manifest: {
+          // Same value the browser derived from start_url before, so installed apps keep their identity.
+          id: START_URL,
           name: APP_NAME,
           short_name: SHORT_NAME,
           start_url: START_URL,
@@ -93,6 +101,9 @@ export default defineConfig(async ({ mode }) => {
           display: 'standalone',
           background_color: BG_COLOR,
           theme_color: THEME_COLOR,
+          // Links and push clicks open in the already running app instead of a second window.
+          launch_handler: { client_mode: ['navigate-existing', 'auto'] },
+          shortcuts: SHORTCUTS.map((shortcut) => ({ ...shortcut, url: `${BASE_PATH}${shortcut.url}` })),
           icons: [
             { src: `${ICON_PREFIX}/favicon.ico`, sizes: '48x48', type: 'image/x-icon' },
             {

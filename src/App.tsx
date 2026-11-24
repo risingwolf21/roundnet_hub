@@ -6,6 +6,7 @@ import { AuthGate } from './features/auth/AuthGate';
 import { UpdatePage, UpdateSuccess } from './features/pwa/AppUpdate';
 import { checkForAppUpdate, setUpdateRegistration } from './features/pwa/checkForUpdate';
 import { UpdateDownload, UpdateDownloadContext } from './features/pwa/updateDownload';
+import './features/pwa/installPrompt';
 
 export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   // Shown in the sidebar while it runs; the app stays usable until the new version is installed.

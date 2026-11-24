@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
+import { Navigate, Outlet, RouteObject, RouterNavigateOptions, RouterProvider, To, useLocation } from 'react-router';
 import { useApplication } from './features/auth/ApplicationContext';
 
 import { Has } from './hooks/useGrants';
@@ -13,13 +13,21 @@ import * as Pages from "./routes/lazy-components";
 export const AppRoutes = () => {
   const { user } = useApplication();
 
-  const router = useMemo(() => createRouter(user), [user]);
+  const router = useMemo(() => withViewTransitions(createRouter(user)), [user]);
   // Every navigation checks for a new app version.
   useEffect(() => router.subscribe((state) => {
     if (state.navigation.state === 'idle') checkForAppUpdate();
   }), [router]);
 
   return <RouterProvider router={router} />;
+};
+
+/** Every navigation (links, navigate(), redirects) cross-fades the page where the browser supports View Transitions. */
+const withViewTransitions = (router: ReturnType<typeof createRouter>) => {
+  const navigate = router.navigate;
+  router.navigate = ((to: To | null, options?: RouterNavigateOptions) =>
+    typeof to === 'number' ? navigate(to) : navigate(to, { viewTransition: true, ...options })) as typeof navigate;
+  return router;
 };
 
 const PrivateRoute = () => {

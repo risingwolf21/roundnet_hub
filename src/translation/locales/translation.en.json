@@ -1602,7 +1602,14 @@
       "description": "You are on the latest version."
     },
     "downloading": "Downloading the new version…",
-    "downloadingHint": "You can keep using the app. It restarts briefly afterwards."
+    "downloadingHint": "You can keep using the app. It restarts briefly afterwards.",
+    "install": {
+      "title": "Install the app",
+      "description": "Start the app straight from your home screen and get push notifications.",
+      "iosHint": "Tap “Share” below, then “Add to Home Screen”. On the iPhone this is the only way to get push notifications.",
+      "action": "Install",
+      "dismiss": "Hide hint"
+    }
   },
   "cropImage": {
     "title": "Crop image",

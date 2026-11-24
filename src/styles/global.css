@@ -239,3 +239,15 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
 }
+/* Page navigations cross-fade (View Transitions, see AppRoutes.tsx); a short fade keeps taps feeling instant. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
