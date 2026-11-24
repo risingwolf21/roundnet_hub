@@ -28,14 +28,15 @@ export const GrantsRepository = {
     return result.data ?? [];
   },
 
-  /** Number of permissions and features every group holds, in a single round trip. */
+  /** Number of permissions and features every group holds, in a single round trip. A plain object, not a Map:
+   * the query cache is persisted as JSON, and a restored Map comes back as `{}` without `.get`. */
   async fetchGroupGrantCounts() {
     const [perms, feats] = await Promise.all([
       supabase.from('group_permissions').select('group').throwOnError(),
       supabase.from('group_features').select('group').throwOnError(),
     ]);
-    const counts = new Map<string, { perms: number; feats: number }>();
-    const entry = (id: string) => counts.get(id) ?? counts.set(id, { perms: 0, feats: 0 }).get(id)!;
+    const counts: Record<string, { perms: number; feats: number }> = {};
+    const entry = (id: string) => (counts[id] ??= { perms: 0, feats: 0 });
     perms.data?.forEach((x) => entry(x.group).perms++);
     feats.data?.forEach((x) => entry(x.group).feats++);
     return counts;
