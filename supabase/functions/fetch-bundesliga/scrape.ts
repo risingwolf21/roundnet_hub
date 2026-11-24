@@ -33,7 +33,7 @@ export interface LeagueRef {
   schedule_slug: string | null;
 }
 
-/** The p_data of bundesliga_replace_league. */
+/** The p_data of bundesliga.replace_league. */
 export interface LeagueRows {
   teams: { team_id: string; team_version_id: string; name: string; logo_url: string | null; rgx_total: number | null }[];
   players?: {
@@ -174,7 +174,7 @@ export interface EncounterRef {
   team2_id: string;
 }
 
-/** The rows of bundesliga_store_games. */
+/** The rows of bundesliga.store_games. */
 export interface GameRow {
   game_id: string;
   encounter_id: string;

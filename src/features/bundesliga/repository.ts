@@ -1,11 +1,11 @@
-// Reads the Bundesliga data the fetch-bundesliga edge function stores in the bundesliga_* tables,
+// Reads the Bundesliga data the fetch-bundesliga edge function stores in the bundesliga schema,
 // and calls that function for the admin's season and refresh actions.
 import { supabase } from '@/lib/supabase';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import i18n from 'i18next';
 
-// The bundesliga_* tables are not in the generated types yet.
-const db = supabase as unknown as SupabaseClient;
+// The bundesliga schema is not in the generated types yet.
+const db = (supabase as unknown as SupabaseClient).schema('bundesliga');
 
 export interface BundesligaLeague {
   id: number;
@@ -77,7 +77,7 @@ export interface BundesligaGame {
   discipline: string | null;
   pair1_name: string | null;
   pair2_name: string | null;
-  /** Playerzone player ids (bundesliga_team_players.pz_player_id). */
+  /** Playerzone player ids (bundesliga.team_players.pz_player_id). */
   pair1_players: string[];
   pair2_players: string[];
   /** Points per set from side 1's view. */
@@ -141,8 +141,8 @@ export const BundesligaRepository = {
   /** The active season with its leagues, or null before an admin set one. */
   async fetchSeason(): Promise<BundesligaSeason | null> {
     const { data, error } = await db
-      .from('bundesliga_seasons')
-      .select('id, tournament_slug, name, leagues:bundesliga_leagues(id, name, sort, teams_page_id, refreshed_at, refresh_error)')
+      .from('seasons')
+      .select('id, tournament_slug, name, leagues:leagues(id, name, sort, teams_page_id, refreshed_at, refresh_error)')
       .eq('active', true)
       .maybeSingle();
     if (error) throw error;
@@ -155,7 +155,7 @@ export const BundesligaRepository = {
   async fetchTeamsOfPlayer(pzPlayerId: string, leagueIds: number[]): Promise<{ league_id: number; pz_team_id: string }[]> {
     if (leagueIds.length === 0) return [];
     const { data, error } = await db
-      .from('bundesliga_team_players')
+      .from('team_players')
       .select('league_id, pz_team_id')
       .eq('pz_player_id', pzPlayerId)
       .in('league_id', leagueIds);
@@ -170,13 +170,13 @@ export const BundesligaRepository = {
       return (data ?? []) as T[];
     };
     const [teams, standings, matchdays, groups, encounters, games] = await Promise.all([
-      rows<BundesligaTeam>('bundesliga_teams', 'pz_team_id, pz_team_version_id, name, logo_url, rgx_total'),
-      rows<BundesligaStanding>('bundesliga_standings', 'pz_team_id, position, wins, draws, losses, sets_for, sets_against, points_for, points_against'),
-      rows<BundesligaMatchday>('bundesliga_matchdays', 'pz_matchday_id, number'),
-      rows<BundesligaGroup>('bundesliga_md_groups', 'pz_group_id, pz_matchday_id, name, play_date, city'),
-      rows<BundesligaEncounter>('bundesliga_encounters', 'pz_game_id, pz_group_id, team1_id, team2_id, boards1, boards2, sets1, sets2, winner'),
+      rows<BundesligaTeam>('teams', 'pz_team_id, pz_team_version_id, name, logo_url, rgx_total'),
+      rows<BundesligaStanding>('standings', 'pz_team_id, position, wins, draws, losses, sets_for, sets_against, points_for, points_against'),
+      rows<BundesligaMatchday>('matchdays', 'pz_matchday_id, number'),
+      rows<BundesligaGroup>('md_groups', 'pz_group_id, pz_matchday_id, name, play_date, city'),
+      rows<BundesligaEncounter>('encounters', 'pz_game_id, pz_group_id, team1_id, team2_id, boards1, boards2, sets1, sets2, winner'),
       rows<BundesligaGame>(
-        'bundesliga_games',
+        'games',
         'pz_game_id, pz_encounter_id, sort, discipline, pair1_name, pair2_name, pair1_players, pair2_players, sets, winner'
       ),
     ]);
@@ -187,7 +187,7 @@ export const BundesligaRepository = {
   async fetchRosters(leagueId: number, teamIds: string[]): Promise<Record<string, ScrapedPlayer[]>> {
     if (teamIds.length === 0) return {};
     const { data, error } = await db
-      .from('bundesliga_team_players')
+      .from('team_players')
       .select('pz_team_id, pz_player_id, name, gender, rg_index, avatar_url, pro')
       .eq('league_id', leagueId)
       .in('pz_team_id', teamIds);
