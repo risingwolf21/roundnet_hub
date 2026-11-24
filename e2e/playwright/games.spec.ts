@@ -122,7 +122,7 @@ test.describe('Spiele', () => {
   test('a match entered from an event shows up in the event\'s games tab', { annotation: flow('events.matches') }, async ({ page }) => {
     await signIn(page, P.ME.email);
     await page.goto(`/training/event/${EVENT}`);
-    await page.getByRole('tab', { name: /Spiele \(0\)/ }).click();
+    await page.getByRole('tab', { name: /^Spiele\s*0$/ }).click();
     await expect(page.getByText('Noch keine Spiele', { exact: true })).toBeVisible();
     await page.getByRole('tabpanel').getByRole('button').first().click();
     await pickPlayer(page, 1, P.OPP1.name);
@@ -136,7 +136,7 @@ test.describe('Spiele', () => {
 
     await expect.poll(async () => (await admin.schema('games').from('match').select('id').eq('event', EVENT)).data?.length).toBe(1);
     await page.reload();
-    await page.getByRole('tab', { name: /Spiele \(1\)/ }).click();
+    await page.getByRole('tab', { name: /^Spiele\s*1$/ }).click();
     await expect(page.getByRole('tabpanel').locator('[data-slot="item"]').first()).toContainText('19');
   });
 

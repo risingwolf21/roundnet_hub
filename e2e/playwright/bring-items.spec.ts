@@ -38,11 +38,13 @@ async function openEditSingle(page: Page) {
 const bringItemsButton = (page: Page) =>
   page.getByRole('dialog').locator('section', { has: page.getByText('Gegenstände mitbringen', { exact: true }) }).getByRole('button', { name: 'Ändern' });
 
+/** The own-amount Stepper input of ITEM in the "Mitbringen" tab. */
+const myPledgeInput = (page: Page) => page.getByRole('spinbutton', { name: `Meine Menge ${ITEM}` });
+
 async function pledge(page: Page, qty: number) {
   await page.goto(`/training/event/${EVENT}`);
-  await page.locator('button:has(svg.lucide-shopping-bag)').click();
-  const row = page.locator('div.px-4.py-3', { has: page.getByText(ITEM, { exact: true }) });
-  await row.locator('input[type="number"]').fill(String(qty));
+  await page.getByRole('tab', { name: /Mitbringen/ }).click();
+  await myPledgeInput(page).fill(String(qty));
   await page.getByRole('button', { name: 'Zusagen speichern' }).click();
   await expect(page.getByText('Zusagen gespeichert')).toBeVisible();
 }
@@ -107,14 +109,15 @@ test.describe('Mitbringliste', () => {
       await expect(page.getByText(`2 von 3`)).toBeVisible();
       // Reopening shows my own pledge (regression: the items query overwrote the pledges cache → 0).
       await page.reload();
-      await page.locator('button:has(svg.lucide-shopping-bag)').click();
-      await expect(page.locator('div.px-4.py-3', { has: page.getByText(ITEM, { exact: true }) }).locator('input[type="number"]')).toHaveValue('2');
+      await page.getByRole('tab', { name: /Mitbringen/ }).click();
+      await expect(myPledgeInput(page)).toHaveValue('2');
 
       // The editor sees who brings what.
       await signIn(page, EDITOR.email);
       await page.goto(`/training/event/${EVENT}`);
-      await page.locator('button:has(svg.lucide-shopping-bag)').click();
-      await expect(page.getByText(`${MEMBER.name}: 2`)).toBeVisible();
+      await page.getByRole('tab', { name: /Mitbringen/ }).click();
+      // The list shows first names only ("E2E 2").
+      await expect(page.getByText(`${MEMBER.name.split(' ')[0]} 2`, { exact: true })).toBeVisible();
 
       // Withdraw.
       await signIn(page, MEMBER.email);

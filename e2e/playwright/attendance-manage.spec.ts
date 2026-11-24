@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Page } from '@playwright/test';
 import { test, expect, flow } from './fixtures';
 import { adminClient, ensureUser, grantGroup, grantUser, logPageOnFailure, signIn } from './helpers';
 
@@ -15,6 +16,9 @@ const REQUESTER = { email: `e2e_att_req_${stamp}@test.com`, name: `E2E Anfrager 
 
 let admin: SupabaseClient;
 const ids: Record<string, string> = {};
+
+/** A section of the "Teilnehmer" tab, by its header title ("Zusagen", "Anfragen", …). */
+const section = (page: Page, title: string) => page.locator('section', { has: page.getByText(title, { exact: true }) });
 
 const stateOf = async (userId: string) => {
   const { data } = await admin.from('event_attendance_user_mapping').select('state')
@@ -55,10 +59,10 @@ test.describe('Teilnehmerliste', () => {
     await page.goto(`/training/event/${EVENT}`);
     await page.getByRole('tab', { name: /Teilnehmer/ }).click();
 
-    await expect(page.getByText('Zusagen (1)')).toBeVisible();
-    await expect(page.getByText(ATTENDEE.name, { exact: true })).toBeVisible();
-    await expect(page.getByText('Anfragen (1)')).toBeVisible();
-    await expect(page.getByText(REQUESTER.name, { exact: true })).toBeVisible();
+    await expect(section(page, 'Zusagen').getByText('· 1', { exact: true })).toBeVisible();
+    await expect(section(page, 'Zusagen').getByText(ATTENDEE.name, { exact: true })).toBeVisible();
+    await expect(section(page, 'Anfragen').getByText('· 1', { exact: true })).toBeVisible();
+    await expect(section(page, 'Anfragen').getByText(REQUESTER.name, { exact: true })).toBeVisible();
   });
 
   test('a trainer accepts a pending request', { annotation: flow('attendance.admin') }, async ({ page }) => {
@@ -70,7 +74,7 @@ test.describe('Teilnehmerliste', () => {
     await row.locator('button:has(svg.lucide-check)').click();
 
     await expect.poll(() => stateOf(ids.REQUESTER)).toBe('Attending');
-    await expect(page.getByText('Zusagen (2)')).toBeVisible();
+    await expect(section(page, 'Zusagen').getByText('· 2', { exact: true })).toBeVisible();
   });
 
   test('a member without event.manage.attendees cannot accept requests', { annotation: flow('attendance.admin') }, async ({ page }) => {
