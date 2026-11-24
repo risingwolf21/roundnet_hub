@@ -313,10 +313,10 @@
       "planRoute": "Route planen",
       "eventCancelled": "Dieses Event wurde <strong>abgesagt</strong>",
       "createConstellations": "Konstellationen erstellen",
-      "tabInformation": "Information",
-      "tabAttendance": "Teilnehmer ({{n}})",
-      "tabComments": "Kommentare ({{n}})",
-      "tabMatches": "Spiele ({{n}})",
+      "tabInformation": "Details",
+      "tabAttendance": "Teilnehmer",
+      "tabComments": "Chat",
+      "tabMatches": "Spiele",
       "adminInformation": "Admin-Informationen",
       "errorTitle": "Fehler",
       "notLoaded": "Event nicht geladen",
@@ -356,9 +356,19 @@
       "empty": "Keine Mitbringe-Gegenstände für dieses Event",
       "save": "Zusagen speichern",
       "pledged": "{{pledged}} von {{required}} {{unit}} zugesagt",
-      "myPledge": "Meine Zusage",
       "saveSuccess": "Zusagen gespeichert",
-      "saveError": "Fehler beim Speichern"
+      "saveError": "Fehler beim Speichern",
+      "title": "Was wir brauchen",
+      "covered": "{{count}} von {{total}} abgedeckt",
+      "isCovered": "Abgedeckt",
+      "missing_one": "{{count}} {{unit}} fehlt",
+      "missing_other": "{{count}} {{unit}} fehlen",
+      "pledgedNoNeed": "{{pledged}} {{unit}} zugesagt",
+      "me": "du",
+      "myPledgeFor": "Meine Menge {{item}} ({{unit}})",
+      "unsaved_one": "{{count}} ungespeicherte Änderung",
+      "unsaved_other": "{{count}} ungespeicherte Änderungen",
+      "iBring": "Ich bringe"
     },
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
@@ -460,22 +470,30 @@
       "addRound": "Neue Runde hinzufügen"
     },
     "attendanceTab": {
-      "title": "Teilnehmerliste",
-      "attending": "Zusagen ({{n}})",
-      "requested": "Anfragen ({{n}})",
-      "waiting": "Warteliste ({{n}})",
-      "declined": "Absagen ({{n}})",
+      "attending": "Zusagen",
+      "requested": "Anfragen",
+      "waiting": "Warteliste",
+      "declined": "Absagen",
       "trainer": "Trainer",
       "trial": "Probetraining",
       "noAttendances": "Noch keine Zusagen.",
-      "pending": "Wartend",
-      "accept": "{{name}} annehmen"
+      "accept": "{{name}} annehmen",
+      "statIn": "Dabei",
+      "statWaiting": "Wartend",
+      "statOut": "Abgesagt",
+      "you": "{{name}} (du)",
+      "decline": "{{name}} ablehnen",
+      "waitingPlace": "Platz {{place}} · seit {{since}}",
+      "requestedHint": "Nach der Antwortfrist angefragt"
     },
     "commentsTab": {
       "addError": "Kommentar konnte nicht hinzugefügt werden.",
-      "title": "Kommentare",
-      "empty": "Noch keine Kommentare.<br />Sei der Erste!",
-      "placeholder": "Kommentar schreiben..."
+      "placeholder": "Nachricht schreiben…",
+      "emptyTitle": "Noch keine Nachrichten",
+      "emptyDescription": "Stell eine Frage oder sag den anderen etwas zu diesem Event.",
+      "send": "Nachricht senden",
+      "cancelReply": "Antwort abbrechen",
+      "closed": "Das Event ist vorbei, der Chat ist geschlossen."
     },
     "detailsTab": {
       "noDescription": "Keine Beschreibung angegeben.",
@@ -486,10 +504,12 @@
       "planRouteTo": "Route zu {{place}} planen"
     },
     "matchesTab": {
-      "empty": "Noch keine Spiele.<br />Sei der Erste!",
-      "addMatch": "Spiel hinzufügen",
+      "addMatch": "Spiel eintragen",
       "emptyTitle": "Noch keine Spiele",
-      "emptyDescription": "Füge als Erste:r ein Spiel für dieses Event hinzu."
+      "emptyDescription": "Habt ihr bei diesem Event gespielt? Trag das Ergebnis ein, damit es für die Rangliste zählt.",
+      "played_one": "{{count}} Spiel gespielt",
+      "played_other": "{{count}} Spiele gespielt",
+      "setScore": "Sätze {{a}} zu {{b}}"
     },
     "recurring": {
       "title": "Wiederkehrende Events",

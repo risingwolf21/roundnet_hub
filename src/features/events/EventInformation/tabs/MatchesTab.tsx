@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { sideBar } from '@/components/list/ListParts';
+import { Card, CardContent } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item } from '@/components/ui/item';
 import { TabsContent } from '@/components/ui/tabs';
@@ -21,61 +22,71 @@ const MatchesTab = ({ event, matches, readOnly = false }: { event: EventsUserVie
 
   return (
     <TabsContent value="matches" className="m-0">
-      <Card className="pt-0 gap-0">
-        <CardHeader className="border-b !py-2">
-          <div className="flex items-center justify-between !p-0">
-            <CardTitle className="text-lg">{t('navigation.matches')}</CardTitle>
-            {!readOnly && matches.length > 0 && (
-              <Button size="sm" variant="outline" onClick={addMatch}>
-                <Plus />
-                {t('events.matchesTab.addMatch')}
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 p-4">
+      <Card>
+        <CardContent className="flex flex-col gap-3">
           {matches.length > 0 ? (
-            matches.map((x) => {
-              const sets = (x.sets?.filter((s) => s) ?? []).map((s) => ({
-                id: s.id,
-                teamAWon: Number(s.team_a_score) > Number(s.team_b_score),
-                team_a_score: s.team_a_score,
-                team_b_score: s.team_b_score,
-              }));
-              const teamASetWins = sets.reduce((acc, curr) => acc + (curr.teamAWon ? 1 : -1), 0);
+            <>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">{t('events.matchesTab.played', { count: matches.length })}</h3>
+                {!readOnly && (
+                  <Button variant="outline" onClick={addMatch}>
+                    <Plus />
+                    {t('events.matchesTab.addMatch')}
+                  </Button>
+                )}
+              </div>
+              {matches.map((x) => {
+                const sets = (x.sets?.filter((s) => s) ?? []).map((s) => ({
+                  id: s.id,
+                  teamAWon: Number(s.team_a_score) > Number(s.team_b_score),
+                  team_a_score: s.team_a_score,
+                  team_b_score: s.team_b_score,
+                }));
+                const setsA = sets.filter((s) => s.teamAWon).length;
+                const setsB = sets.length - setsA;
 
-              return (
-                <Item key={x.id} variant="outline" className="p-3" onClick={() => navigate(`/matches/${x.id}`)}>
-                  <div className="flex w-full items-center justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className={cn('truncate', teamASetWins > 0 && 'font-bold')}>{x.team_a_name}</div>
-                      <div className={cn('truncate', teamASetWins < 0 && 'font-bold')}>{x.team_b_name}</div>
-                      {(!x.rated || !x.is_public) && (
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {!x.rated && <Badge variant="outline">{t('games.list.unrated')}</Badge>}
-                          {!x.is_public && (
-                            <Badge variant="outline">
-                              <Lock />
-                              {t('games.list.private')}
-                            </Badge>
-                          )}
+                return (
+                  <Item
+                    key={x.id}
+                    variant="outline"
+                    className={cn('cursor-pointer p-3', sideBar(setsA !== setsB ? 'success' : 'neutral'))}
+                    onClick={() => navigate(`/matches/${x.id}`)}
+                  >
+                    <div className="flex w-full items-center gap-3">
+                      <div className="min-w-0 flex-1 text-sm">
+                        <div className={cn('truncate', setsA > setsB && 'font-bold')}>{x.team_a_name}</div>
+                        <div className={cn('truncate', setsB > setsA && 'font-bold')}>{x.team_b_name}</div>
+                        {(!x.rated || !x.is_public) && (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {!x.rated && <Badge variant="outline">{t('games.list.unrated')}</Badge>}
+                            {!x.is_public && (
+                              <Badge variant="outline">
+                                <Lock />
+                                {t('games.list.private')}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2 text-sm tabular-nums text-muted-foreground">
+                        {sets.map((s) => (
+                          <div key={s.id} className="w-6 text-center">
+                            <div className={cn(s.teamAWon && 'font-bold text-foreground')}>{s.team_a_score}</div>
+                            <div className={cn(!s.teamAWon && 'font-bold text-foreground')}>{s.team_b_score}</div>
+                          </div>
+                        ))}
+                        <div className="w-7 border-l pl-2 text-center text-base font-bold text-foreground" aria-label={t('events.matchesTab.setScore', { a: setsA, b: setsB })}>
+                          <div>{setsA}</div>
+                          <div>{setsB}</div>
                         </div>
-                      )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 tabular-nums">
-                      {sets.map((s) => (
-                        <div key={s.id} className="text-center">
-                          <div className={cn(s.teamAWon && 'font-bold')}>{s.team_a_score}</div>
-                          <div className={cn(!s.teamAWon && 'font-bold')}>{s.team_b_score}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </Item>
-              );
-            })
+                  </Item>
+                );
+              })}
+            </>
           ) : (
-            <Empty>
+            <Empty className="p-4">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <Volleyball />
