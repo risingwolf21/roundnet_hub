@@ -43,6 +43,8 @@ type TargetRow = {
 
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
+// Contact the push services (Apple, Google, Mozilla) can reach about this sender; set per Supabase project.
+const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT") ?? "mailto:admin@example.com";
 
 const BATCH = parseInt(Deno.env.get("PUSH_WORKER_BATCH") ?? "100", 10);
 const MAX_JOB_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_JOB_ATTEMPTS") ?? "8", 10);
@@ -54,7 +56,7 @@ try {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
     throw new Error("VAPID_PUBLIC_KEY or VAPID_PRIVATE_KEY environment variables are not set");
   }
-  webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 } catch (e: any) {
   Sentry.captureException(e, {
     extra: {
@@ -74,8 +76,9 @@ function nowIso() {
 }
 
 function calcBackoffSeconds(attempts: number) {
-  // capped exponential (1,2,4,8,... seconds), min 5s
-  const base = Math.max(5, 2 ** attempts);
+  // capped exponential (1, 2, 4, 8, 16, 30, 30, ... minutes): the default 8 job attempts span about 1.5 hours,
+  // so a push service outage of that length doesn't drop notifications
+  const base = 30 * 2 ** attempts;
   return Math.min(BACKOFF_CAP_SECONDS, base);
 }
 
@@ -115,12 +118,16 @@ async function fetchDueJobs(limit: number): Promise<NotificationOutbox[]> {
   return data ?? [];
 }
 
+// A claimed job whose run dies before finishing stays 'processing'; once this lease has passed,
+// run_push_worker_if_needed() sets it back to 'pending'.
+const CLAIM_LEASE_SECONDS = 600;
+
 async function claimJob(jobId: number): Promise<boolean> {
   // Optimistic locking: only claim if still 'pending'
   const { data, error } = await supabase
     .schema("notifications")
     .from("notification_outbox")
-    .update({ status: "processing" })
+    .update({ status: "processing", next_attempt_at: new Date(Date.now() + CLAIM_LEASE_SECONDS * 1000).toISOString() })
     .eq("id", jobId)
     .eq("status", "pending")
     .select("id")
@@ -318,17 +325,17 @@ async function processJob(job: NotificationOutbox) {
           const msg = e?.message ?? "send error";
 
           // Categorize errors and handle appropriately:
-          // 400-403: Invalid VAPID/auth, malformed request → permanent failure, revoke subscription
+          // 400-403: VAPID/auth problem on our side (e.g. wrong keys) → keep subscription, retry, report once per run
           // 404/410: Endpoint gone/expired → revoke subscription (expected; no Sentry noise)
           // 429: Rate limit → retry with backoff
           // 500-599: Server error → retry with backoff
           // Other: Unknown error → retry with backoff and report to Sentry
 
           if (status === 400 || status === 401 || status === 403) {
-            // Permanent authentication/authorization failures - revoke subscription
-            await revokeSubscription(sub.id);
-            await markTargetSkipped(job.id, sub.id, status, msg);
-            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "auth_failure" });
+            // Revoking here once wiped every device when the VAPID keys were broken; the device is fine, we are not.
+            const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
+            await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "auth_failure" });
           } else if (status === 404 || status === 410) {
             // Endpoint gone or subscription expired — expected outcome, revoke and move on
             await revokeSubscription(sub.id);
@@ -402,6 +409,15 @@ async function handleRun(): Promise<Response> {
       const attemptsNext = job.attempt_count + 1;
       await finishJob(job.id, false, attemptsNext);
     }
+  }
+
+  const authFailures = summary.jobs.flatMap((j: any) => j.results ?? []).filter((r: any) => r.reason === "auth_failure");
+  if (authFailures.length > 0) {
+    Sentry.captureMessage("Push services reject our requests (400-403): check the VAPID keys and VAPID_SUBJECT", {
+      level: "error",
+      extra: { count: authFailures.length, statuses: [...new Set(authFailures.map((r: any) => r.status))] },
+      tags: { pushErrorType: "auth_failure" },
+    });
   }
 
   summary.ms = Date.now() - start;

@@ -13,6 +13,7 @@ import { captureException } from '@sentry/react';
  * ourselves and reload, guaranteeing the user is signed out client-side either way.
  */
 export async function signOut(): Promise<void> {
+  await unbindPushSubscription();
   try {
     const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) throw error;
@@ -20,6 +21,26 @@ export async function signOut(): Promise<void> {
   } catch (error: unknown) {
     captureException(error);
     forceLocalSignOut();
+  }
+}
+
+/**
+ * Stops pushes for the logged-out account reaching this device. Must run while still authenticated (RLS). The browser
+ * subscription is kept, so the next login on this device re-registers it for that account.
+ */
+async function unbindPushSubscription(): Promise<void> {
+  try {
+    const registration = await navigator.serviceWorker?.getRegistration();
+    const subscription = await registration?.pushManager?.getSubscription();
+    if (!subscription) return;
+    await supabase
+      .schema('notifications')
+      .from('web_push_subscriptions')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('endpoint', subscription.endpoint)
+      .throwOnError();
+  } catch (error: unknown) {
+    captureException(error);
   }
 }
 

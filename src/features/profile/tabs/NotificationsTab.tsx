@@ -74,6 +74,18 @@ async function revokeOnServer(endpoint?: string | null) {
       .eq('endpoint', endpoint);
 }
 
+// The browser can still hold a subscription the server has revoked; only an active server row receives pushes.
+async function isActiveOnServer(endpoint: string) {
+  const { data } = await supabase
+    .schema('notifications')
+    .from('web_push_subscriptions')
+    .select('id')
+    .eq('endpoint', endpoint)
+    .is('revoked_at', null)
+    .maybeSingle();
+  return !!data;
+}
+
 // ---------------------------------------------------------------------------
 
 const isNotificationSupported =
@@ -120,7 +132,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       try {
         const reg = await getSW();
         const sub = await getCurrentSubscription(reg);
-        setRegistered(!!sub);
+        setRegistered(!!sub && (await isActiveOnServer(sub.endpoint)));
       } catch {
         // SW not supported or not ready
       }
