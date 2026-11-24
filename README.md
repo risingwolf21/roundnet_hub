@@ -311,7 +311,7 @@ A community is a tenant: an environment file (`environments/.env.<tenant>`) with
 ### Backend & Database
 - **Supabase** - Backend-as-a-Service (PostgreSQL, Auth, Storage, Edge Functions)
 - **Supabase Edge Functions** - Serverless functions (Deno)
-- **PostgreSQL** - Relational database with schemas: public, games, audit, notifications, util
+- **PostgreSQL** - Relational database with schemas: public, games, audit, notifications, util, bundesliga
 
 ### Infrastructure
 - **Firebase Hosting** - Multi-site hosting (Karlsruhe, Munich, Staging)

@@ -3,7 +3,7 @@ import { Page } from '@playwright/test';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { adminClient, ensureUser, grantUser, logPageOnFailure, signIn } from './helpers';
 
-// Bundesliga: the app reads the bundesliga_* tables the fetch-bundesliga edge function fills.
+// Bundesliga: the app reads the bundesliga schema's tables the fetch-bundesliga edge function fills.
 // The test stores one league of the active season directly (as the function would) and never
 // lets the browser reach the live playerzone: every call to the edge function is stubbed.
 const stamp = Date.now();
@@ -45,14 +45,14 @@ test.describe('Bundesliga', () => {
     await admin.schema('games').from('players').update({ rg_id: `EEE${PZ_ME}` })
       .or(`linked_user_id.eq.${userId},and(player.eq.${userId},linked_user_id.is.null)`).throwOnError();
 
-    const { data: season } = await admin.from('bundesliga_seasons').select('id').eq('active', true).single().throwOnError();
-    const { data: league } = await admin.from('bundesliga_leagues')
+    const { data: season } = await admin.schema('bundesliga').from('seasons').select('id').eq('active', true).single().throwOnError();
+    const { data: league } = await admin.schema('bundesliga').from('leagues')
       .insert({ season_id: (season as { id: number }).id, name: LEAGUE_NAME, sort: 0, teams_page_id: `e2e${stamp}`, schedule_slug: null })
       .select('id').single().throwOnError();
     leagueId = (league as { id: number }).id;
 
     // Match day 1 is played (B 0:5 A); match day 2 (A vs B) is still open.
-    await admin.rpc('bundesliga_replace_league', {
+    await admin.schema('bundesliga').rpc('replace_league', {
       p_league_id: leagueId,
       p_data: {
         teams: [{ ...TEAM_A, logo_url: null, rgx_total: 3000 }, { ...TEAM_B, logo_url: null, rgx_total: 2000 }],
@@ -77,7 +77,7 @@ test.describe('Bundesliga', () => {
       },
     }).throwOnError();
     // One game of match day 1, played by me for TEAM_A (side 2).
-    await admin.rpc('bundesliga_store_games', {
+    await admin.schema('bundesliga').rpc('store_games', {
       p_league_id: leagueId,
       p_games: [{
         game_id: `x1${stamp}`, encounter_id: `e1${stamp}`, sort: 1, discipline: 'Mixed 1',
@@ -190,7 +190,7 @@ test.describe('Bundesliga', () => {
 
   test.afterAll(async () => {
     try {
-      if (leagueId) await admin.from('bundesliga_leagues').delete().eq('id', leagueId);
+      if (leagueId) await admin.schema('bundesliga').from('leagues').delete().eq('id', leagueId);
       await admin.from('user_direct_grants').delete().eq('user', userId);
       if (userId) await admin.auth.admin.deleteUser(userId);
     } catch {

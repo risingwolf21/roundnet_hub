@@ -34,7 +34,7 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 3.0.0
-      # Expose the app's API schemas (games, notifications, util) like production does.
+      # Expose the app's API schemas (games, notifications, util, bundesliga) like production does.
       - name: Use the e2e Supabase config
         run: test -f supabase/config.toml || cp e2e/supabase.config.toml supabase/config.toml
       - run: supabase start --ignore-health-check

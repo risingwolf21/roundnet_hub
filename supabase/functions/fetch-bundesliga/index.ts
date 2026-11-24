@@ -1,5 +1,5 @@
-// Loads the Deutsche Roundnet Liga from the Roundnet Germany playerzone into the bundesliga_*
-// tables: the season's leagues, their teams and rosters, every match day with its groups and
+// Loads the Deutsche Roundnet Liga from the Roundnet Germany playerzone into the bundesliga
+// schema: the season's leagues, their teams and rosters, every match day with its groups and
 // encounter results, and the league table. The app only reads those tables.
 //
 // Actions (POST JSON):
@@ -22,9 +22,10 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-// Service-role client: the only writer of the bundesliga_* tables.
+// Service-role client: the only writer of the bundesliga schema's tables.
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
+  db: { schema: 'bundesliga' },
 });
 
 Sentry.init({
@@ -75,7 +76,7 @@ type League = { id: number; name: string; teams_page_id: string; schedule_slug: 
 
 async function leaguesOf(seasonId: number): Promise<League[]> {
   const { data, error } = await admin
-    .from('bundesliga_leagues')
+    .from('leagues')
     .select('id, name, teams_page_id, schedule_slug, refreshed_at')
     .eq('season_id', seasonId)
     .order('sort');
@@ -86,7 +87,7 @@ async function leaguesOf(seasonId: number): Promise<League[]> {
 /** Makes the tournament the active season and stores its leagues. */
 async function activateSeason(slug: string): Promise<{ season: Season; leagues: League[] }> {
   const { name, leagues } = await findLeagues(get, slug);
-  const { data, error } = await admin.rpc('bundesliga_activate_season', {
+  const { data, error } = await admin.rpc('activate_season', {
     p_slug: slug,
     p_name: name,
     p_leagues: leagues.map((l, i) => ({ name: l.name, sort: i + 1, teams_page_id: l.teamsPageId, schedule_slug: l.scheduleSlug })),
@@ -99,7 +100,7 @@ async function activateSeason(slug: string): Promise<{ season: Season; leagues: 
 /** The active season and its leagues; the leagues are found from playerzone the first time. */
 async function activeLeagues(): Promise<{ season: Season; leagues: League[] } | null> {
   const { data: season, error } = await admin
-    .from('bundesliga_seasons')
+    .from('seasons')
     .select('id, tournament_slug, name')
     .eq('active', true)
     .maybeSingle();
@@ -113,7 +114,7 @@ async function activeLeagues(): Promise<{ season: Season; leagues: League[] } | 
 async function refreshLeague(season: Season, league: League, withRosters: boolean) {
   try {
     const rows = await scrapeLeague(get, season.tournament_slug, league, withRosters);
-    const { error } = await admin.rpc('bundesliga_replace_league', { p_league_id: league.id, p_data: rows });
+    const { error } = await admin.rpc('replace_league', { p_league_id: league.id, p_data: rows });
     if (error) throw error;
     return {
       league: { id: league.id, name: league.name },
@@ -124,7 +125,7 @@ async function refreshLeague(season: Season, league: League, withRosters: boolea
       played: rows.encounters.filter((e) => e.winner !== null).length,
     };
   } catch (error) {
-    await admin.from('bundesliga_leagues').update({ refresh_error: String(error).slice(0, 500) }).eq('id', league.id);
+    await admin.from('leagues').update({ refresh_error: String(error).slice(0, 500) }).eq('id', league.id);
     throw error;
   }
 }
@@ -132,9 +133,9 @@ async function refreshLeague(season: Season, league: League, withRosters: boolea
 /** Fetches the games of the league's played encounters that have none stored yet, until the deadline. */
 async function refreshGames(league: League, deadline: number) {
   const [encounters, stored, players] = await Promise.all([
-    admin.from('bundesliga_encounters').select('pz_game_id, team1_id, team2_id').eq('league_id', league.id).not('boards1', 'is', null),
-    admin.from('bundesliga_games').select('pz_encounter_id').eq('league_id', league.id),
-    admin.from('bundesliga_team_players').select('pz_team_id, pz_player_id, name').eq('league_id', league.id),
+    admin.from('encounters').select('pz_game_id, team1_id, team2_id').eq('league_id', league.id).not('boards1', 'is', null),
+    admin.from('games').select('pz_encounter_id').eq('league_id', league.id),
+    admin.from('team_players').select('pz_team_id, pz_player_id, name').eq('league_id', league.id),
   ]);
   const failed = encounters.error ?? stored.error ?? players.error;
   if (failed) throw failed;
@@ -149,7 +150,7 @@ async function refreshGames(league: League, deadline: number) {
   }
   const result = await scrapeGames(get, todo, rosters, deadline);
   if (result.games.length) {
-    const { error } = await admin.rpc('bundesliga_store_games', { p_league_id: league.id, p_games: result.games });
+    const { error } = await admin.rpc('store_games', { p_league_id: league.id, p_games: result.games });
     if (error) throw error;
   }
   return { league: { id: league.id, name: league.name }, fetched: result.done, pending: result.pending };
