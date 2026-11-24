@@ -17,6 +17,11 @@
     "ok": "OK",
     "retry": "Erneut versuchen"
   },
+  "share": {
+    "button": "Teilen",
+    "copied": "Link kopiert",
+    "failed": "Teilen hat nicht geklappt"
+  },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
     "diffInDaysPrior_one": "{{count}} Tag davor",

@@ -6,6 +6,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import { ShareButton } from "@/components/ShareButton";
 import { AppBar } from "@/components/ui/appbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
@@ -294,8 +295,12 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
         primaryAction="back"
         navigateBackPath="/training"
         user={user}
-        actions={
-          !readOnly && <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
+        actions={<>
+          <ShareButton
+            title={event.title}
+            text={`${event.title} · ${new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(start)}`}
+          />
+          {!readOnly && <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="ghost" size={"icon-lg"}>
                 <EllipsisVertical />
@@ -376,8 +381,8 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
                 </Has>
               </DropdownMenuContent>
             </DropdownMenu>
-          </Has>
-        }
+          </Has>}
+        </>}
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
