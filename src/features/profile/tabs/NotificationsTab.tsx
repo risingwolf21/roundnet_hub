@@ -1,4 +1,5 @@
 import { getDeviceId } from "@/hooks/useDeviceId";
+import { PUSH_OPTED_OUT_KEY } from "@/features/push/WebPushKeeper";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -157,6 +158,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
         applicationServerKey: urlBase64ToUint8Array(VAPID),
       });
       await registerOnServer(sub);
+      localStorage.removeItem(PUSH_OPTED_OUT_KEY);
       setRegistered(true);
     } catch (e) {
       setPushError(e instanceof Error ? e.message : String(e));
@@ -179,6 +181,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
         applicationServerKey: urlBase64ToUint8Array(VAPID),
       });
       await registerOnServer(sub);
+      localStorage.removeItem(PUSH_OPTED_OUT_KEY);
       setRegistered(true);
     } catch (e) {
       setPushError(e instanceof Error ? e.message : String(e));
@@ -195,6 +198,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
       const sub = await reg.pushManager.getSubscription();
       await revokeOnServer(sub?.endpoint);
       await sub?.unsubscribe();
+      localStorage.setItem(PUSH_OPTED_OUT_KEY, '1');
       setRegistered(false);
     } catch (e) {
       setPushError(e instanceof Error ? e.message : String(e));

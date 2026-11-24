@@ -6,7 +6,7 @@ vi.mock('@/lib/queryClient', () => ({ queryClient: { clear: vi.fn() } }));
 vi.mock('@sentry/react', () => ({ captureException: vi.fn() }));
 
 import { signOut } from '@/features/auth/signOut';
-import WebPushKeeper from '@/features/push/WebPushKeeper';
+import WebPushKeeper, { PUSH_OPTED_OUT_KEY } from '@/features/push/WebPushKeeper';
 import { getDeviceId } from '@/hooks/useDeviceId';
 import { op, supabaseClientMock, supabaseMock } from './helpers/supabaseMock';
 import type { Session } from '@supabase/supabase-js';
@@ -46,6 +46,17 @@ describe('WebPushKeeper', () => {
         p_endpoint: ENDPOINT,
       })
     );
+  });
+
+  test('leaves the device alone after the person turned push off', async () => {
+    localStorage.setItem(PUSH_OPTED_OUT_KEY, '1');
+    const session = { user: { id: 'anna' } } as Session;
+
+    render(<WebPushKeeper session={session} vapidPublicKey="BKey" />);
+
+    // Let the effect run to completion before checking that it saved nothing.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(supabaseMock.queries.find((q) => q.rpc === 'upsert_webpush_subscription')).toBeUndefined();
   });
 });
 
