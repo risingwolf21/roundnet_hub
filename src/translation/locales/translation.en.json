@@ -17,6 +17,11 @@
     "ok": "OK",
     "retry": "Try again"
   },
+  "share": {
+    "button": "Share",
+    "copied": "Link copied",
+    "failed": "Sharing didn't work"
+  },
   "date-fns": {
     "diffInDaysPrior_zero": "The same day",
     "diffInDaysPrior_one": "{{count}} day prior",

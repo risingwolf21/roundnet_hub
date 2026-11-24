@@ -1,5 +1,6 @@
 import { DangerZone } from '@/components/DangerZone';
 import { PullToRefresh } from '@/components/PullToRefresh';
+import { ShareButton } from '@/components/ShareButton';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -92,7 +93,7 @@ const MatchInformation = () => {
   const { data: match, isLoading, refetch } = useMatch(matchId);
   const deleteMatch = useDeleteMatch(matchId);
 
-  const appBar = <AppBar className="!border-b !shadow-sm" title={t('games.information.title')} user={user} primaryAction="back" />;
+  const appBar = <AppBar className="!border-b !shadow-sm" title={t('games.information.title')} user={user} primaryAction="back" actions={match && <ShareButton title={t('games.information.title')} text={match.team_a_name && match.team_b_name ? `${match.team_a_name} – ${match.team_b_name}` : undefined} />} />;
 
   if (isLoading) {
     return (
