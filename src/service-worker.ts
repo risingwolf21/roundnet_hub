@@ -167,7 +167,10 @@ self.addEventListener('push', (event) => {
     renotify,
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  // A dot on the app icon; the app shows the exact unread count once it is open (features/pwa/AppBadge.tsx).
+  event.waitUntil(
+    Promise.all([self.registration.showNotification(title, options), self.navigator.setAppBadge?.().catch(() => undefined)])
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {
