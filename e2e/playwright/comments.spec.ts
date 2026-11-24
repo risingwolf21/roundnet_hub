@@ -25,7 +25,7 @@ const comments = async () => {
 
 async function openComments(page: Page, eventId = EVENT) {
   await page.goto(`/training/event/${eventId}`);
-  await page.getByRole('tab', { name: /Kommentare/ }).click();
+  await page.getByRole('tab', { name: /Chat/ }).click();
 }
 
 test.describe.configure({ mode: 'serial' });
@@ -53,9 +53,9 @@ test.describe('Kommentare', () => {
     const text = testInfo.project.name === 'mobile' ? `${COMMENT} (mobil)` : COMMENT;
     await signIn(page, WRITER.email);
     await openComments(page);
-    await expect(page.getByText('Noch keine Kommentare.')).toBeVisible();
-    await page.getByPlaceholder('Kommentar schreiben...').fill(text);
-    await page.getByRole('button', { name: 'Senden' }).click();
+    await expect(page.getByText('Noch keine Nachrichten', { exact: true })).toBeVisible();
+    await page.getByPlaceholder('Nachricht schreiben…').fill(text);
+    await page.getByRole('button', { name: 'Nachricht senden' }).click();
 
     await expect(page.getByText(text, { exact: true })).toBeVisible();
     await expect.poll(async () => (await comments()).filter((c) => c.comment === text && c.user === ids.WRITER).length).toBe(1);
@@ -67,29 +67,30 @@ test.describe('Kommentare', () => {
     await openComments(page);
     await page.getByRole('button', { name: 'Antworten' }).first().click();
     await expect(page.getByText(/Antworte auf @/)).toBeVisible();
-    await page.getByPlaceholder('Kommentar schreiben...').fill(REPLY);
-    await page.getByRole('button', { name: 'Senden' }).click();
+    await page.getByPlaceholder('Nachricht schreiben…').fill(REPLY);
+    await page.getByRole('button', { name: 'Nachricht senden' }).click();
 
     await expect(page.getByText(REPLY, { exact: true })).toBeVisible();
     await expect.poll(async () => (await comments()).find((c) => c.comment === REPLY)?.reply_to).toBe(parent.id);
     // The tab counts comments including replies.
-    await expect(page.getByRole('tab', { name: 'Kommentare (2)' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Chat\s*2$/ })).toBeVisible();
   });
 
   test('without event.comment the member neither sees nor sends comments', { annotation: flow('comments.noperm') }, async ({ page }) => {
     await signIn(page, SILENT.email);
     await openComments(page);
     // RLS (comments_select_member) requires event.comment for reading as well.
-    await expect(page.getByText('Noch keine Kommentare.')).toBeVisible();
+    await expect(page.getByText('Noch keine Nachrichten', { exact: true })).toBeVisible();
     await expect(page.getByText(COMMENT, { exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Senden' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Nachricht senden' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Antworten' })).toHaveCount(0);
   });
 
   test('comments on a past event are closed', { annotation: flow('comments.past') }, async ({ page }) => {
     await signIn(page, WRITER.email);
     await openComments(page, PAST_EVENT);
-    await expect(page.getByRole('button', { name: 'Senden' })).toBeDisabled();
+    await expect(page.getByText('Das Event ist vorbei, der Chat ist geschlossen.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Nachricht senden' })).toHaveCount(0);
   });
 
   test.afterAll(async () => {
