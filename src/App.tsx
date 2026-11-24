@@ -22,6 +22,14 @@ export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     return () => navigator.serviceWorker?.removeEventListener('message', onMessage);
   }, []);
 
+  // The one page-side reload: once a new version controls this page (in every open tab, not only the one that
+  // activated it). The SW's activate handler also navigates open windows, for pages whose JS never ran.
+  useEffect(() => {
+    const onControllerChange = () => window.location.reload();
+    navigator.serviceWorker?.addEventListener('controllerchange', onControllerChange, { once: true });
+    return () => navigator.serviceWorker?.removeEventListener('controllerchange', onControllerChange);
+  }, []);
+
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
     immediate: true,
     onRegistered: (registration) => {
@@ -53,15 +61,13 @@ export const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
   });
 
-  // Sends SKIP_WAITING to the waiting SW and reloads once the new SW controls the page. The plugin
-  // reloads too, but only when the page was controlled at load (an uncontrolled page stays stuck here).
+  // Sends SKIP_WAITING to the waiting SW; the controllerchange listener above reloads the page.
   const activate = useCallback(() => {
     try {
       sessionStorage.setItem('pwa-update-applied', '1');
     } catch {
       // Storage may be unavailable.
     }
-    navigator.serviceWorker?.addEventListener('controllerchange', () => window.location.reload(), { once: true });
     updateServiceWorker().catch((error) => {
       console.error('Failed to activate service worker:', error);
       try {

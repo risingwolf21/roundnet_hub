@@ -9,6 +9,20 @@ function isChunkError(err: unknown) {
   );
 }
 
+// The clear-caches-and-reload below runs at most once a minute: if a chunk still fails right after
+// that reload, the error goes to the error boundary instead of reloading forever.
+const LAST_RELOAD_KEY = 'chunk-reload-at';
+
+function mayReload() {
+  try {
+    if (Date.now() - Number(sessionStorage.getItem(LAST_RELOAD_KEY) ?? 0) < 60_000) return false;
+    sessionStorage.setItem(LAST_RELOAD_KEY, String(Date.now()));
+  } catch {
+    // Storage unavailable: reload anyway, as before.
+  }
+  return true;
+}
+
 export function lazyWithRetry<T extends React.ComponentType<any>>(
   loader: () => Promise<{ default: T }>,
   opts: { retries?: number; delayMs?: number; onFinalFail?: (err: any) => void } = {}
@@ -24,7 +38,7 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
             .catch(async (err) => {
               if (isChunkError(err) && n > 0) {
                 setTimeout(() => attempt(n - 1), delayMs);
-              } else if (isChunkError(err)) {
+              } else if (isChunkError(err) && mayReload()) {
                 // All retries exhausted and it's a chunk error
                 // Clear caches and reload the page to get fresh modules
                 try {

@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import './apocalypseHandler';
 import { App } from './App';
 import ErrorScreen from './components/ErrorScreen';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -22,14 +21,6 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   onRecoverableError: Sentry.reactErrorHandler((error, errorInfo) => {
     console.warn('Recoverable error', error, errorInfo.componentStack);
   }),
-});
-
-let reloading = false;
-navigator.serviceWorker?.addEventListener('controllerchange', () => {
-  if (!reloading) {
-    reloading = true;
-    window.location.reload();
-  }
 });
 
 const Fallback = (e: { error: unknown; componentStack: string; eventId: string; resetError(): void }) => (
