@@ -10,6 +10,10 @@ type Props = PropsWithChildren & {
   vapidPublicKey: string;
 };
 
+// Set when the person turns push off in Profile > Notifications; until they turn it on again this device isn't
+// subscribed automatically.
+export const PUSH_OPTED_OUT_KEY = 'push:optedOut';
+
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -35,6 +39,9 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
           return;
         }
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
+          return;
+        }
+        if (localStorage.getItem(PUSH_OPTED_OUT_KEY)) {
           return;
         }
         if (Notification.permission === 'default') {
