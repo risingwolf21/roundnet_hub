@@ -308,10 +308,10 @@
       "planRoute": "Plan route",
       "eventCancelled": "This event has been <strong>cancelled</strong>",
       "createConstellations": "Create constellations",
-      "tabInformation": "Information",
-      "tabAttendance": "Attendees ({{n}})",
-      "tabComments": "Comments ({{n}})",
-      "tabMatches": "Matches ({{n}})",
+      "tabInformation": "Details",
+      "tabAttendance": "People",
+      "tabComments": "Chat",
+      "tabMatches": "Matches",
       "adminInformation": "Admin information",
       "errorTitle": "Error",
       "notLoaded": "Event not loaded",
@@ -347,13 +347,23 @@
       "durationHoursMinutes": "{{h}} h {{m}} min"
     },
     "bringItems": {
-      "tab": "Bring Items",
+      "tab": "Bring",
       "empty": "No items to bring for this event",
       "save": "Save pledges",
       "pledged": "{{pledged}} of {{required}} {{unit}} pledged",
-      "myPledge": "My pledge",
       "saveSuccess": "Pledges saved",
-      "saveError": "Error saving pledges"
+      "saveError": "Error saving pledges",
+      "title": "What we need",
+      "covered": "{{count}} of {{total}} covered",
+      "isCovered": "Covered",
+      "missing_one": "{{count}} {{unit}} missing",
+      "missing_other": "{{count}} {{unit}} missing",
+      "pledgedNoNeed": "{{pledged}} {{unit}} pledged",
+      "me": "you",
+      "myPledgeFor": "My amount of {{item}} ({{unit}})",
+      "unsaved_one": "{{count}} unsaved change",
+      "unsaved_other": "{{count}} unsaved changes",
+      "iBring": "I bring"
     },
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
@@ -455,22 +465,30 @@
       "addRound": "Add new round"
     },
     "attendanceTab": {
-      "title": "Attendee list",
-      "attending": "Attending ({{n}})",
-      "requested": "Requests ({{n}})",
-      "waiting": "Waiting list ({{n}})",
-      "declined": "Declined ({{n}})",
+      "attending": "Attending",
+      "requested": "Requests",
+      "waiting": "Waiting list",
+      "declined": "Can’t make it",
       "trainer": "Trainer",
       "trial": "Trial session",
       "noAttendances": "No attendances yet.",
-      "pending": "Pending",
-      "accept": "Accept {{name}}"
+      "accept": "Accept {{name}}",
+      "statIn": "In",
+      "statWaiting": "Waiting",
+      "statOut": "Out",
+      "you": "{{name}} (you)",
+      "decline": "Decline {{name}}",
+      "waitingPlace": "Place {{place}} · since {{since}}",
+      "requestedHint": "Asked after the answer deadline"
     },
     "commentsTab": {
       "addError": "Comment could not be added.",
-      "title": "Comments",
-      "empty": "No comments yet.<br />Be the first!",
-      "placeholder": "Write a comment..."
+      "placeholder": "Write a message…",
+      "emptyTitle": "No messages yet",
+      "emptyDescription": "Ask a question or tell the others something about this event.",
+      "send": "Send message",
+      "cancelReply": "Cancel reply",
+      "closed": "The event is over, the chat is closed."
     },
     "detailsTab": {
       "noDescription": "No description provided.",
@@ -481,10 +499,12 @@
       "planRouteTo": "Plan route to {{place}}"
     },
     "matchesTab": {
-      "empty": "No matches yet.<br />Be the first!",
       "addMatch": "Add match",
       "emptyTitle": "No matches yet",
-      "emptyDescription": "Be the first to add a match for this event."
+      "emptyDescription": "Played at this event? Add the score so it counts for the ranking.",
+      "played_one": "{{count}} match played",
+      "played_other": "{{count}} matches played",
+      "setScore": "Sets {{a}} to {{b}}"
     },
     "recurring": {
       "title": "Recurring events",

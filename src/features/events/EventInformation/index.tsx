@@ -40,7 +40,6 @@ import {
   MapPin,
   Megaphone,
   Pencil,
-  ShoppingBag,
   SquareArrowRightExit,
   Trash2,
   Volleyball,
@@ -479,49 +478,33 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
               </Has>
             )}
 
-            <Tabs defaultValue={"information"} className="w-full mt-6">
-              <TabsList className="flex w-full justify-start overscroll-y-none overflow-x-auto bg-card border !h-12 shadow-sm [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <TabsTrigger
-                  value="information"
-                  className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
-                >
+            <Tabs defaultValue={"information"} className="w-full mt-3">
+              <TabsList className="flex !h-12 w-full justify-start gap-1 overflow-x-auto overscroll-y-none rounded-xl p-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <TabsTrigger value="information" className="h-10 flex-none grow px-3 font-semibold">
                   {t('events.information.tabInformation')}
                 </TabsTrigger>
-
-                <TabsTrigger
-                  value="attendance"
-                  className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
-                >
-                  {t('events.information.tabAttendance', { n: attendance.filter(x => ["Attending", "AttendingAsTrainer", "AttendingAsTrial"].includes(x.state)).length })}
+                <TabsTrigger value="attendance" className="h-10 flex-none grow px-3 font-semibold">
+                  {t('events.information.tabAttendance')}
+                  <span className="font-normal tabular-nums text-muted-foreground">{attendance.filter(x => ["Attending", "AttendingAsTrainer", "AttendingAsTrial"].includes(x.state)).length}</span>
                 </TabsTrigger>
-
-                <TabsTrigger
-                  value="comments"
-                  className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
-                >
-                  {t('events.information.tabComments', { n: comments.reduce((a, c) => a + c.replies.length + 1, 0) })}
-                </TabsTrigger>
-
-                <Has feat={"games"}>
-                  <TabsTrigger
-                    value="matches"
-                    className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5"
-                  >
-                    {t('events.information.tabMatches', { n: matches.length })}
-                  </TabsTrigger>
-                </Has>
-
                 {allItems.length > 0 && (
-                  <TabsTrigger
-                    value="bring-items"
-                    className="flex-1 whitespace-nowrap h-10 px-4 data-[state=active]:bg-primary/5 gap-1.5"
-                  >
-                    <ShoppingBag className="size-4" />
+                  <TabsTrigger value="bring-items" className="h-10 flex-none grow px-3 font-semibold">
                     {t('events.bringItems.tab')}
+                    <span className="font-normal tabular-nums text-muted-foreground">{allItems.length}</span>
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="comments" className="h-10 flex-none grow px-3 font-semibold">
+                  {t('events.information.tabComments')}
+                  <span className="font-normal tabular-nums text-muted-foreground">{comments.reduce((a, c) => a + c.replies.length + 1, 0)}</span>
+                </TabsTrigger>
+                <Has feat={"games"}>
+                  <TabsTrigger value="matches" className="h-10 flex-none grow px-3 font-semibold">
+                    {t('events.information.tabMatches')}
+                    <span className="font-normal tabular-nums text-muted-foreground">{matches.length}</span>
+                  </TabsTrigger>
+                </Has>
               </TabsList>
-              <div className="pt-4">
+              <div className="pt-1">
                 <EventDetailsTab event={event} selectedEventPlace={selectedEventPlace} />
                 <AttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} readOnly={readOnly} />
                 <CommentsTab event={event} user={user} comments={comments} readOnly={readOnly} />
