@@ -3,9 +3,10 @@ import type { TrialStatus } from '@/repository/TrialRepository';
 import { trialKeys } from './trialKeys';
 import { trialAttendanceError } from '@/features/trials/trialErrors';
 import { toast } from 'sonner';
+import { t } from 'i18next';
 import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
-import { queryClient } from '@/lib/queryClient';
+import { attendanceMutationKey, AttendanceVariables, queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { EventRepository } from '@/repository/EventRepository';
 import { GamesRepository } from '@/repository/GamesRepository';
@@ -13,7 +14,7 @@ import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.t
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
 import { durationToPostgresInterval, formatDateFromDatabaseNotNull, formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { onlineManager, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Duration, format, isBefore } from 'date-fns';
 
@@ -411,11 +412,17 @@ export const useUpsetBringPledges = () => {
 
 export const useUpdateAttendanceMutation = () => {
   return useMutation({
+    // lib/queryClient registers the same mutationFn for this key, so an answer queued offline is still sent after a reload.
+    mutationKey: attendanceMutationKey,
     meta: { suppressErrorToast: true },
-    mutationFn: ({ event, newState, user }: { user: User; event: EventsUserView; newState: EventAttendance }) => {
-      return EventRepository.updateAttendance(user.id, event.id!, newState);
-    },
+    // Setting an answer is idempotent, so unlike other writes it may wait offline and be sent once back online.
+    // One scope sends queued answers in the order they were given.
+    networkMode: 'online',
+    scope: { id: 'attendance' },
+    mutationFn: ({ event, newState, user }: AttendanceVariables) =>
+      EventRepository.updateAttendance(user.id, event.id!, newState),
     onMutate: async ({ event, newState, user }) => {
+      if (!onlineManager.isOnline()) toast.info(t('events.item.answerQueuedOffline'));
       await Promise.all([
         cancelEventLists(),
         queryClient.cancelQueries({ queryKey: eventKeys.eventAttendance(event.id) }),

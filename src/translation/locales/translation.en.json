@@ -402,6 +402,7 @@
       "emptyOtherDescription": "Events of subgroups of your groups that you are not a member of show up here."
     },
     "item": {
+      "answerQueuedOffline": "You are offline. Your answer will be sent as soon as you are back online.",
       "noLocation": "No location specified",
       "cancelled": "Cancelled",
       "waiting": "Waiting",
@@ -571,7 +572,6 @@
     "matches": "Matches",
     "training": "Training",
     "groups": "Groups",
-    "search": "Search",
     "costs": "Tournament Costs",
     "bundesliga": "Bundesliga",
     "home": "Home",

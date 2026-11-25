@@ -402,6 +402,7 @@
       "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist."
     },
     "item": {
+      "answerQueuedOffline": "Du bist offline. Deine Antwort wird gesendet, sobald du wieder online bist.",
       "noLocation": "Kein Ort angegeben",
       "cancelled": "Abgesagt",
       "waiting": "Wartet",
@@ -571,7 +572,6 @@
     "matches": "Spiele",
     "leaderboard": "Rangliste",
     "groups": "Gruppen",
-    "search": "Suchen",
     "costs": "Turnierkosten",
     "bundesliga": "Bundesliga",
     "home": "Home",

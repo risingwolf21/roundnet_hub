@@ -10,6 +10,7 @@ const { testQueryClient, repo } = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/queryClient', () => ({
+  attendanceMutationKey: ['events', 'attendance', 'update'],
   get queryClient() {
     return testQueryClient.current;
   },

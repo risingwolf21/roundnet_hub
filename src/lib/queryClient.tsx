@@ -2,6 +2,8 @@ import { captureException } from '@sentry/react';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
+import { EventRepository } from '@/repository/EventRepository';
+import { EventsUserView } from '@/types/supabaseTypes';
 import { t } from 'i18next';
 import { toast } from 'sonner';
 
@@ -54,6 +56,17 @@ export const queryClient = new QueryClient({
   }),
 });
 
+export const attendanceMutationKey = ['events', 'attendance', 'update'];
+export type AttendanceVariables = { user: User; event: EventsUserView; newState: EventAttendance };
+
+// An answer queued offline and restored after a reload has no hook anymore; these defaults send it.
+queryClient.setMutationDefaults(attendanceMutationKey, {
+  mutationFn: ({ event, newState, user }: AttendanceVariables) =>
+    EventRepository.updateAttendance(user.id, event.id!, newState),
+  // Only used by an answer restored after a reload; the hook brings its own onSettled.
+  onSettled: () => queryClient.invalidateQueries({ queryKey: ['events'] }),
+});
+
 const localStoragePersister = createAsyncStoragePersister({
   storage: window.localStorage,
 });
@@ -62,17 +75,20 @@ const [, restorePromise] = persistQueryClient({
   queryClient,
   persister: localStoragePersister,
   maxAge: 1000 * 60 * 60 * 24,
-  // Drop persisted data from older deployments (data shapes / query keys may have changed).
-  buster: import.meta.env.VITE_GIT_COMMIT ?? '',
+  // Kept across deployments so the app still shows data offline right after an update. Bump this when the shape of a
+  // persisted query changes in a way the screens can't render.
+  buster: '1',
   dehydrateOptions: {
-    // Only persist confirmed server data, never pending/optimistic state or paused mutations.
+    // Only persist confirmed server data, never pending/optimistic state.
     shouldDehydrateQuery: (query) => query.state.status === 'success' && !query.state.isInvalidated,
-    shouldDehydrateMutation: () => false,
+    // Answers queued offline (the only mutations that can pause) survive a reload and are sent once back online.
+    shouldDehydrateMutation: (mutation) => mutation.state.isPaused,
   },
 });
 
 // Restored data is only a placeholder for a fast first paint; always revalidate it against the server.
 restorePromise
+  .then(() => queryClient.resumePausedMutations())
   .then(() => queryClient.invalidateQueries())
   .catch((error) => captureException(error));
 
