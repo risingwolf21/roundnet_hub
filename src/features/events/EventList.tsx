@@ -149,7 +149,7 @@ const EventScreen = () => {
                     key={event.id}
                     event={event}
                     readOnly={view === 'other'}
-                    attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                    attendanceUpdating={updateAttendance.isPending && !updateAttendance.isPaused && updateAttendance.context?.event.id === event.id}
                     attendEvent={() => {
                       updateAttendance.mutate({ event, user, newState: 'Attending' });
                       sendMetricsToSentry('event_attend_from_list', 1);

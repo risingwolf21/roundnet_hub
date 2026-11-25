@@ -35,7 +35,6 @@ import {
   Megaphone,
   Plus,
   Receipt,
-  Search,
   Swords,
   Target,
   Trophy,
@@ -369,7 +368,7 @@ const HomePage = () => {
   const today = new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(now);
 
   const pendingFor = (event: EventsUserView) =>
-    updateAttendance.isPending && updateAttendance.variables?.event.id === event.id;
+    updateAttendance.isPending && !updateAttendance.isPaused && updateAttendance.variables?.event.id === event.id;
   const answer = (event: EventsUserView, newState: EventAttendance) => updateAttendance.mutate({ user, event, newState });
 
   const tiles: Tile[] = [
@@ -381,7 +380,6 @@ const HomePage = () => {
     { key: 'drinks-payments', label: t('browse.payment'), path: '/drinks/payments', icon: <Euro />, feat: 'drinks' },
     { key: 'costs', label: t('navigation.costs'), path: '/costs', icon: <Receipt />, feat: 'costs' },
     { key: 'bundesliga', label: t('navigation.bundesliga'), path: '/bundesliga', icon: <Trophy />, feat: 'bundesliga' },
-    { key: 'search', label: t('navigation.search'), path: '/search', icon: <Search /> },
   ];
 
   return (

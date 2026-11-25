@@ -100,8 +100,9 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
   const updateAttendance = useUpdateAttendanceMutation();
   const { data: attendance = [] } = useAttendance(event.id);
 
-  const pendingState = updateAttendance.isPending ? updateAttendance.variables?.newState : undefined;
-  const busy = updateAttendance.isPending;
+  // An answer queued offline (paused) already shows as given, so it doesn't keep the buttons busy.
+  const busy = updateAttendance.isPending && !updateAttendance.isPaused;
+  const pendingState = busy ? updateAttendance.variables?.newState : undefined;
   const status = statusOf(event.user_state);
   const isOver = eventInThePast(event);
   const locked = event.isCancelled || isOver || eventHasStarted(event) || answerNotOpenYet(event);
