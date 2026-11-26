@@ -11,9 +11,10 @@ const NEW_PASSWORD = `E2e-neu-${stamp}`;
 let admin: SupabaseClient;
 let userId = '';
 
-async function openTab(page: Page, name: string) {
+// The profile is an overview of section rows; each row opens its section as its own page.
+async function openSection(page: Page, name: string) {
   await page.goto('/user');
-  await page.getByRole('tab', { name }).click();
+  await page.getByRole('main').getByRole('link', { name }).click();
 }
 
 test.describe.configure({ mode: 'serial' });
@@ -22,7 +23,7 @@ test.describe('Profil', () => {
   test.beforeAll(async () => {
     admin = adminClient();
     userId = await ensureUser(admin, EMAIL, `E2E Profil ${stamp}`);
-    // The calendar tab is only offered with the events feature.
+    // The calendar section is only offered with the events feature.
     await grantUser(admin, userId, { feats: ['events'] });
   });
 
@@ -30,7 +31,7 @@ test.describe('Profil', () => {
 
   test('a user edits name and display name @mobile', { annotation: flow('profile.account') }, async ({ page }) => {
     await signIn(page, EMAIL);
-    await openTab(page, 'Account');
+    await openSection(page, 'Account');
     await page.locator('#multi-step-personal-info-display-name').fill('Kojote');
     await page.locator('#multi-step-personal-info-first-name').fill('Erika');
     await page.locator('#multi-step-personal-info-last-name').fill('Musterfrau');
@@ -46,7 +47,7 @@ test.describe('Profil', () => {
   test('a user uploads and crops a profile picture', { annotation: flow('profile.avatar') }, async ({ page }) => {
     // 64×64 red PNG, generated in the browser so the test needs no fixture file.
     await signIn(page, EMAIL);
-    await openTab(page, 'Account');
+    await openSection(page, 'Account');
     const png = await page.evaluate(async () => {
       const c = document.createElement('canvas'); c.width = 64; c.height = 64;
       const ctx = c.getContext('2d')!; ctx.fillStyle = '#c00'; ctx.fillRect(0, 0, 64, 64);
@@ -72,7 +73,7 @@ test.describe('Profil', () => {
 
   test('a user links their Playerzone profile', { annotation: flow('profile.playerzone') }, async ({ page }) => {
     await signIn(page, EMAIL);
-    await openTab(page, 'Playerzone Profil');
+    await openSection(page, 'Playerzone Profil');
     const rgIdField = page.getByLabel('RG-ID', { exact: true });
 
     // A link is no longer accepted, only the RG ID.
@@ -99,7 +100,7 @@ test.describe('Profil', () => {
 
   test('the calendar button opens the personal calendar feed', { annotation: flow('profile.calendar') }, async ({ page }) => {
     await signIn(page, EMAIL);
-    await openTab(page, 'Kalender');
+    await openSection(page, 'Kalender');
     // Don't leave for Google: the button opens a new tab, so catch it on the context and check the feed URL it carries.
     let target = '';
     await page.context().route('https://calendar.google.com/**', (route) => {
@@ -115,7 +116,7 @@ test.describe('Profil', () => {
 
   test('a user changes the password and logs in with the new one', { annotation: flow('profile.password') }, async ({ page }) => {
     await signIn(page, EMAIL);
-    await openTab(page, 'Passwort ändern');
+    await openSection(page, 'Passwort ändern');
     await page.locator('#password').fill(NEW_PASSWORD);
     await page.locator('#confirmPassword').fill(`${NEW_PASSWORD}x`);
     await page.getByRole('button', { name: 'Neues Passwort setzen' }).click();
@@ -131,12 +132,13 @@ test.describe('Profil', () => {
     }).toBe('ok');
     await signIn(page, EMAIL, NEW_PASSWORD);
     await page.goto('/user');
-    await expect(page.getByRole('tab', { name: 'Account' })).toBeVisible();
+    await expect(page.getByRole('main').getByRole('link', { name: 'Account' })).toBeVisible();
   });
 
   test('logout ends the session', { annotation: flow('auth.logout') }, async ({ page }) => {
     await signIn(page, EMAIL, NEW_PASSWORD);
-    await openTab(page, 'Account');
+    // Logout sits on the overview, below the sections.
+    await page.goto('/user');
     await page.getByRole('button', { name: 'Logout' }).click();
     await expect(page).toHaveURL(/auth\/login/);
     // Protected pages send you back to the login.

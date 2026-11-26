@@ -156,6 +156,10 @@ const createRouter = (user: UserWithGroups | null) =>
                 {
                   index: true,
                   element: <Pages.User />,
+                },
+                {
+                  path: ':section',
+                  element: <Pages.User />,
                 }
               ],
             },

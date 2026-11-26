@@ -110,7 +110,7 @@ test.describe('Benachrichtigungen', () => {
     await stubPush(page, `https://push.e2e.invalid/topics-${stamp}`);
     await signIn(page, EMAIL);
     await page.goto('/user');
-    await page.getByRole('tab', { name: 'Benachrichtigungen' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Benachrichtigungen' }).click();
     const topic = page.getByRole('switch', { name: 'Event abgesagt' });
     await expect(topic).toHaveAttribute('aria-checked', 'true');
     await topic.click();
@@ -126,7 +126,7 @@ test.describe('Benachrichtigungen', () => {
     await stubPush(page, endpoint);
     await signIn(page, EMAIL);
     await page.goto('/user');
-    await page.getByRole('tab', { name: 'Benachrichtigungen' }).click();
+    await page.getByRole('main').getByRole('link', { name: 'Benachrichtigungen' }).click();
     // Depending on timing the app may already have registered in the background (WebPushKeeper).
     const enable = page.getByRole('button', { name: /Benachrichtigungen aktivieren|Gerät registrieren|Neu koppeln/ }).first();
     await enable.click();
