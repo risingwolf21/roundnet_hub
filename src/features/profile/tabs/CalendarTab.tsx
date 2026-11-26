@@ -2,13 +2,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { DangerZone } from "@/components/DangerZone";
+import { SegmentedControl } from "@/components/list/ListParts";
 import { FormSection } from "@/features/events/dialogs/EventFormParts";
 import { cn } from "@/lib/utils";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { useCalendarFeedToken, useResetCalendarFeedToken } from "@/tanstack/user";
 import { iOS } from "@/utils";
 import { CalendarDays, CalendarSync, Copy, RotateCcw } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Day } from "react-day-picker";
 import { isSameDay } from "date-fns";
@@ -23,13 +24,15 @@ export const CalendarTab = ({ userAttendance }: { userAttendance: Date[] }) => {
   const dialogs = useDialogs();
   const { data: token, isError, refetch } = useCalendarFeedToken();
   const resetToken = useResetCalendarFeedToken();
+  // Which events the subscription holds; each choice is its own feed file, so it is picked before subscribing.
+  const [scope, setScope] = useState<'attending' | 'all'>('attending');
 
   const hasEntry = useCallback(
     (date: Date) => userAttendance.some((activeDate) => isSameDay(activeDate, date)),
     [userAttendance]
   );
 
-  const feedUrl = token ? `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${token}/calendar.ics` : null;
+  const feedUrl = token ? `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical/${token}/${scope === 'all' ? 'all' : 'calendar'}.ics` : null;
 
   const openApple = () => {
     if (feedUrl) window.location.href = feedUrl;
@@ -138,6 +141,18 @@ export const CalendarTab = ({ userAttendance }: { userAttendance: Date[] }) => {
           </Alert>
         ) : (
           <div className="flex flex-col gap-2">
+            <SegmentedControl
+              value={scope}
+              onChange={setScope}
+              ariaLabel={t('profile.calendar.scopeLabel')}
+              options={[
+                { value: 'attending', label: t('profile.calendar.scopeAttending') },
+                { value: 'all', label: t('profile.calendar.scopeAll') },
+              ]}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t(scope === 'all' ? 'profile.calendar.scopeAllHint' : 'profile.calendar.scopeAttendingHint')}
+            </p>
             {appleDevice && (
               <Button className="w-full" disabled={!feedUrl} onClick={openApple}>
                 <CalendarSync />

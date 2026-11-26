@@ -114,6 +114,21 @@ test.describe('Profil', () => {
     expect(target).not.toContain(userId);
   });
 
+  test('a user subscribes to all events they have not declined', { annotation: flow('profile.calendar') }, async ({ page }) => {
+    await signIn(page, EMAIL);
+    await openSection(page, 'Kalender');
+    let target = '';
+    await page.context().route('https://calendar.google.com/**', (route) => {
+      target = route.request().url();
+      return route.abort();
+    });
+    await page.getByRole('radio', { name: 'Alle außer Absagen' }).click();
+    await expect(page.getByRole('radio', { name: 'Alle außer Absagen' })).toHaveAttribute('aria-checked', 'true');
+    await page.getByRole('button', { name: 'Zu Google Kalender hinzufügen' }).click();
+    const { data } = await admin.from('calendar_feed_tokens').select('token').eq('user', userId).single();
+    await expect.poll(() => decodeURIComponent(target)).toContain(`/ical/${data!.token}/all.ics`);
+  });
+
   test('a user changes the password and logs in with the new one', { annotation: flow('profile.password') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openSection(page, 'Passwort ändern');
