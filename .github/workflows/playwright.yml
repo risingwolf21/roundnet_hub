@@ -2,6 +2,8 @@ name: Playwright tests
 
 on:
   workflow_call:
+  push:
+    branches: [claude/project-thread-w86pqs]
 
 jobs:
   playwright-tests:
