@@ -1311,7 +1311,19 @@
     "calendar": {
       "title": "Kalender",
       "description": "Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.",
-      "sync": "Kalender synchronisieren"
+      "google": "Zu Google Kalender hinzufügen",
+      "apple": "Zu Apple Kalender hinzufügen",
+      "copy": "Link kopieren",
+      "copyHint": "Für andere Kalender-Apps: Kalender „per URL“ hinzufügen und den Link einfügen. Google aktualisiert ihn alle paar Stunden.",
+      "copied": "Kalender-Link kopiert",
+      "copyFailed": "Link konnte nicht kopiert werden",
+      "loadError": "Dein Kalender-Link konnte nicht geladen werden",
+      "retry": "Erneut versuchen",
+      "reset": "Kalender-Link zurücksetzen",
+      "resetDescription": "Falls jemand anderes deinen Kalender-Link hat, setz ihn zurück. Kalender mit dem alten Link werden nicht mehr aktualisiert, und du musst den Kalender neu hinzufügen.",
+      "resetConfirm": "Kalender-Link zurücksetzen? Kalender mit dem alten Link werden nicht mehr aktualisiert.",
+      "resetSuccess": "Neuer Kalender-Link erstellt. Füge den Kalender neu hinzu.",
+      "resetError": "Kalender-Link konnte nicht zurückgesetzt werden"
     },
     "notifications": {
       "notSupported": "Push-Benachrichtigungen nicht unterstützt",

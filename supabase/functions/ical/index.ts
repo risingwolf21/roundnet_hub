@@ -26,6 +26,7 @@ function icsEscape(text: string) {
     .replaceAll("\\", "\\\\")
     .replaceAll(";", "\\;")
     .replaceAll(",", "\\,")
+    .replaceAll("\r", "")
     .replaceAll("\n", "\\n");
 }
 
@@ -61,11 +62,13 @@ function icsLocationLines(loc: any): string[] {
 
   // GEO (RFC5545: "lat;lon")
   if (loc?.lat && loc?.lon && loc?.name) {
-    lines.push(`LOCATION:${loc.name}`);
+    lines.push(`LOCATION:${icsEscape(loc.name)}`);
     lines.push(`GEO:${loc.lat};${loc.lon}`);
 
+    // Parameter values with , ; or : must be quoted, and may not contain quotes themselves.
+    const param = `"${String(loc.name).replaceAll('"', "'")}"`;
     lines.push(
-      `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=${loc.name};X-APPLE-RADIUS=49;X-TITLE=${loc.name}:geo:${loc.lat},${loc.lon}`
+      `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=${param};X-APPLE-RADIUS=49;X-TITLE=${param}:geo:${loc.lat},${loc.lon}`
     );
   }
 
@@ -77,12 +80,24 @@ Deno.serve(withSentry(Sentry, async (req) => {
 
   const pathParts = url.pathname.split("/");
 
-  const userId = pathParts[pathParts.length - 2];
+  // The feed is addressed by the user's secret feed token, never by the user id.
+  const token = pathParts[pathParts.length - 2];
   const fileName = pathParts[pathParts.length - 1];
 
-  if (!userId || fileName !== "calendar.ics") {
-    return new Response("Not Found. Use format: /ical/<userId>/calendar.ics", { status: 404 });
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!token || !UUID.test(token) || fileName !== "calendar.ics") {
+    return new Response("Not Found", { status: 404 });
   }
+
+  const { data: feed, error: feedError } = await supabase
+    .from("calendar_feed_tokens")
+    .select("user")
+    .eq("token", token)
+    .maybeSingle();
+
+  if (feedError) return new Response("DB error", { status: 500 });
+  if (!feed) return new Response("Not Found", { status: 404 });
+  const userId = feed.user;
 
   // Events laden (nur accepted). Optional: Zeitfenster begrenzen (z. B. -6 Monate bis +18 Monate)
   const { data: rows, error } = await supabase
@@ -90,12 +105,13 @@ Deno.serve(withSentry(Sentry, async (req) => {
     .select(`
       state,
       user,
-      events:events (
+      events:events!inner (
         id, title, startingDateTime, endDateTime, place, group: group(*), description
       )
     `)
     .eq("user", userId)
-    .eq("state", "Attending");
+    .eq("state", "Attending")
+    .eq("events.isCancelled", false);
 
   if (error) {
     Sentry.captureException(error);

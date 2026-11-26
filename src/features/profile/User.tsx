@@ -134,7 +134,7 @@ const User = () => {
               <PlayerzoneTab user={user} player_data={player_data} />
             </TabsContent>
             <TabsContent value="calendar">
-              <CalendarTab user={user} userAttendance={userAttendance} />
+              <CalendarTab userAttendance={userAttendance} />
             </TabsContent>
             <TabsContent value="notifications">
               <NotificationsTab user={user} />

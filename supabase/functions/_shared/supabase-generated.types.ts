@@ -1534,6 +1534,32 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_feed_tokens: {
+        Row: {
+          created_at: string
+          token: string
+          user: string
+        }
+        Insert: {
+          created_at?: string
+          token?: string
+          user: string
+        }
+        Update: {
+          created_at?: string
+          token?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_feed_tokens_user_fkey"
+            columns: ["user"]
+            isOneToOne: true
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge: {
         Row: {
           automated: boolean
@@ -3314,6 +3340,12 @@ export type Database = {
       }
       bundesliga_cache_boundary: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      calendar_feed_token: {
+        Args: {
+          p_reset?: boolean
+        }
         Returns: string
       }
       check_reply_to: {

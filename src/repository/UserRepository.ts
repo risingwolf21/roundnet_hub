@@ -34,6 +34,12 @@ export const UserRepository = {
     return result?.data ?? null;
   },
 
+  /** The caller's secret calendar feed token; reset replaces it so old subscriptions stop working. */
+  async fetchCalendarFeedToken(reset = false) {
+    const result = await supabase.rpc('calendar_feed_token', { p_reset: reset }).throwOnError();
+    return result.data;
+  },
+
   async fetchLinkedPlayer(userId: string) {
     const result = await supabase.schema('games').from('players').select('*').eq('linked_user_id', userId).maybeSingle().throwOnError();
     return result?.data ?? null;
