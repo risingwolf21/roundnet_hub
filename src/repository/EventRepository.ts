@@ -323,6 +323,7 @@ export const EventRepository = {
       .from('event_attendance_user_mapping')
       .select('*, eventTime: events!inner(startingDateTime)')
       .eq('user', userId)
+      .in('state', ['Attending', 'AttendingAsTrainer', 'AttendingAsTrial'])
       .gte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month - 1, 1)))
       .lte('events.startingDateTime', formatDateToDatabase(new Date(new Date().getFullYear(), month, 0, 23, 59, 59)))
       .throwOnError();

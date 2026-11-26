@@ -1311,6 +1311,10 @@
     "calendar": {
       "title": "Kalender",
       "description": "Zeige alle deine zugesagten Events in deinem persönlichen Kalender an.",
+      "attendedThisMonth_one": "Event diesen Monat",
+      "attendedThisMonth_other": "Events diesen Monat",
+      "legendAttending": "Dabei",
+      "subscribeTitle": "Im Kalender abonnieren",
       "google": "Zu Google Kalender hinzufügen",
       "apple": "Zu Apple Kalender hinzufügen",
       "copy": "Link kopieren",
