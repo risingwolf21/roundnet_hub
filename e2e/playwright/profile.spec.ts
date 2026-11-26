@@ -100,14 +100,17 @@ test.describe('Profil', () => {
   test('the calendar button opens the personal calendar feed', { annotation: flow('profile.calendar') }, async ({ page }) => {
     await signIn(page, EMAIL);
     await openTab(page, 'Kalender');
-    // Don't leave for Google: catch the navigation and check the feed URL it carries.
+    // Don't leave for Google: the button opens a new tab, so catch it on the context and check the feed URL it carries.
     let target = '';
-    await page.route('https://calendar.google.com/**', (route) => {
+    await page.context().route('https://calendar.google.com/**', (route) => {
       target = route.request().url();
       return route.abort();
     });
-    await page.getByRole('button', { name: 'Kalender synchronisieren' }).click();
-    await expect.poll(() => decodeURIComponent(target)).toContain(`/ical/${userId}/calendar.ics`);
+    await page.getByRole('button', { name: 'Zu Google Kalender hinzufügen' }).click();
+    // The feed is addressed by the user's secret token, never by the user id.
+    const { data } = await admin.from('calendar_feed_tokens').select('token').eq('user', userId).single();
+    await expect.poll(() => decodeURIComponent(target)).toContain(`/ical/${data!.token}/calendar.ics`);
+    expect(target).not.toContain(userId);
   });
 
   test('a user changes the password and logs in with the new one', { annotation: flow('profile.password') }, async ({ page }) => {
