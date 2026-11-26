@@ -1542,7 +1542,25 @@
       "password": "Password",
       "passwordResetSuccess": "Password reset successfully",
       "passwordResetError": "Error resetting the password: {{error}}",
-      "saveChanges": "Save changes"
+      "saveChanges": "Save changes",
+      "viewLabel": "Filter users",
+      "viewAll": "All",
+      "viewNoGroup": "No group",
+      "viewNoPush": "No push",
+      "viewEmpty": "Nobody in this view.",
+      "pushDevices_one": "Push · {{count}} device",
+      "pushDevices_other": "Push · {{count}} devices",
+      "noPush": "No push",
+      "noGroup": "No group",
+      "pushSection": "Push devices",
+      "pushNone": "No active device. This person gets no push notifications.",
+      "deviceLastSeen": "Last seen {{ date, ago }}",
+      "platform": {
+        "ios": "iPhone / iPad",
+        "android": "Android",
+        "desktop": "Computer",
+        "unknown": "Unknown device"
+      }
     },
     "payments": {
       "searchPlaceholder": "Search for a user",

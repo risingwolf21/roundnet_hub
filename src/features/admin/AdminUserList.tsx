@@ -2,25 +2,48 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
+import { SegmentedControl } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
-import { useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
-import { ChevronRight } from 'lucide-react';
+import { PushDevice } from '@/repository/AdminUsersRepository';
+import { useAdminPushDevices, useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
+import { Bell, BellOff, ChevronRight, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import EditUserDialog from './dialogs/EditUserDialog';
+
+type UserView = 'all' | 'noGroup' | 'noPush';
 
 const AdminUserList = () => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const [searchString, setSearchString] = useState('');
+  const [view, setView] = useState<UserView>('all');
 
   const { data: users = [], isLoading, refetch } = useAllUsersAsAdmin();
+  const { data: pushDevices, refetch: refetchPushDevices } = useAdminPushDevices();
   const updateUserMutation = useUpdateUserMutation();
+
+  // Without push data (still loading or failed) we show no push badges and no "no push" view.
+  const devicesByUser = pushDevices && pushDevices.reduce((map, device) => {
+    map.set(device.user, [...(map.get(device.user) ?? []), device]);
+    return map;
+  }, new Map<string, PushDevice[]>());
+  const noGroupUsers = users.filter((x) => x.groups.length === 0);
+  const noPushUsers = devicesByUser ? users.filter((x) => !devicesByUser.has(x.id)) : [];
+  const visibleUsers = (view === 'noGroup' ? noGroupUsers : view === 'noPush' ? noPushUsers : users).filter(
+    (x: UserWithGroups) =>
+      searchString === '' ||
+      x.displayName?.toLowerCase().includes(searchString.toLowerCase()) ||
+      x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
+      x.name?.toLowerCase().includes(searchString.toLowerCase())
+  );
 
 
   return <div className="min-h-screen bg-background text-foreground">
@@ -32,21 +55,32 @@ const AdminUserList = () => {
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>
-      <PullToRefresh onRefresh={() => refetch()}>
+      <div className="px-4 pt-3">
+        <SegmentedControl<UserView>
+          ariaLabel={t('admin.users.viewLabel')}
+          value={view}
+          onChange={setView}
+          options={[
+            { value: 'all', label: t('admin.users.viewAll') },
+            { value: 'noGroup', label: t('admin.users.viewNoGroup'), count: noGroupUsers.length },
+            ...(devicesByUser ? [{ value: 'noPush' as const, label: t('admin.users.viewNoPush'), count: noPushUsers.length }] : []),
+          ]}
+        />
+      </div>
+      <PullToRefresh onRefresh={() => Promise.all([refetch(), refetchPushDevices()])}>
 
         <div>
+          {!isLoading && visibleUsers.length === 0 && (
+            <Empty className="mt-8">
+              <EmptyHeader>
+                <EmptyTitle>{t('admin.users.viewEmpty')}</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          )}
           {
-            users &&
-            users
-              .filter(
-                (x: UserWithGroups) =>
-                  searchString === '' ||
-                  x.displayName?.toLowerCase().includes(searchString.toLowerCase()) ||
-                  x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
-                  x.name?.toLowerCase().includes(searchString.toLowerCase())
-              )
+            visibleUsers
               .map((user) => <Item key={user.id} onClick={async () => {
-                const result = await dialogs.open(EditUserDialog, { user: user });
+                const result = await dialogs.open(EditUserDialog, { user: user, pushDevices: devicesByUser && (devicesByUser.get(user.id) ?? []) });
                 if (result) {
                   updateUserMutation.mutate({ update: result }, {
                     onSuccess: () => toast.success(t('admin.users.updateSuccess')),
@@ -67,6 +101,14 @@ const AdminUserList = () => {
                     {user.last_seen_at && (
                       <div className="text-xs text-muted-foreground">
                         {t('user.lastActive', { date: new Date(user.last_seen_at) })}
+                      </div>
+                    )}
+                    {(devicesByUser || user.groups.length === 0) && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {devicesByUser && (devicesByUser.has(user.id)
+                          ? <Badge variant="secondary"><Bell />{t('admin.users.pushDevices', { count: devicesByUser.get(user.id)!.length })}</Badge>
+                          : <Badge variant="warning"><BellOff />{t('admin.users.noPush')}</Badge>)}
+                        {user.groups.length === 0 && <Badge variant="warning"><Users />{t('admin.users.noGroup')}</Badge>}
                       </div>
                     )}
                   </div>
