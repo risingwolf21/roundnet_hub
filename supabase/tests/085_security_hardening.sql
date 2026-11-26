@@ -211,6 +211,7 @@ SELECT set_eq(
     'public.trial_status',
     'public.trial_invite_info',
     'public.admin_user_effective_grants',
+    'public.admin_user_push_devices',
     'public._sum_challenge_points_for_self',
     'public.increase_challenge_stats_count',
     'public.admin_analytics_attendance_ranking',
