@@ -12,6 +12,8 @@ create table public.calendar_feed_tokens (
 
 -- No policies: only the RPC (and the service role used by the edge function) touch this table.
 alter table public.calendar_feed_tokens enable row level security;
+create policy guests_blocked on public.calendar_feed_tokens as restrictive for all to authenticated
+  using (not (select public.is_guest())) with check (not (select public.is_guest()));
 
 -- Returns the caller's feed token, creating one on first use. p_reset replaces it, which
 -- makes every existing subscription with the old link stop working.

@@ -1,4 +1,4 @@
--- 116_calendar_feed_token.sql
+-- 119_calendar_feed_token.sql
 -- public.calendar_feed_token(): every user gets one secret feed token, can reset it,
 -- and nobody can read the table directly or call the RPC without signing in.
 BEGIN;
