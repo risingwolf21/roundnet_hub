@@ -1311,7 +1311,19 @@
     "calendar": {
       "title": "Calendar",
       "description": "Show all your confirmed events in your personal calendar.",
-      "sync": "Sync calendar"
+      "google": "Add to Google Calendar",
+      "apple": "Add to Apple Calendar",
+      "copy": "Copy link",
+      "copyHint": "For other calendar apps: add a calendar \"from URL\" and paste the link. Google refreshes it every few hours.",
+      "copied": "Calendar link copied",
+      "copyFailed": "Couldn't copy the link",
+      "loadError": "Couldn't load your calendar link",
+      "retry": "Try again",
+      "reset": "Reset calendar link",
+      "resetDescription": "If someone else got your calendar link, reset it. Calendars subscribed with the old link stop updating, and you have to add the calendar again.",
+      "resetConfirm": "Reset your calendar link? Calendars using the old link stop updating.",
+      "resetSuccess": "New calendar link created. Add the calendar again.",
+      "resetError": "Couldn't reset the calendar link"
     },
     "notifications": {
       "notSupported": "Push notifications not supported",

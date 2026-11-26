@@ -211,6 +211,7 @@ SELECT set_eq(
     'public.trial_status',
     'public.trial_invite_info',
     'public.admin_user_effective_grants',
+    'public.calendar_feed_token',
     'public.admin_user_push_devices',
     'public._sum_challenge_points_for_self',
     'public.increase_challenge_stats_count',

@@ -17,6 +17,19 @@ export const useSharedGroupMembers = (currentUserId: string | undefined) =>
     staleTime: 5 * 60 * 1000,
   });
 
+export const useCalendarFeedToken = () =>
+  useQuery({
+    queryKey: ['calendar-feed-token'],
+    queryFn: () => UserRepository.fetchCalendarFeedToken(),
+    staleTime: Infinity,
+  });
+
+export const useResetCalendarFeedToken = () =>
+  useMutation({
+    mutationFn: () => UserRepository.fetchCalendarFeedToken(true),
+    onSuccess: (token) => queryClient.setQueryData(['calendar-feed-token'], token),
+  });
+
 export const useProfile = (userId: string) =>
   useQuery({
     queryKey: ['profile', userId],
