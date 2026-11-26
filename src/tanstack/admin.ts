@@ -11,6 +11,7 @@ export type { RpcName };
 export const adminKeys = {
   all: ['admin'] as const,
   users: () => [...adminKeys.all, 'users'] as const,
+  pushDevices: () => [...adminKeys.all, 'pushDevices'] as const,
   history: () => [...adminKeys.all, 'history'] as const,
   payments: {
     list: () => [...adminKeys.all, 'payments', 'list'] as const,
@@ -57,6 +58,12 @@ export const useAllUsersAsAdmin = () =>
   useQuery<UserWithGroups[]>({
     queryKey: adminKeys.users(),
     queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups(),
+  });
+
+export const useAdminPushDevices = () =>
+  useQuery({
+    queryKey: adminKeys.pushDevices(),
+    queryFn: () => AdminUsersRepository.fetchPushDevices(),
   });
 
 export const useInfiniteDrinkHistory = () =>

@@ -3291,6 +3291,14 @@ export type Database = {
           group_name: string
         }[]
       }
+      admin_user_push_devices: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user: string
+          platform: string | null
+          last_seen: string
+        }[]
+      }
       apply_series_occurrences: {
         Args: {
           p_series_id: string
