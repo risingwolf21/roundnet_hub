@@ -44,6 +44,7 @@ export function AppSidebar() {
   const adminGroups = new Set(groups.filter((x) => x.user_group_role === 'admin').map((x) => x.id));
   const openJoinRequests = requested_group_joins.filter((x) => adminGroups.has(x.group)).length;
   const { data: notifications = [] } = useAllNotifications(user);
+  const unreadCount = notifications.filter((x) => !x.dismissed_at).length;
   const [isUpdating, setIsUpdating] = useState(false);
 
   const { setOpenMobile } = useSidebar();
@@ -212,7 +213,7 @@ export function AppSidebar() {
           path: 'notifications',
           secondaryAction: <div className="text-sm leading-none font-bold">
             {
-              notifications.length || ''
+              unreadCount > 99 ? '99+' : unreadCount || ''
             }
           </div>
         }
