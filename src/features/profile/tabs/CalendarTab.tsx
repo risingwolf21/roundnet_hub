@@ -1,23 +1,25 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { DangerZone } from "@/components/DangerZone";
+import { FormSection } from "@/features/events/dialogs/EventFormParts";
+import { cn } from "@/lib/utils";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { useCalendarFeedToken, useResetCalendarFeedToken } from "@/tanstack/user";
 import { iOS } from "@/utils";
-import { CalendarSync, Copy, RotateCcw, Volleyball } from "lucide-react";
+import { CalendarDays, CalendarSync, Copy, RotateCcw } from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Day } from "react-day-picker";
 import { isSameDay } from "date-fns";
+import { de, enGB } from "date-fns/locale";
 import { toast } from "sonner";
 
 // webcal:// links only open in Apple Calendar (iPhone, iPad, Mac); elsewhere they do nothing.
 const appleDevice = iOS || (typeof navigator !== 'undefined' && /Macintosh/.test(navigator.userAgent));
 
 export const CalendarTab = ({ userAttendance }: { userAttendance: Date[] }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dialogs = useDialogs();
   const { data: token, isError, refetch } = useCalendarFeedToken();
   const resetToken = useResetCalendarFeedToken();
@@ -66,93 +68,102 @@ export const CalendarTab = ({ userAttendance }: { userAttendance: Date[] }) => {
     });
   };
 
+  const attendedCount = new Set(userAttendance.map((date) => date.toDateString())).size;
+  const monthTitle = new Intl.DateTimeFormat(i18n.resolvedLanguage, { month: 'long', year: 'numeric' }).format(new Date());
+
   return (
-    <>
-      <CardContent>
-        <div className="flex flex-col gap-4 ">
-          <Alert variant={"info"}>
-            <AlertTitle>{t('profile.calendar.title')}</AlertTitle>
+    <div className="flex flex-col gap-3">
+      <FormSection icon={CalendarDays} title={monthTitle}>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl font-semibold tabular-nums">{attendedCount}</span>
+          <span className="text-xs text-muted-foreground">{t('profile.calendar.attendedThisMonth', { count: attendedCount })}</span>
+        </div>
+        <Calendar
+          mode="single"
+          weekStartsOn={1}
+          locale={i18n.resolvedLanguage === 'de' ? de : enGB}
+          month={new Date()}
+          className="w-full p-0"
+          classNames={{
+            root: "w-full",
+            months: "w-full",
+            month_grid: "w-full",
+            month: "w-full",
+            table: "w-full",
+            weekdays: "flex w-full",
+            weekday: "flex-1 text-center text-xs font-medium text-muted-foreground",
+            week: "flex w-full mt-2",
+            day: "flex-1 aspect-square p-0",
+          }}
+          components={{
+            // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+            Nav: () => <></>,
+            // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+            MonthCaption: () => <></>,
+            // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+            Day: ({ ...props }) => <Day {...props} className='w-full' />,
+            // eslint-disable-next-line @eslint-react/no-nested-component-definitions
+            DayButton: ({ modifiers, day, ...props }) => (
+              <CalendarDayButton
+                day={day}
+                modifiers={modifiers}
+                {...props}
+                disabled
+                className={cn(
+                  "!opacity-100 !h-auto !w-full aspect-square rounded-full",
+                  modifiers.outside && "text-muted-foreground/50",
+                  modifiers.today && "font-semibold ring-2 ring-primary ring-inset",
+                  hasEntry(day.date) && "bg-primary text-primary-foreground",
+                )}
+              />
+            ),
+          }}
+        />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="size-3 rounded-full bg-primary" />
+          {t('profile.calendar.legendAttending')}
+        </div>
+      </FormSection>
+
+      <FormSection icon={CalendarSync} title={t('profile.calendar.subscribeTitle')}>
+        <p className="-mt-2 text-xs text-muted-foreground">{t('profile.calendar.description')}</p>
+        {isError ? (
+          <Alert variant={"warning"}>
+            <AlertTitle>{t('profile.calendar.loadError')}</AlertTitle>
             <AlertDescription>
-              {t('profile.calendar.description')}
+              <Button variant={"outline"} size={"sm"} onClick={() => refetch()}>
+                {t('profile.calendar.retry')}
+              </Button>
             </AlertDescription>
           </Alert>
-          <Card className="w-full max-w-md mx-auto">
-            <CardContent className="w-full">
-              <Calendar
-                mode="single"
-                weekStartsOn={1}
-                month={new Date()}
-                className="w-full"
-                classNames={{
-                  root: "w-full",
-                  months: "w-full",
-                  month_grid: "w-full",
-                  month: "w-full",
-                  table: "w-full",
-                  weekdays: "flex w-full",
-                  weekday: "flex-1 text-center",
-                  week: "flex w-full mt-2",
-                  day: "flex-1 aspect-square p-0",
-                }}
-                components={{
-                  // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                  Nav: () => <></>,
-                  // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                  MonthCaption: () => <></>,
-                  // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                  Day: ({ ...props }) => <Day {...props} className='w-full' />,
-                  // eslint-disable-next-line @eslint-react/no-nested-component-definitions
-                  DayButton: ({ children, modifiers, day, ...props }) => {
-                    const isActive = hasEntry(day.date);
-                    return (
-                      <CalendarDayButton day={day} modifiers={modifiers} {...props} disabled className="!opacity-100 !h-auto !w-full aspect-square">
-                        {isActive ? <Volleyball className="size-full max-w-6 max-h-6 text-success" /> : children}
-                      </CalendarDayButton>
-                    );
-                  },
-                }}
-              />
-            </CardContent>
-            <CardFooter className="flex flex-col gap-2">
-              {isError ? (
-                <Alert variant={"warning"}>
-                  <AlertTitle>{t('profile.calendar.loadError')}</AlertTitle>
-                  <AlertDescription>
-                    <Button variant={"outline"} size={"sm"} onClick={() => refetch()}>
-                      {t('profile.calendar.retry')}
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <>
-                  <Button variant={"outline"} className="w-full" disabled={!feedUrl} onClick={openGoogle}>
-                    <CalendarSync />
-                    {t('profile.calendar.google')}
-                  </Button>
-                  {appleDevice && (
-                    <Button variant={"outline"} className="w-full" disabled={!feedUrl} onClick={openApple}>
-                      <CalendarSync />
-                      {t('profile.calendar.apple')}
-                    </Button>
-                  )}
-                  <Button variant={"outline"} className="w-full" disabled={!feedUrl} onClick={copyLink}>
-                    <Copy />
-                    {t('profile.calendar.copy')}
-                  </Button>
-                  <p className="text-xs text-muted-foreground">{t('profile.calendar.copyHint')}</p>
-                </>
-              )}
-            </CardFooter>
-          </Card>
-          <DangerZone
-            description={t('profile.calendar.resetDescription')}
-            actionLabel={t('profile.calendar.reset')}
-            icon={<RotateCcw />}
-            loading={resetToken.isPending}
-            onAction={reset}
-          />
-        </div>
-      </CardContent>
-    </>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {appleDevice && (
+              <Button className="w-full" disabled={!feedUrl} onClick={openApple}>
+                <CalendarSync />
+                {t('profile.calendar.apple')}
+              </Button>
+            )}
+            <Button variant={appleDevice ? "outline" : "default"} className="w-full" disabled={!feedUrl} onClick={openGoogle}>
+              <CalendarSync />
+              {t('profile.calendar.google')}
+            </Button>
+            <Button variant={"outline"} className="w-full" disabled={!feedUrl} onClick={copyLink}>
+              <Copy />
+              {t('profile.calendar.copy')}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t('profile.calendar.copyHint')}</p>
+          </div>
+        )}
+      </FormSection>
+
+      <DangerZone
+        description={t('profile.calendar.resetDescription')}
+        actionLabel={t('profile.calendar.reset')}
+        icon={<RotateCcw />}
+        loading={resetToken.isPending}
+        onAction={reset}
+      />
+    </div>
   );
 };
