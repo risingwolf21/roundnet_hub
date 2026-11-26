@@ -27,7 +27,7 @@ test.describe('Sprache', () => {
     expect(await savedLanguage()).toBe('de');
 
     await signIn(page, EMAIL);
-    await page.goto('/user');
+    await page.goto('/user/account');
     await expect(page.getByText('Anzeigename', { exact: true })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 

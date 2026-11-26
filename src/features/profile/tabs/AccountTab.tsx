@@ -7,7 +7,7 @@ import { useDialogs } from "@/contexts/DialogsProvider";
 import { useUpdateLanguage, useUpdateUserProfile } from "@/tanstack/user";
 import { UserWithGroups } from "@/types/supabaseTypes";
 import { readFile } from "@/utils";
-import { Camera, Image, LogOut, Trash } from "lucide-react";
+import { Camera, Image, Trash } from "lucide-react";
 import { lazy, ReactNode, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
   </section>
 );
 
-export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; handleSignOut: () => void }) => {
+export const AccountTab = ({ user }: { user: UserWithGroups }) => {
   const { t, i18n } = useTranslation();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [displayName, setDisplayName] = useState(user.displayName);
@@ -180,11 +180,6 @@ export const AccountTab = ({ user, handleSignOut }: { user: UserWithGroups; hand
           {t('profile.account.saveChanges')}
         </Button>
       </Section>
-
-      <Button variant="outline" className='max-sm:w-full' onClick={handleSignOut}>
-        <LogOut />
-        {t('profile.account.logout')}
-      </Button>
     </div>
   );
 };

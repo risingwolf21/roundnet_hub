@@ -1386,6 +1386,16 @@
       "playerzone": "Playerzone Profil",
       "testlab": "Test-Labor"
     },
+    "sections": {
+      "account": "Name, Profilbild und Sprache",
+      "calendar": "Deine Termine im eigenen Kalender",
+      "notifications": "Push und Themen",
+      "testlab": "Neue Funktionen ausprobieren",
+      "rgId": "RG-ID {{rgId}}",
+      "playerzoneNotLinked": "Noch nicht verknüpft",
+      "pushOn": "An",
+      "pushOff": "Aus"
+    },
     "dialog": {
       "error": "Fehler",
       "loadFailed": "{{label}} konnte nicht geladen werden",

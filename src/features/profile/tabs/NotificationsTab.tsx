@@ -85,6 +85,18 @@ async function isActiveOnServer(endpoint: string) {
   return !!data;
 }
 
+/** Whether this device has a push subscription the server still delivers to. */
+export async function isPushActiveOnThisDevice() {
+  try {
+    const reg = await getSW();
+    const sub = await getCurrentSubscription(reg);
+    return !!sub && (await isActiveOnServer(sub.endpoint));
+  } catch {
+    // SW not supported or not ready
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 
 const isNotificationSupported =
@@ -129,15 +141,7 @@ export const NotificationsTab = ({ user }: { user: UserWithGroups }) => {
   const isPWA = useMemo(() => window.matchMedia?.('(display-mode: standalone)').matches ?? false, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const reg = await getSW();
-        const sub = await getCurrentSubscription(reg);
-        setRegistered(!!sub && (await isActiveOnServer(sub.endpoint)));
-      } catch {
-        // SW not supported or not ready
-      }
-    })();
+    isPushActiveOnThisDevice().then(setRegistered);
   }, []);
 
   const handleEnable = async () => {

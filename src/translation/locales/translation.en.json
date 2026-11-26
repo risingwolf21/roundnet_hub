@@ -1386,6 +1386,16 @@
       "playerzone": "Playerzone profile",
       "testlab": "Test lab"
     },
+    "sections": {
+      "account": "Name, picture and language",
+      "calendar": "Your events in your own calendar",
+      "notifications": "Push and topics",
+      "testlab": "Try new features",
+      "rgId": "RG ID {{rgId}}",
+      "playerzoneNotLinked": "Not linked yet",
+      "pushOn": "On",
+      "pushOff": "Off"
+    },
     "dialog": {
       "error": "Error",
       "loadFailed": "{{label}} could not be loaded",
