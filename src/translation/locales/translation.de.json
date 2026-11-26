@@ -1554,7 +1554,25 @@
       "password": "Passwort",
       "passwordResetSuccess": "Passwort erfolgreich zurückgesetzt",
       "passwordResetError": "Fehler beim Zurücksetzen des Passworts: {{error}}",
-      "saveChanges": "Änderungen speichern"
+      "saveChanges": "Änderungen speichern",
+      "viewLabel": "Benutzer filtern",
+      "viewAll": "Alle",
+      "viewNoGroup": "Ohne Gruppe",
+      "viewNoPush": "Ohne Push",
+      "viewEmpty": "Niemand in dieser Ansicht.",
+      "pushDevices_one": "Push · {{count}} Gerät",
+      "pushDevices_other": "Push · {{count}} Geräte",
+      "noPush": "Kein Push",
+      "noGroup": "Keine Gruppe",
+      "pushSection": "Push-Geräte",
+      "pushNone": "Kein aktives Gerät. Diese Person bekommt keine Push-Benachrichtigungen.",
+      "deviceLastSeen": "Zuletzt gesehen {{ date, ago }}",
+      "platform": {
+        "ios": "iPhone / iPad",
+        "android": "Android",
+        "desktop": "Computer",
+        "unknown": "Unbekanntes Gerät"
+      }
     },
     "payments": {
       "searchPlaceholder": "Suche nach einem Nutzer",

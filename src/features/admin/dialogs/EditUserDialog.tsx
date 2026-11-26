@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Item, ItemActions, ItemContent, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { PushDevice } from '@/repository/AdminUsersRepository';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
 import i18n from 'i18next';
@@ -17,6 +18,7 @@ import { toast } from 'sonner';
 
 type EditUserDialogProps = {
   user: UserWithGroups;
+  pushDevices?: PushDevice[];
 };
 
 export type UserEdited = {
@@ -47,7 +49,7 @@ async function resetUserPassword(userId: string, newPassword: string) {
   return await resp.json();
 }
 
-const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
+const EditUserDialog = ({ open, onClose, payload: { user, pushDevices } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
   const { t } = useTranslation();
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
@@ -146,6 +148,23 @@ const EditUserDialog = ({ open, onClose, payload: { user } }: DialogProps<EditUs
                   ))
                 }
               </div>
+
+              {pushDevices && (
+                <div className='flex flex-col gap-4'>
+                  <div className='text-base font-semibold'>{t('admin.users.pushSection')}</div>
+                  {pushDevices.length === 0 && (
+                    <div className='text-sm text-muted-foreground'>{t('admin.users.pushNone')}</div>
+                  )}
+                  {pushDevices.map((device) => (
+                    <Item key={`${device.platform}-${device.last_seen}`} variant={"outline"}>
+                      <ItemContent>
+                        <ItemTitle>{t(`admin.users.platform.${device.platform ?? 'unknown'}`, { defaultValue: t('admin.users.platform.unknown') })}</ItemTitle>
+                        <ItemDescription>{t('admin.users.deviceLastSeen', { date: new Date(device.last_seen) })}</ItemDescription>
+                      </ItemContent>
+                    </Item>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* The form had an onSubmit handler but no submit button (the password "Speichern" is

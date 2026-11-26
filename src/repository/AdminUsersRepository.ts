@@ -5,6 +5,7 @@ import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export type RpcName = keyof Database['public']['Functions'];
+export type PushDevice = Database['public']['Functions']['admin_user_push_devices']['Returns'][number];
 
 export const fetchGroupWithUsers = () =>
   supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role, trial_started_at, trial_event_limit )');
@@ -58,6 +59,11 @@ export const AdminUsersRepository = {
         groups: x.groups.map((x: any) => x.group) ?? [],
       })) ?? []
     );
+  },
+
+  async fetchPushDevices(): Promise<PushDevice[]> {
+    const result = await supabase.rpc('admin_user_push_devices').throwOnError();
+    return result.data ?? [];
   },
 
   async addUsersToGroup(group: Group, users: User[]): Promise<Tables<'group_user_mapping'>[]> {
