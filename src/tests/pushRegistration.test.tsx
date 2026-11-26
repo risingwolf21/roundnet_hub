@@ -48,6 +48,45 @@ describe('WebPushKeeper', () => {
     );
   });
 
+  test('replaces a subscription that was made with an older VAPID key', async () => {
+    const unsubscribe = vi.fn(async () => true);
+    const fresh = { endpoint: 'https://push.example/new', getKey: subscription.getKey };
+    const subscribe = vi.fn(async () => fresh);
+    const old = { ...subscription, options: { applicationServerKey: new Uint8Array([9, 9, 9]).buffer }, unsubscribe };
+    const registration = { pushManager: { getSubscription: async () => old, subscribe } };
+    vi.stubGlobal('navigator', { ...navigator, serviceWorker: { ready: Promise.resolve(registration) } });
+    const session = { user: { id: 'anna' } } as Session;
+
+    render(<WebPushKeeper session={session} vapidPublicKey="BKey" />);
+
+    await waitFor(() =>
+      expect(supabaseMock.queries.find((q) => q.rpc === 'upsert_webpush_subscription')?.args).toMatchObject({
+        p_endpoint: 'https://push.example/new',
+      })
+    );
+    expect(unsubscribe).toHaveBeenCalled();
+    expect(subscribe).toHaveBeenCalled();
+  });
+
+  test('keeps a subscription that was made with the current VAPID key', async () => {
+    const unsubscribe = vi.fn();
+    const subscribe = vi.fn();
+    const current = { ...subscription, options: { applicationServerKey: new Uint8Array([4, 40, 164]).buffer }, unsubscribe };
+    const registration = { pushManager: { getSubscription: async () => current, subscribe } };
+    vi.stubGlobal('navigator', { ...navigator, serviceWorker: { ready: Promise.resolve(registration) } });
+    const session = { user: { id: 'anna' } } as Session;
+
+    render(<WebPushKeeper session={session} vapidPublicKey="BCik" />);
+
+    await waitFor(() =>
+      expect(supabaseMock.queries.find((q) => q.rpc === 'upsert_webpush_subscription')?.args).toMatchObject({
+        p_endpoint: ENDPOINT,
+      })
+    );
+    expect(unsubscribe).not.toHaveBeenCalled();
+    expect(subscribe).not.toHaveBeenCalled();
+  });
+
   test('leaves the device alone after the person turned push off', async () => {
     localStorage.setItem(PUSH_OPTED_OUT_KEY, '1');
     const session = { user: { id: 'anna' } } as Session;

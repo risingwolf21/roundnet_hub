@@ -54,6 +54,12 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
         }
         const reg = await navigator.serviceWorker.ready;
         let sub = await reg.pushManager.getSubscription();
+        // A subscription made with an older VAPID key is rejected by the push services (400/403) forever, so swap it.
+        const subKey = sub?.options?.applicationServerKey;
+        if (sub && subKey && arrayBufferToBase64(subKey) !== arrayBufferToBase64(urlBase64ToUint8Array(vapidPublicKey).buffer)) {
+          await sub.unsubscribe();
+          sub = null;
+        }
         if (!sub) {
           sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
