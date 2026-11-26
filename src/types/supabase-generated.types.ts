@@ -3350,6 +3350,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      calendar_feed_events: {
+        Args: {
+          p_all?: boolean
+          p_token: string
+        }
+        Returns: {
+          description: string
+          endDateTime: string
+          id: string
+          place: string
+          startingDateTime: string
+          title: string
+        }[]
+      }
       calendar_feed_token: {
         Args: {
           p_reset?: boolean

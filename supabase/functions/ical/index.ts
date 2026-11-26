@@ -84,10 +84,12 @@ Deno.serve(withSentry(Sentry, async (req) => {
   const token = pathParts[pathParts.length - 2];
   const fileName = pathParts[pathParts.length - 1];
 
+  // calendar.ics: only events the user attends; all.ics: every event in their groups they haven't declined.
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!token || !UUID.test(token) || fileName !== "calendar.ics") {
+  if (!token || !UUID.test(token) || (fileName !== "calendar.ics" && fileName !== "all.ics")) {
     return new Response("Not Found", { status: 404 });
   }
+  const all = fileName === "all.ics";
 
   const { data: feed, error: feedError } = await supabase
     .from("calendar_feed_tokens")
@@ -97,21 +99,8 @@ Deno.serve(withSentry(Sentry, async (req) => {
 
   if (feedError) return new Response("DB error", { status: 500 });
   if (!feed) return new Response("Not Found", { status: 404 });
-  const userId = feed.user;
 
-  // Events laden (nur accepted). Optional: Zeitfenster begrenzen (z. B. -6 Monate bis +18 Monate)
-  const { data: rows, error } = await supabase
-    .from("event_attendance_user_mapping")
-    .select(`
-      state,
-      user,
-      events:events!inner (
-        id, title, startingDateTime, endDateTime, place, group: group(*), description
-      )
-    `)
-    .eq("user", userId)
-    .eq("state", "Attending")
-    .eq("events.isCancelled", false);
+  const { data: rows, error } = await supabase.rpc("calendar_feed_events", { p_token: token, p_all: all });
 
   if (error) {
     Sentry.captureException(error);
@@ -128,14 +117,11 @@ Deno.serve(withSentry(Sentry, async (req) => {
     "PRODID:-//yourdomain//user-ical//DE",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:Roundnet Events",
+    all ? "X-WR-CALNAME:Roundnet Events (alle)" : "X-WR-CALNAME:Roundnet Events",
     "X-WR-TIMEZONE:UTC"
   ].join("\r\n") + "\r\n";
 
-  for (const r of rows ?? []) {
-    const e = (r as any).events;
-    if (!e) continue;
-
+  for (const e of rows ?? []) {
     const uid = `${e.id}@yourdomain`;
     const dtStart = formatDateUTC(e.startingDateTime);
     const dtEnd = formatDateUTC(e.endDateTime);
