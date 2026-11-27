@@ -13,7 +13,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <AppSidebar />
       <Toaster />
       <AppBadge />
-      <div className='flex flex-1 flex-col size-full'>
+      <div className='flex flex-1 flex-col size-full pl-safe-left pr-safe-right md:pl-0'>
         {children}
       </div>
     </SidebarProvider>

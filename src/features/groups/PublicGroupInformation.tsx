@@ -597,7 +597,7 @@ const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" |
         </PullToRefresh>
 
         {selecting ? (
-          <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-3 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-3 border-t bg-background p-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <span className="text-sm font-medium">{t("groups.selectedCount", { count: selectedUsers.length })}</span>
             <Button
               variant="destructive"
@@ -619,7 +619,7 @@ const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" |
           </div>
         ) : (
           isGroupAdmin && (
-            <div className="fixed right-6 z-50" style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}>
+            <div className="fixed right-[calc(1.5rem+env(safe-area-inset-right))] z-50" style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom))" }}>
               <Button
                 size="icon"
                 aria-label={t("groups.addMembers")}

@@ -66,7 +66,7 @@ test.describe('Gruppenverwaltung', () => {
   test('the admin adds a member', { annotation: flow('groups.addusers') }, async ({ page }) => {
     await signIn(page, OWNER.email);
     await page.goto(`/groups/${groupId}`);
-    await page.locator('div.fixed.right-6 button').click();
+    await page.getByRole('button', { name: 'Mitglieder hinzufügen', exact: true }).click();
     await page.getByRole('dialog').getByRole('searchbox').fill(NEWBIE.name.split(' ').slice(0, 2).join(' '));
     await page.getByRole('dialog').getByText(NEWBIE.name, { exact: true }).click();
     await page.getByRole('button', { name: '1 Spieler hinzufügen' }).click();

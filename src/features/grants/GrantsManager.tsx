@@ -197,7 +197,7 @@ const UserTab = ({ search, selectedId, onSelect }: TabProps) => {
         <p className="px-4 pb-4 text-center text-xs text-muted-foreground">{t('grants.userHint')}</p>
         {/* Wide screens keep the button in the list pane so it does not cover the editor's save bar. */}
         <div
-          className={onSelect ? 'sticky bottom-6 flex justify-end pr-4' : 'fixed right-6 z-50'}
+          className={onSelect ? 'sticky bottom-6 flex justify-end pr-4' : 'fixed right-[calc(1.5rem+env(safe-area-inset-right))] z-50'}
           style={onSelect ? undefined : { bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
           <Button
