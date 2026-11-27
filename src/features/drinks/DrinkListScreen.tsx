@@ -319,7 +319,7 @@ const DrinkListScreen = () => {
       <Has perm={'drinks.purchase'}>
         {totalCount > 0 && (
           <div
-            className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-4 pt-3 shadow-lg backdrop-blur"
+            className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pt-3 shadow-lg backdrop-blur"
             style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
           >
             <div className="mx-auto flex max-w-2xl items-center gap-3">

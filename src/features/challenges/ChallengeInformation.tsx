@@ -250,7 +250,7 @@ const ChallengeInformation = ({ challengeId }: { challengeId: string }) => {
     </PullToRefresh>
     {!ended && <Has perm={'challenges.stats.write'}>
       <div
-        className="fixed right-6 z-50"
+        className="fixed right-[calc(1.5rem+env(safe-area-inset-right))] z-50"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         <Button

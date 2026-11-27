@@ -199,7 +199,7 @@ const GameList = ({ selectedId }: { selectedId?: string }) => {
         {/* Every player may enter their own matches (add_match_with_sets checks participation). */}
         {/* Wide screens show the button in the app bar instead, so it does not float over the open match. */}
         {!isWide && <div
-          className="fixed right-6 z-50"
+          className="fixed right-[calc(1.5rem+env(safe-area-inset-right))] z-50"
           style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
           <Button

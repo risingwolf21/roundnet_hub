@@ -48,7 +48,7 @@ const alertDialogContentVariants = cva(
           "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm",
 
         fullscreen:
-          "inset-0 h-[100dvh] !max-w-none rounded-none border-0 pt-safe-top pb-safe-bottom pl-safe-left pr-safe-rigt",
+          "inset-0 h-[100dvh] !max-w-none rounded-none border-0 pt-safe-top pb-safe-bottom pl-safe-left pr-safe-right",
       }
     },
     defaultVariants: {

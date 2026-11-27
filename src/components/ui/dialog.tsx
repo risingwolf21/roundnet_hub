@@ -50,12 +50,12 @@ const dialogContentVariants = cva(
           "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 sm:max-w-sm data-open:zoom-in-95 data-closed:zoom-out-95",
 
         drawer:
-          "inset-x-0 bottom-0 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
+          "inset-x-0 bottom-0 flex flex-col w-full max-h-[calc(95dvh-env(safe-area-inset-top))] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
 
         fullscreen:
           // HIER GEÄNDERT: pt-safe-top und pb-safe-bottom entfernt. 
           // Der Wrapper ist exakt inset-0, die Paddings übernehmen Header und Footer!
-          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 bg-background text-foreground"
+          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 pl-safe-left pr-safe-right data-open:zoom-in-95 data-closed:zoom-out-95 bg-background text-foreground"
       }
     },
     defaultVariants: {
