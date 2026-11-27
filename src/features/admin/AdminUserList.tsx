@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
+import { SplitView } from '@/components/layout/SplitView';
 import { SegmentedControl } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { PushDevice } from '@/repository/AdminUsersRepository';
 import { useAdminPushDevices, useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
-import { Bell, BellOff, ChevronRight, Users } from 'lucide-react';
+import { Bell, BellOff, ChevronRight, UserPen, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import EditUserDialog from './dialogs/EditUserDialog';
+import EditUserDialog, { EditUserForm, UserEdited } from './dialogs/EditUserDialog';
 
 type UserView = 'all' | 'noGroup' | 'noPush';
 
@@ -25,6 +28,9 @@ const AdminUserList = () => {
   const dialogs = useDialogs();
   const [searchString, setSearchString] = useState('');
   const [view, setView] = useState<UserView>('all');
+  // Wide screens edit the user in a panel next to the list instead of a full-screen dialog.
+  const isWide = useIsWide();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: users = [], isLoading, refetch } = useAllUsersAsAdmin();
   const { data: pushDevices, refetch: refetchPushDevices } = useAdminPushDevices();
@@ -44,9 +50,15 @@ const AdminUserList = () => {
       x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
       x.name?.toLowerCase().includes(searchString.toLowerCase())
   );
+  const selectedUser = isWide ? users.find((x) => x.id === selectedUserId) : undefined;
+
+  const save = (update: UserEdited) => updateUserMutation.mutate({ update }, {
+    onSuccess: () => toast.success(t('admin.users.updateSuccess')),
+    onError: (error) => toast.error(t('admin.users.updateError', { error: error.message }))
+  });
 
 
-  return <div className="min-h-screen bg-background text-foreground">
+  const list = <div className="min-h-screen bg-background text-foreground">
     <AppBar
       className='!border-b !shadow-sm'
       showSearch
@@ -79,14 +91,13 @@ const AdminUserList = () => {
           )}
           {
             visibleUsers
-              .map((user) => <Item key={user.id} onClick={async () => {
-                const result = await dialogs.open(EditUserDialog, { user: user, pushDevices: devicesByUser && (devicesByUser.get(user.id) ?? []) });
-                if (result) {
-                  updateUserMutation.mutate({ update: result }, {
-                    onSuccess: () => toast.success(t('admin.users.updateSuccess')),
-                    onError: (error) => toast.error(t('admin.users.updateError', { error: error.message }))
-                  });
+              .map((user) => <Item key={user.id} aria-current={user.id === selectedUser?.id || undefined} className={cn(user.id === selectedUser?.id && 'bg-primary/5')} onClick={async () => {
+                if (isWide) {
+                  setSelectedUserId(user.id);
+                  return;
                 }
+                const result = await dialogs.open(EditUserDialog, { user: user, pushDevices: devicesByUser && (devicesByUser.get(user.id) ?? []) });
+                if (result) save(result);
               }}>
                 <ItemMedia>
                   <Avatar className={"mr-2"}>
@@ -122,7 +133,29 @@ const AdminUserList = () => {
 
       </PullToRefresh>
     </main>
-  </div>
+  </div>;
+
+  if (!isWide) return list;
+
+  return <SplitView
+    list={list}
+    detail={selectedUser ? (
+      <div>
+        <AppBar className='!border-b !shadow-sm' title={t('admin.users.edit')} primaryAction={null} />
+        <div className="mx-auto w-full max-w-2xl p-4 pb-safe-bottom">
+          <EditUserForm key={selectedUser.id} user={selectedUser} pushDevices={devicesByUser && (devicesByUser.get(selectedUser.id) ?? [])} onSave={save} />
+        </div>
+      </div>
+    ) : (
+      <Empty className="m-auto">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><UserPen /></EmptyMedia>
+          <EmptyTitle>{t('admin.users.noneSelected')}</EmptyTitle>
+          <EmptyDescription>{t('admin.users.noneSelectedDescription')}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )}
+  />;
 
   // return (
   //   <Layout

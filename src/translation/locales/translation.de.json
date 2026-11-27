@@ -399,7 +399,9 @@
       "emptyPast": "Keine Events in den letzten 8 Wochen.",
       "tabOther": "Andere",
       "emptyOther": "Keine anderen Events",
-      "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist."
+      "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist.",
+      "noneSelected": "Kein Termin ausgewählt",
+      "noneSelectedDescription": "Wähle links einen Termin, um ihn hier zu sehen."
     },
     "item": {
       "answerQueuedOffline": "Du bist offline. Deine Antwort wird gesendet, sobald du wieder online bist.",
@@ -1613,7 +1615,9 @@
         "android": "Android",
         "desktop": "Computer",
         "unknown": "Unbekanntes Gerät"
-      }
+      },
+      "noneSelected": "Kein Benutzer ausgewählt",
+      "noneSelectedDescription": "Wähle links einen Benutzer, um ihn zu bearbeiten."
     },
     "payments": {
       "searchPlaceholder": "Suche nach einem Nutzer",

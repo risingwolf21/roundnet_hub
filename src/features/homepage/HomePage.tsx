@@ -387,7 +387,7 @@ const HomePage = () => {
       <AppBar className='!border-b !shadow-sm' title={t('home.title')} user={user} />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => queryClient.invalidateQueries({ type: 'active' })}>
-          <div className='flex flex-col gap-5 p-4'>
+          <div className='mx-auto flex w-full max-w-6xl flex-col gap-5 p-4'>
             <header className="flex flex-col gap-0.5 px-2">
               <h1 className="text-2xl font-semibold leading-tight">
                 {greeting}, {user.displayName}
@@ -400,7 +400,7 @@ const HomePage = () => {
             <InstallAppCard />
 
             {(unanswered > 0 || unreadNotifications > 0) && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 lg:grid lg:grid-cols-2">
                 <Has feat="events">
                   {unanswered > 0 && (
                     <AttentionRow
@@ -420,6 +420,8 @@ const HomePage = () => {
               </div>
             )}
 
+            {/* Wider screens: next event, upcoming list and the rest side by side, in the phone's order. */}
+            <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-3">
             <Has feat="events">
               {isEventsLoading ? (
                 <div className="flex flex-col gap-3">
@@ -465,6 +467,7 @@ const HomePage = () => {
               )}
             </Has>
 
+            <div className="flex flex-col gap-5">
             <Has feat="drinks" perm="drinks.select">
               <DrinksSection />
             </Has>
@@ -492,6 +495,8 @@ const HomePage = () => {
                 ))}
               </div>
             </section>
+            </div>
+            </div>
           </div>
         </PullToRefresh>
       </main>

@@ -251,16 +251,21 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Navigate to="/training/list" />,
                 },
                 {
-                  path: 'list',
-                  element: <Pages.EventScreen />,
-                },
-                {
                   path: 'recurringEvents',
                   element: <Pages.RecurringEvents />,
                 },
                 {
-                  path: 'event/:selectedEventId',
-                  element: <Pages.EventInformation />,
+                  element: <Pages.EventsSplitView />,
+                  children: [
+                    {
+                      path: 'list',
+                      element: <Pages.EventScreen />,
+                    },
+                    {
+                      path: 'event/:selectedEventId',
+                      element: <Pages.EventInformation />,
+                    },
+                  ],
                 },
               ],
             },

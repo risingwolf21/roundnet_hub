@@ -60,6 +60,7 @@ import { AttendanceSummary } from "./AttendanceSummary";
 import { InfoRow } from "./InfoRow";
 import AttendanceTab from "./tabs/AttendanceTab";
 import BringItemsTab from "./tabs/BringItemsTab";
+import { useIsWide } from "@/hooks/use-mobile";
 import CommentsTab from "./tabs/CommentsTab";
 import EventDetailsTab, { EventWeatherData } from "./tabs/EventDetailsTab";
 import MatchesTab from "./tabs/MatchesTab";
@@ -231,6 +232,8 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
 
 export const EventInformation = ({ event, selectedEventPlace }: EventInformationProps) => {
   const { t, i18n } = useTranslation();
+  // On wide screens the event list stays visible next to the event, so there is nothing to go back to.
+  const isWide = useIsWide();
   const updateAttendance = useUpdateAttendanceMutation();
   const cancelTrainingMutation = useCancelTrainingMutation();
   const deleteTrainingMutation = useDeleteTrainingMutation();
@@ -292,7 +295,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
       <AppBar
         className='!border-b !shadow-sm'
         title={t('events.information.title')}
-        primaryAction="back"
+        primaryAction={isWide ? null : "back"}
         navigateBackPath="/training"
         user={user}
         actions={<>
@@ -548,13 +551,14 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
 };
 
 export const EventInformationSkeleton = () => {
+  const isWide = useIsWide();
   return (
     <div className="flex flex-col h-full w-full bg-background text-foreground overscroll-none min-h-0">
       <div className="shrink-0 bg-background relative z-10">
         <AppBar
           className='!border-b !shadow-sm'
           title={""}
-          primaryAction="back"
+          primaryAction={isWide ? null : "back"}
           user={null as any}
         />
       </div>
@@ -657,6 +661,7 @@ export const EventInformationSkeleton = () => {
 
 export const EventInformationError = () => {
   const { t } = useTranslation();
+  const isWide = useIsWide();
   const { user } = useGrants();
   const navigate = useNavigate();
 
@@ -666,7 +671,7 @@ export const EventInformationError = () => {
         <AppBar
           className='!border-b !shadow-sm'
           title={t('events.information.errorTitle')}
-          primaryAction="back"
+          primaryAction={isWide ? null : "back"}
           user={user}
         />
       </div>

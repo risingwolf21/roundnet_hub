@@ -25,7 +25,8 @@ type EventView = 'upcoming' | 'open' | 'past' | 'other';
 const needsAnswer = (x: EventsUserView) =>
   x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x);
 
-const EventScreen = () => {
+/** selectedEventId: the event open next to the list on wide screens. */
+const EventScreen = ({ selectedEventId }: { selectedEventId?: string }) => {
   const { t, i18n } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
@@ -149,6 +150,7 @@ const EventScreen = () => {
                     key={event.id}
                     event={event}
                     readOnly={view === 'other'}
+                    selected={event.id === selectedEventId}
                     attendanceUpdating={updateAttendance.isPending && !updateAttendance.isPaused && updateAttendance.context?.event.id === event.id}
                     attendEvent={() => {
                       updateAttendance.mutate({ event, user, newState: 'Attending' });

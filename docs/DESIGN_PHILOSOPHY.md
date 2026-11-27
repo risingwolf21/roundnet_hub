@@ -47,6 +47,9 @@ If you need a pattern that more than one screen will use (e.g. a section card), 
 - Respect the safe area: bottom-fixed elements use `env(safe-area-inset-bottom)` or `pb-safe-bottom`. Floating action buttons sit at `bottom: calc(1.5rem + env(safe-area-inset-bottom))`.
 - Titles and descriptions inside `DialogHeader` must be stacked in their own `flex flex-col` wrapper; the default header is a row.
 - Truncate long text (`truncate`, `min-w-0`) rather than letting it wrap and push buttons off screen.
+- Tablets (768–1279 px) get the sidebar as an icon bar; from 1280 px (`useIsWide`) it shows its labels.
+- From 1280 px a list whose rows open a page shows that page next to it with `SplitView` (`src/components/layout/SplitView.tsx`): list left, item right, each scrolling on its own, the item without a back button and an empty state when nothing is open. Events, profile sections and admin users do this; phones and tablets keep one page at a time.
+- Pages with several blocks spread into columns on wide screens in the phone's order (`lg:grid-cols-2 xl:grid-cols-3`, see the home page) instead of one stretched column.
 
 ## Colour, type and tone
 

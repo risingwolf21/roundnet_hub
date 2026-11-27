@@ -19,6 +19,8 @@ type EventItemProps = {
   declineEvent: () => void;
   /** Event of a group the user is no member of: no answer, sign-up or hints, shows the group instead. */
   readOnly?: boolean;
+  /** Open next to the list on wide screens. */
+  selected?: boolean;
 };
 
 const parsePlace = (place: string | null): PlaceType => {
@@ -167,7 +169,7 @@ const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
   return null;
 };
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false }: EventItemProps) => {
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false, selected = false }: EventItemProps) => {
   const { t, i18n } = useTranslation();
 
   const place = parsePlace(event.place);
@@ -208,8 +210,10 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
     <Item
       onClick={onClick}
       variant="outline"
+      aria-current={selected || undefined}
       className={cn(
         'cursor-pointer flex-nowrap gap-3',
+        selected && 'bg-primary/5 ring-1 ring-primary/40',
         sideBar(
           event.isCancelled
             ? 'neutral'

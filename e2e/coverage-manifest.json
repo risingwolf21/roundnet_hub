@@ -555,6 +555,18 @@
         {
           "id": "misc.nav.mobile",
           "title": "Navigation auf dem Handy"
+        },
+        {
+          "id": "misc.wide.events",
+          "title": "Laptop: Termin öffnet neben der Liste"
+        },
+        {
+          "id": "misc.wide.profile",
+          "title": "Laptop: Profil-Bereich neben der Übersicht"
+        },
+        {
+          "id": "misc.wide.admin",
+          "title": "Laptop: Benutzer im Seitenbereich bearbeiten"
         }
       ]
     }
