@@ -24,6 +24,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { trialAttendanceError } from '@/features/trials/trialErrors';
 import { useIsWide } from "@/hooks/use-mobile";
+import { cn } from '@/lib/utils';
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, isMemberOfEventGroup, maxAttendeesExceeded } from '@/types/supabaseTypes';
@@ -388,7 +389,7 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
+          <div className={cn("mx-auto w-full p-4 space-y-4", !isWide && "max-w-2xl")}>
             <Card className="border-t-4 border-t-[color:var(--group-color)]"
               style={{ "--group-color": event.group?.color ?? 'var(--primary)' } as React.CSSProperties}>
               <CardContent className="flex flex-col gap-4">
@@ -564,7 +565,7 @@ export const EventInformationSkeleton = () => {
 
       <main className='flex-1 relative flex flex-col min-h-0 overflow-hidden'>
         <div className="flex-1 overflow-y-auto overscroll-none w-full relative min-h-0">
-          <div className="mx-auto max-w-2xl w-full p-4 space-y-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+          <div className={cn("mx-auto w-full p-4 space-y-4 pb-[calc(2rem+env(safe-area-inset-bottom))]", !isWide && "max-w-2xl")}>
 
             <Card className="border-t-4 border-t-muted">
               <CardHeader className="pb-4">
