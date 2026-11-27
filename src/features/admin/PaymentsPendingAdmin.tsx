@@ -32,7 +32,7 @@ const PaymentsPendingAdmin = () => {
     />
     <main className='flex-1 size-full pb-safe-bottom'>
       <PullToRefresh onRefresh={() => refetch()}>
-        <div>
+        <div className="mx-auto w-full max-w-3xl">
           {
             Object.values(payments)
               .filter(

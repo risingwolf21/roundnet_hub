@@ -28,7 +28,7 @@ const UserPlayerMapping = () => {
       />
       <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className="flex flex-col p-2 gap-2">
+          <div className="mx-auto flex w-full max-w-6xl flex-col p-2 gap-2 lg:grid lg:grid-cols-2 lg:p-4 xl:grid-cols-3">
             {
               data.map(x => (
                 <Item key={x.player} variant={"outline"}>

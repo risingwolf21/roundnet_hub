@@ -95,7 +95,7 @@ export const HistoryScreen = ({
       <AppBar className="!border-b !shadow-sm" title={t('drinks.history.title')} user={user} />
       <main className="flex-1 size-full pb-safe-bottom">
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className="flex flex-col gap-3 p-4">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 p-4">
             {isLoading && <ListSkeleton rows={6} />}
 
             {!isLoading && isError && (

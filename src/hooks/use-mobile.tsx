@@ -17,3 +17,15 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+// Laptops and big tablets in landscape: the sidebar shows its labels and list pages open items next to the list.
+const WIDE_QUERY = "(min-width: 1280px)"
+
+const subscribeWide = (onChange: () => void) => {
+  const mql = window.matchMedia?.(WIDE_QUERY)
+  mql?.addEventListener("change", onChange)
+  return () => mql?.removeEventListener("change", onChange)
+}
+
+export function useIsWide() {
+  return React.useSyncExternalStore(subscribeWide, () => window.matchMedia?.(WIDE_QUERY).matches ?? false)
+}

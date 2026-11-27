@@ -1,9 +1,12 @@
+import { SplitView } from "@/components/layout/SplitView";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AVAILABLE_FEATURES } from "@/contexts/FeatureToggleContext";
 import { Feature } from "@/generated/supabase-types";
+import { useIsWide } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { useUserAttendanceInMonth } from "@/tanstack/events";
 import { usePlayer } from "@/tanstack/player_data";
 import { getInitials } from "@/utils";
@@ -79,10 +82,11 @@ const SECTION_GROUPS: SectionKey[][] = [
 
 const MAX_GROUP_CHIPS = 3;
 
-const SectionRow = ({ to, icon, title, description, badge }: { to: string; icon: React.ReactNode; title: string; description?: string; badge?: React.ReactNode }) => (
+const SectionRow = ({ to, icon, title, description, badge, active }: { to: string; icon: React.ReactNode; title: string; description?: string; badge?: React.ReactNode; active?: boolean }) => (
   <Link
     to={to}
-    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted"
+    aria-current={active ? 'page' : undefined}
+    className={cn("flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 active:bg-muted", active && "bg-primary/5")}
   >
     <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary [&_svg]:size-4">
       {icon}
@@ -115,6 +119,7 @@ const User = () => {
   const { t } = useTranslation();
   const { section } = useParams();
   const { user, signOut, hasFeat } = useGrants();
+  const isWide = useIsWide();
   const { data: player_data = null } = usePlayer(user);
 
   const now = getMonth(new Date()) + 1;
@@ -126,25 +131,26 @@ const User = () => {
     return !item.disabled && (!item.feat || hasFeat(item.feat));
   };
 
-  if (section) {
-    if (!(section in sections) || !isVisible(section as SectionKey)) return <Navigate to="/user" replace />;
-    const key = section as SectionKey;
-    return (
-      <div>
-        <AppBar title={t(sections[key].title)} primaryAction="back" navigateBackPath="/user" />
-        <main className='flex-1 size-full pb-safe-bottom'>
-          <div className="flex flex-col gap-4 p-4">
-            {key === 'account' && <AccountTab user={user} />}
-            {key === 'password' && <ChangePasswordTab />}
-            {key === 'playerzone' && <PlayerzoneTab user={user} player_data={player_data} />}
-            {key === 'calendar' && <CalendarTab user={user} userAttendance={userAttendance} />}
-            {key === 'notifications' && <NotificationsTab user={user} />}
-            {key === 'testlab' && <TestLabTab />}
-          </div>
-        </main>
-      </div>
-    );
-  }
+  if (section && (!(section in sections) || !isVisible(section as SectionKey))) return <Navigate to="/user" replace />;
+  // Wide screens show the overview next to a section, so one is always open there.
+  const openKey = (section as SectionKey | undefined) ?? (isWide ? SECTION_GROUPS.flat().find(isVisible) : undefined);
+
+  const sectionPage = openKey && (
+    <div>
+      <AppBar title={t(sections[openKey].title)} primaryAction={isWide ? null : "back"} navigateBackPath="/user" />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
+          {openKey === 'account' && <AccountTab user={user} />}
+          {openKey === 'password' && <ChangePasswordTab />}
+          {openKey === 'playerzone' && <PlayerzoneTab user={user} player_data={player_data} />}
+          {openKey === 'calendar' && <CalendarTab user={user} userAttendance={userAttendance} />}
+          {openKey === 'notifications' && <NotificationsTab user={user} />}
+          {openKey === 'testlab' && <TestLabTab />}
+        </div>
+      </main>
+    </div>
+  );
+  if (sectionPage && !isWide) return sectionPage;
 
   const describe = (key: SectionKey) => {
     if (key === 'playerzone') {
@@ -154,7 +160,7 @@ const User = () => {
     return description && t(description);
   };
 
-  return (
+  const overview = (
     <div>
       <AppBar title={t('profile.title')} />
       <main className='flex-1 size-full pb-safe-bottom'>
@@ -197,6 +203,7 @@ const User = () => {
                   title={t(sections[key].title)}
                   description={describe(key)}
                   badge={key === 'notifications' ? <PushBadge /> : undefined}
+                  active={isWide && key === openKey}
                 />
               ))}
             </nav>
@@ -210,6 +217,8 @@ const User = () => {
       </main>
     </div>
   );
+
+  return isWide ? <SplitView list={overview} detail={sectionPage} /> : overview;
 };
 
 export default User;

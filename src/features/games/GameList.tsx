@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useMatches } from '@/tanstack/games';
 import { format, intlFormatDistance, isAfter, parseISO } from 'date-fns';
@@ -27,7 +28,9 @@ const parseSets = (scores: string | null): SetScore[] =>
     return { a, b, aWon: Number(a) > Number(b) };
   });
 
-const GameList = () => {
+/** `selectedId` marks the match open next to the list on wide screens. */
+const GameList = ({ selectedId }: { selectedId?: string }) => {
+  const isWide = useIsWide();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dialogs = useDialogs();
@@ -64,6 +67,11 @@ const GameList = () => {
         className='!border-b !shadow-sm'
         title={t('games.list.title')}
         user={user}
+        actions={isWide && (
+          <Button variant="ghost" size="icon-lg" aria-label={t('games.list.add')} onClick={() => dialogs.open(ReportScore)}>
+            <Plus />
+          </Button>
+        )}
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <div className="px-4 pt-3">
@@ -131,9 +139,10 @@ const GameList = () => {
                       <Item
                         key={match.match_id}
                         variant="outline"
-                        className={sideBar(
+                        aria-current={match.match_id === selectedId || undefined}
+                        className={cn(sideBar(
                           missingScores ? 'warning' : side && winner ? (winner === side ? 'success' : 'error') : 'neutral'
-                        )}
+                        ), match.match_id === selectedId && 'bg-primary/5 ring-1 ring-primary/40')}
                         onClick={() => navigate(`/matches/${match.match_id}`)}
                       >
                         <div className="flex w-full flex-col gap-2 py-1">
@@ -188,7 +197,8 @@ const GameList = () => {
           </div>
         </PullToRefresh>
         {/* Every player may enter their own matches (add_match_with_sets checks participation). */}
-        <div
+        {/* Wide screens show the button in the app bar instead, so it does not float over the open match. */}
+        {!isWide && <div
           className="fixed right-6 z-50"
           style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
@@ -200,7 +210,7 @@ const GameList = () => {
           >
             <Plus className="h-6 w-6" />
           </Button>
-        </div>
+        </div>}
       </main>
     </div>
   );

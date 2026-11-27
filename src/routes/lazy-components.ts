@@ -5,6 +5,7 @@ export const PayDrinksScreen = lazyWithRetry(() => import('@/features/drinks/Pay
 export const DrinkListScreen = lazyWithRetry(() => import('@/features/drinks/DrinkListScreen'));
 export const EventInformation = lazyWithRetry(() => import('@/features/events/EventInformation.page'));
 export const EventScreen = lazyWithRetry(() => import('@/features/events/EventList'));
+export const EventsSplitView = lazyWithRetry(() => import('@/features/events/EventsSplitView'));
 export const NotificationScreen = lazyWithRetry(() => import('@/features/notifications/NotificationScreen'));
 export const ChallengeInfoScreen = lazyWithRetry(() => import('@/features/challenges/ChallengeInformation.provider'));
 export const PublicGroupList = lazyWithRetry(() => import('@/features/groups/PublicGroupList'));

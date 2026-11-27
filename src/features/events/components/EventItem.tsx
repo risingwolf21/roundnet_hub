@@ -2,6 +2,7 @@ import { sideBar } from '@/components/list/ListParts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item } from '@/components/ui/item';
+import { TableCell, TableRow } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
@@ -19,6 +20,8 @@ type EventItemProps = {
   declineEvent: () => void;
   /** Event of a group the user is no member of: no answer, sign-up or hints, shows the group instead. */
   readOnly?: boolean;
+  /** Open next to the list on wide screens. */
+  selected?: boolean;
 };
 
 const parsePlace = (place: string | null): PlaceType => {
@@ -167,7 +170,33 @@ const PastAnswer = ({ state }: { state: EventsUserView['user_state'] }) => {
   return null;
 };
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false }: EventItemProps) => {
+/** The answer column of a row: cancelled, past answer, ✕ / ✓ while unanswered, or the answer. Same in the list and the table. */
+const EventAnswer = ({
+  event,
+  readOnly,
+  attendEvent,
+  declineEvent,
+  attendanceUpdating,
+}: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'> & { readOnly: boolean }) => {
+  const { t } = useTranslation();
+  const unanswered = !readOnly && (event.user_state === null || event.user_state === 'Unanswered');
+  if (event.isCancelled) {
+    return (
+      <Badge variant="destructive">
+        <Ban />
+        {t('events.item.cancelled')}
+      </Badge>
+    );
+  }
+  if (readOnly) return null;
+  if (eventInThePast(event)) return <PastAnswer state={event.user_state} />;
+  if (unanswered) {
+    return <AttendanceButtons event={event} attendEvent={attendEvent} declineEvent={declineEvent} attendanceUpdating={attendanceUpdating} />;
+  }
+  return <AnswerStatus state={event.user_state} />;
+};
+
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false, selected = false }: EventItemProps) => {
   const { t, i18n } = useTranslation();
 
   const place = parsePlace(event.place);
@@ -208,8 +237,10 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
     <Item
       onClick={onClick}
       variant="outline"
+      aria-current={selected || undefined}
       className={cn(
         'cursor-pointer flex-nowrap gap-3',
+        selected && 'bg-primary/5 ring-1 ring-primary/40',
         sideBar(
           event.isCancelled
             ? 'neutral'
@@ -253,19 +284,73 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       </div>
 
       <div className="flex shrink-0 items-center">
-        {event.isCancelled ? (
-          <Badge variant="destructive">
-            <Ban />
-            {t('events.item.cancelled')}
-          </Badge>
-        ) : readOnly ? null : past ? (
-          <PastAnswer state={event.user_state} />
-        ) : unanswered ? (
-          <AttendanceButtons event={event} attendEvent={attendEvent} declineEvent={declineEvent} attendanceUpdating={attendanceUpdating} />
-        ) : (
-          <AnswerStatus state={event.user_state} />
-        )}
+        <EventAnswer event={event} readOnly={readOnly} attendEvent={attendEvent} declineEvent={declineEvent} attendanceUpdating={attendanceUpdating} />
       </div>
     </Item>
+  );
+};
+
+/** The same event as a table row, for the event table on wide screens. */
+export const EventRow = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, readOnly = false, selected = false }: EventItemProps) => {
+  const { i18n } = useTranslation();
+  const start = new Date(event.startingDateTime);
+  const end = new Date(event.endDateTime);
+  const closed = event.isCancelled || eventInThePast(event);
+  const locationName = parsePlace(event.place).name?.trim();
+  const dateFormat = new Intl.DateTimeFormat(i18n.resolvedLanguage, { weekday: 'short', day: 'numeric', month: 'numeric' });
+  const attending = event.attending_count ?? 0;
+  const full = !!event.maxAttendees && attending >= event.maxAttendees;
+
+  return (
+    <TableRow
+      onClick={onClick}
+      aria-current={selected || undefined}
+      className={cn('cursor-pointer', selected && 'bg-primary/5 shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/5')}
+    >
+      <TableCell className="pl-4">
+        <div className="flex items-center gap-3">
+          <DateTile date={start} color={event.group?.color} muted={closed} />
+          <span className="text-muted-foreground tabular-nums">{formatTimeRange(start, end, dateFormat)}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="min-w-0 max-w-72">
+          {/* The button makes the row reachable by keyboard; the row handles the click. */}
+          <button type="button" className={cn('block max-w-full truncate text-left font-semibold', closed && 'text-muted-foreground')}>
+            {event.title}
+          </button>
+          {locationName && <div className="truncate text-xs text-muted-foreground">{locationName}</div>}
+        </div>
+      </TableCell>
+      <TableCell className="hidden @2xl:table-cell">
+        {event.group?.name && (
+          <Badge variant="outline">
+            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: event.group.color }} />
+            {event.group.name}
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell>
+        {event.maxAttendees ? (
+          <div className="flex items-center gap-2 tabular-nums">
+            <div className="h-1.5 w-12 overflow-hidden rounded-full bg-muted">
+              <div
+                className={cn('h-full rounded-full', full ? 'bg-warning' : 'bg-success')}
+                style={{ width: `${Math.min(100, (attending / event.maxAttendees) * 100)}%` }}
+              />
+            </div>
+            {attending} / {event.maxAttendees}
+          </div>
+        ) : (
+          <span className="flex items-center gap-1.5 text-muted-foreground tabular-nums">
+            <Users className="size-3.5" />
+            {attending}
+          </span>
+        )}
+      </TableCell>
+      <TableCell className="pr-4">
+        <EventAnswer event={event} readOnly={readOnly} attendEvent={attendEvent} declineEvent={declineEvent} attendanceUpdating={attendanceUpdating} />
+      </TableCell>
+    </TableRow>
   );
 };

@@ -3,7 +3,9 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
@@ -17,7 +19,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
-import { EventItem } from './components/EventItem';
+import { EventItem, EventRow } from './components/EventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 type EventView = 'upcoming' | 'open' | 'past' | 'other';
@@ -25,12 +27,15 @@ type EventView = 'upcoming' | 'open' | 'past' | 'other';
 const needsAnswer = (x: EventsUserView) =>
   x.user_state === null && !x.isCancelled && !answerNotOpenYet(x) && !answerDeadlineExpired(x) && !eventHasStarted(x);
 
-const EventScreen = () => {
+/** selectedEventId: the event open next to the list on wide screens. */
+const EventScreen = ({ selectedEventId }: { selectedEventId?: string }) => {
   const { t, i18n } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [fetchMode, setFetchMode] = useFetchMode();
+  // Wide screens show the events as a table, the open event sits in a panel on the right.
+  const isWide = useIsWide();
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [showOther, setShowOther] = useState(false);
   // eslint-disable-next-line @eslint-react/naming-convention/use-state
@@ -141,7 +146,50 @@ const EventScreen = () => {
               </Empty>
             )}
 
-            {!isLoading && !error && eventsByDay.map(([key, value]: [string, EventsUserView[]]) => (
+            {!isLoading && !error && isWide && visibleEvents.length > 0 && (
+              <div className="@container overflow-hidden rounded-xl border bg-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="pl-4">{t('events.list.columnDate')}</TableHead>
+                      <TableHead>{t('events.list.columnEvent')}</TableHead>
+                      <TableHead className="hidden @2xl:table-cell">{t('events.list.columnGroup')}</TableHead>
+                      <TableHead>{t('events.list.columnPlaces')}</TableHead>
+                      <TableHead className="pr-4">{t('events.list.columnAnswer')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {eventsByDay.map(([key, value]: [string, EventsUserView[]]) => [
+                      <TableRow key={key} className="bg-muted/20 hover:bg-muted/20">
+                        <TableCell colSpan={5} className="pl-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                          {dayTitle(key)} · {value.length}
+                        </TableCell>
+                      </TableRow>,
+                      ...value.map((event) => (
+                        <EventRow
+                          key={event.id}
+                          event={event}
+                          readOnly={view === 'other'}
+                          selected={event.id === selectedEventId}
+                          attendanceUpdating={updateAttendance.isPending && !updateAttendance.isPaused && updateAttendance.context?.event.id === event.id}
+                          attendEvent={() => {
+                            updateAttendance.mutate({ event, user, newState: 'Attending' });
+                            sendMetricsToSentry('event_attend_from_list', 1);
+                          }}
+                          declineEvent={() => {
+                            updateAttendance.mutate({ event, user, newState: 'Declined' });
+                            sendMetricsToSentry('event_decline_from_list', 1);
+                          }}
+                          onClick={() => navigate('/training/event/' + event.id)}
+                        />
+                      )),
+                    ])}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            {!isLoading && !error && !isWide && eventsByDay.map(([key, value]: [string, EventsUserView[]]) => (
               <section key={key} className="flex w-full flex-col gap-2">
                 <ListSectionHeader title={dayTitle(key)} count={value.length} />
                 {value.map((event) => (
@@ -149,6 +197,7 @@ const EventScreen = () => {
                     key={event.id}
                     event={event}
                     readOnly={view === 'other'}
+                    selected={event.id === selectedEventId}
                     attendanceUpdating={updateAttendance.isPending && !updateAttendance.isPaused && updateAttendance.context?.event.id === event.id}
                     attendEvent={() => {
                       updateAttendance.mutate({ event, user, newState: 'Attending' });

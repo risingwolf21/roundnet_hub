@@ -11,6 +11,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
+import { cn } from '@/lib/utils';
 import { ChallengeRepository, ChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { differenceInCalendarDays, format } from 'date-fns';
 import groupBy from 'lodash.groupby';
@@ -26,13 +27,13 @@ const MEDALS: Record<string, string> = { '1': '🥇', '2': '🥈', '3': '🥉' }
 type ArchivedChallenge = Awaited<ReturnType<typeof ChallengeRepository.fetchPodiums>>[number];
 
 /** Ended challenge: the winner on top, places 2 and 3 in one muted line. Tied players share a place. */
-const ArchivedChallengeRow = ({ challenge, onClick }: { challenge: ArchivedChallenge; onClick: () => void }) => {
+const ArchivedChallengeRow = ({ challenge, selected, onClick }: { challenge: ArchivedChallenge; selected: boolean; onClick: () => void }) => {
   const { t, i18n } = useTranslation();
   const places = Object.entries(groupBy(challenge.podium, (x) => x.rank.toString())).sort(([a], [b]) => Number(a) - Number(b));
   const [winners, ...others] = places.map(([rank, entries]) => ({ rank, entries }));
 
   return (
-    <Item variant="outline" className={sideBar('neutral')} onClick={onClick}>
+    <Item variant="outline" aria-current={selected || undefined} className={cn(sideBar('neutral'), selected && 'bg-primary/5 ring-1 ring-primary/40')} onClick={onClick}>
       <ItemContent>
         <ItemTitle className="line-clamp-2">{challenge.challenge_name}</ItemTitle>
         {challenge.end_date && (
@@ -78,14 +79,14 @@ const ArchivedChallengeRow = ({ challenge, onClick }: { challenge: ArchivedChall
   );
 };
 
-const ChallengeRow = ({ challenge, onClick }: { challenge: ChallengeWithGroup; onClick: () => void }) => {
+const ChallengeRow = ({ challenge, selected, onClick }: { challenge: ChallengeWithGroup; selected: boolean; onClick: () => void }) => {
   const { t } = useTranslation();
   const now = new Date();
   const notStarted = !!challenge.start_date && new Date(challenge.start_date) > now;
   const daysLeft = challenge.end_date ? differenceInCalendarDays(new Date(challenge.end_date), now) : null;
 
   return (
-    <Item variant="outline" onClick={onClick}>
+    <Item variant="outline" aria-current={selected || undefined} className={cn(selected && 'bg-primary/5 ring-1 ring-primary/40')} onClick={onClick}>
       <ItemContent>
         <ItemTitle>{challenge.name}</ItemTitle>
         {challenge.description && <ItemDescription className="line-clamp-2">{challenge.description}</ItemDescription>}
@@ -130,7 +131,8 @@ const ChallengeRow = ({ challenge, onClick }: { challenge: ChallengeWithGroup; o
   );
 };
 
-const ChallengeListPage = () => {
+/** `selectedId` marks the challenge open next to the list on wide screens. */
+const ChallengeListPage = ({ selectedId }: { selectedId?: string }) => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const dialogs = useDialogs();
@@ -205,7 +207,7 @@ const ChallengeListPage = () => {
                   <section className="flex flex-col gap-2">
                     <ListSectionHeader title={t('challenge.list.active')} count={challenges.length} />
                     {challenges.map((entry) => (
-                      <ChallengeRow key={entry.id} challenge={entry} onClick={() => navigate(`/challenges/${entry.id}`)} />
+                      <ChallengeRow key={entry.id} challenge={entry} selected={entry.id === selectedId} onClick={() => navigate(`/challenges/${entry.id}`)} />
                     ))}
                   </section>
                 )}
@@ -214,7 +216,7 @@ const ChallengeListPage = () => {
                   <section className="flex flex-col gap-2">
                     <ListSectionHeader icon={<Archive />} title={t('challenge.list.archived')} count={podium.length} className="pt-4" />
                     {podium.map((entry) => (
-                      <ArchivedChallengeRow key={entry.challenge_id} challenge={entry} onClick={() => navigate(`/challenges/${entry.challenge_id}`)} />
+                      <ArchivedChallengeRow key={entry.challenge_id} challenge={entry} selected={entry.challenge_id === selectedId} onClick={() => navigate(`/challenges/${entry.challenge_id}`)} />
                     ))}
                   </section>
                 )}

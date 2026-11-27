@@ -12,6 +12,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDialogs } from "@/contexts/DialogsProvider";
+import { useIsWide } from "@/hooks/use-mobile";
 import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
 import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useGroups, useJoinGroup, useLeaveGroupMutation } from "@/tanstack/groups";
@@ -69,6 +70,7 @@ const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" |
   const { groupId } = useParams();
   const [searchParams] = useSearchParams();
   const isMembersScreen = screen === "members";
+  const isWide = useIsWide();
   const { user, hasPerm, refetchUserGrants } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -396,7 +398,7 @@ const PublicGroupInformation = ({ screen = "overview" }: { screen?: "overview" |
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <AppBar
         className="!border-b !shadow-sm"
-        primaryAction="back"
+        primaryAction={isWide && !isMembersScreen ? null : "back"}
         user={user}
         title={isMembersScreen ? t("groups.membersTitle", { group: group.name }) : group.name}
         actions={

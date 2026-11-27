@@ -7,15 +7,18 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Empty, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { PushDevice } from '@/repository/AdminUsersRepository';
 import { useAdminPushDevices, useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
-import { Bell, BellOff, ChevronRight, Users } from 'lucide-react';
+import { Bell, BellOff, ChevronRight, UserPen, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
-import EditUserDialog from './dialogs/EditUserDialog';
+import EditUserDialog, { EditUserForm, UserEdited } from './dialogs/EditUserDialog';
 
 type UserView = 'all' | 'noGroup' | 'noPush';
 
@@ -25,6 +28,9 @@ const AdminUserList = () => {
   const dialogs = useDialogs();
   const [searchString, setSearchString] = useState('');
   const [view, setView] = useState<UserView>('all');
+  // Wide screens edit the user in a panel next to the list instead of a full-screen dialog.
+  const isWide = useIsWide();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data: users = [], isLoading, refetch } = useAllUsersAsAdmin();
   const { data: pushDevices, refetch: refetchPushDevices } = useAdminPushDevices();
@@ -44,9 +50,15 @@ const AdminUserList = () => {
       x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
       x.name?.toLowerCase().includes(searchString.toLowerCase())
   );
+  const selectedUser = isWide ? users.find((x) => x.id === selectedUserId) : undefined;
+
+  const save = (update: UserEdited) => updateUserMutation.mutate({ update }, {
+    onSuccess: () => toast.success(t('admin.users.updateSuccess')),
+    onError: (error) => toast.error(t('admin.users.updateError', { error: error.message }))
+  });
 
 
-  return <div className="min-h-screen bg-background text-foreground">
+  const list = <div className="min-h-screen bg-background text-foreground">
     <AppBar
       className='!border-b !shadow-sm'
       showSearch
@@ -77,16 +89,69 @@ const AdminUserList = () => {
               </EmptyHeader>
             </Empty>
           )}
-          {
+          {isWide ? (
+            <div className="p-4">
+              <Table className="overflow-hidden rounded-xl border bg-card">
+                <TableHeader>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="pl-4">{t('admin.users.columnName')}</TableHead>
+                    <TableHead>{t('navigation.groups')}</TableHead>
+                    <TableHead>{t('admin.users.columnActivity')}</TableHead>
+                    {devicesByUser && <TableHead>{t('admin.users.pushSection')}</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleUsers.map((user) => {
+                    const selected = user.id === selectedUser?.id;
+                    return (
+                      <TableRow key={user.id} aria-selected={selected} onClick={() => setSelectedUserId(user.id)}
+                        className={cn('cursor-pointer', selected && 'bg-primary/5 shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/5')}>
+                        <TableCell className="pl-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={user.avatarUrl || undefined} alt={user.name || undefined} />
+                              <AvatarFallback>{user.name ? user.name[0] : 'U'}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              {/* The button makes the row reachable by keyboard; the row handles the click. */}
+                              <button type="button" className="block max-w-64 truncate text-left font-medium">{user.name}</button>
+                              <div className="max-w-64 truncate text-xs text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex max-w-80 flex-wrap gap-1">
+                            {user.groups.length === 0
+                              ? <Badge variant="warning"><Users />{t('admin.users.noGroup')}</Badge>
+                              : user.groups.map((group) => (
+                                <Badge key={group.id} variant="outline">
+                                  <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: group.color }} />
+                                  {group.name}
+                                </Badge>
+                              ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.last_seen_at && t('user.lastActive', { date: new Date(user.last_seen_at) })}
+                        </TableCell>
+                        {devicesByUser && (
+                          <TableCell>
+                            {devicesByUser.has(user.id)
+                              ? <Badge variant="secondary"><Bell />{t('admin.users.pushDevices', { count: devicesByUser.get(user.id)!.length })}</Badge>
+                              : <Badge variant="warning"><BellOff />{t('admin.users.noPush')}</Badge>}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) :
             visibleUsers
               .map((user) => <Item key={user.id} onClick={async () => {
                 const result = await dialogs.open(EditUserDialog, { user: user, pushDevices: devicesByUser && (devicesByUser.get(user.id) ?? []) });
-                if (result) {
-                  updateUserMutation.mutate({ update: result }, {
-                    onSuccess: () => toast.success(t('admin.users.updateSuccess')),
-                    onError: (error) => toast.error(t('admin.users.updateError', { error: error.message }))
-                  });
-                }
+                if (result) save(result);
               }}>
                 <ItemMedia>
                   <Avatar className={"mr-2"}>
@@ -122,7 +187,30 @@ const AdminUserList = () => {
 
       </PullToRefresh>
     </main>
-  </div>
+  </div>;
+
+  if (!isWide) return list;
+
+  // Wide screens: the table takes the room, the selected user is edited in a panel on the right.
+  return <div className="flex h-svh">
+    <div className="min-w-0 flex-1 overflow-y-auto">{list}</div>
+    <aside className="flex w-[26rem] shrink-0 flex-col overflow-y-auto border-l bg-muted/30">{selectedUser ? (
+      <div>
+        <AppBar className='!border-b !shadow-sm' title={t('admin.users.edit')} primaryAction={null} />
+        <div className="mx-auto w-full max-w-2xl p-4 pb-safe-bottom">
+          <EditUserForm key={selectedUser.id} user={selectedUser} pushDevices={devicesByUser && (devicesByUser.get(selectedUser.id) ?? [])} onSave={save} />
+        </div>
+      </div>
+    ) : (
+      <Empty className="m-auto">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><UserPen /></EmptyMedia>
+          <EmptyTitle>{t('admin.users.noneSelected')}</EmptyTitle>
+          <EmptyDescription>{t('admin.users.noneSelectedDescription')}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    )}</aside>
+  </div>;
 
   // return (
   //   <Layout

@@ -51,8 +51,16 @@ export default defineConfig({
   },
   projects: [
     {
+      // A tablet in landscape (sidebar as icon bar, one page at a time). From 1280 px lists open
+      // their items side by side; those flows are tagged @wide and run in the project below.
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      grepInvert: /@wide/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1180, height: 820 } },
+    },
+    {
+      name: 'wide',
+      grep: /@wide/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
       // The most important flows again on a phone-sized screen (most members use the PWA on

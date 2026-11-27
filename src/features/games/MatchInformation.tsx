@@ -10,6 +10,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
 import { Has } from '@/hooks/useGrants';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
@@ -85,6 +86,7 @@ const MatchSkeleton = () => (
 const MatchInformation = () => {
   const { t, i18n } = useTranslation();
   const { matchId } = useParams();
+  const isWide = useIsWide();
   const { user, hasPerm } = useGrants();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -93,7 +95,7 @@ const MatchInformation = () => {
   const { data: match, isLoading, refetch } = useMatch(matchId);
   const deleteMatch = useDeleteMatch(matchId);
 
-  const appBar = <AppBar className="!border-b !shadow-sm" title={t('games.information.title')} user={user} primaryAction="back" actions={match && <ShareButton title={t('games.information.title')} text={match.team_a_name && match.team_b_name ? `${match.team_a_name} – ${match.team_b_name}` : undefined} />} />;
+  const appBar = <AppBar className="!border-b !shadow-sm" title={t('games.information.title')} user={user} primaryAction={isWide ? null : "back"} actions={match && <ShareButton title={t('games.information.title')} text={match.team_a_name && match.team_b_name ? `${match.team_a_name} – ${match.team_b_name}` : undefined} />} />;
 
   if (isLoading) {
     return (

@@ -555,6 +555,26 @@
         {
           "id": "misc.nav.mobile",
           "title": "Navigation auf dem Handy"
+        },
+        {
+          "id": "misc.wide.events",
+          "title": "Laptop: Termintabelle, Antwort in der Zeile, Termin im Seitenbereich"
+        },
+        {
+          "id": "misc.wide.groups",
+          "title": "Laptop: Gruppe öffnet neben der Liste"
+        },
+        {
+          "id": "misc.wide.profile",
+          "title": "Laptop: Profil-Bereich neben der Übersicht"
+        },
+        {
+          "id": "misc.wide.admin",
+          "title": "Laptop: Benutzer im Seitenbereich bearbeiten"
+        },
+        {
+          "id": "misc.wide.grants",
+          "title": "Laptop: Rechte einer Gruppe im Seitenbereich bearbeiten"
         }
       ]
     }

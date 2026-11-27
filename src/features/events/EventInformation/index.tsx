@@ -1,12 +1,11 @@
-import { trialAttendanceError } from '@/features/trials/trialErrors';
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { ShareButton } from "@/components/ShareButton";
 import {
   Alert,
   AlertAction,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { ShareButton } from "@/components/ShareButton";
 import { AppBar } from "@/components/ui/appbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
+import { trialAttendanceError } from '@/features/trials/trialErrors';
+import { useIsWide } from "@/hooks/use-mobile";
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, isMemberOfEventGroup, maxAttendeesExceeded } from '@/types/supabaseTypes';
@@ -231,6 +232,8 @@ const EventInformationAttendanceState = ({ event }: Pick<EventInformationProps, 
 
 export const EventInformation = ({ event, selectedEventPlace }: EventInformationProps) => {
   const { t, i18n } = useTranslation();
+  // On wide screens the event list stays visible next to the event, so there is nothing to go back to.
+  const isWide = useIsWide();
   const updateAttendance = useUpdateAttendanceMutation();
   const cancelTrainingMutation = useCancelTrainingMutation();
   const deleteTrainingMutation = useDeleteTrainingMutation();
@@ -292,13 +295,12 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
       <AppBar
         className='!border-b !shadow-sm'
         title={t('events.information.title')}
-        primaryAction="back"
+        primaryAction={isWide ? null : "back"}
         navigateBackPath="/training"
         user={user}
         actions={<>
           <ShareButton
             title={event.title}
-            text={`${event.title} · ${new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(start)}`}
           />
           {!readOnly && <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
             <DropdownMenu>
@@ -548,13 +550,14 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
 };
 
 export const EventInformationSkeleton = () => {
+  const isWide = useIsWide();
   return (
     <div className="flex flex-col h-full w-full bg-background text-foreground overscroll-none min-h-0">
       <div className="shrink-0 bg-background relative z-10">
         <AppBar
           className='!border-b !shadow-sm'
           title={""}
-          primaryAction="back"
+          primaryAction={isWide ? null : "back"}
           user={null as any}
         />
       </div>
@@ -657,6 +660,7 @@ export const EventInformationSkeleton = () => {
 
 export const EventInformationError = () => {
   const { t } = useTranslation();
+  const isWide = useIsWide();
   const { user } = useGrants();
   const navigate = useNavigate();
 
@@ -666,7 +670,7 @@ export const EventInformationError = () => {
         <AppBar
           className='!border-b !shadow-sm'
           title={t('events.information.errorTitle')}
-          primaryAction="back"
+          primaryAction={isWide ? null : "back"}
           user={user}
         />
       </div>

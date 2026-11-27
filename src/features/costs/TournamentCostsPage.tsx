@@ -93,7 +93,7 @@ const TournamentCostsPage = () => {
 
       <main className="flex-1 pb-safe-bottom">
         {isLoading ? (
-          <div className="p-4 flex flex-col gap-3">
+          <div className="mx-auto w-full max-w-3xl p-4 flex flex-col gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 px-2 py-2">
                 <Skeleton className="size-8 rounded-full" />
@@ -112,7 +112,7 @@ const TournamentCostsPage = () => {
             <p className="text-sm">{t('costs.emptyDescription')}</p>
           </div>
         ) : (
-          <div className="flex flex-col p-4 gap-6">
+          <div className="mx-auto w-full max-w-3xl flex flex-col p-4 gap-6">
             {grouped.map(([tournament, entries]) => {
               const subtotal = entries.reduce((sum, e) => sum + e.amount, 0);
               return (

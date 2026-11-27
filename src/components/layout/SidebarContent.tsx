@@ -278,7 +278,7 @@ export function AppSidebar() {
   ]
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarContent className='pt-safe-top pb-safe-bottom overscroll-none'>
         {categories.map((category, index) => {
 

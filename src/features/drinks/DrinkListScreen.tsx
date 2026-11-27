@@ -173,7 +173,7 @@ const DrinkListScreen = () => {
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
-          <div className='flex flex-col gap-2 p-2' style={{ paddingBottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}>
+          <div className='mx-auto flex w-full max-w-5xl flex-col gap-2 p-2' style={{ paddingBottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}>
 
             {toggleEdit && (
               <Alert variant="info" className="mx-0">
@@ -236,9 +236,10 @@ const DrinkListScreen = () => {
             )}
 
             {!isLoading && !error && groupedDrinks.map(([key, mappedDrinks]) => (
-              <section key={key} className="flex flex-col gap-2">
+              // Two drinks per row on wider screens.
+              <section key={key} className="flex flex-col gap-2 lg:grid lg:grid-cols-2">
                 {(groupedDrinks.length > 1 || allTypes.length > 1) && (
-                  <ListSectionHeader title={nameOfProductType(key as ProductType)} count={mappedDrinks.length} />
+                  <ListSectionHeader title={nameOfProductType(key as ProductType)} count={mappedDrinks.length} className="lg:col-span-2" />
                 )}
                 {mappedDrinks.map((drink: Drink) => {
                   const count = addedDrinks[drink.id]?.count ?? 0;

@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterNavigateOptions, RouterProvider, To, useLocation } from 'react-router';
 import { useApplication } from './features/auth/ApplicationContext';
+import { SplitRoute } from './components/layout/SplitView';
+import { Swords, Trophy, Users } from 'lucide-react';
 
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -204,12 +206,18 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Navigate to="/challenges/list" />,
                 },
                 {
-                  path: 'list',
-                  element: <Pages.ChallengeList />,
-                },
-                {
-                  path: ':challengeId',
-                  element: <Pages.ChallengeInfoScreen />,
+                  element: <SplitRoute param="challengeId" list={(id) => <Pages.ChallengeList selectedId={id} />}
+                    emptyIcon={<Trophy />} emptyTitle="challenge.list.noneSelected" emptyDescription="challenge.list.noneSelectedDescription" />,
+                  children: [
+                    {
+                      path: 'list',
+                      element: <Pages.ChallengeList />,
+                    },
+                    {
+                      path: ':challengeId',
+                      element: <Pages.ChallengeInfoScreen />,
+                    },
+                  ],
                 },
               ],
             },
@@ -223,17 +231,23 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Navigate to="/groups/list" />,
                 },
                 {
-                  path: 'list',
-                  element: <Pages.PublicGroupList />,
-                },
-                {
-                  path: ':groupId',
-                  element: <Pages.PublicGroupInformation />,
-                },
-                {
-                  path: ':groupId/members',
-                  // Own key: both routes render the same component, and without it React would keep the overview's state.
-                  element: <Pages.PublicGroupInformation key="members" screen="members" />,
+                  element: <SplitRoute param="groupId" list={(id) => <Pages.PublicGroupList selectedId={id} />}
+                    emptyIcon={<Users />} emptyTitle="groups.noneSelected" emptyDescription="groups.noneSelectedDescription" />,
+                  children: [
+                    {
+                      path: 'list',
+                      element: <Pages.PublicGroupList />,
+                    },
+                    {
+                      path: ':groupId',
+                      element: <Pages.PublicGroupInformation />,
+                    },
+                    {
+                      path: ':groupId/members',
+                      // Own key: both routes render the same component, and without it React would keep the overview's state.
+                      element: <Pages.PublicGroupInformation key="members" screen="members" />,
+                    },
+                  ],
                 },
               ],
             },
@@ -251,16 +265,21 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Navigate to="/training/list" />,
                 },
                 {
-                  path: 'list',
-                  element: <Pages.EventScreen />,
-                },
-                {
                   path: 'recurringEvents',
                   element: <Pages.RecurringEvents />,
                 },
                 {
-                  path: 'event/:selectedEventId',
-                  element: <Pages.EventInformation />,
+                  element: <Pages.EventsSplitView />,
+                  children: [
+                    {
+                      path: 'list',
+                      element: <Pages.EventScreen />,
+                    },
+                    {
+                      path: 'event/:selectedEventId',
+                      element: <Pages.EventInformation />,
+                    },
+                  ],
                 },
               ],
             },
@@ -278,12 +297,18 @@ const createRouter = (user: UserWithGroups | null) =>
                   element: <Navigate to="/matches/list" />,
                 },
                 {
-                  path: 'list',
-                  element: <Pages.GameList />,
-                },
-                {
-                  path: ':matchId',
-                  element: <Pages.MatchInformation />,
+                  element: <SplitRoute param="matchId" list={(id) => <Pages.GameList selectedId={id} />}
+                    emptyIcon={<Swords />} emptyTitle="games.list.noneSelected" emptyDescription="games.list.noneSelectedDescription" />,
+                  children: [
+                    {
+                      path: 'list',
+                      element: <Pages.GameList />,
+                    },
+                    {
+                      path: ':matchId',
+                      element: <Pages.MatchInformation />,
+                    },
+                  ],
                 },
                 {
                   path: 'leaderboard',

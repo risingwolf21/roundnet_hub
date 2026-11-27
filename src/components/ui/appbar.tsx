@@ -57,7 +57,7 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "pt-safe-top sticky top-0 z-50 w-full transition-all duration-200 text-foreground",
+        "@container pt-safe-top sticky top-0 z-50 w-full transition-all duration-200 text-foreground",
         // OPTIMIERT: Der Blur-Effekt funktioniert jetzt in beiden Themes perfekt
         "bg-header/80 text-header-foreground backdrop-blur-md",
         // OPTIMIERT: border-border greift automatisch auf deine global.css zurück
@@ -67,7 +67,7 @@ export function AppBar({
       {...props}
     >
       <div className="relative flex h-14 w-full items-center gap-4 px-4 md:px-4">
-        <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
+        <div className="flex items-center gap-2 md:gap-4 @3xl:w-1/3">
           {primaryAction === "default" && (
             // GEFIXT: bg-foreground/50 entfernt. Der Trigger hat meist ein eigenes sauberes Hover-Styling
             <div className="relative -ml-1 md:hidden">
@@ -95,7 +95,7 @@ export function AppBar({
           )}
         </div>
 
-        <div className="flex flex-1 items-center justify-center lg:w-1/3">
+        <div className="flex flex-1 items-center justify-center @3xl:w-1/3">
           {showSearch && (
             <div className="relative w-full max-w-md flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -111,7 +111,7 @@ export function AppBar({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 lg:w-1/3">
+        <div className="flex items-center justify-end gap-2 @3xl:w-1/3">
           {actions}
           {user && (
             <Button

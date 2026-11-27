@@ -49,7 +49,8 @@ async function resetUserPassword(userId: string, newPassword: string) {
   return await resp.json();
 }
 
-const EditUserDialog = ({ open, onClose, payload: { user, pushDevices } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
+/** The edit form: inside the dialog on phones, in the side panel of the user list on wide screens. */
+export const EditUserForm = ({ user, pushDevices, onSave }: EditUserDialogProps & { onSave: (result: UserEdited) => void }) => {
   const { t } = useTranslation();
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
@@ -59,13 +60,119 @@ const EditUserDialog = ({ open, onClose, payload: { user, pushDevices } }: Dialo
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    onClose({
+    onSave({
       userId: user.id,
       displayName: data.get('displayName'),
       verified,
       role: role,
     } as UserEdited);
   };
+
+  return (
+    <form noValidate onSubmit={handleSubmit}>
+      <div className="no-scrollbar overflow-y-auto flex flex-col gap-4">
+
+        <Field key={"displayName"}>
+          <FieldLabel htmlFor="displayName">
+            {t('profile.account.displayName')}
+          </FieldLabel>
+          <Input
+            id="displayName"
+            name="displayName"
+            defaultValue={user?.displayName ? user.displayName : ''}
+            required
+          />
+        </Field>
+
+        <Field key={"email"}>
+          <FieldLabel htmlFor="email">
+            {t('admin.users.email')}
+          </FieldLabel>
+          <Input
+            id="email"
+            name="email"
+            defaultValue={user?.email}
+            disabled
+          />
+        </Field>
+
+        <Field key={"password"}>
+          <FieldLabel htmlFor="password">
+            {t('admin.users.password')}
+          </FieldLabel>
+          <div className='flex flex-row gap-2'>
+            <Input
+              className='flex-1'
+              id="password"
+              name="password"
+              placeholder={t('profile.password.title')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button className={"flex-shrink"} variant={"outline"} onClick={async () => {
+              try {
+                await resetUserPassword(user.id, password);
+                toast.success(t('admin.users.passwordResetSuccess'));
+                setPassword('');
+              } catch (error: any) {
+                captureException(error);
+                toast.error(t('admin.users.passwordResetError', { error: error.message }));
+              }
+            }}>
+              {t('common.save')}
+            </Button>
+          </div>
+        </Field>
+
+        <div className='flex flex-col gap-4'>
+          <div className='text-base font-semibold'>{t('navigation.groups')}</div>
+          {
+            user.groups.map(x => (
+              <Item key={x.id} variant={"outline"} className={groupSideBar(x.color).className} style={groupSideBar(x.color).style}>
+                <div className='w-full h-full flex flex-row justify-between gap-4 py-1 text-sm'>
+                  <ItemContent>
+                    <ItemTitle>{x.name}</ItemTitle>
+
+                  </ItemContent>
+                  <ItemActions>
+                    <ChevronRight />
+                  </ItemActions>
+                </div>
+              </Item>
+            ))
+          }
+        </div>
+
+        {pushDevices && (
+          <div className='flex flex-col gap-4'>
+            <div className='text-base font-semibold'>{t('admin.users.pushSection')}</div>
+            {pushDevices.length === 0 && (
+              <div className='text-sm text-muted-foreground'>{t('admin.users.pushNone')}</div>
+            )}
+            {pushDevices.map((device) => (
+              <Item key={`${device.platform}-${device.last_seen}`} variant={"outline"}>
+                <ItemContent>
+                  <ItemTitle>{t(`admin.users.platform.${device.platform ?? 'unknown'}`, { defaultValue: t('admin.users.platform.unknown') })}</ItemTitle>
+                  <ItemDescription>{t('admin.users.deviceLastSeen', { date: new Date(device.last_seen) })}</ItemDescription>
+                </ItemContent>
+              </Item>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* The form had an onSubmit handler but no submit button (the password "Speichern" is
+          type="button" and with several inputs Enter does not submit), so name changes could
+          never be saved. */}
+      <Button type="submit" className="w-full mt-4">
+        {t('admin.users.saveChanges')}
+      </Button>
+    </form>
+  );
+};
+
+const EditUserDialog = ({ open, onClose, payload: { user, pushDevices } }: DialogProps<EditUserDialogProps, UserEdited | null>) => {
+  const { t } = useTranslation();
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
@@ -75,105 +182,7 @@ const EditUserDialog = ({ open, onClose, payload: { user, pushDevices } }: Dialo
           <DialogClose />
         </DialogHeader>
         <DialogBody>
-          <form noValidate onSubmit={handleSubmit}>
-            <div className="no-scrollbar overflow-y-auto flex flex-col gap-4">
-
-              <Field key={"displayName"}>
-                <FieldLabel htmlFor="displayName">
-                  {t('profile.account.displayName')}
-                </FieldLabel>
-                <Input
-                  id="displayName"
-                  name="displayName"
-                  defaultValue={user?.displayName ? user.displayName : ''}
-                  required
-                />
-              </Field>
-
-              <Field key={"email"}>
-                <FieldLabel htmlFor="email">
-                  {t('admin.users.email')}
-                </FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  defaultValue={user?.email}
-                  disabled
-                />
-              </Field>
-
-              <Field key={"password"}>
-                <FieldLabel htmlFor="password">
-                  {t('admin.users.password')}
-                </FieldLabel>
-                <div className='flex flex-row gap-2'>
-                  <Input
-                    className='flex-1'
-                    id="password"
-                    name="password"
-                    placeholder={t('profile.password.title')}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <Button className={"flex-shrink"} variant={"outline"} onClick={async () => {
-                    try {
-                      await resetUserPassword(user.id, password);
-                      toast.success(t('admin.users.passwordResetSuccess'));
-                      setPassword('');
-                    } catch (error: any) {
-                      captureException(error);
-                      toast.error(t('admin.users.passwordResetError', { error: error.message }));
-                    }
-                  }}>
-                    {t('common.save')}
-                  </Button>
-                </div>
-              </Field>
-
-              <div className='flex flex-col gap-4'>
-                <div className='text-base font-semibold'>{t('navigation.groups')}</div>
-                {
-                  user.groups.map(x => (
-                    <Item key={x.id} variant={"outline"} className={groupSideBar(x.color).className} style={groupSideBar(x.color).style}>
-                      <div className='w-full h-full flex flex-row justify-between gap-4 py-1 text-sm'>
-                        <ItemContent>
-                          <ItemTitle>{x.name}</ItemTitle>
-
-                        </ItemContent>
-                        <ItemActions>
-                          <ChevronRight />
-                        </ItemActions>
-                      </div>
-                    </Item>
-                  ))
-                }
-              </div>
-
-              {pushDevices && (
-                <div className='flex flex-col gap-4'>
-                  <div className='text-base font-semibold'>{t('admin.users.pushSection')}</div>
-                  {pushDevices.length === 0 && (
-                    <div className='text-sm text-muted-foreground'>{t('admin.users.pushNone')}</div>
-                  )}
-                  {pushDevices.map((device) => (
-                    <Item key={`${device.platform}-${device.last_seen}`} variant={"outline"}>
-                      <ItemContent>
-                        <ItemTitle>{t(`admin.users.platform.${device.platform ?? 'unknown'}`, { defaultValue: t('admin.users.platform.unknown') })}</ItemTitle>
-                        <ItemDescription>{t('admin.users.deviceLastSeen', { date: new Date(device.last_seen) })}</ItemDescription>
-                      </ItemContent>
-                    </Item>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* The form had an onSubmit handler but no submit button (the password "Speichern" is
-                type="button" and with several inputs Enter does not submit), so name changes could
-                never be saved. */}
-            <Button type="submit" className="w-full mt-4">
-              {t('admin.users.saveChanges')}
-            </Button>
-          </form>
+          <EditUserForm user={user} pushDevices={pushDevices} onSave={onClose} />
         </DialogBody>
       </DialogContent>
     </Dialog >
