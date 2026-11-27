@@ -561,6 +561,10 @@
           "title": "Laptop: Termin öffnet neben der Liste"
         },
         {
+          "id": "misc.wide.groups",
+          "title": "Laptop: Gruppe öffnet neben der Liste"
+        },
+        {
           "id": "misc.wide.profile",
           "title": "Laptop: Profil-Bereich neben der Übersicht"
         },

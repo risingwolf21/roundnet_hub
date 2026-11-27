@@ -11,6 +11,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDialogs } from "@/contexts/DialogsProvider";
 import { Has } from "@/hooks/useGrants";
+import { cn } from "@/lib/utils";
 import { queryClient } from "@/lib/queryClient";
 import { authKeys } from "@/tanstack/auth";
 import { useGroups, useJoinGroup, useRequestedUsersPerGroup } from "@/tanstack/groups";
@@ -55,7 +56,8 @@ const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
   );
 }
 
-const PublicGroupList = () => {
+/** `selectedId` marks the group open next to the list on wide screens. */
+const PublicGroupList = ({ selectedId }: { selectedId?: string }) => {
 
   const { user, hasPerm } = useGrants();
   const navigate = useNavigate();
@@ -104,6 +106,8 @@ const PublicGroupList = () => {
       <Item
         key={x.id}
         variant="outline"
+        aria-current={x.id === selectedId || undefined}
+        className={cn(x.id === selectedId && 'bg-primary/5 ring-1 ring-primary/40')}
         onClick={() => (x.user_group_role === 'joinRequested' ? setJoinRequestedGroup(x) : navigate(`/groups/${x.id}`))}
       >
         <ItemMedia variant="icon">

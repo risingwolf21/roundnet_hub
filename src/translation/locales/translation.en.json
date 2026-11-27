@@ -742,7 +742,9 @@
       "memberOnlyHint": "You can only create events in groups you are a member of.",
       "noMemberGroups": "No group you are a member of",
       "noMemberGroupsDescription": "Join a group first. While your request is pending or you are on a trial, you can't create events there yet."
-    }
+    },
+    "noneSelected": "No group selected",
+    "noneSelectedDescription": "Pick a group on the left to see it here."
   },
   "costs": {
     "title": "Tournament Costs",
@@ -821,7 +823,9 @@
       "maxPerDay_other": "max. {{count}} / day",
       "automated": "Automatic",
       "endedOn": "Ended on {{date}}",
-      "noPoints": "No points entered"
+      "noPoints": "No points entered",
+      "noneSelected": "No challenge selected",
+      "noneSelectedDescription": "Pick a challenge on the left to see it here."
     },
     "dialog": {
       "titleUpdate": "Update challenge",
@@ -1143,7 +1147,9 @@
       "noneMissingDescription": "All your matches have scores.",
       "emptyMine": "You have not played any matches yet.",
       "you": "You",
-      "add": "Enter match"
+      "add": "Enter match",
+      "noneSelected": "No match selected",
+      "noneSelectedDescription": "Pick a match on the left to see it here."
     },
     "history": {
       "noGames": "No matches",

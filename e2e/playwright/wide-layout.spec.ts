@@ -49,6 +49,17 @@ test.describe('Breite Bildschirme @wide', () => {
     await expect(page.getByText('Kein Termin ausgewählt')).toHaveCount(0);
   });
 
+  test('a group opens next to the list', { annotation: flow('misc.wide.groups') }, async ({ page }) => {
+    await signIn(page, MEMBER.email);
+    await page.goto('/groups/list');
+    await expect(page.getByText('Keine Gruppe ausgewählt')).toBeVisible();
+
+    await page.getByText(GROUP_NAME).click();
+    await expect(page).toHaveURL(new RegExp(`/groups/${GROUP}`));
+    await expect(page.locator('[aria-current="true"]')).toContainText(GROUP_NAME);
+    await expect(page.getByText('Keine Gruppe ausgewählt')).toHaveCount(0);
+  });
+
   test('the profile opens a section next to the overview', { annotation: flow('misc.wide.profile') }, async ({ page }) => {
     await signIn(page, MEMBER.email);
     await page.goto('/user');

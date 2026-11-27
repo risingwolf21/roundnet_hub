@@ -742,7 +742,9 @@
       "memberOnlyHint": "Events kannst du nur in Gruppen anlegen, in denen du Mitglied bist.",
       "noMemberGroups": "Keine Gruppe, in der du Mitglied bist",
       "noMemberGroupsDescription": "Tritt zuerst einer Gruppe bei. Solange deine Anfrage offen ist oder du im Probetraining bist, kannst du dort noch keine Events anlegen."
-    }
+    },
+    "noneSelected": "Keine Gruppe ausgewählt",
+    "noneSelectedDescription": "Wähle links eine Gruppe, um sie hier zu sehen."
   },
   "costs": {
     "title": "Turnierkosten",
@@ -821,7 +823,9 @@
       "maxPerDay_other": "max. {{count}} / Tag",
       "automated": "Automatisch",
       "endedOn": "Beendet am {{date}}",
-      "noPoints": "Keine Punkte eingetragen"
+      "noPoints": "Keine Punkte eingetragen",
+      "noneSelected": "Keine Challenge ausgewählt",
+      "noneSelectedDescription": "Wähle links eine Challenge, um sie hier zu sehen."
     },
     "dialog": {
       "titleUpdate": "Challenge aktualisieren",
@@ -1143,7 +1147,9 @@
       "noneMissingDescription": "Für alle deine Spiele sind Scores eingetragen.",
       "emptyMine": "Du hast noch keine Spiele gespielt.",
       "you": "Du",
-      "add": "Spiel eintragen"
+      "add": "Spiel eintragen",
+      "noneSelected": "Kein Spiel ausgewählt",
+      "noneSelectedDescription": "Wähle links ein Spiel, um es hier zu sehen."
     },
     "history": {
       "noGames": "Keine Spiele",
