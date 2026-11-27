@@ -401,7 +401,12 @@
       "emptyOther": "Keine anderen Events",
       "emptyOtherDescription": "Hier erscheinen Events der Untergruppen deiner Gruppen, in denen du nicht Mitglied bist.",
       "noneSelected": "Kein Termin ausgewählt",
-      "noneSelectedDescription": "Wähle links einen Termin, um ihn hier zu sehen."
+      "noneSelectedDescription": "Wähle links einen Termin, um ihn hier zu sehen.",
+      "columnDate": "Datum",
+      "columnEvent": "Termin",
+      "columnGroup": "Gruppe",
+      "columnPlaces": "Plätze",
+      "columnAnswer": "Antwort"
     },
     "item": {
       "answerQueuedOffline": "Du bist offline. Deine Antwort wird gesendet, sobald du wieder online bist.",

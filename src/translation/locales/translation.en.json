@@ -401,7 +401,12 @@
       "emptyOther": "No other events",
       "emptyOtherDescription": "Events of subgroups of your groups that you are not a member of show up here.",
       "noneSelected": "No event selected",
-      "noneSelectedDescription": "Pick an event on the left to see it here."
+      "noneSelectedDescription": "Pick an event on the left to see it here.",
+      "columnDate": "Date",
+      "columnEvent": "Event",
+      "columnGroup": "Group",
+      "columnPlaces": "Places",
+      "columnAnswer": "Answer"
     },
     "item": {
       "answerQueuedOffline": "You are offline. Your answer will be sent as soon as you are back online.",

@@ -37,9 +37,15 @@ test.describe('Breite Bildschirme @wide', () => {
 
   test.afterEach(async ({ page }, testInfo) => logPageOnFailure(page, testInfo));
 
-  test('an event opens next to the list', { annotation: flow('misc.wide.events') }, async ({ page }) => {
+  test('the event table answers in place and opens an event in the panel', { annotation: flow('misc.wide.events') }, async ({ page }) => {
     await signIn(page, MEMBER.email);
     await page.goto('/training/list');
+    await expect(page.getByText('Kein Termin ausgewählt')).toBeVisible();
+
+    // The answer buttons of the list work right in the table row, without opening the event.
+    await page.getByRole('row', { name: new RegExp(TITLE) }).getByRole('button', { name: 'Zusagen' }).click();
+    await expect.poll(async () => ((await admin.from('event_attendance_user_mapping').select('state')
+      .eq('event', EVENT).eq('user', ids.MEMBER).maybeSingle()).data as { state?: string } | null)?.state).toBe('Attending');
     await expect(page.getByText('Kein Termin ausgewählt')).toBeVisible();
 
     await page.getByText(TITLE).click();
@@ -101,6 +107,7 @@ test.describe('Breite Bildschirme @wide', () => {
 
   test.afterAll(async () => {
     try {
+      await admin.from('event_attendance_user_mapping').delete().eq('event', EVENT);
       await admin.from('events').delete().eq('id', EVENT);
       await admin.from('group_user_mapping').delete().eq('group', GROUP);
       await admin.from('group_features').delete().eq('group', GROUP);
