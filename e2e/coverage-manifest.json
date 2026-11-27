@@ -526,6 +526,10 @@
           "title": "Benutzer verwalten"
         },
         {
+          "id": "admin.nav",
+          "title": "Admin-Seiten: Zurück zur Übersicht, Übersicht in der Seitenleiste markiert"
+        },
+        {
           "id": "admin.notify",
           "title": "Benutzer benachrichtigen",
           "boundary": true

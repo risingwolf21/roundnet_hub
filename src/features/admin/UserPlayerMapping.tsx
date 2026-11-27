@@ -24,6 +24,8 @@ const UserPlayerMapping = () => {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <AppBar
         className='!border-b !shadow-sm'
+        primaryAction="back"
+        navigateBackPath="/admin"
         user={user}
       />
       <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>

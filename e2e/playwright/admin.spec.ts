@@ -59,6 +59,17 @@ test.describe('Administration', () => {
       .toBe(`Umbenannt ${stamp}`);
   });
 
+  test('admin pages lead back to the overview, which stays marked in the sidebar', { annotation: flow('admin.nav') }, async ({ page }, testInfo) => {
+    await signIn(page, BOSS.email);
+    await page.goto('/admin/users');
+    // Phones show the sidebar only as a drawer, so the marker is checked where the sidebar is always on screen.
+    if (testInfo.project.name !== 'mobile') {
+      await expect(page.locator('[data-sidebar="menu-button"][data-active]')).toHaveText(/Übersicht/);
+    }
+    await page.getByRole('button', { name: 'Zurück' }).click();
+    await expect(page).toHaveURL(/\/admin$/);
+  });
+
   test('an admin notifies a whole group', { annotation: flow('admin.notify') }, async ({ page }) => {
     await signIn(page, BOSS.email);
     await page.goto('/admin/notify_users');

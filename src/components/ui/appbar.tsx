@@ -82,6 +82,7 @@ export function AppBar({
               variant="ghost"
               size="icon"
               onClick={() => navigateBackPath ? navigate(navigateBackPath) : navigate(-1)}
+              aria-label={t("ui.back")}
               className="shrink-0 rounded-full -ml-1 text-foreground"
             >
               <ArrowLeft className="h-5 w-5" />

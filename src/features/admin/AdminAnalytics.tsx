@@ -296,6 +296,8 @@ const AdminAnalytics = () => {
   return <div>
     <AppBar
       title={t('admin.analytics.title')}
+      primaryAction="back"
+      navigateBackPath="/admin"
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom flex-col flex p-2 gap-2'>

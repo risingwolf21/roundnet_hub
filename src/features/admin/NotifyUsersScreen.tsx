@@ -88,7 +88,7 @@ const NotifyUsersScreen = () => {
 
   return (
     <div>
-      <AppBar title={t('admin.notify.title')} user={user} />
+      <AppBar title={t('admin.notify.title')} primaryAction="back" navigateBackPath="/admin" user={user} />
       <main className="flex-1 size-full pb-safe-bottom">
         {/* Wider screens put the recipients next to the message. */}
         <div className="mx-auto w-full max-w-5xl p-4 flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">

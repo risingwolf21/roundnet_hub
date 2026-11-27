@@ -24,6 +24,8 @@ const PaymentsPendingAdmin = () => {
   return <div>
     <AppBar
       className='!border-b !shadow-sm'
+      primaryAction="back"
+      navigateBackPath="/admin"
       user={user}
       showSearch
       searchPlaceholder={t('admin.payments.searchPlaceholder')}

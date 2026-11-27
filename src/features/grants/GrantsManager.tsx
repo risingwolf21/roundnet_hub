@@ -228,7 +228,7 @@ const GrantsManager = () => {
 
   const list = (
     <div>
-      <AppBar searchValue={search} onSearchChange={setSearch} showSearch user={user} />
+      <AppBar primaryAction="back" navigateBackPath="/admin" searchValue={search} onSearchChange={setSearch} showSearch user={user} />
       <main className="pb-safe-bottom size-full flex-1">
         <Tabs defaultValue="groups" className="w-full">
           <TabsList className="grid !h-12 w-full grid-cols-2 rounded-none border-b bg-white shadow-sm">

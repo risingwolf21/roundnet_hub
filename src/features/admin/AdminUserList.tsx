@@ -61,6 +61,8 @@ const AdminUserList = () => {
   const list = <div className="min-h-screen bg-background text-foreground">
     <AppBar
       className='!border-b !shadow-sm'
+      primaryAction="back"
+      navigateBackPath="/admin"
       showSearch
       searchValue={searchString}
       onSearchChange={setSearchString}
