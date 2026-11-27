@@ -21,7 +21,7 @@ export type GroupResult = {
   revokeFeat: string[];
 };
 
-type GrantsEditorProps = {
+export type GrantsEditorProps = {
   title: string;
   id: string;
   /** Users additionally inherit grants from their groups; those are shown read-only. */
@@ -132,7 +132,8 @@ const Section = ({
   );
 };
 
-export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => {
+/** The editor: inside the dialog on phones and tablets, in the panel next to the list on wide screens. */
+export const GrantsEditor = ({ payload, onSave, onCancel }: { payload: GrantsEditorProps; onSave: (result: GroupResult) => void; onCancel: () => void }) => {
   const { t } = useTranslation();
   const { data: catalog } = useGrantCatalog();
   // Warm the plain name lists that the mutations' optimistic updates rely on.
@@ -206,92 +207,98 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   const loading = !isPermsSuccess || !isFeatsSuccess || !catalog;
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={'fullscreen'}>
-        <DialogHeader variant={'appbar'}>
-          <DialogTitle className="flex-1 truncate">{payload.title}</DialogTitle>
-          <DialogClose />
-        </DialogHeader>
-        <DialogBody>
-          <div className="flex flex-col gap-4 p-2 pb-4">
-            <div className="rounded-xl border bg-card p-3">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {t(payload.kind === 'user' ? 'grants.totalUser' : 'grants.totalGroup')}
-              </div>
-              <div className="mt-1 flex flex-wrap gap-2">
-                <Badge variant="default">{t('grants.permissionCount', { count: totalPerms })}</Badge>
-                <Badge variant="default">{t('grants.featureCount', { count: totalFeats })}</Badge>
-              </div>
-              {payload.kind === 'user' && (
-                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                  <Users className="size-3.5" />
-                  {groups.length ? (
-                    <>
-                      <span>{t('grants.inheritsFrom')}</span>
-                      {groups.map((g) => (
-                        <Badge key={g} variant="info">
-                          {g}
-                        </Badge>
-                      ))}
-                    </>
-                  ) : (
-                    <span>{t('grants.noGroupGrants')}</span>
-                  )}
-                </div>
-              )}
-              {payload.kind === 'user' && <p className="mt-2 text-xs text-muted-foreground">{t('grants.directHint')}</p>}
+    <>
+      <DialogBody>
+        <div className="flex flex-col gap-4 p-2 pb-4">
+          <div className="rounded-xl border bg-card p-3">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t(payload.kind === 'user' ? 'grants.totalUser' : 'grants.totalGroup')}
             </div>
-
-            <div className="sticky top-0 z-10 -mx-2 flex items-center gap-2 bg-background/95 px-2 py-2 backdrop-blur">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('grants.search')} />
-              </div>
-              <Button variant={onlyActive ? 'default' : 'outline'} onClick={() => setOnlyActive((v) => !v)}>
-                {t('grants.onlyActive')}
-              </Button>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <Badge variant="default">{t('grants.permissionCount', { count: totalPerms })}</Badge>
+              <Badge variant="default">{t('grants.featureCount', { count: totalFeats })}</Badge>
             </div>
-
-            {!loading && visibleFeatures.length > 0 && (
-              <Section
-                title={t('grants.features')}
-                entries={visibleFeatures}
-                selected={selectedFeats}
-                original={originalFeats}
-                via={featVia}
-                forceOpen={!!needle}
-                onSet={(keys, on) => setSelectedFeats((prev) => toggled(prev, keys, on))}
-                onToggle={(key, on) => setSelectedFeats((prev) => toggled(prev, [key], on))}
-              />
+            {payload.kind === 'user' && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                <Users className="size-3.5" />
+                {groups.length ? (
+                  <>
+                    <span>{t('grants.inheritsFrom')}</span>
+                    {groups.map((g) => (
+                      <Badge key={g} variant="info">
+                        {g}
+                      </Badge>
+                    ))}
+                  </>
+                ) : (
+                  <span>{t('grants.noGroupGrants')}</span>
+                )}
+              </div>
             )}
-            {!loading &&
-              sections.map(({ category, entries }) => (
-                <Section
-                  key={category}
-                  title={t(`grants.categories.${category}`)}
-                  entries={entries}
-                  selected={selectedPerms}
-                  original={originalPerms}
-                  via={permVia}
-                  forceOpen={!!needle}
-                  onSet={(keys, on) => setSelectedPerms((prev) => toggled(prev, keys, on))}
-                  onToggle={(key, on) => setSelectedPerms((prev) => toggled(prev, [key], on))}
-                />
-              ))}
-            {!loading && !visibleFeatures.length && !sections.length && (
-              <p className="py-8 text-center text-sm text-muted-foreground">{t('grants.noResults')}</p>
-            )}
+            {payload.kind === 'user' && <p className="mt-2 text-xs text-muted-foreground">{t('grants.directHint')}</p>}
           </div>
-        </DialogBody>
-        <DialogFooter variant={'fullscreen'}>
-          <div className="flex w-full items-center gap-3">
-            <DialogClose render={<Button variant="outline">{t('common.cancel')}</Button>} />
-            <Button className="flex-1" disabled={!dirty} onClick={() => onClose(result)}>
-              {dirty ? t('grants.saveChanges', { added, removed }) : t('common.save')}
+
+          <div className="sticky top-0 z-10 -mx-2 flex items-center gap-2 bg-background/95 px-2 py-2 backdrop-blur">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('grants.search')} />
+            </div>
+            <Button variant={onlyActive ? 'default' : 'outline'} onClick={() => setOnlyActive((v) => !v)}>
+              {t('grants.onlyActive')}
             </Button>
           </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+
+          {!loading && visibleFeatures.length > 0 && (
+            <Section
+              title={t('grants.features')}
+              entries={visibleFeatures}
+              selected={selectedFeats}
+              original={originalFeats}
+              via={featVia}
+              forceOpen={!!needle}
+              onSet={(keys, on) => setSelectedFeats((prev) => toggled(prev, keys, on))}
+              onToggle={(key, on) => setSelectedFeats((prev) => toggled(prev, [key], on))}
+            />
+          )}
+          {!loading &&
+            sections.map(({ category, entries }) => (
+              <Section
+                key={category}
+                title={t(`grants.categories.${category}`)}
+                entries={entries}
+                selected={selectedPerms}
+                original={originalPerms}
+                via={permVia}
+                forceOpen={!!needle}
+                onSet={(keys, on) => setSelectedPerms((prev) => toggled(prev, keys, on))}
+                onToggle={(key, on) => setSelectedPerms((prev) => toggled(prev, [key], on))}
+              />
+            ))}
+          {!loading && !visibleFeatures.length && !sections.length && (
+            <p className="py-8 text-center text-sm text-muted-foreground">{t('grants.noResults')}</p>
+          )}
+        </div>
+      </DialogBody>
+      <DialogFooter variant={'fullscreen'}>
+        <div className="flex w-full items-center gap-3">
+          <Button variant="outline" onClick={onCancel}>{t('common.cancel')}</Button>
+          <Button className="flex-1" disabled={!dirty} onClick={() => onSave(result)}>
+            {dirty ? t('grants.saveChanges', { added, removed }) : t('common.save')}
+          </Button>
+        </div>
+      </DialogFooter>
+    </>
   );
 };
+
+export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<GrantsEditorProps, GroupResult | null>) => (
+  <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
+    <DialogContent variant={'fullscreen'}>
+      <DialogHeader variant={'appbar'}>
+        <DialogTitle className="flex-1 truncate">{payload.title}</DialogTitle>
+        <DialogClose />
+      </DialogHeader>
+      <GrantsEditor payload={payload} onSave={onClose} onCancel={() => onClose(null)} />
+    </DialogContent>
+  </Dialog>
+);

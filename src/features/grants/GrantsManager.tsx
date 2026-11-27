@@ -1,16 +1,20 @@
-import { ChevronRight, Plus, ShieldCheck, Users } from 'lucide-react';
+import { ChevronRight, KeyRound, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import { SplitView } from '@/components/layout/SplitView';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { useIsWide } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import {
   useDirectGrantSummary,
   useGrantGroupPermissions,
@@ -25,7 +29,7 @@ import {
 } from '@/tanstack/grants';
 import { useGroups } from '@/tanstack/groups';
 import { useGrants } from '../auth/GrantsContext';
-import { GrantsEditorDialog, GroupResult } from './GrantsEditorDialog';
+import { GrantsEditor, GrantsEditorDialog, GrantsEditorProps, GroupResult } from './GrantsEditorDialog';
 
 const CountBadges = ({ perms, feats }: { perms: number; feats: number }) => {
   const { t } = useTranslation();
@@ -36,6 +40,10 @@ const CountBadges = ({ perms, feats }: { perms: number; feats: number }) => {
     </div>
   );
 };
+
+/** What the wide screen panel edits; phones and tablets open the dialog instead. */
+type Selection = { payload: GrantsEditorProps; save: (result: GroupResult) => Promise<void> };
+type TabProps = { search: string; selectedId?: string; onSelect?: (selection: Selection) => void };
 
 const matches = (search: string, ...values: (string | null | undefined)[]) =>
   !search || values.some((v) => v?.toLowerCase().includes(search.toLowerCase()));
@@ -73,7 +81,7 @@ const useSaveGrants = () => {
   };
 };
 
-const GroupTab = ({ search }: { search: string }) => {
+const GroupTab = ({ search, selectedId, onSelect }: TabProps) => {
   const { t } = useTranslation();
   const { data: groups = [], refetch } = useGroups();
   const { data: counts } = useGroupGrantCounts();
@@ -81,13 +89,15 @@ const GroupTab = ({ search }: { search: string }) => {
   const { saveGroup } = useSaveGrants();
 
   const edit = async (group: Group) => {
-    const result = await dialogs.open(GrantsEditorDialog, {
+    const payload: GrantsEditorProps = {
       title: group.name,
       id: group.id,
       kind: 'group',
       currentPermissions: useGroupPermissions,
       currentFeatures: useGroupFeatures,
-    });
+    };
+    if (onSelect) return onSelect({ payload, save: (result) => saveGroup(result, group.id) });
+    const result = await dialogs.open(GrantsEditorDialog, payload);
     if (result) await saveGroup(result, group.id);
   };
 
@@ -100,7 +110,13 @@ const GroupTab = ({ search }: { search: string }) => {
             .map((group) => {
               const c = counts?.[group.id] ?? { perms: 0, feats: 0 };
               return (
-                <Item variant="outline" key={group.id} onClick={() => edit(group)}>
+                <Item
+                  variant="outline"
+                  key={group.id}
+                  aria-current={group.id === selectedId || undefined}
+                  className={cn(group.id === selectedId && 'bg-primary/5 ring-1 ring-primary/40')}
+                  onClick={() => edit(group)}
+                >
                   <ItemMedia variant="icon">
                     <Users />
                   </ItemMedia>
@@ -122,20 +138,22 @@ const GroupTab = ({ search }: { search: string }) => {
   );
 };
 
-const UserTab = ({ search }: { search: string }) => {
+const UserTab = ({ search, selectedId, onSelect }: TabProps) => {
   const { t } = useTranslation();
   const { data: users = [], refetch } = useDirectGrantSummary();
   const dialogs = useDialogs();
   const { saveUser } = useSaveGrants();
 
   const edit = async (user: User) => {
-    const result = await dialogs.open(GrantsEditorDialog, {
+    const payload: GrantsEditorProps = {
       title: user.name ?? t('grants.editUser', { name: '' }),
       id: user.id,
       kind: 'user',
       currentPermissions: useUserPermissions,
       currentFeatures: useUserFeatures,
-    });
+    };
+    if (onSelect) return onSelect({ payload, save: (result) => saveUser(result, user.id) });
+    const result = await dialogs.open(GrantsEditorDialog, payload);
     if (result) await saveUser(result, user.id);
   };
 
@@ -146,7 +164,13 @@ const UserTab = ({ search }: { search: string }) => {
           {users
             .filter((x) => matches(search, x.user.name, x.user.email))
             .map(({ user, perms, feats }) => (
-              <Item variant="outline" key={user.id} onClick={() => edit(user)}>
+              <Item
+                variant="outline"
+                key={user.id}
+                aria-current={user.id === selectedId || undefined}
+                className={cn(user.id === selectedId && 'bg-primary/5 ring-1 ring-primary/40')}
+                onClick={() => edit(user)}
+              >
                 <ItemMedia>
                   <Avatar className="mr-2">
                     <AvatarImage src={user.avatarUrl || undefined} alt={user.name || undefined} />
@@ -171,7 +195,11 @@ const UserTab = ({ search }: { search: string }) => {
           )}
         </div>
         <p className="px-4 pb-4 text-center text-xs text-muted-foreground">{t('grants.userHint')}</p>
-        <div className="fixed right-6 z-50" style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}>
+        {/* Wide screens keep the button in the list pane so it does not cover the editor's save bar. */}
+        <div
+          className={onSelect ? 'sticky bottom-6 flex justify-end pr-4' : 'fixed right-6 z-50'}
+          style={onSelect ? undefined : { bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+        >
           <Button
             size="icon"
             className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl active:translate-y-0 active:shadow-md"
@@ -192,8 +220,13 @@ const GrantsManager = () => {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const { user } = useGrants();
+  // Wide screens edit the selected group or user in a panel next to the list.
+  const isWide = useIsWide();
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const select = isWide ? setSelection : undefined;
+  const selectedId = selection?.payload.id;
 
-  return (
+  const list = (
     <div>
       <AppBar searchValue={search} onSearchChange={setSearch} showSearch user={user} />
       <main className="pb-safe-bottom size-full flex-1">
@@ -207,11 +240,42 @@ const GrantsManager = () => {
             </TabsTrigger>
           </TabsList>
           <p className="px-4 py-3 text-sm text-muted-foreground">{t('grants.intro')}</p>
-          <GroupTab search={search} />
-          <UserTab search={search} />
+          <GroupTab search={search} selectedId={selectedId} onSelect={select} />
+          <UserTab search={search} selectedId={selectedId} onSelect={select} />
         </Tabs>
       </main>
     </div>
+  );
+
+  if (!isWide) return list;
+
+  return (
+    <SplitView
+      list={list}
+      detail={
+        selection ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <AppBar title={selection.payload.title} primaryAction={null} />
+            <GrantsEditor
+              key={selection.payload.id}
+              payload={selection.payload}
+              onSave={selection.save}
+              onCancel={() => setSelection(null)}
+            />
+          </div>
+        ) : (
+          <Empty className="m-auto">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <KeyRound />
+              </EmptyMedia>
+              <EmptyTitle>{t('grants.noneSelected')}</EmptyTitle>
+              <EmptyDescription>{t('grants.noneSelectedDescription')}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )
+      }
+    />
   );
 };
 

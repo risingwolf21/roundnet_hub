@@ -39,7 +39,7 @@ const AdminHistoryScreen = () => {
     />
     <main className='flex-1 size-full pb-safe-bottom'>
       <PullToRefresh onRefresh={() => refetch()}>
-        <div>
+        <div className="mx-auto w-full max-w-3xl">
           {Object.entries(
             groupBy(history?.pages.flatMap((x) => x.data) ?? [], (x: FullHistory) =>
               format(x.created_at ?? '', 'dd MMMM yyyy')

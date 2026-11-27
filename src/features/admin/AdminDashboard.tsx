@@ -220,7 +220,7 @@ const AdminDashboard = () => {
     <div>
       <AppBar title={t('admin.dashboard.title')} user={user} />
       <main className="flex-1 size-full pb-safe-bottom">
-        <div className="p-4 flex flex-col gap-4">
+        <div className="mx-auto w-full max-w-6xl p-4 flex flex-col gap-4">
 
           {attentionVisible && (
             <section>
@@ -270,120 +270,128 @@ const AdminDashboard = () => {
             </h3>
           )}
 
-          <Has perm="event.manage.attendees">
-            <Card
-              className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
-              onClick={() => lastTraining && navigate(`/training/event/${lastTraining.id}`)}
-            >
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Volleyball className="size-4 text-muted-foreground" />
-                  <CardTitle className="text-sm">{t('admin.dashboard.lastTraining')}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {eventsLoading ? (
-                  <Skeleton className="h-9 w-16" />
-                ) : eventsError ? (
-                  <div className="flex items-center gap-1 text-destructive/80 text-sm">
-                    <AlertCircle className="size-3.5" />–
-                  </div>
-                ) : !lastTraining ? (
-                  <span className="text-muted-foreground text-sm">{t('admin.dashboard.noEvent')}</span>
-                ) : (
-                  <div className="flex items-end justify-between gap-2">
-                    <div>
-                      <div className="text-3xl font-bold">
-                        {lastTraining.attending_count ?? 0}
-                        {lastTraining.maxAttendees != null && (
-                          <span className="text-base font-normal text-muted-foreground">
-                            {' / '}{lastTraining.maxAttendees}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {t('admin.dashboard.lastTrainingDesc')}
-                      </div>
+          {/* Wider screens show the insights as one row of tiles. */}
+          {(hasPerm('event.manage.attendees') || canViewAnalytics) && (
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Has perm="event.manage.attendees">
+                <Card
+                  className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
+                  onClick={() => lastTraining && navigate(`/training/event/${lastTraining.id}`)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Volleyball className="size-4 text-muted-foreground" />
+                      <CardTitle className="text-sm">{t('admin.dashboard.lastTraining')}</CardTitle>
                     </div>
-                    <div className="text-right text-xs text-muted-foreground shrink-0">
-                      <div className="font-medium text-foreground text-sm">{lastTraining.title}</div>
-                      <div>{format(new Date(lastTraining.startingDateTime), 'dd.MM.yy')}</div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    {eventsLoading ? (
+                      <Skeleton className="h-9 w-16" />
+                    ) : eventsError ? (
+                      <div className="flex items-center gap-1 text-destructive/80 text-sm">
+                        <AlertCircle className="size-3.5" />–
+                      </div>
+                    ) : !lastTraining ? (
+                      <span className="text-muted-foreground text-sm">{t('admin.dashboard.noEvent')}</span>
+                    ) : (
+                      <div className="flex items-end justify-between gap-2">
+                        <div>
+                          <div className="text-3xl font-bold">
+                            {lastTraining.attending_count ?? 0}
+                            {lastTraining.maxAttendees != null && (
+                              <span className="text-base font-normal text-muted-foreground">
+                                {' / '}{lastTraining.maxAttendees}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {t('admin.dashboard.lastTrainingDesc')}
+                          </div>
+                        </div>
+                        <div className="text-right text-xs text-muted-foreground shrink-0">
+                          <div className="font-medium text-foreground text-sm">{lastTraining.title}</div>
+                          <div>{format(new Date(lastTraining.startingDateTime), 'dd.MM.yy')}</div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Volleyball className="size-4 text-muted-foreground" />
+                      <CardTitle className="text-sm">{t('admin.dashboard.attendanceTrend')}</CardTitle>
                     </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    {eventsLoading ? (
+                      <Skeleton className="h-12 w-full" />
+                    ) : eventsError ? (
+                      <div className="flex items-center gap-1 text-destructive/80 text-sm">
+                        <AlertCircle className="size-3.5" />–
+                      </div>
+                    ) : trendEvents.length < 2 ? (
+                      <span className="text-muted-foreground text-sm">{t('admin.dashboard.noTrendData')}</span>
+                    ) : (
+                      <AttendanceSparkline events={trendEvents} />
+                    )}
+                  </CardContent>
+                </Card>
+              </Has>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Volleyball className="size-4 text-muted-foreground" />
-                  <CardTitle className="text-sm">{t('admin.dashboard.attendanceTrend')}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {eventsLoading ? (
-                  <Skeleton className="h-12 w-full" />
-                ) : eventsError ? (
-                  <div className="flex items-center gap-1 text-destructive/80 text-sm">
-                    <AlertCircle className="size-3.5" />–
-                  </div>
-                ) : trendEvents.length < 2 ? (
-                  <span className="text-muted-foreground text-sm">{t('admin.dashboard.noTrendData')}</span>
-                ) : (
-                  <AttendanceSparkline events={trendEvents} />
-                )}
-              </CardContent>
-            </Card>
-          </Has>
+              <Has perm="admin.analytics.view">
+                <Card
+                  className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
+                  onClick={() => navigate('/admin/analytics')}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <CalendarClock className="size-4 text-muted-foreground" />
+                      <CardTitle className="text-sm">{t('admin.dashboard.monthlyActivity')}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    {monthlyLoading ? (
+                      <Skeleton className="h-9 w-16 mb-1" />
+                    ) : monthlyError ? (
+                      <div className="flex items-center gap-1 text-destructive/80 text-sm">
+                        <AlertCircle className="size-3.5" />–
+                      </div>
+                    ) : (
+                      <div className="text-3xl font-bold">{monthlyUsers.length}</div>
+                    )}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {t('admin.dashboard.monthlyActivityDesc')}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Has>
+            </div>
+          )}
 
-          <Has perm="admin.analytics.view">
-            <Card
-              className="cursor-pointer transition-all hover:ring-primary/30 active:scale-[0.98]"
-              onClick={() => navigate('/admin/analytics')}
-            >
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CalendarClock className="size-4 text-muted-foreground" />
-                  <CardTitle className="text-sm">{t('admin.dashboard.monthlyActivity')}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {monthlyLoading ? (
-                  <Skeleton className="h-9 w-16 mb-1" />
-                ) : monthlyError ? (
-                  <div className="flex items-center gap-1 text-destructive/80 text-sm">
-                    <AlertCircle className="size-3.5" />–
-                  </div>
-                ) : (
-                  <div className="text-3xl font-bold">{monthlyUsers.length}</div>
-                )}
-                <div className="text-xs text-muted-foreground mt-1">
-                  {t('admin.dashboard.monthlyActivityDesc')}
-                </div>
-              </CardContent>
-            </Card>
-          </Has>
-
-          {toolGroups.map(({ key, title, items }) => (
-            <section key={key}>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
-                {title}
-              </h3>
-              <Card className="gap-0 divide-y overflow-hidden py-0">
-                {items.map(({ title: itemTitle, description, icon, path, badge }) => (
-                  <ToolRow
-                    key={path}
-                    icon={icon}
-                    title={itemTitle}
-                    description={description}
-                    badge={badge}
-                    onClick={() => navigate(path)}
-                  />
-                ))}
-              </Card>
-            </section>
-          ))}
+          {/* Tool groups sit side by side on wider screens, in the phone's order. */}
+          <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start xl:grid-cols-3">
+            {toolGroups.map(({ key, title, items }) => (
+              <section key={key}>
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-0.5">
+                  {title}
+                </h3>
+                <Card className="gap-0 divide-y overflow-hidden py-0">
+                  {items.map(({ title: itemTitle, description, icon, path, badge }) => (
+                    <ToolRow
+                      key={path}
+                      icon={icon}
+                      title={itemTitle}
+                      description={description}
+                      badge={badge}
+                      onClick={() => navigate(path)}
+                    />
+                  ))}
+                </Card>
+              </section>
+            ))}
+          </div>
 
         </div>
       </main>

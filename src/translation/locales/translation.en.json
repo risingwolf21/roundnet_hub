@@ -1724,6 +1724,8 @@
     "groupHint": "Changes apply to every member of the group.",
     "userHint": "Only direct grants are listed here. Group access is shown when you open a user.",
     "noDirectUsers": "No user has direct grants yet. Tap + to add one.",
+    "noneSelected": "No group or user selected",
+    "noneSelectedDescription": "Pick a group or user on the left to edit their rights here.",
     "permissionCount_one": "{{count}} permission",
     "permissionCount_other": "{{count}} permissions",
     "featureCount_one": "{{count}} feature",

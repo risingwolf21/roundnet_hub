@@ -6,6 +6,7 @@ import { adminClient, ensureUser, grantGroup, grantUser, logPageOnFailure, signI
 // Laptops (1280 px and wider): lists open their items next to the list instead of as a new page.
 const stamp = Date.now();
 const GROUP = randomUUID();
+const GROUP_NAME = `E2E Breit Gruppe ${stamp}`;
 const EVENT = randomUUID();
 const TITLE = `E2E Breit ${stamp}`;
 const BOSS = { email: `e2e_wide_boss_${stamp}@test.com`, name: `E2E Breit Vorstand ${stamp}` };
@@ -20,9 +21,9 @@ test.describe('Breite Bildschirme @wide', () => {
   test.beforeAll(async () => {
     admin = adminClient();
     for (const [k, u] of Object.entries({ BOSS, MEMBER })) ids[k] = await ensureUser(admin, u.email, u.name);
-    await admin.from('event_group').upsert({ id: GROUP, name: `E2E Breit Gruppe ${stamp}`, visible: true }).throwOnError();
+    await admin.from('event_group').upsert({ id: GROUP, name: GROUP_NAME, visible: true }).throwOnError();
     await grantGroup(admin, GROUP, { feats: ['events'] });
-    await grantUser(admin, ids.BOSS, { perms: ['users.manage'] });
+    await grantUser(admin, ids.BOSS, { perms: ['users.manage', 'grants.manage'] });
     await admin.from('group_user_mapping').upsert([
       { user: ids.BOSS, group: GROUP, role: 'admin' },
       { user: ids.MEMBER, group: GROUP, role: 'user' },
@@ -72,6 +73,19 @@ test.describe('Breite Bildschirme @wide', () => {
     await expect(page.getByText('Benutzer erfolgreich aktualisiert!')).toBeVisible();
     await expect.poll(async () => (await admin.from('user').select('displayName').eq('id', ids.MEMBER).single()).data?.displayName)
       .toBe(`Breit ${stamp}`);
+  });
+
+  test('the rights manager edits a group in the side panel', { annotation: flow('misc.wide.grants') }, async ({ page }) => {
+    await signIn(page, BOSS.email);
+    await page.goto('/admin/grants');
+    await expect(page.getByText('Keine Gruppe und kein Nutzer gewählt')).toBeVisible();
+    await page.getByText(GROUP_NAME).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await page.locator('label[for="grant-drinks"]').getByRole('switch').click();
+    await page.getByRole('button', { name: /^Speichern/ }).click();
+    await expect.poll(async () => ((await admin.from('group_features').select('feature').eq('group', GROUP)).data ?? []).map((x) => x.feature).sort())
+      .toEqual(['drinks', 'events']);
   });
 
   test.afterAll(async () => {

@@ -1724,6 +1724,8 @@
     "groupHint": "Änderungen gelten für alle Mitglieder der Gruppe.",
     "userHint": "Hier stehen nur direkte Rechte. Gruppenrechte siehst du beim Öffnen eines Nutzers.",
     "noDirectUsers": "Noch kein Nutzer hat direkte Rechte. Tippe auf +, um einen hinzuzufügen.",
+    "noneSelected": "Keine Gruppe und kein Nutzer gewählt",
+    "noneSelectedDescription": "Wähle links eine Gruppe oder einen Nutzer, um die Rechte hier zu bearbeiten.",
     "permissionCount_one": "{{count}} Berechtigung",
     "permissionCount_other": "{{count}} Berechtigungen",
     "featureCount_one": "{{count}} Feature",

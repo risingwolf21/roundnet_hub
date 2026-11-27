@@ -567,6 +567,10 @@
         {
           "id": "misc.wide.admin",
           "title": "Laptop: Benutzer im Seitenbereich bearbeiten"
+        },
+        {
+          "id": "misc.wide.grants",
+          "title": "Laptop: Rechte einer Gruppe im Seitenbereich bearbeiten"
         }
       ]
     }
