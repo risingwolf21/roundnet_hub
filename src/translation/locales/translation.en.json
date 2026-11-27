@@ -1617,7 +1617,9 @@
         "unknown": "Unknown device"
       },
       "noneSelected": "No user selected",
-      "noneSelectedDescription": "Pick a user on the left to edit them."
+      "noneSelectedDescription": "Pick a user on the left to edit them.",
+      "columnName": "Name",
+      "columnActivity": "Activity"
     },
     "payments": {
       "searchPlaceholder": "Search for a user",

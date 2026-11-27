@@ -355,7 +355,8 @@ export const CreateOrUpdateEventDialog = ({
   const RECURRENCES: EventRecurrence[] = ['None', 'Weekly', 'Fortnightly', 'Monthly'];
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"fullscreen"}>
+    {/* Phones: full screen. Tablets and laptops: a centred window, from 1024 px with the topics in two columns. */}
+    <DialogContent variant={"fullscreen"} className='md:inset-auto md:top-1/2 md:left-1/2 md:h-[min(92dvh,60rem)] md:w-[min(calc(100%-3rem),42rem)] md:-translate-x-1/2 md:-translate-y-1/2 md:overflow-hidden md:rounded-xl md:ring-1 md:ring-foreground/10 lg:w-[min(calc(100%-3rem),64rem)]'>
       <DialogHeader variant={"appbar"}>
         <DialogTitle className={"flex-1"}>{event ? t('events.editEvent') : t('events.creation.titleCreate')}</DialogTitle>
         <DialogClose />
@@ -375,6 +376,8 @@ export const CreateOrUpdateEventDialog = ({
             </Alert>
           )}
 
+          <div className='flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start'>
+          <div className='flex flex-col gap-3'>
           <FormSection icon={Type} title={t('events.creation.sectionBasics')}>
             <Field className='gap-1.5' data-invalid={titleError}>
               <FieldLabel htmlFor='event-title'>{t('events.creation.titleLabel')}</FieldLabel>
@@ -540,6 +543,9 @@ export const CreateOrUpdateEventDialog = ({
             </ToggleRow>
           </FormSection>
 
+          </div>
+
+          <div className='flex flex-col gap-3'>
           <FormSection icon={MapPin} title={t('events.creation.location')}>
             {place ? (
               <div className='flex items-center gap-3 rounded-lg border bg-background p-3'>
@@ -779,10 +785,12 @@ export const CreateOrUpdateEventDialog = ({
               </Button>
             </div>
           </FormSection>
+          </div>
+          </div>
         </form>
       </DialogBody>
       <DialogFooter variant={"fullscreen"}>
-        <Button type="submit" form={FORM_ID} className='w-full' disabled={isSaving}>
+        <Button type="submit" form={FORM_ID} className='w-full md:w-auto md:min-w-48' disabled={isSaving}>
           {isSaving && <Spinner />}
           {event ? t('common.save') : t('events.creation.createEvent')}
         </Button>

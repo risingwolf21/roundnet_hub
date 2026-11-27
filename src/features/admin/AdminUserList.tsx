@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
-import { SplitView } from '@/components/layout/SplitView';
 import { SegmentedControl } from '@/components/list/ListParts';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
@@ -10,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemMedia } from '@/components/ui/item';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useDialogs } from '@/contexts/DialogsProvider';
 import { useIsWide } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -89,13 +89,67 @@ const AdminUserList = () => {
               </EmptyHeader>
             </Empty>
           )}
-          {
+          {isWide ? (
+            <div className="p-4">
+              <Table className="overflow-hidden rounded-xl border bg-card">
+                <TableHeader>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="pl-4">{t('admin.users.columnName')}</TableHead>
+                    <TableHead>{t('navigation.groups')}</TableHead>
+                    <TableHead>{t('admin.users.columnActivity')}</TableHead>
+                    {devicesByUser && <TableHead>{t('admin.users.pushSection')}</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleUsers.map((user) => {
+                    const selected = user.id === selectedUser?.id;
+                    return (
+                      <TableRow key={user.id} aria-selected={selected} onClick={() => setSelectedUserId(user.id)}
+                        className={cn('cursor-pointer', selected && 'bg-primary/5 shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/5')}>
+                        <TableCell className="pl-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar>
+                              <AvatarImage src={user.avatarUrl || undefined} alt={user.name || undefined} />
+                              <AvatarFallback>{user.name ? user.name[0] : 'U'}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              {/* The button makes the row reachable by keyboard; the row handles the click. */}
+                              <button type="button" className="block max-w-64 truncate text-left font-medium">{user.name}</button>
+                              <div className="max-w-64 truncate text-xs text-muted-foreground">{user.email}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex max-w-80 flex-wrap gap-1">
+                            {user.groups.length === 0
+                              ? <Badge variant="warning"><Users />{t('admin.users.noGroup')}</Badge>
+                              : user.groups.map((group) => (
+                                <Badge key={group.id} variant="outline">
+                                  <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: group.color }} />
+                                  {group.name}
+                                </Badge>
+                              ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {user.last_seen_at && t('user.lastActive', { date: new Date(user.last_seen_at) })}
+                        </TableCell>
+                        {devicesByUser && (
+                          <TableCell>
+                            {devicesByUser.has(user.id)
+                              ? <Badge variant="secondary"><Bell />{t('admin.users.pushDevices', { count: devicesByUser.get(user.id)!.length })}</Badge>
+                              : <Badge variant="warning"><BellOff />{t('admin.users.noPush')}</Badge>}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) :
             visibleUsers
-              .map((user) => <Item key={user.id} aria-current={user.id === selectedUser?.id || undefined} className={cn(user.id === selectedUser?.id && 'bg-primary/5')} onClick={async () => {
-                if (isWide) {
-                  setSelectedUserId(user.id);
-                  return;
-                }
+              .map((user) => <Item key={user.id} onClick={async () => {
                 const result = await dialogs.open(EditUserDialog, { user: user, pushDevices: devicesByUser && (devicesByUser.get(user.id) ?? []) });
                 if (result) save(result);
               }}>
@@ -137,9 +191,10 @@ const AdminUserList = () => {
 
   if (!isWide) return list;
 
-  return <SplitView
-    list={list}
-    detail={selectedUser ? (
+  // Wide screens: the table takes the room, the selected user is edited in a panel on the right.
+  return <div className="flex h-svh">
+    <div className="min-w-0 flex-1 overflow-y-auto">{list}</div>
+    <aside className="flex w-[26rem] shrink-0 flex-col overflow-y-auto border-l bg-muted/30">{selectedUser ? (
       <div>
         <AppBar className='!border-b !shadow-sm' title={t('admin.users.edit')} primaryAction={null} />
         <div className="mx-auto w-full max-w-2xl p-4 pb-safe-bottom">
@@ -154,8 +209,8 @@ const AdminUserList = () => {
           <EmptyDescription>{t('admin.users.noneSelectedDescription')}</EmptyDescription>
         </EmptyHeader>
       </Empty>
-    )}
-  />;
+    )}</aside>
+  </div>;
 
   // return (
   //   <Layout

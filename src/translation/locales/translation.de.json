@@ -1617,7 +1617,9 @@
         "unknown": "Unbekanntes Gerät"
       },
       "noneSelected": "Kein Benutzer ausgewählt",
-      "noneSelectedDescription": "Wähle links einen Benutzer, um ihn zu bearbeiten."
+      "noneSelectedDescription": "Wähle links einen Benutzer, um ihn zu bearbeiten.",
+      "columnName": "Name",
+      "columnActivity": "Aktivität"
     },
     "payments": {
       "searchPlaceholder": "Suche nach einem Nutzer",

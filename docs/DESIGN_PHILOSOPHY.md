@@ -48,7 +48,8 @@ If you need a pattern that more than one screen will use (e.g. a section card), 
 - Titles and descriptions inside `DialogHeader` must be stacked in their own `flex flex-col` wrapper; the default header is a row.
 - Truncate long text (`truncate`, `min-w-0`) rather than letting it wrap and push buttons off screen.
 - Tablets (768–1279 px) get the sidebar as an icon bar; from 1280 px (`useIsWide`) it shows its labels.
-- From 1280 px a list whose rows open a page shows that page next to it with `SplitView` (`src/components/layout/SplitView.tsx`): list left, item right, each scrolling on its own, the item without a back button and an empty state when nothing is open. Events, profile sections and admin users do this; phones and tablets keep one page at a time.
+- From 1280 px a list whose rows open a page shows that page next to it with `SplitView` (`src/components/layout/SplitView.tsx`): list left, item right, each scrolling on its own, the item without a back button and an empty state when nothing is open. Events and profile sections do this; admin users show a table with the edit form in a panel on the right. Phones and tablets keep one page at a time.
+- Full-screen create/edit dialogs become a centred window from 768 px and put their topic cards in two columns from 1024 px, in the phone's order (see `CreateOrUpdateEventDialog`); the primary button is no longer full width there.
 - Pages with several blocks spread into columns on wide screens in the phone's order (`lg:grid-cols-2 xl:grid-cols-3`, see the home page) instead of one stretched column.
 
 ## Colour, type and tone
