@@ -1,12 +1,11 @@
-import { trialAttendanceError } from '@/features/trials/trialErrors';
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { ShareButton } from "@/components/ShareButton";
 import {
   Alert,
   AlertAction,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { ShareButton } from "@/components/ShareButton";
 import { AppBar } from "@/components/ui/appbar";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDialogs } from "@/contexts/DialogsProvider";
+import { trialAttendanceError } from '@/features/trials/trialErrors';
+import { useIsWide } from "@/hooks/use-mobile";
 import { Has } from "@/hooks/useGrants";
 import { useAttendance, useBringItems, useCancelTrainingMutation, useComments, useDeleteTrainingMutation, useEvent, useEventMatches, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, answerNotOpenYet, eventHasStarted, eventInThePast, EventsUserView, isMemberOfEventGroup, maxAttendeesExceeded } from '@/types/supabaseTypes';
@@ -60,7 +61,6 @@ import { AttendanceSummary } from "./AttendanceSummary";
 import { InfoRow } from "./InfoRow";
 import AttendanceTab from "./tabs/AttendanceTab";
 import BringItemsTab from "./tabs/BringItemsTab";
-import { useIsWide } from "@/hooks/use-mobile";
 import CommentsTab from "./tabs/CommentsTab";
 import EventDetailsTab, { EventWeatherData } from "./tabs/EventDetailsTab";
 import MatchesTab from "./tabs/MatchesTab";
@@ -301,7 +301,6 @@ export const EventInformation = ({ event, selectedEventPlace }: EventInformation
         actions={<>
           <ShareButton
             title={event.title}
-            text={`${event.title} · ${new Intl.DateTimeFormat(lang, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(start)}`}
           />
           {!readOnly && <Has perm={['event.delete', 'event.edit', 'event.transform', 'event.cancel']} any>
             <DropdownMenu>
