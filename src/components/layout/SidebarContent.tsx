@@ -290,7 +290,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className='gap-y-4'>
                   {category.children.map((item) => {
-                    const isActive = tab === item.path
+                    // Sub-pages keep their section highlighted (e.g. /admin/users → Übersicht).
+                    const isActive = !!item.path && (tab === item.path || tab.startsWith(`${item.path}/`))
 
                     const component = <SidebarMenuItem key={item.path}>
                       <SidebarMenuButton

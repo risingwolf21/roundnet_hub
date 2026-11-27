@@ -35,6 +35,8 @@ const AdminHistoryScreen = () => {
     <AppBar
       className='!border-b !shadow-sm'
       title={t('admin.history.title')}
+      primaryAction="back"
+      navigateBackPath="/admin"
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>
