@@ -191,10 +191,10 @@ const AdminUserList = () => {
 
   if (!isWide) return list;
 
-  // Wide screens: the table takes the room, the selected user is edited in a panel on the right.
+  // Wide screens: the table grows up to 64rem, the edit panel on the right takes all the rest.
   return <div className="flex h-svh">
-    <div className="min-w-0 flex-1 overflow-y-auto">{list}</div>
-    <aside className="flex w-[26rem] shrink-0 flex-col overflow-y-auto border-l bg-muted/30">{selectedUser ? (
+    <div className="w-full min-w-0 max-w-[64rem] overflow-y-auto">{list}</div>
+    <aside className="flex min-w-[26rem] flex-1 flex-col overflow-y-auto border-l bg-muted/30">{selectedUser ? (
       <div>
         <AppBar className='!border-b !shadow-sm' title={t('admin.users.edit')} primaryAction={null} />
         <div className="mx-auto w-full max-w-2xl p-4 pb-safe-bottom">

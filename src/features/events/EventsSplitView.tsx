@@ -13,13 +13,14 @@ const EventsSplitView = () => {
 
   if (!isWide) return <Outlet />;
 
-  // Like the admin user table: the table takes the room, the event page keeps its phone width in the panel.
+  // Like the admin user table: the table grows up to about its natural width,
+  // the event panel takes all the rest and never gets narrower than a phone (360 px).
   return (
     <div className="flex h-svh">
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div className="w-full min-w-0 max-w-[52rem] overflow-y-auto">
         <EventScreen selectedEventId={selectedEventId} />
       </div>
-      <aside className="flex w-[25rem] shrink-0 flex-col overflow-y-auto border-l bg-muted/30">
+      <aside className="flex min-w-[22.5rem] flex-1 flex-col overflow-y-auto border-l bg-muted/30">
         {selectedEventId ? <Outlet /> : (
           <Empty className="m-auto">
             <EmptyHeader>
