@@ -2,8 +2,6 @@ name: Playwright tests
 
 on:
   workflow_call:
-  push:
-    branches: [claude/project-thread-eilto2]
 
 jobs:
   playwright-tests:
